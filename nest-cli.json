@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "assets": [
+      {
+        "include": "common/i18n/dictionaries/**/*.json",
+        "outDir": "dist/src",
+        "watch": true
+      },
+      {
+        "include": "bootstrap/swagger.md",
+        "outDir": "dist/src",
+        "watch": true
+      }
+    ],
+    "watchAssets": true
+  }
+}
