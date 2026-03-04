@@ -1,4 +1,8 @@
 import { Module } from "@nestjs/common";
 
-@Module({})
+import { REPOSITORIES } from "./infrastructure/repositories";
+
+@Module({
+    providers: [...REPOSITORIES],
+})
 export class IdentityModule {}
