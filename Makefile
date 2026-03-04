@@ -33,7 +33,7 @@ lint-fix:
 migrate:
 	npx mikro-orm migration:up
 migration:
-	npx mikro-orm migration:create
+	npx mikro-orm migration:create --name=$(name)
 seed:
 	npx mikro-orm seeder:run
 seed-demo:

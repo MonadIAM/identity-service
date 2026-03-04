@@ -16,4 +16,21 @@ export enum AccountStatus {
     ACTIVE = "ACTIVE",
 }
 
+export enum IdentifierType {
+    EMAIL = "email",
+    PHONE = "phone",
+    OAUTH = "oauth",
+}
+
+export enum SecondFactorType {
+    TOTP = "totp",
+}
+
+export enum NotificationCategory {
+    SECURITY = "security",
+    ACCOUNT = "account",
+    ACCESS = "access",
+    SYSTEM = "system",
+}
+
 export enum PermissionCode {}
