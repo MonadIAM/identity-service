@@ -1,3 +1,4 @@
+export { SecondFactorAdapter } from "./second-factor.adapter";
 export { NotificationAdapter } from "./notification.adapter";
 export { IdentifierAdapter } from "./identifier.adapter";
 export { ProfileAdapter } from "./profile.adapter";
