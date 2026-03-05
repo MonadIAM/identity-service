@@ -5,5 +5,6 @@ export { NotificationAdapter } from "./notification.adapter";
 export { MasterCodeAdapter } from "./master-code.adapter";
 export { IdentifierAdapter } from "./identifier.adapter";
 export { PasswordAdapter } from "./password.adapter";
+export { SessionAdapter } from "./session.adapter";
 export { ProfileAdapter } from "./profile.adapter";
 export { AccountAdapter } from "./account.adapter";

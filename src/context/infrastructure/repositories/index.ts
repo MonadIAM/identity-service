@@ -7,6 +7,7 @@ import { NotificationRepository } from "./notification.repository";
 import { MasterCodeRepository } from "./master-code.repository";
 import { IdentifierRepository } from "./identifier.repository";
 import { PasswordRepository } from "./password.repository";
+import { SessionRepository } from "./session.repository";
 import { ProfileRepository } from "./profile.repository";
 import { AccountRepository } from "./account.repository";
 
@@ -17,6 +18,7 @@ export const NOTIFICATION_REPOSITORY = Symbol("Repositories.Notification.Contrac
 export const MASTER_CODE_REPOSITORY = Symbol("Repositories.MasterCode.Contract");
 export const IDENTIFIER_REPOSITORY = Symbol("Repositories.Identifier.Contract");
 export const PASSWORD_REPOSITORY = Symbol("Repositories.Password.Contract");
+export const SESSION_REPOSITORY = Symbol("Repositories.Session.Contract");
 export const PROFILE_REPOSITORY = Symbol("Repositories.Profile.Contract");
 export const ACCOUNT_REPOSITORY = Symbol("Repositories.Account.Contract");
 
@@ -48,6 +50,10 @@ export const REPOSITORIES: Provider[] = [
     {
         provide: PASSWORD_REPOSITORY,
         useClass: PasswordRepository,
+    },
+    {
+        provide: SESSION_REPOSITORY,
+        useClass: SessionRepository,
     },
     {
         provide: PROFILE_REPOSITORY,
