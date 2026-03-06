@@ -258,6 +258,15 @@
       "schema": "identity",
       "indexes": [
         {
+          "keyName": "identifier_value_trgm_idx",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX \"identifier_value_trgm_idx\" ON \"identity\".\"identifier\" USING gin (\"value\" gin_trgm_ops)"
+        },
+        {
           "keyName": "identifier_type_value_unique",
           "columnNames": [
             "type",
@@ -726,6 +735,15 @@
       "name": "profile",
       "schema": "identity",
       "indexes": [
+        {
+          "keyName": "profile_display_name_trgm_idx",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX \"profile_display_name_trgm_idx\" ON \"identity\".\"profile\" USING gin (\"display_name\" gin_trgm_ops)"
+        },
         {
           "keyName": "profile_pkey",
           "columnNames": [

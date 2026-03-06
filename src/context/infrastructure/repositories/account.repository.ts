@@ -1,4 +1,4 @@
-import { EntityManager, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, Loaded, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
@@ -70,6 +70,33 @@ export class AccountRepository extends AccountAdapter implements Repositories.Ac
                 const entityManager = this.readManager.fork();
                 return await entityManager.findAndCount(Account, where, opts);
             }
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async getLookupList({ pagination, term }: Repositories.Account.GetLookupList): Promise<[Account[], number]> {
+        try {
+            const entityManager = this.readManager.fork();
+            const builder = entityManager.createQueryBuilder(Account, "a");
+
+            builder
+                .select(["a.id", "a.status"])
+                .leftJoinAndSelect("a.profile", "p")
+                .leftJoin("a.identifiers", "i")
+                .groupBy(["a.id", "p.account_id"])
+                .limit(pagination.elementsPerPage)
+                .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+
+            if (term) {
+                builder.andWhere("p.display_name % ? OR i.value % ?", [term, term]).orderBy({
+                    [raw("GREATEST(similarity(p.display_name, ?), MAX(similarity(i.value, ?)))", [term, term])]: "DESC",
+                });
+            } else {
+                builder.orderBy({ "p.display_name": "ASC" });
+            }
+
+            return await builder.getResultAndCount();
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

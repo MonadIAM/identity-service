@@ -7,6 +7,14 @@ export const ProfileSchema = new EntitySchema<Profile>({
     tableName: "profile",
     schema: "identity",
 
+    indexes: [
+        {
+            name: "profile_display_name_trgm_idx",
+            expression:
+                'CREATE INDEX "profile_display_name_trgm_idx" ON "identity"."profile" USING gin ("display_name" gin_trgm_ops)',
+        },
+    ],
+
     properties: {
         account: {
             kind: "1:1",

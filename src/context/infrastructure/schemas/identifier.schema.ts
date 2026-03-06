@@ -19,6 +19,14 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
         },
     ],
 
+    indexes: [
+        {
+            name: "identifier_value_trgm_idx",
+            expression:
+                'CREATE INDEX "identifier_value_trgm_idx" ON "identity"."identifier" USING gin ("value" gin_trgm_ops)',
+        },
+    ],
+
     properties: {
         id: { primary: true, type: "uuid" },
 
