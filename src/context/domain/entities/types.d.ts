@@ -1,4 +1,14 @@
-import { AccountSubject, AccountStatus, IdentifierType, NotificationCategory, SecondFactorType } from "~context/enums";
+import { AnyEntity } from "@mikro-orm/postgresql";
+
+import {
+    NotificationCategory,
+    IdentityActionType,
+    IdentityEntityType,
+    SecondFactorType,
+    AccountSubject,
+    IdentifierType,
+    AccountStatus,
+} from "~context/enums";
 
 import { Account as AccountEntity } from "./account.entity";
 
@@ -85,6 +95,20 @@ declare global {
                 userAgent: string;
                 expiresAt: Date;
                 ip: string;
+            };
+        }
+
+        namespace AuditJournal {
+            type ConstructorProps = {
+                patch?: DeltaAudit.Patch<AnyEntity>;
+                actionType: IdentityActionType;
+                entityType: IdentityEntityType;
+                userAgent?: string;
+                reason?: string;
+                entity: string;
+                ip?: string;
+                by: string;
+                at: Date;
             };
         }
     }

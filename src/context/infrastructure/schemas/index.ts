@@ -1,4 +1,5 @@
 export { PasswordHistorySchema } from "./password-history.schema";
+export { AuditJournalSchema } from "./audit-journal.schema";
 export { SecondFactorSchema } from "./second-factor.schema";
 export { RecoveryCodeSchema } from "./recovery-code.schema";
 export { NotificationSchema } from "./notification.schema";

@@ -1,4 +1,5 @@
 export { PasswordHistory } from "./password-history.entity";
+export { AuditJournal } from "./audit-journal.entity";
 export { SecondFactor } from "./second-factor.entity";
 export { RecoveryCode } from "./recovery-code.entity";
 export { Notification } from "./notification.entity";

@@ -15,6 +15,178 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "entity": {
+          "name": "entity",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "by": {
+          "name": "by",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "at": {
+          "name": "at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "patch": {
+          "name": "patch",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
+        "ip": {
+          "name": "ip",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "action_type": {
+          "name": "action_type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "DISABLE_RECEIVE_NOTIFICATIONS",
+            "ENABLE_RECEIVE_NOTIFICATIONS",
+            "DISABLE_ENFORCED_2FA",
+            "DISABLE_USAGE_AS_2FA",
+            "ENABLE_ENFORCED_2FA",
+            "ENABLE_USAGE_AS_2FA",
+            "DEACTIVATE_ACCOUNT",
+            "VERIFY_IDENTIFIER",
+            "UNSUSPEND_ACCOUNT",
+            "ACTIVATE_ACCOUNT",
+            "RESTORE_ACCOUNT",
+            "SUSPEND_ACCOUNT",
+            "CREATE_ACCOUNT",
+            "UPDATE_PROFILE",
+            "RESET_PASSWORD",
+            "SET_PASSWORD"
+          ],
+          "mappedType": "enum"
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "RECOVERY_CODE",
+            "SECOND_FACTOR",
+            "MASTER_CODE",
+            "IDENTIFIER",
+            "PASSWORD",
+            "PROFILE",
+            "SESSION",
+            "ACCOUNT"
+          ],
+          "mappedType": "enum"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "audit_journal",
+      "schema": "identity",
+      "indexes": [
+        {
+          "keyName": "audit_journal_entity_idx",
+          "columnNames": [
+            "entity_type",
+            "entity"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "audit_journal_by_at_idx",
+          "columnNames": [
+            "by",
+            "at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "audit_journal_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
         "subject": {
           "name": "subject",
           "type": "text",
