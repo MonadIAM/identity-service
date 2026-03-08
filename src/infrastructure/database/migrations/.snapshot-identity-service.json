@@ -96,10 +96,10 @@
             "DEACTIVATE_ACCOUNT",
             "VERIFY_IDENTIFIER",
             "UNSUSPEND_ACCOUNT",
-            "ACTIVATE_ACCOUNT",
             "RESTORE_ACCOUNT",
             "SUSPEND_ACCOUNT",
             "CREATE_ACCOUNT",
+            "VERIFY_ACCOUNT",
             "UPDATE_PROFILE",
             "RESET_PASSWORD",
             "SET_PASSWORD"
@@ -174,137 +174,6 @@
       ],
       "checks": [],
       "foreignKeys": {},
-      "nativeEnums": {}
-    },
-    {
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "uuid"
-        },
-        "subject": {
-          "name": "subject",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "enumItems": [
-            "SERVICE",
-            "SYSTEM",
-            "HUMAN"
-          ],
-          "mappedType": "enum"
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "enumItems": [
-            "DEACTIVATED",
-            "SUSPENDED",
-            "PENDING",
-            "ACTIVE"
-          ],
-          "mappedType": "enum"
-        },
-        "is2faenforced": {
-          "name": "is2faenforced",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
-        },
-        "primary_identifier_id": {
-          "name": "primary_identifier_id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "uuid"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 3,
-          "mappedType": "datetime"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
-        }
-      },
-      "name": "account",
-      "schema": "identity",
-      "indexes": [
-        {
-          "columnNames": [
-            "primary_identifier_id"
-          ],
-          "composite": false,
-          "keyName": "account_primary_identifier_id_unique",
-          "constraint": true,
-          "primary": false,
-          "unique": true
-        },
-        {
-          "keyName": "account_pkey",
-          "columnNames": [
-            "id"
-          ],
-          "composite": false,
-          "constraint": true,
-          "primary": true,
-          "unique": true
-        }
-      ],
-      "checks": [],
-      "foreignKeys": {
-        "account_primary_identifier_id_foreign": {
-          "constraintName": "account_primary_identifier_id_foreign",
-          "columnNames": [
-            "primary_identifier_id"
-          ],
-          "localTableName": "identity.account",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "identity.identifier",
-          "deleteRule": "set null",
-          "updateRule": "cascade"
-        }
-      },
       "nativeEnums": {}
     },
     {
@@ -491,6 +360,136 @@
     },
     {
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "SERVICE",
+            "SYSTEM",
+            "HUMAN"
+          ],
+          "mappedType": "enum"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "DEACTIVATED",
+            "SUSPENDED",
+            "PENDING",
+            "ACTIVE"
+          ],
+          "mappedType": "enum"
+        },
+        "is2faenforced": {
+          "name": "is2faenforced",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
+        "primary_identifier_id": {
+          "name": "primary_identifier_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "account",
+      "schema": "identity",
+      "indexes": [
+        {
+          "columnNames": [
+            "primary_identifier_id"
+          ],
+          "composite": false,
+          "keyName": "account_primary_identifier_id_unique",
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "account_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "account_primary_identifier_id_foreign": {
+          "constraintName": "account_primary_identifier_id_foreign",
+          "columnNames": [
+            "primary_identifier_id"
+          ],
+          "localTableName": "identity.account",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "identity.identifier",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
         "account_id": {
           "name": "account_id",
           "type": "uuid",
@@ -596,16 +595,6 @@
             "system"
           ],
           "mappedType": "enum"
-        },
-        "type": {
-          "name": "type",
-          "type": "varchar(128)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 128,
-          "mappedType": "string"
         },
         "title": {
           "name": "title",

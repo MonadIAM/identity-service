@@ -2,6 +2,7 @@ import { Collection } from "@mikro-orm/postgresql";
 import { randomUUID } from "node:crypto";
 
 import { AccountSubject, AccountStatus } from "~context/enums";
+import { EntityException } from "~common/exceptions";
 
 import { PasswordHistory } from "./password-history.entity";
 import { SecondFactor } from "./second-factor.entity";
@@ -14,6 +15,10 @@ import { Profile } from "./profile.entity";
 import { Session } from "./session.entity";
 
 export class Account {
+    private get dictionaryPath(): string {
+        return "entities.account";
+    }
+
     public id: string;
     public createdAt: Date;
     public updatedAt?: Date;
@@ -23,9 +28,9 @@ export class Account {
     public subject: AccountSubject;
     public status: AccountStatus;
 
+    public password?: Password;
+    public masterCode?: MasterCode;
     public primaryIdentifier!: Identifier;
-    public masterCode!: MasterCode;
-    public password!: Password;
     public profile!: Profile;
 
     public sessions = new Collection<Session>(this);
@@ -43,5 +48,56 @@ export class Account {
 
         this.subject = props.subject;
         this.status = props.status;
+    }
+
+    public assignRelations(props: Entities.Account.AssignRelations): void {
+        this.primaryIdentifier = props.identifier;
+        this.password = props.password;
+        this.profile = props.profile;
+    }
+
+    public activate(): void {
+        if (this.status === AccountStatus.PENDING) {
+            this.status = AccountStatus.ACTIVE;
+            this.updatedAt = new Date();
+        } else {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVATED`);
+        }
+    }
+
+    public deactivate(): void {
+        if (this.status === AccountStatus.ACTIVE) {
+            this.status = AccountStatus.DEACTIVATED;
+            this.updatedAt = new Date();
+        } else {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.DEACTIVATION_NOT_ALLOWED`);
+        }
+    }
+
+    public restore(): void {
+        if (this.status === AccountStatus.DEACTIVATED) {
+            this.status = AccountStatus.ACTIVE;
+            this.updatedAt = new Date();
+        } else {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.RESTORE_NOT_ALLOWED`);
+        }
+    }
+
+    public suspend(): void {
+        if (this.status === AccountStatus.SUSPENDED) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_SUSPENDED`);
+        } else {
+            this.status = AccountStatus.SUSPENDED;
+            this.updatedAt = new Date();
+        }
+    }
+
+    public unsuspend(): void {
+        if (this.status === AccountStatus.SUSPENDED) {
+            this.status = AccountStatus.ACTIVE;
+            this.updatedAt = new Date();
+        } else {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_SUSPENDED`);
+        }
     }
 }

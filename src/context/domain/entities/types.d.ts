@@ -10,7 +10,10 @@ import {
     AccountStatus,
 } from "~context/enums";
 
+import { Identifier as IdentifierEntity } from "./identifier.entity";
+import { Password as PasswordEntity } from "./password.entity";
 import { Account as AccountEntity } from "./account.entity";
+import { Profile as ProfileEntity } from "./profile.entity";
 
 declare global {
     namespace Entities {
@@ -19,14 +22,22 @@ declare global {
                 subject: AccountSubject;
                 status: AccountStatus;
             };
+
+            type AssignRelations = {
+                identifier: IdentifierEntity;
+                password?: PasswordEntity;
+                profile: ProfileEntity;
+            };
         }
 
         namespace Identifier {
             type ConstructorProps = {
-                primaryOfAccount: AccountEntity;
                 account: AccountEntity;
                 type: IdentifierType;
                 value: string;
+                providerUserId?: string;
+                isVerified?: boolean;
+                provider?: string;
             };
         }
 
@@ -43,7 +54,6 @@ declare global {
                 account: AccountEntity;
                 source: string;
                 title: string;
-                type: string;
                 body: string;
             };
         }
@@ -66,8 +76,8 @@ declare global {
             type ConstructorProps = {
                 account: AccountEntity;
                 displayName: string;
-                timeZone: string;
-                locale: string;
+                timeZone?: string;
+                locale?: string;
             };
         }
 
@@ -107,7 +117,7 @@ declare global {
                 reason?: string;
                 entity: string;
                 ip?: string;
-                by: string;
+                by?: string;
                 at: Date;
             };
         }

@@ -12,7 +12,7 @@ export class AuditJournal {
 
     public entity: string;
 
-    public by: string;
+    public by?: string;
     public at: Date;
 
     public ip?: string;

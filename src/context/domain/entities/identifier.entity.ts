@@ -13,8 +13,8 @@ export class Identifier {
     public type: IdentifierType;
     public value: string;
 
-    public provider?: string;
     public providerUserId?: string;
+    public provider?: string;
 
     public isVerified: boolean;
     public usableAs2FA: boolean;
@@ -34,7 +34,10 @@ export class Identifier {
         this.type = props.type;
         this.value = props.value;
 
-        this.primaryOfAccount = props.primaryOfAccount;
+        this.providerUserId = props.providerUserId;
+        this.provider = props.provider;
+
+        this.primaryOfAccount = props.account;
         this.account = props.account;
     }
 }

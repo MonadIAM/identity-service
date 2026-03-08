@@ -62,7 +62,6 @@ declare global {
                 id?: StringFilterDTO;
                 category?: StringFilterDTO;
                 source?: StringFilterDTO;
-                type?: StringFilterDTO;
                 createdAt?: OrdinalFilterDTO<Date>;
                 readAt?: OrdinalFilterDTO<Date>;
                 account?: LinkFilterDTO;

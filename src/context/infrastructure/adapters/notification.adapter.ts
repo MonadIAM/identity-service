@@ -20,9 +20,6 @@ export class NotificationAdapter {
         if (filters.source) {
             where.source = MikroAdapter.applyStringFilter(filters.source);
         }
-        if (filters.type) {
-            where.type = MikroAdapter.applyStringFilter(filters.type);
-        }
 
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);

@@ -11,7 +11,6 @@ export class Notification {
 
     public category: NotificationCategory;
     public source: string;
-    public type: string;
 
     public title: string;
     public body: string;
@@ -24,7 +23,6 @@ export class Notification {
 
         this.category = props.category;
         this.source = props.source;
-        this.type = props.type;
 
         this.title = props.title;
         this.body = props.body;

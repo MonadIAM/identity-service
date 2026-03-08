@@ -30,19 +30,20 @@ export const AccountSchema = new EntitySchema<Account>({
             kind: "1:1",
             entity: () => Identifier,
             fieldName: "primary_identifier_id",
-            nullable: true,
         },
 
         masterCode: {
             kind: "1:1",
             entity: () => MasterCode,
             mappedBy: "account",
+            nullable: true,
         },
 
         password: {
             kind: "1:1",
             entity: () => Password,
             mappedBy: "account",
+            nullable: true,
         },
 
         profile: {

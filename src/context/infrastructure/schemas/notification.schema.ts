@@ -20,7 +20,6 @@ export const NotificationSchema = new EntitySchema<Notification>({
 
         source: { type: "string", length: 64 },
         category: { enum: true, items: () => NotificationCategory },
-        type: { type: "string", length: 128 },
 
         title: { type: "string", length: 255 },
         body: { type: "text" },
