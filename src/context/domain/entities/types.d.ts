@@ -61,6 +61,7 @@ declare global {
         namespace PasswordHistory {
             type ConstructorProps = {
                 account: AccountEntity;
+                version: number;
                 hash: string;
             };
         }
@@ -68,6 +69,11 @@ declare global {
         namespace Password {
             type ConstructorProps = {
                 account: AccountEntity;
+                hash: string;
+            };
+
+            type Previous = {
+                version: number;
                 hash: string;
             };
         }

@@ -5,8 +5,8 @@ import { Account } from "./account.entity";
 export class PasswordHistory {
     public id: string;
     public setAt: Date;
-    public version: number = 1;
 
+    public version: number;
     public hash: string;
 
     public account: Account;
@@ -15,6 +15,7 @@ export class PasswordHistory {
         this.setAt = new Date();
         this.id = randomUUID();
 
+        this.version = props.version;
         this.hash = props.hash;
 
         this.account = props.account;

@@ -15,4 +15,13 @@ export class Password {
 
         this.account = props.account;
     }
+
+    public rotate(hash: string): Entities.Password.Previous {
+        const history = {
+            version: this.version,
+            hash: this.hash,
+        };
+        this.hash = hash;
+        return history;
+    }
 }
