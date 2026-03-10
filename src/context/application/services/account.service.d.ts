@@ -20,7 +20,7 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    identifier: Entities.Identifier.ConstructorProps;
+                    identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
                     profile: Entities.Profile.ConstructorProps;
                     subject: AccountSubject;
                     password: string;
@@ -31,7 +31,7 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    identifier: Entities.Identifier.ConstructorProps;
+                    identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
                     profile: Entities.Profile.ConstructorProps;
                     subject: AccountSubject;
                 };

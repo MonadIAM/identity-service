@@ -92,7 +92,6 @@ declare global {
             type ConstructorProps = {
                 account: AccountEntity;
                 type: SecondFactorType;
-                isPreferred: boolean;
                 secret: string;
                 name: string;
             };

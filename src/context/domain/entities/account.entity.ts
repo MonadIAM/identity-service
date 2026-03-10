@@ -105,4 +105,20 @@ export class Account {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_SUSPENDED`);
         }
     }
+
+    public enableEnforce(): void {
+        if (this.is2FAEnforced) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+        } else {
+            this.is2FAEnforced = true;
+        }
+    }
+
+    public disableEnforce(): void {
+        if (this.is2FAEnforced) {
+            this.is2FAEnforced = false;
+        } else {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+        }
+    }
 }

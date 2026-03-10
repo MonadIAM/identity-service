@@ -31,10 +31,6 @@ export class SecondFactorAdapter {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
 
-        if (filters.isPreferred !== undefined) {
-            where.isPreferred = { $eq: filters.isPreferred };
-        }
-
         if (filters.account) {
             where.account = { id: MikroAdapter.applyStringFilter(filters.account) };
         }

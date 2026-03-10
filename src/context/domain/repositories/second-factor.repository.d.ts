@@ -62,7 +62,6 @@ declare global {
                 id?: StringFilterDTO;
                 type?: StringFilterDTO;
                 name?: StringFilterDTO;
-                isPreferred?: boolean;
                 confirmedAt?: OrdinalFilterDTO<Date>;
                 lastUsedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;

@@ -18,7 +18,7 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    identifier: Entities.Identifier.ConstructorProps;
+                    identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
                     account: AccountEntity;
                 };
             };

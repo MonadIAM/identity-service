@@ -1,16 +1,20 @@
 import { randomUUID } from "node:crypto";
 
+import { EntityException } from "~common/exceptions";
 import { SecondFactorType } from "~context/enums";
 
 import { Account } from "./account.entity";
 
 export class SecondFactor {
+    private get dictionaryPath(): string {
+        return "entities.identifier";
+    }
+
     public id: string;
     public createdAt: Date;
     public lastUsedAt?: Date;
     public confirmedAt?: Date;
 
-    public isPreferred: boolean;
     public type: SecondFactorType;
     public secret: string;
     public name: string;
@@ -21,11 +25,24 @@ export class SecondFactor {
         this.createdAt = new Date();
         this.id = randomUUID();
 
-        this.isPreferred = props.isPreferred;
         this.secret = props.secret;
         this.name = props.name;
         this.type = props.type;
 
         this.account = props.account;
+    }
+
+    public confirm(): void {
+        if (this.createdAt) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+        } else {
+            this.createdAt = new Date();
+        }
+    }
+
+    public canRemove(isEnforced: boolean, confirmedCount: number): void {
+        if (isEnforced && confirmedCount === 1) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+        }
     }
 }

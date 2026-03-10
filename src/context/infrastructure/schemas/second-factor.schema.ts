@@ -28,7 +28,6 @@ export const SecondFactorSchema = new EntitySchema<SecondFactor>({
         type: { enum: true, items: () => SecondFactorType },
         secret: { type: "text" },
         name: { type: "string", length: 128, nullable: true },
-        isPreferred: { type: "boolean" },
 
         confirmedAt: { type: "timestamptz", length: 3, nullable: true },
         lastUsedAt: { type: "timestamptz", length: 3, nullable: true },
