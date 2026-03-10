@@ -1,8 +1,14 @@
 import { randomUUID } from "node:crypto";
 
+import { EntityException } from "~common/exceptions";
+
 import { Account } from "./account.entity";
 
 export class Session {
+    private get dictionaryPath(): string {
+        return "entities.session";
+    }
+
     public id: string;
     public createdAt: Date;
     public expiresAt: Date;
@@ -28,5 +34,16 @@ export class Session {
         this.ip = props.ip;
 
         this.account = props.account;
+    }
+
+    public refresh(hash: string): void {
+        this.lastActiveAt = new Date();
+        this.refreshTokenHash = hash;
+    }
+
+    public isExpired(): void {
+        if (this.expiresAt < new Date()) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+        }
     }
 }

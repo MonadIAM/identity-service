@@ -7,7 +7,7 @@ import { Account } from "./account.entity";
 
 export class SecondFactor {
     private get dictionaryPath(): string {
-        return "entities.identifier";
+        return "entities.second-factor";
     }
 
     public id: string;
