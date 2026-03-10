@@ -37,8 +37,8 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
         providerUserId: { type: "text", nullable: true },
 
         isVerified: { type: "boolean" },
-        usableAs2FA: { type: "boolean" },
         receiveNotifications: { type: "boolean" },
+        allowPasswordlessLogin: { type: "boolean" },
 
         account: {
             kind: "m:1",

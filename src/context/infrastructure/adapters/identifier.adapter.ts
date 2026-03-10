@@ -30,8 +30,8 @@ export class IdentifierAdapter {
         if (filters.isVerified !== undefined) {
             where.isVerified = { $eq: filters.isVerified };
         }
-        if (filters.usableAs2FA !== undefined) {
-            where.usableAs2FA = { $eq: filters.usableAs2FA };
+        if (filters.allowPasswordlessLogin !== undefined) {
+            where.allowPasswordlessLogin = { $eq: filters.allowPasswordlessLogin };
         }
         if (filters.receiveNotifications !== undefined) {
             where.receiveNotifications = { $eq: filters.receiveNotifications };

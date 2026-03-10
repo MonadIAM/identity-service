@@ -56,6 +56,11 @@ export class Account {
         this.profile = props.profile;
     }
 
+    public setPrimaryIdentifier(identifier: Identifier): void {
+        this.primaryIdentifier = identifier;
+        this.updatedAt = new Date();
+    }
+
     public activate(): void {
         if (this.status === AccountStatus.PENDING) {
             this.status = AccountStatus.ACTIVE;

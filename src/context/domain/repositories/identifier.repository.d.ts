@@ -65,8 +65,8 @@ declare global {
                 provider?: StringFilterDTO;
                 account?: LinkFilterDTO;
                 isVerified?: boolean;
-                usableAs2FA?: boolean;
                 receiveNotifications?: boolean;
+                allowPasswordlessLogin?: boolean;
                 createdAt?: OrdinalFilterDTO<Date>;
                 verifiedAt?: OrdinalFilterDTO<Date>;
                 lastUsedAt?: OrdinalFilterDTO<Date>;
