@@ -58,6 +58,12 @@ declare global {
                       sort: Sort;
                   };
 
+            type MarkAsRead = {
+                transaction?: EntityManager;
+                account: string;
+                id: string;
+            };
+
             type Filters = {
                 id?: StringFilterDTO;
                 category?: StringFilterDTO;

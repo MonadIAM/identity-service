@@ -13,6 +13,8 @@ export class NotificationRepository extends NotificationAdapter implements Repos
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        @InjectEntityManager("write")
+        private readonly writeManager: EntityManager,
     ) {
         super();
     }
@@ -70,6 +72,28 @@ export class NotificationRepository extends NotificationAdapter implements Repos
                 const entityManager = this.readManager.fork();
                 return await entityManager.findAndCount(Notification, where, opts);
             }
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async markAsRead({ transaction, account, id }: Repositories.Notification.MarkAsRead): Promise<number> {
+        try {
+            const entityManager = transaction ?? this.writeManager.fork();
+            const builder = entityManager
+                .createQueryBuilder(Notification)
+                .update({ readAt: new Date() })
+                .where({ readAt: null });
+
+            if (id) {
+                builder.andWhere({ id });
+            } else {
+                builder.andWhere({ account });
+            }
+
+            const result = await builder.execute();
+
+            return result.affectedRows;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
