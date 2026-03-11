@@ -80,5 +80,13 @@ declare namespace NodeJS {
         KAFKA_RETRY_ATTEMPTS: `${number}`;
         KAFKA_RETRY_INITIAL_TIME: `${number}`;
         DOCKER_NETWORK_NAME: string;
+
+        // ---------------------------------------------------------------------------
+        // BullMQ - cleanup
+        // ---------------------------------------------------------------------------
+
+        CLEANUP_BATCH_SIZE: `${number}`;
+        PENDING_ACCOUNT_TTL_HOURS: `${number}`;
+        NOTIFICATION_TTL_DAYS: `${number}`;
     }
 }

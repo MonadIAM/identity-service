@@ -178,4 +178,20 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     public DOCKER_NETWORK_NAME!: string;
+
+    // ---------------------------------------------------------------------------
+    // BullMQ - cleanup
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsInt()
+    @Validator.Min(1)
+    public CLEANUP_BATCH_SIZE!: number;
+
+    @Validator.IsInt()
+    @Validator.Min(1)
+    public PENDING_ACCOUNT_TTL_HOURS!: number;
+
+    @Validator.IsInt()
+    @Validator.Min(1)
+    public NOTIFICATION_TTL_DAYS!: number;
 }

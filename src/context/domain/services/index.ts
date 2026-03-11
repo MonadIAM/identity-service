@@ -1,11 +1,13 @@
 import { Provider } from "@nestjs/common";
 
+import { RecoveryCodeService } from "./recovery-code.service";
 import { SecondFactorService } from "./second-factor.service";
 import { CredentialService } from "./credential.service";
 import { IdentifierService } from "./identifier.service";
 import { AccountService } from "./account.service";
 import { SessionService } from "./session.service";
 
+export const RECOVERY_CODE_SERVICE = Symbol("Services.RecoveryCode.Contract");
 export const SECOND_FACTOR_SERVICE = Symbol("Services.SecondFactor.Contract");
 export const CREDENTIAL_SERVICE = Symbol("Services.Credential.Contract");
 export const IDENTIFIER_SERVICE = Symbol("Services.Identifier.Contract");
@@ -13,6 +15,10 @@ export const ACCOUNT_SERVICE = Symbol("Services.Account.Contract");
 export const SESSION_SERVICE = Symbol("Services.Session.Contract");
 
 export const DOMAIN_SERVICES: Provider[] = [
+    {
+        provide: RECOVERY_CODE_SERVICE,
+        useClass: RecoveryCodeService,
+    },
     {
         provide: SECOND_FACTOR_SERVICE,
         useClass: SecondFactorService,
