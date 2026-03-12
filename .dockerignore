@@ -9,10 +9,9 @@ yarn-error.log*
 
 # Environment variables and secrets
 .env
-.env.local
-.env.*.local
 *.pem
 *.key
+*.csv
 
 # Container data (avoid copying gigabytes of logs during build)
 zookeeper_data/

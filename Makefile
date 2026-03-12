@@ -44,3 +44,9 @@ test:
 	npx jest --config ./jest.unit.config.ts
 coverage:
 	npx jest --config ./jest.unit.config.ts --coverage
+
+# Scripts
+jwt-keys:
+	@node scripts/generate-jwt-keys.mjs
+aws-cred:
+	@node scripts/import-aws-credentials.mjs $(file)

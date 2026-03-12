@@ -13,7 +13,6 @@ declare namespace NodeJS {
         APP_PORT: `${number}`;
         THROTTLE_LIMIT: `${number}`;
         THROTTLE_TTL: `${number}`;
-        JWT_SECRET: string;
 
         // ---------------------------------------------------------------------------
         // PostgreSQL - common
@@ -88,5 +87,35 @@ declare namespace NodeJS {
         CLEANUP_BATCH_SIZE: `${number}`;
         PENDING_ACCOUNT_TTL_HOURS: `${number}`;
         NOTIFICATION_TTL_DAYS: `${number}`;
+
+        // ---------------------------------------------------------------------------
+        // Hashing (Argon2)
+        // ---------------------------------------------------------------------------
+
+        ARGON2_TYPE: "argon2id" | "argon2i" | "argon2d";
+        ARGON2_MEMORY_COST_KIB: `${number}`;
+        ARGON2_PARALLELISM: `${number}`;
+        ARGON2_HASH_LENGTH: `${number}`;
+        ARGON2_TIME_COST: `${number}`;
+        ARGON2_VERSION: `${number}`;
+
+        // ---------------------------------------------------------------------------
+        // JWT (ES256)
+        // ---------------------------------------------------------------------------
+
+        JWT_REFRESH_TTL: `${number}d`;
+        JWT_ACCESS_TTL: `${number}m`;
+        JWT_PRIVATE_KEY: string;
+        JWT_PUBLIC_KEY: string;
+        JWT_ISSUER: string;
+
+        // ---------------------------------------------------------------------------
+        // AWS (SES/SNS)
+        // ---------------------------------------------------------------------------
+
+        AWS_SECRET_ACCESS_KEY: string;
+        AWS_ACCESS_KEY_ID: string;
+        AWS_REGION: string;
+        EMAIL_FROM: string;
     }
 }

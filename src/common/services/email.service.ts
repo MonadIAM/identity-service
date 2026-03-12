@@ -1,0 +1,34 @@
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+
+@Injectable({ scope: Scope.DEFAULT })
+export class EmailService {
+    private readonly client: SESClient;
+    private readonly from: string;
+
+    public constructor(private readonly config: ConfigService) {
+        this.from = this.config.getOrThrow<string>("EMAIL_FROM");
+
+        this.client = new SESClient({
+            region: this.config.getOrThrow<string>("AWS_REGION"),
+            credentials: {
+                accessKeyId: this.config.getOrThrow<string>("AWS_ACCESS_KEY_ID"),
+                secretAccessKey: this.config.getOrThrow<string>("AWS_SECRET_ACCESS_KEY"),
+            },
+        });
+    }
+
+    public async send(to: string, subject: string, html: string): Promise<void> {
+        await this.client.send(
+            new SendEmailCommand({
+                Source: this.from,
+                Destination: { ToAddresses: [to] },
+                Message: {
+                    Subject: { Data: subject },
+                    Body: { Html: { Data: html } },
+                },
+            }),
+        );
+    }
+}

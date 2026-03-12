@@ -31,9 +31,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     public THROTTLE_TTL!: number;
 
-    @Validator.IsString()
-    public JWT_SECRET!: string;
-
     // ---------------------------------------------------------------------------
     // PostgreSQL - common
     // ---------------------------------------------------------------------------
@@ -194,4 +191,61 @@ export class EnvironmentVariablesDTO {
     @Validator.IsInt()
     @Validator.Min(1)
     public NOTIFICATION_TTL_DAYS!: number;
+
+    // ---------------------------------------------------------------------------
+    // Hashing (Argon2)
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsInt()
+    public ARGON2_MEMORY_COST_KIB!: number;
+
+    @Validator.IsInt()
+    public ARGON2_HASH_LENGTH!: number;
+
+    @Validator.IsInt()
+    public ARGON2_PARALLELISM!: number;
+
+    @Validator.IsInt()
+    public ARGON2_TIME_COST!: number;
+
+    @Validator.IsInt()
+    public ARGON2_VERSION!: number;
+
+    @Validator.IsString()
+    public ARGON2_TYPE!: number;
+
+    // ---------------------------------------------------------------------------
+    // JWT (ES256)
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    public JWT_ISSUER!: string;
+
+    @Validator.IsString()
+    public JWT_ACCESS_TTL!: string;
+
+    @Validator.IsString()
+    public JWT_REFRESH_TTL!: string;
+
+    @Validator.IsString()
+    public JWT_PRIVATE_KEY!: string;
+
+    @Validator.IsString()
+    public JWT_PUBLIC_KEY!: string;
+
+    // ---------------------------------------------------------------------------
+    // AWS (SES/SNS)
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    public AWS_SECRET_ACCESS_KEY!: string;
+
+    @Validator.IsString()
+    public AWS_ACCESS_KEY_ID!: string;
+
+    @Validator.IsString()
+    public AWS_REGION!: string;
+
+    @Validator.IsString()
+    public EMAIL_FROM!: string;
 }

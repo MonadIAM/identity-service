@@ -2,6 +2,7 @@ import { ConfigModule } from "@nestjs/config";
 import { Module } from "@nestjs/common";
 
 import { RateLimiterModule } from "./rate-limiter";
+import { COMMON_SERVICES } from "./services";
 import { validateEnv } from "./validator";
 import { BullMQModule } from "./bullmq";
 import { I18nModule } from "./i18n";
@@ -14,5 +15,6 @@ import { I18nModule } from "./i18n";
         I18nModule,
     ],
     exports: [ConfigModule, RateLimiterModule, I18nModule],
+    providers: [...COMMON_SERVICES],
 })
 export class SystemModule {}
