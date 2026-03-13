@@ -248,4 +248,28 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     public EMAIL_FROM!: string;
+
+    // ---------------------------------------------------------------------------
+    // OTP Cache
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsInt()
+    @Validator.Min(1)
+    public OTP_VERIFICATION_TTL!: number;
+
+    @Validator.IsInt()
+    @Validator.Min(1)
+    public OTP_LOGIN_TTL!: number;
+
+    @Validator.IsInt()
+    @Validator.Min(1)
+    public OTP_RESET_TTL!: number;
+
+    // ---------------------------------------------------------------------------
+    // OTP Cache
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsInt()
+    @Validator.Min(1)
+    public OAUTH_STATE_TTL!: number;
 }
