@@ -272,4 +272,26 @@ export class EnvironmentVariablesDTO {
     @Validator.IsInt()
     @Validator.Min(1)
     public OAUTH_STATE_TTL!: number;
+
+    // ---------------------------------------------------------------------------
+    // OAuth Providers
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    public OAUTH_GOOGLE_CLIENT_ID!: string;
+
+    @Validator.IsString()
+    public OAUTH_GOOGLE_CLIENT_SECRET!: string;
+
+    @Validator.IsString()
+    public OAUTH_GOOGLE_REDIRECT_URI!: string;
+
+    @Validator.IsString()
+    public OAUTH_GITHUB_CLIENT_ID!: string;
+
+    @Validator.IsString()
+    public OAUTH_GITHUB_CLIENT_SECRET!: string;
+
+    @Validator.IsString()
+    public OAUTH_GITHUB_REDIRECT_URI!: string;
 }

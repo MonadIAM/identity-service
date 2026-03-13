@@ -12,6 +12,7 @@ export class Profile {
 
     public constructor(props: Entities.Profile.ConstructorProps) {
         this.displayName = props.displayName;
+        this.pictureUrl = props.pictureUrl;
         this.timeZone = props.timeZone;
         this.locale = props.locale;
 

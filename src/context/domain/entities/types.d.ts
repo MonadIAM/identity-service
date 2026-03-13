@@ -82,6 +82,7 @@ declare global {
             type ConstructorProps = {
                 account: AccountEntity;
                 displayName: string;
+                pictureUrl?: string;
                 timeZone?: string;
                 locale?: string;
             };

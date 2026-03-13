@@ -18,6 +18,8 @@ export const EntityErrorKind = {
 } as const;
 
 export const ServiceErrorKind = {
+    ExternalServiceFailed: "ExternalServiceFailed",
+    ExternalAuthFailed: "ExternalAuthFailed",
     InvariantViolation: "InvariantViolation",
     Unprocessable: "Unprocessable",
 } as const;

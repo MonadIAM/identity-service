@@ -20,7 +20,7 @@ declare namespace InfrastructureServices {
         };
 
         type Metadata = {
-            redirectUri: string;
+            redirectUri?: string;
             provider: string;
         };
     }

@@ -3,7 +3,7 @@ import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class JWTService implements CommonServices.JWTService.Contract {
+export class JWTService implements CommonServices.JWT.Contract {
     private readonly issuer: string;
     private readonly accessTTL: string;
     private readonly refreshTTL: string;

@@ -30,4 +30,18 @@ export class ServiceException extends BaseException {
     ): ServiceException {
         return new ServiceException(ServiceErrorKind.InvariantViolation, HttpStatus.BAD_REQUEST, messageKey, params);
     }
+
+    public static externalServiceFailed(
+        messageKey = "service.EXTERNAL_SERVICE_FAILED",
+        params?: Record<string, unknown>,
+    ): ServiceException {
+        return new ServiceException(ServiceErrorKind.ExternalServiceFailed, HttpStatus.BAD_GATEWAY, messageKey, params);
+    }
+
+    public static externalAuthFailed(
+        messageKey = "service.EXTERNAL_AUTH_FAILED",
+        params?: Record<string, unknown>,
+    ): ServiceException {
+        return new ServiceException(ServiceErrorKind.ExternalAuthFailed, HttpStatus.UNAUTHORIZED, messageKey, params);
+    }
 }

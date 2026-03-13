@@ -3,7 +3,7 @@ import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class EmailService implements CommonServices.EmailService.Contract {
+export class EmailService implements CommonServices.Email.Contract {
     private readonly client: SESClient;
     private readonly from: string;
 
@@ -19,7 +19,7 @@ export class EmailService implements CommonServices.EmailService.Contract {
         });
     }
 
-    public async send({ subject, html, to }: CommonServices.EmailService.Send): Promise<void> {
+    public async send({ subject, html, to }: CommonServices.Email.Send): Promise<void> {
         await this.client.send(
             new SendEmailCommand({
                 Source: this.from,

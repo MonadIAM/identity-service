@@ -34,16 +34,17 @@ declare global {
             }
         }
 
-        namespace CryptoService {
+        namespace Crypto {
             interface Contract {
                 generateRecoveryCodes: (count?: number) => string[];
                 generateToken: (bytes?: number) => string;
                 generateOTP: (length?: number) => string;
+                hashToken: (token: string) => string;
                 generateRecoveryCode: () => string;
             }
         }
 
-        namespace JWTService {
+        namespace JWT {
             interface Contract {
                 signRefreshToken: (payload: Record<string, unknown>) => Promise<string>;
                 signAccessToken: (payload: Record<string, unknown>) => Promise<string>;
@@ -52,7 +53,7 @@ declare global {
             }
         }
 
-        namespace EmailService {
+        namespace Email {
             interface Contract {
                 send: (props: Send) => Promise<void>;
             }
@@ -64,7 +65,7 @@ declare global {
             };
         }
 
-        namespace SMSService {
+        namespace SMS {
             interface Contract {
                 send: (props: Send) => Promise<void>;
             }
@@ -72,6 +73,66 @@ declare global {
             type Send = {
                 body: string;
                 to: string;
+            };
+        }
+
+        namespace GoogleOAuth {
+            interface Contract {
+                fetchProfile: (accessToken: string) => Promise<Profile>;
+                exchangeCode: (code: string) => Promise<TokenResponse>;
+                getAuthorizationUrl: (state: string) => string;
+            }
+
+            type TokenResponse = {
+                refresh_token?: string;
+                access_token: string;
+                token_type: string;
+                expires_in: number;
+                id_token?: string;
+                scope: string;
+            };
+
+            type Profile = {
+                providerUserId: string;
+                displayName: string;
+                pictureUrl?: string;
+                email?: string;
+            };
+        }
+
+        namespace GitHubOAuth {
+            interface Contract {
+                fetchProfile: (accessToken: string) => Promise<Profile>;
+                exchangeCode: (code: string) => Promise<TokenResponse>;
+                getAuthorizationUrl: (state: string) => string;
+            }
+
+            type TokenResponse = {
+                access_token: string;
+                token_type: string;
+                scope: string;
+            };
+
+            type UserResponse = {
+                avatar_url?: string;
+                email?: string;
+                name?: string;
+                login: string;
+                id: number;
+            };
+
+            type EmailEntry = {
+                visibility?: string;
+                verified: boolean;
+                primary: boolean;
+                email: string;
+            };
+
+            type Profile = {
+                providerUserId: string;
+                displayName: string;
+                pictureUrl?: string;
+                email?: string;
             };
         }
     }

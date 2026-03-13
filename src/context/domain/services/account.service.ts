@@ -68,7 +68,7 @@ export class AccountService implements Services.Account.Contract {
     public async createByOAuth({
         transaction,
         context: { userAgent, ip },
-        input: { subject, profile, identifier },
+        input: { subject, profile, oauth, email },
     }: Services.Account.CreateByOAuth): Promise<Account> {
         const account = new Account({
             status: AccountStatus.ACTIVE,
@@ -82,14 +82,32 @@ export class AccountService implements Services.Account.Contract {
             account,
         });
 
-        const identifierEntity = new Identifier({
-            providerUserId: identifier.providerUserId,
-            provider: identifier.provider,
-            value: identifier.value,
-            type: identifier.type,
+        const oauthIdentifierEntity = new Identifier({
+            providerUserId: oauth.providerUserId,
+            provider: oauth.provider,
+            value: oauth.value,
+            type: oauth.type,
             isVerified: true,
             account,
         });
+
+        account.assignRelations({
+            identifier: oauthIdentifierEntity,
+            profile: profileEntity,
+        });
+
+        if (email) {
+            const emailIdentifierEntity = new Identifier({
+                providerUserId: email.providerUserId,
+                provider: email.provider,
+                value: email.value,
+                type: email.type,
+                isVerified: true,
+                account,
+            });
+            account.setPrimaryIdentifier(emailIdentifierEntity);
+            transaction.persist(emailIdentifierEntity);
+        }
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.CREATE_ACCOUNT,
@@ -100,7 +118,7 @@ export class AccountService implements Services.Account.Contract {
             ip,
         });
 
-        transaction.persist(identifierEntity);
+        transaction.persist(oauthIdentifierEntity);
         transaction.persist(profileEntity);
         transaction.persist(auditEntity);
         transaction.persist(account);

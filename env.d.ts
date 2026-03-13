@@ -131,5 +131,17 @@ declare namespace NodeJS {
         // ---------------------------------------------------------------------------
 
         OAUTH_STATE_TTL: `${number}`;
+
+        // ---------------------------------------------------------------------------
+        // OAuth Providers
+        // ---------------------------------------------------------------------------
+
+        OAUTH_GOOGLE_CLIENT_ID: string;
+        OAUTH_GOOGLE_CLIENT_SECRET: string;
+        OAUTH_GOOGLE_REDIRECT_URI: string;
+
+        OAUTH_GITHUB_CLIENT_ID: string;
+        OAUTH_GITHUB_CLIENT_SECRET: string;
+        OAUTH_GITHUB_REDIRECT_URI: string;
     }
 }

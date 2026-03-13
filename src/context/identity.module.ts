@@ -6,9 +6,10 @@ import { REPOSITORIES } from "./infrastructure/repositories";
 import { PROCESSORS } from "./infrastructure/processors";
 import { DOMAIN_SERVICES } from "./domain/services";
 import { SCHEDULERS } from "./interface/schedulers";
+import { HANDLERS } from "./application/handlers";
 
 @Module({
     imports: [BullModule.registerQueue({ name: "cleanup" })],
-    providers: [...INFRASTRUCTURE_SERVICES, ...DOMAIN_SERVICES, ...REPOSITORIES, ...SCHEDULERS, ...PROCESSORS],
+    providers: [...INFRASTRUCTURE_SERVICES, ...DOMAIN_SERVICES, ...REPOSITORIES, ...SCHEDULERS, ...PROCESSORS, ...HANDLERS],
 })
 export class IdentityModule {}

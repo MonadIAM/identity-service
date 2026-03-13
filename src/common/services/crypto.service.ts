@@ -1,10 +1,14 @@
-import { randomBytes, randomInt } from "node:crypto";
+import { randomBytes, randomInt, createHash } from "node:crypto";
 import { Injectable, Scope } from "@nestjs/common";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class CryptoService implements CommonServices.CryptoService.Contract {
+export class CryptoService implements CommonServices.Crypto.Contract {
     public generateToken(bytes = 32): string {
         return randomBytes(bytes).toString("hex");
+    }
+
+    public hashToken(token: string): string {
+        return createHash("sha256").update(token).digest("hex");
     }
 
     public generateOTP(length = 6): string {

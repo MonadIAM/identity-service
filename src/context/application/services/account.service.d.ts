@@ -31,8 +31,9 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
-                    profile: Entities.Profile.ConstructorProps;
+                    oauth: Omit<Entities.Identifier.ConstructorProps, "account">;
+                    email?: Omit<Entities.Identifier.ConstructorProps, "account">;
+                    profile: Omit<Entities.Profile.ConstructorProps, "account">;
                     subject: AccountSubject;
                 };
             };
