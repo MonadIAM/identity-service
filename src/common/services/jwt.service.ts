@@ -1,9 +1,9 @@
+import { SignJWT, jwtVerify, JWTPayload, importPKCS8, importSPKI, CryptoKey } from "jose";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { SignJWT, jwtVerify, JWTPayload, importPKCS8, importSPKI, CryptoKey } from "jose";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class JWTService {
+export class JWTService implements CommonServices.JWTService.Contract {
     private readonly issuer: string;
     private readonly accessTTL: string;
     private readonly refreshTTL: string;

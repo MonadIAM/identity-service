@@ -2,7 +2,7 @@ import { randomBytes, randomInt } from "node:crypto";
 import { Injectable, Scope } from "@nestjs/common";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class CryptoService {
+export class CryptoService implements CommonServices.CryptoService.Contract {
     public generateToken(bytes = 32): string {
         return randomBytes(bytes).toString("hex");
     }

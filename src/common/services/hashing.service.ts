@@ -1,20 +1,20 @@
-import { needsRehash, argon2i, argon2d, argon2id, verify, hash } from "argon2";
+import { needsRehash, verify, hash } from "argon2";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class HashingService {
+export class HashingService implements CommonServices.Hashing.Contract {
     private readonly options: CommonServices.Hashing.Options;
 
     public constructor(private readonly config: ConfigService) {
         this.options = this.buildArgon2Options();
     }
 
-    public hash(value: string): Promise<string> {
+    public hash({ value }: CommonServices.Hashing.Hash): Promise<string> {
         return hash(value, this.options);
     }
 
-    public async verify(value: string, storedHash: string): Promise<boolean> {
+    public async verify({ value, storedHash }: CommonServices.Hashing.Verify): Promise<boolean> {
         try {
             return await verify(storedHash, value);
         } catch {
@@ -22,8 +22,11 @@ export class HashingService {
         }
     }
 
-    public async verifyAndUpgrade(value: string, storedHash: string): Promise<CommonServices.Hashing.VerifyAndUpgrade> {
-        const isValid = await this.verify(value, storedHash);
+    public async verifyAndUpgrade({
+        value,
+        storedHash,
+    }: CommonServices.Hashing.VerifyAndUpgrade.Props): Promise<CommonServices.Hashing.VerifyAndUpgrade.Result> {
+        const isValid = await this.verify({ value, storedHash });
 
         if (!isValid) {
             return { isValid: false };
@@ -51,12 +54,12 @@ export class HashingService {
 
     private resolveType(raw: string): CommonServices.Hashing.Options["type"] {
         switch (raw.toLowerCase()) {
-            case "argon2i":
-                return argon2i;
             case "argon2d":
-                return argon2d;
+                return 0;
+            case "argon2i":
+                return 1;
             default:
-                return argon2id;
+                return 2;
         }
     }
 }

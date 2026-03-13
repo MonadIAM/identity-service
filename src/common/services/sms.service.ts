@@ -3,7 +3,7 @@ import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class SMSService {
+export class SMSService implements CommonServices.SMSService.Contract {
     private readonly client: SNSClient;
 
     public constructor(private readonly config: ConfigService) {
@@ -16,7 +16,7 @@ export class SMSService {
         });
     }
 
-    public async send(to: string, body: string): Promise<void> {
+    public async send({ body, to }: CommonServices.SMSService.Send): Promise<void> {
         await this.client.send(
             new PublishCommand({
                 PhoneNumber: to,
