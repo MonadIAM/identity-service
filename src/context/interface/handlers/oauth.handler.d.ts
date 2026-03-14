@@ -38,7 +38,7 @@ declare global {
             }
 
             type Signup = {
-                profile: Awaited<ReturnType<ResolveProvider["fetchProfile"]>>;
+                profile: Awaited<ReturnType<globalThis.OAuth.ResolveProvider["fetchProfile"]>>;
                 context: RequestContext;
                 provider: string;
             };
@@ -47,8 +47,6 @@ declare global {
                 context: RequestContext;
                 identifier: Identifier;
             };
-
-            type ResolveProvider = CommonServices.GoogleOAuth.Contract | CommonServices.GitHubOAuth.Contract;
         }
     }
 }

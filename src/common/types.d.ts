@@ -23,4 +23,8 @@ declare global {
     type ActorContext = {
         account: string;
     };
+
+    namespace OAuth {
+        type ResolveProvider = CommonServices.GoogleOAuth.Contract | CommonServices.GitHubOAuth.Contract;
+    }
 }

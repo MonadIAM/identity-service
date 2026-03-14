@@ -171,7 +171,7 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
         });
     }
 
-    private resolveProvider(provider: string): Handlers.OAuth.ResolveProvider {
+    private resolveProvider(provider: string): OAuth.ResolveProvider {
         switch (provider) {
             case "google":
                 return this.googleOAuthService;
