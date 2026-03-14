@@ -65,6 +65,7 @@ export class Account {
         if (this.status === AccountStatus.PENDING) {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
+            this.primaryIdentifier.verify();
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVATED`);
         }
