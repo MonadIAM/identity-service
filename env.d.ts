@@ -81,17 +81,10 @@ declare namespace NodeJS {
         DOCKER_NETWORK_NAME: string;
 
         // ---------------------------------------------------------------------------
-        // BullMQ - cleanup
+        // Auth & Security
         // ---------------------------------------------------------------------------
 
-        CLEANUP_BATCH_SIZE: `${number}`;
-        PENDING_ACCOUNT_TTL_HOURS: `${number}`;
-        NOTIFICATION_TTL_DAYS: `${number}`;
-
-        // ---------------------------------------------------------------------------
         // Hashing (Argon2)
-        // ---------------------------------------------------------------------------
-
         ARGON2_TYPE: "argon2id" | "argon2i" | "argon2d";
         ARGON2_MEMORY_COST_KIB: `${number}`;
         ARGON2_PARALLELISM: `${number}`;
@@ -99,38 +92,25 @@ declare namespace NodeJS {
         ARGON2_TIME_COST: `${number}`;
         ARGON2_VERSION: `${number}`;
 
-        // ---------------------------------------------------------------------------
         // JWT (ES256)
-        // ---------------------------------------------------------------------------
-
-        JWT_REFRESH_TTL: `${number}d`;
+        JWT_ISSUER: string;
         JWT_ACCESS_TTL: `${number}m`;
+        JWT_REFRESH_TTL: `${number}d`;
         JWT_PRIVATE_KEY: string;
         JWT_PUBLIC_KEY: string;
-        JWT_ISSUER: string;
+
+        // Session
+        SESSION_EXPIRY_DAYS: `${number}`;
 
         // ---------------------------------------------------------------------------
-        // AWS (SES/SNS)
-        // ---------------------------------------------------------------------------
-
-        AWS_SECRET_ACCESS_KEY: string;
-        AWS_ACCESS_KEY_ID: string;
-        AWS_REGION: string;
-        EMAIL_FROM: string;
-
-        // ---------------------------------------------------------------------------
-        // OTP Cache
+        // Cache TTLs
         // ---------------------------------------------------------------------------
 
         OTP_VERIFICATION_TTL: `${number}`;
         OTP_LOGIN_TTL: `${number}`;
         OTP_RESET_TTL: `${number}`;
-
-        // ---------------------------------------------------------------------------
-        // OAuth Cache
-        // ---------------------------------------------------------------------------
-
         OAUTH_STATE_TTL: `${number}`;
+        PENDING_2FA_TTL: `${number}`;
 
         // ---------------------------------------------------------------------------
         // OAuth Providers
@@ -143,5 +123,22 @@ declare namespace NodeJS {
         OAUTH_GITHUB_CLIENT_ID: string;
         OAUTH_GITHUB_CLIENT_SECRET: string;
         OAUTH_GITHUB_REDIRECT_URI: string;
+
+        // ---------------------------------------------------------------------------
+        // AWS (SES/SNS)
+        // ---------------------------------------------------------------------------
+
+        AWS_REGION: string;
+        AWS_ACCESS_KEY_ID: string;
+        AWS_SECRET_ACCESS_KEY: string;
+        EMAIL_FROM: string;
+
+        // ---------------------------------------------------------------------------
+        // BullMQ - cleanup
+        // ---------------------------------------------------------------------------
+
+        CLEANUP_BATCH_SIZE: `${number}`;
+        PENDING_ACCOUNT_TTL_HOURS: `${number}`;
+        NOTIFICATION_TTL_DAYS: `${number}`;
     }
 }

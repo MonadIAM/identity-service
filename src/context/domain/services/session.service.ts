@@ -1,10 +1,17 @@
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { NotificationCategory, NotificationSource, IdentityActionType, IdentityEntityType } from "~context/enums";
 import { AuditJournal, Notification, Session } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionService implements Services.Session.Contract {
+    private readonly sessionExpiryDays: number;
+
+    public constructor(private readonly configService: ConfigService) {
+        this.sessionExpiryDays = this.configService.getOrThrow<number>("SESSION_EXPIRY_DAYS");
+    }
+
     public async create({
         transaction,
         context: { userAgent, ip },
@@ -132,5 +139,11 @@ export class SessionService implements Services.Session.Contract {
         session.refresh(hash);
 
         await transaction.flush();
+    }
+
+    public resolveSessionExpiry(): Date {
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + this.sessionExpiryDays);
+        return expiry;
     }
 }

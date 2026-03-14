@@ -111,7 +111,7 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
 
             const session = await this.sessionService.create({
                 input: {
-                    expiresAt: this.resolveSessionExpiry(),
+                    expiresAt: this.sessionService.resolveSessionExpiry(),
                     hash: refreshTokenHash,
                     account,
                 },
@@ -136,7 +136,7 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
 
             const session = await this.sessionService.create({
                 input: {
-                    expiresAt: this.resolveSessionExpiry(),
+                    expiresAt: this.sessionService.resolveSessionExpiry(),
                     account: identifier.account,
                     hash: refreshTokenHash,
                 },
@@ -161,12 +161,5 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
             default:
                 throw HandlerException.badRequest(`${this.dictionaryPath}.UNSUPPORTED_PROVIDER`);
         }
-    }
-
-    private resolveSessionExpiry(): Date {
-        const expiry = new Date();
-        expiry.setDate(expiry.getDate() + 7);
-
-        return expiry;
     }
 }

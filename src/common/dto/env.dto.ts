@@ -177,47 +177,29 @@ export class EnvironmentVariablesDTO {
     public DOCKER_NETWORK_NAME!: string;
 
     // ---------------------------------------------------------------------------
-    // BullMQ - cleanup
+    // Auth & Security
     // ---------------------------------------------------------------------------
 
-    @Validator.IsInt()
-    @Validator.Min(1)
-    public CLEANUP_BATCH_SIZE!: number;
-
-    @Validator.IsInt()
-    @Validator.Min(1)
-    public PENDING_ACCOUNT_TTL_HOURS!: number;
-
-    @Validator.IsInt()
-    @Validator.Min(1)
-    public NOTIFICATION_TTL_DAYS!: number;
-
-    // ---------------------------------------------------------------------------
     // Hashing (Argon2)
-    // ---------------------------------------------------------------------------
+    @Validator.IsString()
+    public ARGON2_TYPE!: string;
 
-    @Validator.IsInt()
+    @Validator.IsPositiveInt()
     public ARGON2_MEMORY_COST_KIB!: number;
 
-    @Validator.IsInt()
+    @Validator.IsPositiveInt()
     public ARGON2_HASH_LENGTH!: number;
 
-    @Validator.IsInt()
+    @Validator.IsPositiveInt()
     public ARGON2_PARALLELISM!: number;
 
-    @Validator.IsInt()
+    @Validator.IsPositiveInt()
     public ARGON2_TIME_COST!: number;
 
-    @Validator.IsInt()
+    @Validator.IsPositiveInt()
     public ARGON2_VERSION!: number;
 
-    @Validator.IsString()
-    public ARGON2_TYPE!: number;
-
-    // ---------------------------------------------------------------------------
     // JWT (ES256)
-    // ---------------------------------------------------------------------------
-
     @Validator.IsString()
     public JWT_ISSUER!: string;
 
@@ -233,45 +215,28 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     public JWT_PUBLIC_KEY!: string;
 
-    // ---------------------------------------------------------------------------
-    // AWS (SES/SNS)
-    // ---------------------------------------------------------------------------
-
-    @Validator.IsString()
-    public AWS_SECRET_ACCESS_KEY!: string;
-
-    @Validator.IsString()
-    public AWS_ACCESS_KEY_ID!: string;
-
-    @Validator.IsString()
-    public AWS_REGION!: string;
-
-    @Validator.IsString()
-    public EMAIL_FROM!: string;
+    // Session
+    @Validator.IsPositiveInt()
+    public SESSION_EXPIRY_DAYS!: number;
 
     // ---------------------------------------------------------------------------
-    // OTP Cache
+    // Cache TTLs
     // ---------------------------------------------------------------------------
 
-    @Validator.IsInt()
-    @Validator.Min(1)
+    @Validator.IsPositiveInt()
     public OTP_VERIFICATION_TTL!: number;
 
-    @Validator.IsInt()
-    @Validator.Min(1)
+    @Validator.IsPositiveInt()
     public OTP_LOGIN_TTL!: number;
 
-    @Validator.IsInt()
-    @Validator.Min(1)
+    @Validator.IsPositiveInt()
     public OTP_RESET_TTL!: number;
 
-    // ---------------------------------------------------------------------------
-    // OTP Cache
-    // ---------------------------------------------------------------------------
-
-    @Validator.IsInt()
-    @Validator.Min(1)
+    @Validator.IsPositiveInt()
     public OAUTH_STATE_TTL!: number;
+
+    @Validator.IsPositiveInt()
+    public PENDING_2FA_TTL!: number;
 
     // ---------------------------------------------------------------------------
     // OAuth Providers
@@ -294,4 +259,33 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     public OAUTH_GITHUB_REDIRECT_URI!: string;
+
+    // ---------------------------------------------------------------------------
+    // AWS (SES/SNS)
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    public AWS_REGION!: string;
+
+    @Validator.IsString()
+    public AWS_ACCESS_KEY_ID!: string;
+
+    @Validator.IsString()
+    public AWS_SECRET_ACCESS_KEY!: string;
+
+    @Validator.IsString()
+    public EMAIL_FROM!: string;
+
+    // ---------------------------------------------------------------------------
+    // BullMQ - cleanup
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsPositiveInt()
+    public CLEANUP_BATCH_SIZE!: number;
+
+    @Validator.IsPositiveInt()
+    public PENDING_ACCOUNT_TTL_HOURS!: number;
+
+    @Validator.IsPositiveInt()
+    public NOTIFICATION_TTL_DAYS!: number;
 }

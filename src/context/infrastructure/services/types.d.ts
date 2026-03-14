@@ -77,4 +77,25 @@ declare namespace InfrastructureServices {
             code: string;
         };
     }
+
+    namespace PendingAuthCache {
+        interface Contract {
+            set: (props: Set) => Promise<void>;
+            get: (props: Get) => Promise<Nullable<string>>;
+            delete: (props: Delete) => Promise<void>;
+        }
+
+        type Set = {
+            account: string;
+            token: string;
+        };
+
+        type Get = {
+            token: string;
+        };
+
+        type Delete = {
+            token: string;
+        };
+    }
 }

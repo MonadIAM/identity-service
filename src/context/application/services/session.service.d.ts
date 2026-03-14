@@ -11,6 +11,7 @@ declare global {
                 revokeAll: (props: RevokeAll) => Promise<void>;
                 forceLogout: (props: ForceLogout) => Promise<void>;
                 refresh: (props: Refresh) => Promise<void>;
+                resolveSessionExpiry: () => Date;
             }
 
             type Create = {
