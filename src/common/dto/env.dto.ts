@@ -219,6 +219,10 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     public SESSION_EXPIRY_DAYS!: number;
 
+    // Password
+    @Validator.IsPositiveInt()
+    public PASSWORD_HISTORY_CHECK_DAYS!: number;
+
     // ---------------------------------------------------------------------------
     // Cache TTLs
     // ---------------------------------------------------------------------------

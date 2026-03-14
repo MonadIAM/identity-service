@@ -102,6 +102,9 @@ declare namespace NodeJS {
         // Session
         SESSION_EXPIRY_DAYS: `${number}`;
 
+        // Password
+        PASSWORD_HISTORY_CHECK_DAYS: `${number}`;
+
         // ---------------------------------------------------------------------------
         // Cache TTLs
         // ---------------------------------------------------------------------------

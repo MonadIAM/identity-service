@@ -19,4 +19,8 @@ export class RecoveryCode {
 
         this.account = props.account;
     }
+
+    public use(): void {
+        this.usedAt = new Date();
+    }
 }
