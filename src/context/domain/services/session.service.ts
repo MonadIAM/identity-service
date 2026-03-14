@@ -15,16 +15,8 @@ export class SessionService implements Services.Session.Contract {
     public async create({
         transaction,
         context: { userAgent, ip },
-        input: { account, hash, expiresAt },
+        input: { account, session },
     }: Services.Session.Create): Promise<Session> {
-        const session = new Session({
-            refreshTokenHash: hash,
-            expiresAt,
-            userAgent,
-            account,
-            ip,
-        });
-
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.CREATE_SESSION,
             entityType: IdentityEntityType.SESSION,

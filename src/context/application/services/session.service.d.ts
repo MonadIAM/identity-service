@@ -19,8 +19,7 @@ declare global {
                 context: RequestContext;
                 input: {
                     account: AccountEntity;
-                    expiresAt: Date;
-                    hash: string;
+                    session: SessionEntity;
                 };
             };
 
@@ -52,7 +51,6 @@ declare global {
 
             type Refresh = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     session: SessionEntity;
                     hash: string;

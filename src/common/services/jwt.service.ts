@@ -23,21 +23,23 @@ export class JWTService implements CommonServices.JWT.Contract {
         this.publicKey = await importSPKI(this.config.getOrThrow<string>("JWT_PUBLIC_KEY"), "ES256");
     }
 
-    public signAccessToken(payload: Record<string, unknown>): Promise<string> {
+    public signAccessToken(payload: JWTPayload): Promise<string> {
         return new SignJWT(payload)
             .setProtectedHeader({ alg: "ES256" })
             .setIssuer(this.issuer)
-            .setSubject(payload.sub as string)
+            .setSubject(payload.sub!)
+            .setJti(payload.jti!)
             .setIssuedAt()
             .setExpirationTime(this.accessTTL)
             .sign(this.privateKey);
     }
 
-    public signRefreshToken(payload: Record<string, unknown>): Promise<string> {
+    public signRefreshToken(payload: JWTPayload): Promise<string> {
         return new SignJWT(payload)
             .setProtectedHeader({ alg: "ES256" })
             .setIssuer(this.issuer)
-            .setSubject(payload.sub as string)
+            .setSubject(payload.sub!)
+            .setJti(payload.jti!)
             .setIssuedAt()
             .setExpirationTime(this.refreshTTL)
             .sign(this.privateKey);

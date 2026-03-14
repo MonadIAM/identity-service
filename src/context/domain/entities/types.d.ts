@@ -106,7 +106,6 @@ declare global {
 
         namespace Session {
             type ConstructorProps = {
-                refreshTokenHash: string;
                 account: AccountEntity;
                 userAgent: string;
                 expiresAt: Date;

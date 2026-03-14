@@ -46,8 +46,8 @@ declare global {
 
         namespace JWT {
             interface Contract {
-                signRefreshToken: (payload: Record<string, unknown>) => Promise<string>;
-                signAccessToken: (payload: Record<string, unknown>) => Promise<string>;
+                signRefreshToken: (payload: JWTPayload) => Promise<string>;
+                signAccessToken: (payload: JWTPayload) => Promise<string>;
                 verify: (token: string) => Promise<JWTPayload>;
                 initialize: () => Promise<void>;
             }

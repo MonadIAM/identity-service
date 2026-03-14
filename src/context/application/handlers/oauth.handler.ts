@@ -8,6 +8,7 @@ import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { AccountSubject, IdentifierType } from "~context/enums";
 import { HandlerException } from "~common/exceptions";
+import { Session } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthHandler implements Handlers.OAuth.Contract {
@@ -106,21 +107,30 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
                 },
             });
 
-            const refreshToken = this.cryptoService.generateToken();
+            const session = new Session({
+                expiresAt: this.sessionService.resolveSessionExpiry(),
+                userAgent: context.userAgent,
+                ip: context.ip,
+                account,
+            });
+
+            const refreshToken = await this.jwtService.signRefreshToken({
+                sub: account.id,
+                jti: session.id,
+            });
             const refreshTokenHash = this.cryptoService.hashToken(refreshToken);
 
-            const session = await this.sessionService.create({
-                input: {
-                    expiresAt: this.sessionService.resolveSessionExpiry(),
-                    hash: refreshTokenHash,
-                    account,
-                },
-                context,
+            session.refresh(refreshTokenHash);
+
+            await this.sessionService.create({
+                input: { session, account },
                 transaction,
+                context,
             });
 
             const accessToken = await this.jwtService.signAccessToken({
                 sub: account.id,
+                jti: session.id,
             });
 
             return { accessToken, refreshToken, session: session.id };
@@ -131,21 +141,30 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
         const writeManager = this.writeManager.fork();
 
         return writeManager.transactional(async (transaction) => {
-            const refreshToken = this.cryptoService.generateToken();
+            const session = new Session({
+                expiresAt: this.sessionService.resolveSessionExpiry(),
+                userAgent: context.userAgent,
+                account: identifier.account,
+                ip: context.ip,
+            });
+
+            const refreshToken = await this.jwtService.signRefreshToken({
+                sub: identifier.account.id,
+                jti: session.id,
+            });
             const refreshTokenHash = this.cryptoService.hashToken(refreshToken);
 
-            const session = await this.sessionService.create({
-                input: {
-                    expiresAt: this.sessionService.resolveSessionExpiry(),
-                    account: identifier.account,
-                    hash: refreshTokenHash,
-                },
-                context,
+            session.refresh(refreshTokenHash);
+
+            await this.sessionService.create({
+                input: { session, account: identifier.account },
                 transaction,
+                context,
             });
 
             const accessToken = await this.jwtService.signAccessToken({
                 sub: identifier.account.id,
+                jti: session.id,
             });
 
             return { accessToken, refreshToken, session: session.id };

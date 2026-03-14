@@ -14,7 +14,7 @@ export class Session {
     public expiresAt: Date;
     public lastActiveAt: Date;
 
-    public refreshTokenHash: string;
+    public refreshTokenHash?: string;
     public userAgent: string;
     public ip: string;
 
@@ -29,7 +29,6 @@ export class Session {
 
         this.expiresAt = props.expiresAt;
 
-        this.refreshTokenHash = props.refreshTokenHash;
         this.userAgent = props.userAgent;
         this.ip = props.ip;
 
