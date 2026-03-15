@@ -6,18 +6,24 @@ declare global {
             type Scenario = "account" | "identifier";
 
             interface Contract {
+                verifyAccount: (props: VerifyAccount.Props) => Promise<VerifyAccount.Result>;
                 verifyIdentifier: (props: VerifyIdentifier) => Promise<MessageResult>;
-                verifyAccount: (props: VerifyAccount) => Promise<MessageResult>;
                 resendVerification: (props: Resend) => Promise<MessageResult>;
             }
 
-            type VerifyAccount = {
-                context: RequestContext;
-                input: {
-                    account: string;
-                    code: string;
+            namespace VerifyAccount {
+                type Props = {
+                    context: RequestContext;
+                    input: {
+                        account: string;
+                        code: string;
+                    };
                 };
-            };
+
+                type Result = MessageResult & {
+                    data: { recoveryCodes: string[] };
+                };
+            }
 
             type VerifyIdentifier = {
                 context: RequestContext;

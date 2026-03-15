@@ -1,8 +1,9 @@
 declare namespace Handlers {
     namespace SecondFactor {
         interface Contract {
-            setup: (props: Setup.Props) => Promise<Setup.Result>;
+            resetByMasterCode: (props: ResetByMasterCode) => Promise<MessageResult>;
             confirm: (props: Confirm.Props) => Promise<Confirm.Result>;
+            setup: (props: Setup.Props) => Promise<Setup.Result>;
             remove: (props: Remove) => Promise<MessageResult>;
         }
 
@@ -55,6 +56,14 @@ declare namespace Handlers {
             input: {
                 totpCode: string;
                 account: string;
+            };
+        };
+
+        type ResetByMasterCode = {
+            context: RequestContext;
+            input: {
+                identifier: string;
+                masterCode: string;
             };
         };
     }

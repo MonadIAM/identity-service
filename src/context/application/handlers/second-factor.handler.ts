@@ -3,7 +3,7 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 import { TOTP, Secret } from "otpauth";
 
-import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
+import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
@@ -19,6 +19,8 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
         private readonly writeManager: EntityManager,
         @Inject(SECOND_FACTOR_REPOSITORY)
         private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
+        @Inject(IDENTIFIER_REPOSITORY)
+        private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
         @Inject(SECOND_FACTOR_SERVICE)
@@ -226,6 +228,44 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
                 });
 
                 return { message: `${this.dictionaryPath}.ENFORCE_DISABLED` };
+            }
+        } catch (error) {
+            throw HandlerException.fromOrmError(error);
+        }
+    }
+
+    public async resetByMasterCode({
+        input: { identifier, masterCode },
+        context,
+    }: Handlers.SecondFactor.ResetByMasterCode): Promise<MessageResult> {
+        try {
+            const identifierEntity = await this.identifierRepository.findUnique({
+                options: { populate: ["account.masterCode"] },
+                where: { value: identifier },
+            });
+
+            if (identifierEntity?.account?.masterCode) {
+                const isValid = await this.hashingService.verify({
+                    storedHash: identifierEntity.account.masterCode.hash,
+                    value: masterCode,
+                });
+
+                if (isValid) {
+                    const writeManager = this.writeManager.fork();
+                    await writeManager.transactional(async (transaction) => {
+                        await this.secondFactorService.resetByMasterCode({
+                            input: { account: identifierEntity.account },
+                            transaction,
+                            context,
+                        });
+                    });
+
+                    return { message: `${this.dictionaryPath}.RESET_COMPLETE` };
+                } else {
+                    throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_MASTER_CODE`);
+                }
+            } else {
+                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_MASTER_CODE`);
             }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
