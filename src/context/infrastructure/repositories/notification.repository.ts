@@ -83,12 +83,11 @@ export class NotificationRepository extends NotificationAdapter implements Repos
             const builder = entityManager
                 .createQueryBuilder(Notification)
                 .update({ readAt: new Date() })
-                .where({ readAt: null });
+                .where({ readAt: null })
+                .andWhere({ account });
 
             if (id) {
                 builder.andWhere({ id });
-            } else {
-                builder.andWhere({ account });
             }
 
             const result = await builder.execute();

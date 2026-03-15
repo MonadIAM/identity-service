@@ -25,6 +25,8 @@ declare global {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
+
+                markAsRead: (props: MarkAsRead) => Promise<number>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -61,7 +63,7 @@ declare global {
             type MarkAsRead = {
                 transaction?: EntityManager;
                 account: string;
-                id: string;
+                id?: string;
             };
 
             type Filters = {
