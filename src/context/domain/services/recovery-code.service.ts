@@ -5,11 +5,18 @@ import { AuditJournal, Notification, RecoveryCode } from "~context/domain/entiti
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeService implements Services.RecoveryCode.Contract {
-    public async generate({
-        transaction,
+    public async generate({ input: { account, hashes }, transaction }: Services.RecoveryCode.Generate): Promise<void> {
+        for (const hash of hashes) {
+            transaction.persist(new RecoveryCode({ account, hash }));
+        }
+        await transaction.flush();
+    }
+
+    public async regenerate({
         context: { userAgent, ip },
         input: { account, hashes },
-    }: Services.RecoveryCode.Generate): Promise<void> {
+        transaction,
+    }: Services.RecoveryCode.Regenerate): Promise<void> {
         const existing = await account.recoveryCodes.loadItems();
 
         for (const code of existing) {
@@ -28,8 +35,8 @@ export class RecoveryCodeService implements Services.RecoveryCode.Contract {
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.REGENERATE_RECOVERY_CODES,
             entityType: IdentityEntityType.RECOVERY_CODE,
-            at: new Date(),
             entity: account.id,
+            at: new Date(),
             userAgent,
             ip,
         });

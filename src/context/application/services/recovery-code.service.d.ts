@@ -6,12 +6,21 @@ declare global {
     namespace Services {
         namespace RecoveryCode {
             interface Contract {
+                regenerate: (props: Regenerate) => Promise<void>;
                 generate: (props: Generate) => Promise<void>;
             }
 
-            type Generate = {
+            type Regenerate = {
                 transaction: EntityManager;
                 context: RequestContext;
+                input: {
+                    account: AccountEntity;
+                    hashes: string[];
+                };
+            };
+
+            type Generate = {
+                transaction: EntityManager;
                 input: {
                     account: AccountEntity;
                     hashes: string[];

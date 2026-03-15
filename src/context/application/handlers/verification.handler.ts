@@ -2,11 +2,10 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 
+import { RECOVERY_CODE_SERVICE, IDENTIFIER_SERVICE, ACCOUNT_SERVICE } from "~context/domain/services";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { CRYPTO_SERVICE, EMAIL_SERVICE, HASHING_SERVICE, SMS_SERVICE } from "~common/services";
-import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE } from "~context/domain/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
-import { RecoveryCode } from "~context/domain/entities";
 import { HandlerException } from "~common/exceptions";
 import { IdentifierType } from "~context/enums";
 
@@ -27,6 +26,8 @@ export class VerificationHandler implements Handlers.Verification.Contract {
         private readonly accountService: Services.Account.Contract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
+        @Inject(RECOVERY_CODE_SERVICE)
+        private readonly recoveryCodeService: Services.RecoveryCode.Contract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
@@ -50,31 +51,25 @@ export class VerificationHandler implements Handlers.Verification.Contract {
                 await this.otpCacheService.deleteVerification({ code });
 
                 const codes = this.cryptoService.generateRecoveryCodes();
-                const hashedCodes = await Promise.all(
-                    codes.map(async (value) => ({
-                        hash: await this.hashingService.hash({ value }),
-                    })),
-                );
+                const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
                 const writeManager = this.writeManager.fork();
                 await writeManager.transactional(async (transaction) => {
-                    const entity = await this.accountRepository.findUniqueOrThrow({
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
                         where: { id: account },
                         transaction,
                     });
 
                     await this.accountService.verify({
-                        input: { entity },
+                        input: { entity: accountEntity },
                         transaction,
                         context,
                     });
 
-                    for (const { hash } of hashedCodes) {
-                        const recoveryCode = new RecoveryCode({ hash, account: entity });
-                        transaction.persist(recoveryCode);
-                    }
-
-                    await transaction.flush();
+                    await this.recoveryCodeService.generate({
+                        input: { account: accountEntity, hashes: hashedCodes },
+                        transaction,
+                    });
                 });
 
                 return {
