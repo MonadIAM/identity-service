@@ -109,17 +109,24 @@ export class Account {
 
     public enableEnforce(): void {
         if (this.is2FAEnforced) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ENFORCED`);
         } else {
             this.is2FAEnforced = true;
+            this.updatedAt = new Date();
         }
     }
 
     public disableEnforce(): void {
         if (this.is2FAEnforced) {
             this.is2FAEnforced = false;
+            this.updatedAt = new Date();
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_ENFORCED`);
         }
+    }
+
+    public resetEnforce(): void {
+        this.is2FAEnforced = false;
+        this.updatedAt = new Date();
     }
 }

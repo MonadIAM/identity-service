@@ -1,12 +1,12 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
 import { SecondFactor as SecondFactorEntity, Account as AccountEntity } from "~context/domain/entities";
+import { SecondFactorType } from "~context/enums";
 
 declare global {
     namespace Services {
         namespace SecondFactor {
             interface Contract {
-                setup: (props: Setup) => Promise<SecondFactorEntity>;
                 confirm: (props: Confirm) => Promise<void>;
                 remove: (props: Remove) => Promise<void>;
                 enableEnforce: (props: EnableEnforce) => Promise<void>;
@@ -14,20 +14,15 @@ declare global {
                 resetByMasterCode: (props: ResetByMasterCode) => Promise<void>;
             }
 
-            type Setup = {
-                transaction: EntityManager;
-                context: RequestContext;
-                input: {
-                    factor: Omit<Entities.SecondFactor.ConstructorProps, "account">;
-                    account: AccountEntity;
-                };
-            };
-
             type Confirm = {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    factor: SecondFactorEntity;
+                    masterCodeHash: string;
+                    account: AccountEntity;
+                    type: SecondFactorType;
+                    secret: string;
+                    name: string;
                 };
             };
 
@@ -36,7 +31,6 @@ declare global {
                 context: RequestContext;
                 input: {
                     factor: SecondFactorEntity;
-                    confirmedCount: number;
                     reason: string;
                 };
             };
@@ -45,7 +39,6 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    masterCodeHash: string;
                     account: AccountEntity;
                 };
             };
@@ -54,7 +47,6 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    masterCodeHash: string;
                     account: AccountEntity;
                 };
             };

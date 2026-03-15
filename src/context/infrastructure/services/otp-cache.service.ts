@@ -58,6 +58,18 @@ export class OTPCacheService implements InfrastructureServices.OTPCache.Contract
         await this.redis.unlink(`${this.namespace}:reset:${code}`);
     }
 
+    public async setSetup2FA({ account, secret }: InfrastructureServices.OTPCache.SetSetup2FA): Promise<void> {
+        await this.redis.set(`${this.namespace}:2fa-setup:${account}`, secret, "EX", this.verificationTTL);
+    }
+
+    public async getSetup2FA({ account }: InfrastructureServices.OTPCache.GetSetup2FA): Promise<Nullable<string>> {
+        return await this.redis.get(`${this.namespace}:2fa-setup:${account}`);
+    }
+
+    public async deleteSetup2FA({ account }: InfrastructureServices.OTPCache.DeleteSetup2FA): Promise<void> {
+        await this.redis.unlink(`${this.namespace}:2fa-setup:${account}`);
+    }
+
     public async setIdentifier({ code, data }: InfrastructureServices.OTPCache.SetIdentifier): Promise<void> {
         await this.redis.set(`${this.namespace}:identifier:${code}`, JSON.stringify(data), "EX", this.verificationTTL);
     }

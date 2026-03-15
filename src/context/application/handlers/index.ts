@@ -1,5 +1,6 @@
 import { Provider } from "@nestjs/common";
 
+import { SecondFactorHandler } from "./second-factor.handler";
 import { VerificationHandler } from "./verification.handler";
 import { IdentifierHandler } from "./identifier.handler";
 import { PasswordHandler } from "./password.handler";
@@ -8,6 +9,7 @@ import { SignupHandler } from "./signup.handler";
 import { OAuthHandler } from "./oauth.handler";
 import { LoginHandler } from "./login.handler";
 
+export const SECOND_FACTOR_HANDLER = Symbol("Handlers.SecondFactor.Contract");
 export const VERIFICATION_HANDLER = Symbol("Handlers.Verification.Contract");
 export const IDENTIFIER_HANDLER = Symbol("Handlers.Identifier.Contract");
 export const PASSWORD_HANDLER = Symbol("Handlers.Password.Contract");
@@ -17,6 +19,10 @@ export const OAUTH_HANDLER = Symbol("Handlers.OAuth.Contract");
 export const LOGIN_HANDLER = Symbol("Handlers.Login.Contract");
 
 export const HANDLERS: Provider[] = [
+    {
+        provide: SECOND_FACTOR_HANDLER,
+        useClass: SecondFactorHandler,
+    },
     {
         provide: VERIFICATION_HANDLER,
         useClass: VerificationHandler,

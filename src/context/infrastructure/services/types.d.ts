@@ -42,6 +42,9 @@ declare global {
                 setIdentifier: (props: SetIdentifier) => Promise<void>;
                 getIdentifier: (props: GetIdentifier) => Promise<Nullable<IdentifierData>>;
                 deleteIdentifier: (props: DeleteIdentifier) => Promise<void>;
+                setSetup2FA: (props: SetSetup2FA) => Promise<void>;
+                getSetup2FA: (props: GetSetup2FA) => Promise<Nullable<string>>;
+                deleteSetup2FA: (props: DeleteSetup2FA) => Promise<void>;
             }
 
             type SetVerification = {
@@ -100,6 +103,19 @@ declare global {
 
             type DeleteIdentifier = {
                 code: string;
+            };
+
+            type SetSetup2FA = {
+                account: string;
+                secret: string;
+            };
+
+            type GetSetup2FA = {
+                account: string;
+            };
+
+            type DeleteSetup2FA = {
+                account: string;
             };
         }
 
