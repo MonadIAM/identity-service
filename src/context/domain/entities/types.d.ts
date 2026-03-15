@@ -86,6 +86,13 @@ declare global {
                 timeZone?: string;
                 locale?: string;
             };
+
+            type ChangeDataProps = {
+                displayName?: string;
+                pictureUrl?: string;
+                timeZone?: string;
+                locale?: string;
+            };
         }
 
         namespace RecoveryCode {
