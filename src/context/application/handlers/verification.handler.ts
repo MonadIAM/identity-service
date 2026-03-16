@@ -7,7 +7,7 @@ import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructu
 import { CRYPTO_SERVICE, EMAIL_SERVICE, HASHING_SERVICE, SMS_SERVICE } from "~common/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { HandlerException } from "~common/exceptions";
-import { IdentifierType } from "~context/enums";
+import { IdentifierType, VerificationScenario } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class VerificationHandler implements Handlers.Verification.Contract {
@@ -39,15 +39,13 @@ export class VerificationHandler implements Handlers.Verification.Contract {
     ) {}
 
     public async verifyAccount({
-        input: { account, code },
+        input: { code },
         context,
     }: Handlers.Verification.VerifyAccount.Props): Promise<Handlers.Verification.VerifyAccount.Result> {
         try {
             const cachedAccount = await this.otpCacheService.getVerification({ code });
 
-            if (!cachedAccount || cachedAccount !== account) {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
-            } else {
+            if (cachedAccount) {
                 await this.otpCacheService.deleteVerification({ code });
 
                 const codes = this.cryptoService.generateRecoveryCodes();
@@ -56,7 +54,7 @@ export class VerificationHandler implements Handlers.Verification.Contract {
                 const writeManager = this.writeManager.fork();
                 await writeManager.transactional(async (transaction) => {
                     const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                        where: { id: account },
+                        where: { id: cachedAccount },
                         transaction,
                     });
 
@@ -74,8 +72,10 @@ export class VerificationHandler implements Handlers.Verification.Contract {
 
                 return {
                     message: `${this.dictionaryPath}.ACCOUNT_VERIFIED`,
-                    data: { recoveryCodes: codes },
+                    recoveryCodes: codes,
                 };
+            } else {
+                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
             }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
@@ -83,7 +83,7 @@ export class VerificationHandler implements Handlers.Verification.Contract {
     }
 
     public async verifyIdentifier({
-        input: { account, code },
+        input: { code },
         context,
     }: Handlers.Verification.VerifyIdentifier): Promise<MessageResult> {
         try {
@@ -93,7 +93,7 @@ export class VerificationHandler implements Handlers.Verification.Contract {
                 const writeManager = this.writeManager.fork();
                 await writeManager.transactional(async (transaction) => {
                     const identifier = await this.identifierRepository.findUniqueOrThrow({
-                        where: { id: cachedIdentifier, account },
+                        where: { id: cachedIdentifier },
                         transaction,
                     });
 
@@ -108,7 +108,7 @@ export class VerificationHandler implements Handlers.Verification.Contract {
 
                 return { message: `${this.dictionaryPath}.IDENTIFIER_VERIFIED` };
             } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
             }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
@@ -116,18 +116,19 @@ export class VerificationHandler implements Handlers.Verification.Contract {
     }
 
     public async resendVerification({
-        input: { account, identifier, scenario },
+        input: { identifier, scenario },
     }: Handlers.Verification.Resend): Promise<MessageResult> {
         try {
             const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                where: identifier ? { id: identifier, account } : { account, primaryOfAccount: account },
+                where: { value: identifier },
             });
 
             if (identifierEntity.isVerified) {
                 throw HandlerException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
             } else {
                 const otp = this.cryptoService.generateOTP();
-                const target = scenario === "account" ? identifierEntity.account.id : identifierEntity.id;
+                const target =
+                    scenario === VerificationScenario.ACCOUNT ? identifierEntity.account.id : identifierEntity.id;
 
                 await this.otpCacheService.setVerification({ code: otp, account: target });
                 await this.dispatchOTP({ type: identifierEntity.type, value: identifierEntity.value, otp, scenario });
@@ -140,7 +141,7 @@ export class VerificationHandler implements Handlers.Verification.Contract {
     }
 
     private async dispatchOTP({ scenario, value, type, otp }: Handlers.Verification.DispatchOTP): Promise<void> {
-        const subject = scenario === "account" ? "Verify your account" : "Verify your identifier";
+        const subject = scenario === VerificationScenario.ACCOUNT ? "Verify your account" : "Verify your identifier";
         if (type === IdentifierType.EMAIL) {
             await this.emailService.send({ to: value, subject, html: `Your verification code: ${otp}` });
         } else if (type === IdentifierType.PHONE) {

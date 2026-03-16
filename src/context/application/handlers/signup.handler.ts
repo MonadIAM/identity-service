@@ -54,7 +54,7 @@ export class SignupHandler implements Handlers.Signup.Contract {
             await this.otpCacheService.setVerification({ code: otp, account: account.id });
             await this.emailService.send({
                 to: email,
-                subject: "Verification code",
+                subject: "Verify your account",
                 html: `Your verification code: ${otp}`,
             });
 

@@ -1,5 +1,6 @@
+import { VerificationController } from "./verification.controller";
 import { SignupController } from "./signup.controller";
 
-export const CONTROLLERS = [SignupController];
+export const CONTROLLERS = [VerificationController, SignupController];
 
-export { SignupController };
+export { VerificationController, SignupController };
