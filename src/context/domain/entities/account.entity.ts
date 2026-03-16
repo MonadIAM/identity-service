@@ -30,8 +30,8 @@ export class Account {
 
     public password?: Password;
     public masterCode?: MasterCode;
-    public primaryIdentifier!: Identifier;
-    public profile!: Profile;
+    public primaryIdentifier?: Identifier;
+    public profile?: Profile;
 
     public sessions = new Collection<Session>(this);
     public identifiers = new Collection<Identifier>(this);
@@ -65,7 +65,7 @@ export class Account {
         if (this.status === AccountStatus.PENDING) {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
-            this.primaryIdentifier.verify();
+            this.primaryIdentifier?.verify();
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVATED`);
         }

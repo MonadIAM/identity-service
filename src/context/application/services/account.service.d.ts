@@ -21,8 +21,8 @@ declare global {
                 context: RequestContext;
                 input: {
                     identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
-                    profile: Entities.Profile.ConstructorProps;
                     subject: AccountSubject;
+                    displayName: string;
                     password: string;
                 };
             };

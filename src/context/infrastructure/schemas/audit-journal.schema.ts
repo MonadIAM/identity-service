@@ -24,7 +24,7 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
 
         entity: { type: "uuid" },
 
-        by: { type: "uuid" },
+        by: { type: "uuid", nullable: true },
         at: { type: "timestamptz", length: 3 },
 
         reason: { type: "text", nullable: true },

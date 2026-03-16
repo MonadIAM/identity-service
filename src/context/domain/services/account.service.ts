@@ -14,7 +14,7 @@ export class AccountService implements Services.Account.Contract {
     public async create({
         transaction,
         context: { userAgent, ip },
-        input: { subject, password, profile, identifier },
+        input: { displayName, identifier, password, subject },
     }: Services.Account.Create): Promise<Account> {
         const account = new Account({
             status: AccountStatus.PENDING,
@@ -22,9 +22,7 @@ export class AccountService implements Services.Account.Contract {
         });
 
         const profileEntity = new Profile({
-            displayName: profile.displayName,
-            timeZone: profile.timeZone,
-            locale: profile.locale,
+            displayName,
             account,
         });
 
@@ -39,12 +37,6 @@ export class AccountService implements Services.Account.Contract {
             account,
         });
 
-        account.assignRelations({
-            identifier: identifierEntity,
-            password: passwordEntity,
-            profile: profileEntity,
-        });
-
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.CREATE_ACCOUNT,
             entityType: IdentityEntityType.ACCOUNT,
@@ -54,11 +46,17 @@ export class AccountService implements Services.Account.Contract {
             ip,
         });
 
+        account.assignRelations({
+            identifier: identifierEntity,
+            password: passwordEntity,
+            profile: profileEntity,
+        });
+
+        transaction.persist(account);
+        transaction.persist(profileEntity);
         transaction.persist(identifierEntity);
         transaction.persist(passwordEntity);
-        transaction.persist(profileEntity);
         transaction.persist(auditEntity);
-        transaction.persist(account);
 
         await transaction.flush();
 

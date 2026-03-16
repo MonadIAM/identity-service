@@ -30,6 +30,7 @@ export const AccountSchema = new EntitySchema<Account>({
             kind: "1:1",
             entity: () => Identifier,
             fieldName: "primary_identifier_id",
+            nullable: true,
         },
 
         masterCode: {

@@ -8,7 +8,7 @@ declare namespace Handlers {
         type ByEmail = {
             context: RequestContext;
             input: {
-                profile: Entities.Profile.ConstructorProps;
+                displayName: string;
                 password: string;
                 email: string;
             };
@@ -17,7 +17,7 @@ declare namespace Handlers {
         type ByPhone = {
             context: RequestContext;
             input: {
-                profile: Entities.Profile.ConstructorProps;
+                displayName: string;
                 password: string;
                 phone: string;
             };

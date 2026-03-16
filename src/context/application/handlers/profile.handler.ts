@@ -26,7 +26,7 @@ export class ProfileHandler implements Handlers.Profile.Contract {
                     transaction,
                 });
 
-                accountEntity.profile.changeData(patch);
+                accountEntity.profile?.changeData(patch);
 
                 await transaction.flush();
             });

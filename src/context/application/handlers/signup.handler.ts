@@ -30,7 +30,7 @@ export class SignupHandler implements Handlers.Signup.Contract {
     ) {}
 
     public async byEmail({
-        input: { email, password, profile },
+        input: { email, password, displayName },
         context,
     }: Handlers.Signup.ByEmail): Promise<MessageResult> {
         try {
@@ -43,7 +43,7 @@ export class SignupHandler implements Handlers.Signup.Contract {
                         identifier: { type: IdentifierType.EMAIL, value: email },
                         subject: AccountSubject.HUMAN,
                         password: hashedPassword,
-                        profile,
+                        displayName,
                     },
                     context,
                     transaction,
@@ -65,7 +65,7 @@ export class SignupHandler implements Handlers.Signup.Contract {
     }
 
     public async byPhone({
-        input: { phone, password, profile },
+        input: { phone, password, displayName },
         context,
     }: Handlers.Signup.ByPhone): Promise<MessageResult> {
         try {
@@ -78,7 +78,7 @@ export class SignupHandler implements Handlers.Signup.Contract {
                         identifier: { type: IdentifierType.PHONE, value: phone },
                         subject: AccountSubject.HUMAN,
                         password: hashedPassword,
-                        profile,
+                        displayName,
                     },
                     context,
                     transaction,
