@@ -4,16 +4,16 @@ declare global {
     namespace Handlers {
         namespace Identifier {
             interface Contract {
-                requestAdd: (props: RequestAdd) => Promise<MessageResult>;
-                confirmAdd: (props: ConfirmAdd) => Promise<MessageResult>;
-                addOAuth: (props: AddOAuth) => Promise<MessageResult>;
-                remove: (props: Remove) => Promise<MessageResult>;
+                create: (props: Create) => Promise<MessageResult>;
+                resend: (props: Resend) => Promise<MessageResult>;
+                confirm: (props: Confirm) => Promise<MessageResult>;
+                purge: (props: Purge) => Promise<MessageResult>;
                 setPrimary: (props: SetPrimary) => Promise<MessageResult>;
                 toggleNotifications: (props: ToggleNotifications) => Promise<MessageResult>;
                 togglePasswordlessLogin: (props: TogglePasswordlessLogin) => Promise<MessageResult>;
             }
 
-            type RequestAdd = {
+            type Create = {
                 context: RequestContext;
                 input: {
                     type: IdentifierType;
@@ -22,27 +22,25 @@ declare global {
                 };
             };
 
-            type ConfirmAdd = {
-                context: RequestContext;
+            type Resend = {
                 input: {
-                    code: string;
-                };
-            };
-
-            type AddOAuth = {
-                context: RequestContext;
-                input: {
-                    provider: string;
+                    identifier: string;
                     account: string;
-                    state: string;
+                };
+            };
+
+            type Confirm = {
+                context: RequestContext;
+                input: {
                     code: string;
                 };
             };
 
-            type Remove = {
+            type Purge = {
                 context: RequestContext;
                 input: {
                     identifier: string;
+                    password?: string;
                     account: string;
                 };
             };
@@ -51,6 +49,7 @@ declare global {
                 context: RequestContext;
                 input: {
                     identifier: string;
+                    password: string;
                     account: string;
                 };
             };
@@ -69,6 +68,12 @@ declare global {
                     identifier: string;
                     account: string;
                 };
+            };
+
+            type SendOTP = {
+                identifier: string;
+                type: IdentifierType;
+                value: string;
             };
         }
     }

@@ -70,19 +70,12 @@ export class OTPCacheService implements InfrastructureServices.OTPCache.Contract
         await this.redis.unlink(`${this.namespace}:2fa-setup:${account}`);
     }
 
-    public async setIdentifier({ code, data }: InfrastructureServices.OTPCache.SetIdentifier): Promise<void> {
-        await this.redis.set(`${this.namespace}:identifier:${code}`, JSON.stringify(data), "EX", this.verificationTTL);
+    public async setIdentifier({ code, identifier }: InfrastructureServices.OTPCache.SetIdentifier): Promise<void> {
+        await this.redis.set(`${this.namespace}:identifier:${code}`, identifier, "EX", this.verificationTTL);
     }
 
-    public async getIdentifier({
-        code,
-    }: InfrastructureServices.OTPCache.GetIdentifier): Promise<Nullable<InfrastructureServices.OTPCache.IdentifierData>> {
-        const raw = await this.redis.get(`${this.namespace}:identifier:${code}`);
-        if (raw) {
-            return JSON.parse(raw);
-        } else {
-            return null;
-        }
+    public async getIdentifier({ code }: InfrastructureServices.OTPCache.GetIdentifier): Promise<Nullable<string>> {
+        return await this.redis.get(`${this.namespace}:identifier:${code}`);
     }
 
     public async deleteIdentifier({ code }: InfrastructureServices.OTPCache.DeleteIdentifier): Promise<void> {

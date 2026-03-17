@@ -43,6 +43,59 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
         return { url: this.resolveProvider(provider).getAuthorizationUrl(state) };
     }
 
+    // public async createByOAuth({
+    //     input: { account, provider, code, state },
+    //     context,
+    // }: Handlers.Identifier.CreateByOAuth): Promise<MessageResult> {
+    //     try {
+    //         const cached = await this.oauthStateCacheService.get({ state });
+
+    //         if (cached?.provider !== provider) {
+    //             throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_STATE`);
+    //         }
+
+    //         await this.oauthStateCacheService.delete({ state });
+
+    //         const oauthService = this.resolveProvider(provider);
+    //         const { access_token } = await oauthService.exchangeCode(code);
+    //         const profile = await oauthService.fetchProfile(access_token);
+
+    //         const existingByProvider = await this.identifierRepository.findUnique({
+    //             where: { provider, providerUserId: profile.providerUserId },
+    //         });
+
+    //         if (existingByProvider) {
+    //             throw HandlerException.conflict(`${this.dictionaryPath}.OAUTH_ALREADY_LINKED`);
+    //         } else {
+    //             const writeManager = this.writeManager.fork();
+    //             await writeManager.transactional(async (transaction) => {
+    //                 const accountEntity = await this.accountRepository.findUniqueOrThrow({
+    //                     where: { id: account },
+    //                     transaction,
+    //                 });
+    //                 await this.identifierService.add({
+    //                     input: {
+    //                         account: accountEntity,
+    //                         identifier: {
+    //                             value: profile.email ?? profile.providerUserId,
+    //                             providerUserId: profile.providerUserId,
+    //                             type: IdentifierType.OAUTH,
+    //                             isVerified: true,
+    //                             provider,
+    //                         },
+    //                     },
+    //                     transaction,
+    //                     context,
+    //                 });
+    //             });
+
+    //             return { message: `${this.dictionaryPath}.OAUTH_LINKED` };
+    //         }
+    //     } catch (error) {
+    //         throw HandlerException.fromOrmError(error);
+    //     }
+    // }
+
     public async callback({
         input: { provider, code, state },
         context,

@@ -54,7 +54,7 @@ export class Identifier {
     }
 
     public togglePasswordlessLogin(): void {
-        if (this.type in [IdentifierType.EMAIL, IdentifierType.PHONE]) {
+        if ([IdentifierType.EMAIL, IdentifierType.PHONE].includes(this.type)) {
             this.allowPasswordlessLogin = !this.allowPasswordlessLogin;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.PASSWORDLESS_NOT_APPLICABLE`);

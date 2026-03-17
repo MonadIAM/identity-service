@@ -2,9 +2,9 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE, GOOGLE_OAUTH_SERVICE, GITHUB_OAUTH_SERVICE } from "~common/services";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
-import { OTP_CACHE_SERVICE, OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
+import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
+import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_SERVICE } from "~context/domain/services";
 import { HandlerException } from "~common/exceptions";
 import { IdentifierType } from "~context/enums";
@@ -24,21 +24,17 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         private readonly identifierService: Services.Identifier.Contract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
-        @Inject(OAUTH_STATE_CACHE_SERVICE)
-        private readonly oauthStateCacheService: InfrastructureServices.OAuthStateCache.Contract,
+        @Inject(HASHING_SERVICE)
+        private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
         @Inject(EMAIL_SERVICE)
         private readonly emailService: CommonServices.Email.Contract,
         @Inject(SMS_SERVICE)
         private readonly smsService: CommonServices.SMS.Contract,
-        @Inject(GOOGLE_OAUTH_SERVICE)
-        private readonly googleOAuthService: CommonServices.GoogleOAuth.Contract,
-        @Inject(GITHUB_OAUTH_SERVICE)
-        private readonly githubOAuthService: CommonServices.GitHubOAuth.Contract,
     ) {}
 
-    public async requestAdd({ input: { account, type, value } }: Handlers.Identifier.RequestAdd): Promise<MessageResult> {
+    public async create({ input: { account, type, value }, context }: Handlers.Identifier.Create): Promise<MessageResult> {
         try {
             const existing = await this.identifierRepository.findUnique({
                 where: { type, value },
@@ -47,18 +43,28 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
             if (existing) {
                 throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_EXISTS`);
             } else {
-                const otp = this.cryptoService.generateOTP();
-                await this.otpCacheService.setIdentifier({ code: otp, data: { account, type, value } });
-
-                if (type === IdentifierType.EMAIL) {
-                    await this.emailService.send({
-                        to: value,
-                        subject: "Verify your identifier",
-                        html: `Your verification code: ${otp}`,
+                const writeManager = this.writeManager.fork();
+                const identifier = await writeManager.transactional(async (transaction) => {
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                        where: { id: account },
+                        transaction,
                     });
-                } else if (type === IdentifierType.PHONE) {
-                    await this.smsService.send({ to: value, body: `Your verification code: ${otp}` });
-                }
+
+                    return this.identifierService.create({
+                        input: {
+                            account: accountEntity,
+                            identifier: {
+                                isVerified: false,
+                                value,
+                                type,
+                            },
+                        },
+                        context,
+                        transaction,
+                    });
+                });
+
+                await this.sendOTP({ identifier: identifier.id, type, value });
 
                 return { message: `${this.dictionaryPath}.VERIFICATION_CODE_SENT` };
             }
@@ -67,106 +73,91 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async confirmAdd({ input: { code }, context }: Handlers.Identifier.ConfirmAdd): Promise<MessageResult> {
+    public async resend({ input: { identifier, account } }: Handlers.Identifier.Resend): Promise<MessageResult> {
         try {
-            const data = await this.otpCacheService.getIdentifier({ code });
+            const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                where: { id: identifier, account },
+            });
 
-            if (data) {
+            if (identifierEntity.isVerified) {
+                throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
+            } else {
+                await this.sendOTP({
+                    identifier: identifierEntity.id,
+                    value: identifierEntity.value,
+                    type: identifierEntity.type,
+                });
+
+                return { message: `${this.dictionaryPath}.VERIFICATION_CODE_SENT` };
+            }
+        } catch (error) {
+            throw HandlerException.fromOrmError(error);
+        }
+    }
+
+    public async confirm({ input: { code }, context }: Handlers.Identifier.Confirm): Promise<MessageResult> {
+        try {
+            const identifier = await this.otpCacheService.getIdentifier({ code });
+
+            if (identifier) {
                 await this.otpCacheService.deleteIdentifier({ code });
 
                 const writeManager = this.writeManager.fork();
                 await writeManager.transactional(async (transaction) => {
-                    const account = await this.identifierRepository.findUniqueOrThrow({
-                        where: { account: data.account },
+                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                        where: { id: identifier },
                         transaction,
                     });
 
-                    await this.identifierService.add({
-                        input: {
-                            identifier: {
-                                type: data.type,
-                                value: data.value,
-                                isVerified: true,
-                            },
-                            account: account.account,
-                        },
-                        context,
-                        transaction,
-                    });
+                    if (identifierEntity.isVerified) {
+                        throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
+                    } else {
+                        await this.identifierService.verify({
+                            input: { identifier: identifierEntity },
+                            transaction,
+                            context,
+                        });
+                    }
                 });
 
-                return { message: `${this.dictionaryPath}.IDENTIFIER_ADDED` };
+                return { message: `${this.dictionaryPath}.IDENTIFIER_VERIFIED` };
             } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
             }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
         }
     }
 
-    public async addOAuth({
-        input: { account, provider, code, state },
+    public async purge({
+        input: { identifier, password, account },
         context,
-    }: Handlers.Identifier.AddOAuth): Promise<MessageResult> {
-        try {
-            const cached = await this.oauthStateCacheService.get({ state });
-
-            if (cached?.provider !== provider) {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_STATE`);
-            }
-
-            await this.oauthStateCacheService.delete({ state });
-
-            const oauthService = this.resolveProvider(provider);
-            const { access_token } = await oauthService.exchangeCode(code);
-            const profile = await oauthService.fetchProfile(access_token);
-
-            const existingByProvider = await this.identifierRepository.findUnique({
-                where: { provider, providerUserId: profile.providerUserId },
-            });
-
-            if (existingByProvider) {
-                throw HandlerException.conflict(`${this.dictionaryPath}.OAUTH_ALREADY_LINKED`);
-            } else {
-                const writeManager = this.writeManager.fork();
-                await writeManager.transactional(async (transaction) => {
-                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                        where: { id: account },
-                        transaction,
-                    });
-                    await this.identifierService.add({
-                        input: {
-                            account: accountEntity,
-                            identifier: {
-                                value: profile.email ?? profile.providerUserId,
-                                providerUserId: profile.providerUserId,
-                                type: IdentifierType.OAUTH,
-                                isVerified: true,
-                                provider,
-                            },
-                        },
-                        transaction,
-                        context,
-                    });
-                });
-
-                return { message: `${this.dictionaryPath}.OAUTH_LINKED` };
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async remove({ input: { identifier, account }, context }: Handlers.Identifier.Remove): Promise<MessageResult> {
+    }: Handlers.Identifier.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                    options: { populate: ["account.password"] },
                     where: { id: identifier, account },
                     transaction,
                 });
 
-                await this.identifierService.remove({
+                if (identifierEntity.isVerified) {
+                    if (password) {
+                        const isValid = await this.hashingService.verify({
+                            storedHash: identifierEntity.account.password?.hash!,
+                            value: password,
+                        });
+
+                        if (!isValid) {
+                            throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                        }
+                    } else {
+                        throw HandlerException.badRequest(`${this.dictionaryPath}.PASSWORD_REQUIRED`);
+                    }
+                }
+
+                await this.identifierService.purge({
                     input: { identifier: identifierEntity },
                     transaction,
                     context,
@@ -180,22 +171,32 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
     }
 
     public async setPrimary({
-        input: { identifier, account },
+        input: { identifier, password, account },
         context,
     }: Handlers.Identifier.SetPrimary): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                    options: { populate: ["account.password"] },
                     where: { id: identifier, account },
                     transaction,
                 });
 
-                await this.identifierService.setPrimary({
-                    input: { identifier: identifierEntity },
-                    transaction,
-                    context,
+                const isValid = await this.hashingService.verify({
+                    storedHash: identifierEntity.account.password?.hash!,
+                    value: password,
                 });
+
+                if (isValid) {
+                    await this.identifierService.setPrimary({
+                        input: { identifier: identifierEntity },
+                        transaction,
+                        context,
+                    });
+                } else {
+                    throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                }
             });
 
             return { message: `${this.dictionaryPath}.PRIMARY_CHANGED` };
@@ -254,14 +255,18 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    private resolveProvider(provider: string): OAuth.ResolveProvider {
-        switch (provider) {
-            case "google":
-                return this.googleOAuthService;
-            case "github":
-                return this.githubOAuthService;
-            default:
-                throw HandlerException.badRequest(`${this.dictionaryPath}.UNSUPPORTED_PROVIDER`);
+    private async sendOTP({ identifier, value, type }: Handlers.Identifier.SendOTP): Promise<void> {
+        const otp = this.cryptoService.generateOTP();
+        await this.otpCacheService.setIdentifier({ code: otp, identifier });
+
+        if (type === IdentifierType.EMAIL) {
+            await this.emailService.send({
+                to: value,
+                subject: "Verify your identifier",
+                html: `Your verification code: ${otp}`,
+            });
+        } else {
+            await this.smsService.send({ to: value, body: `Your verification code: ${otp}` });
         }
     }
 }

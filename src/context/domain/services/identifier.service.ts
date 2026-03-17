@@ -5,11 +5,11 @@ import { AuditJournal, Identifier, Notification } from "~context/domain/entities
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierService implements Services.Identifier.Contract {
-    public async add({
+    public async create({
         transaction,
         context: { userAgent, ip },
         input: { identifier, account },
-    }: Services.Identifier.Add): Promise<Identifier> {
+    }: Services.Identifier.Create): Promise<Identifier> {
         const identifierEntity = new Identifier({
             providerUserId: identifier.providerUserId,
             provider: identifier.provider,
@@ -44,11 +44,11 @@ export class IdentifierService implements Services.Identifier.Contract {
         return identifierEntity;
     }
 
-    public async remove({
+    public async purge({
         transaction,
         context: { userAgent, ip },
         input: { reason, identifier },
-    }: Services.Identifier.Remove): Promise<void> {
+    }: Services.Identifier.Purge): Promise<void> {
         const { account } = identifier;
 
         identifier.canRemove();

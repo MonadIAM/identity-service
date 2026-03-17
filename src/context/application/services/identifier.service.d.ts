@@ -6,15 +6,15 @@ declare global {
     namespace Services {
         namespace Identifier {
             interface Contract {
-                add: (props: Add) => Promise<IdentifierEntity>;
-                remove: (props: Remove) => Promise<void>;
+                create: (props: Create) => Promise<IdentifierEntity>;
+                purge: (props: Purge) => Promise<void>;
                 verify: (props: Verify) => Promise<void>;
                 setPrimary: (props: SetPrimary) => Promise<void>;
                 toggleNotifications: (props: ToggleNotifications) => Promise<void>;
                 togglePasswordlessLogin: (props: TogglePasswordlessLogin) => Promise<void>;
             }
 
-            type Add = {
+            type Create = {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
@@ -23,7 +23,7 @@ declare global {
                 };
             };
 
-            type Remove = {
+            type Purge = {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
