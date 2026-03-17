@@ -8,7 +8,13 @@ import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 
-import { SignupByEmailBodyDTO, SignupByPhoneBodyDTO } from "../dto/signup";
+import {
+    ResendAccountOTPBodyDTO,
+    AccountConfirmationDTO,
+    ConfirmAccountBodyDTO,
+    SignupByEmailBodyDTO,
+    SignupByPhoneBodyDTO,
+} from "../dto/signup";
 
 @ApiTags("Signup")
 @Controller("/signup")
@@ -48,5 +54,29 @@ export class SignupController extends BaseController {
         return this.signupHandler
             .byPhone({ context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Post("resend")
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: "Resends the OTP for account confirmation" })
+    @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
+    public resend(@Body() input: ResendAccountOTPBodyDTO, @Lang() lang: string): Promise<SuccessMessageDTO> {
+        return this.signupHandler
+            .resend({ input })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Post("confirm")
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: "Confirms a new account" })
+    @ApiResponse({ status: HttpStatus.CREATED, type: AccountConfirmationDTO })
+    public confirm(
+        @ExtractContext() context: RequestContext,
+        @Body() input: ConfirmAccountBodyDTO,
+        @Lang() lang: string,
+    ): Promise<AccountConfirmationDTO> {
+        return this.signupHandler
+            .confirm({ context, input })
+            .then((data) => super.formatResponse({ DTO: AccountConfirmationDTO, data, lang }));
     }
 }

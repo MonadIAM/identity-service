@@ -3,9 +3,9 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class AccountVerificationBodyDTO {
+export class ResendAccountOTPBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public code!: string;
+    public identifier!: string;
 }

@@ -38,11 +38,6 @@ export enum NotificationSource {
     IDENTITY = "IDENTITY",
 }
 
-export enum VerificationScenario {
-    IDENTIFIER = "IDENTIFIER",
-    ACCOUNT = "ACCOUNT",
-}
-
 export enum IdentityActionType {
     DISABLE_RECEIVE_NOTIFICATIONS = "DISABLE_RECEIVE_NOTIFICATIONS",
     ENABLE_RECEIVE_NOTIFICATIONS = "ENABLE_RECEIVE_NOTIFICATIONS",

@@ -3,7 +3,7 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class IdentifierVerificationBodyDTO {
+export class ConfirmAccountBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })

@@ -4,7 +4,7 @@ import { Expose } from "class-transformer";
 import { SuccessMessageDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class AccountVerificationDTO extends SuccessMessageDTO {
+export class AccountConfirmationDTO extends SuccessMessageDTO {
     @Expose()
     @Validator.IsListOrSingleString()
     @ApiProperty({ required: true, type: [String] })
