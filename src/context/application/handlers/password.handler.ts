@@ -78,86 +78,18 @@ export class PasswordHandler implements Handlers.Password.Contract {
 
                         await this.credentialService.changePassword({
                             input: { password: accountEntity.password, newHash },
-                            context,
                             transaction,
+                            context,
                         });
 
                         return { message: `${this.dictionaryPath}.PASSWORD_CHANGED` };
                     } else {
-                        throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
+                        throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
                     }
                 } else {
                     throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
                 }
             });
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async requestReset({ input: { value } }: Handlers.Password.RequestReset): Promise<MessageResult> {
-        try {
-            const identifier = await this.identifierRepository.findUnique({
-                options: { populate: ["account"] },
-                where: { value },
-            });
-
-            if (identifier?.isVerified && identifier.account) {
-                const otp = this.cryptoService.generateOTP();
-                await this.otpCacheService.setReset({ code: otp, account: identifier.account.id });
-
-                if (identifier.type === IdentifierType.EMAIL) {
-                    await this.emailService.send({
-                        to: identifier.value,
-                        subject: "Password reset code",
-                        html: `Your reset code: ${otp}`,
-                    });
-                } else if (identifier.type === IdentifierType.PHONE) {
-                    await this.smsService.send({ to: identifier.value, body: `Your reset code: ${otp}` });
-                }
-            }
-
-            return { message: `${this.dictionaryPath}.RESET_CODE_SENT` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async resetByToken({
-        input: { newPassword, code },
-        context,
-    }: Handlers.Password.ResetByToken): Promise<MessageResult> {
-        try {
-            const account = await this.otpCacheService.getReset({ code });
-
-            if (account) {
-                await this.otpCacheService.deleteReset({ code });
-
-                const newHash = await this.hashingService.hash({ value: newPassword });
-
-                const writeManager = this.writeManager.fork();
-                await writeManager.transactional(async (transaction) => {
-                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                        options: { populate: ["password"] },
-                        where: { id: account },
-                        transaction,
-                    });
-
-                    if (accountEntity.password) {
-                        await this.credentialService.resetPassword({
-                            input: { password: accountEntity.password, newHash },
-                            transaction,
-                            context,
-                        });
-                    } else {
-                        throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
-                    }
-                });
-
-                return { message: `${this.dictionaryPath}.PASSWORD_RESET` };
-            } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
-            }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
         }
@@ -194,10 +126,10 @@ export class PasswordHandler implements Handlers.Password.Contract {
 
                     return {
                         message: `${this.dictionaryPath}.RECOVERY_CODES_REGENERATED`,
-                        data: { recoveryCodes: codes },
+                        recoveryCodes: codes,
                     };
                 } else {
-                    throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                    throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
                 }
             } else {
                 throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
@@ -217,38 +149,110 @@ export class PasswordHandler implements Handlers.Password.Contract {
                 where: { value: identifier },
             });
 
-            if (!identifierEntity) {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_RECOVERY_CODE`);
-            }
-
-            const recoveryCodes = await this.recoveryCodeRepository.find({
-                where: { account: identifierEntity.account.id, usedAt: null },
-            });
-
-            const matched = await this.findMatchingRecoveryCode(recoveryCodes, code);
-
-            if (!matched) {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_RECOVERY_CODE`);
-            }
-
-            if (!identifierEntity.account.password) {
-                throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
-            }
-
-            const newHash = await this.hashingService.hash({ value: newPassword });
-
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                matched.use();
-
-                await this.credentialService.resetPassword({
-                    input: { password: identifierEntity.account.password!, newHash },
-                    transaction,
-                    context,
+            if (identifierEntity) {
+                const recoveryCodes = await this.recoveryCodeRepository.find({
+                    where: { account: identifierEntity.account.id, usedAt: null },
                 });
+
+                const matched = await this.findMatchingRecoveryCode(recoveryCodes, code);
+
+                if (matched) {
+                    if (matched.usedAt) {
+                        throw HandlerException.badRequest(`${this.dictionaryPath}.RECOVERY_CODE_ALREADY_USED`);
+                    } else if (identifierEntity.account.password) {
+                        const newHash = await this.hashingService.hash({ value: newPassword });
+
+                        const writeManager = this.writeManager.fork();
+                        await writeManager.transactional(async (transaction) => {
+                            await transaction.merge(matched);
+
+                            matched.use();
+
+                            await this.credentialService.resetPassword({
+                                input: { password: identifierEntity.account.password!, newHash },
+                                transaction,
+                                context,
+                            });
+                        });
+
+                        return { message: `${this.dictionaryPath}.PASSWORD_RESET` };
+                    } else {
+                        throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                    }
+                } else {
+                    throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_RECOVERY_CODE`);
+                }
+            } else {
+                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_RECOVERY_CODE`);
+            }
+        } catch (error) {
+            throw HandlerException.fromOrmError(error);
+        }
+    }
+
+    public async requestResetOTP({ input: { identifier } }: Handlers.Password.RequestResetOTP): Promise<MessageResult> {
+        try {
+            const identifierEntity = await this.identifierRepository.findUnique({
+                options: { populate: ["account"] },
+                where: { value: identifier },
             });
 
-            return { message: `${this.dictionaryPath}.PASSWORD_RESET` };
+            if (identifierEntity?.isVerified && identifierEntity.account) {
+                const otp = this.cryptoService.generateOTP();
+                await this.otpCacheService.setReset({ code: otp, account: identifierEntity.account.id });
+
+                if (identifierEntity.type === IdentifierType.EMAIL) {
+                    await this.emailService.send({
+                        to: identifierEntity.value,
+                        subject: "Password reset code",
+                        html: `Your reset code: ${otp}`,
+                    });
+                } else if (identifierEntity.type === IdentifierType.PHONE) {
+                    await this.smsService.send({ to: identifierEntity.value, body: `Your reset code: ${otp}` });
+                }
+            }
+
+            return { message: `${this.dictionaryPath}.RESET_CODE_SENT` };
+        } catch (error) {
+            throw HandlerException.fromOrmError(error);
+        }
+    }
+
+    public async resetByOTP({
+        input: { newPassword, code },
+        context,
+    }: Handlers.Password.ResetByOTP): Promise<MessageResult> {
+        try {
+            const account = await this.otpCacheService.getReset({ code });
+
+            if (account) {
+                await this.otpCacheService.deleteReset({ code });
+
+                const newHash = await this.hashingService.hash({ value: newPassword });
+
+                const writeManager = this.writeManager.fork();
+                await writeManager.transactional(async (transaction) => {
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                        options: { populate: ["password"] },
+                        where: { id: account },
+                        transaction,
+                    });
+
+                    if (accountEntity.password) {
+                        await this.credentialService.resetPassword({
+                            input: { password: accountEntity.password, newHash },
+                            transaction,
+                            context,
+                        });
+                    } else {
+                        throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                    }
+                });
+
+                return { message: `${this.dictionaryPath}.PASSWORD_RESET` };
+            } else {
+                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+            }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
         }
@@ -272,18 +276,16 @@ export class PasswordHandler implements Handlers.Password.Contract {
     }
 
     private async findMatchingRecoveryCode(codes: RecoveryCode[], plaintext: string): Promise<Nullable<RecoveryCode>> {
-        try {
-            return await Promise.any(
-                codes.map(async (entry) => {
-                    if (await this.hashingService.verify({ value: plaintext, storedHash: entry.hash })) {
-                        return entry;
-                    } else {
-                        throw new Error();
-                    }
+        const results = await Promise.all(
+            codes.map(async (entry) => ({
+                isValid: await this.hashingService.verify({
+                    storedHash: entry.hash,
+                    value: plaintext,
                 }),
-            );
-        } catch {
-            return null;
-        }
+                entry,
+            })),
+        );
+
+        return results.find(({ isValid }) => isValid)?.entry ?? null;
     }
 }

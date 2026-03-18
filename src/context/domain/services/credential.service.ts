@@ -50,9 +50,9 @@ export class CredentialService implements Services.Credential.Contract {
         const previous = password.rotate(newHash);
 
         const historyEntity = new PasswordHistory({
+            account: password.account,
             version: previous.version,
             hash: previous.hash,
-            account: password.account,
         });
 
         const auditEntity = new AuditJournal({

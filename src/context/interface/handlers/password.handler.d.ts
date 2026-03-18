@@ -3,8 +3,8 @@ declare namespace Handlers {
         interface Contract {
             regenerateRecoveryCodes: (props: RegenerateRecoveryCodes.Props) => Promise<RegenerateRecoveryCodes.Result>;
             resetByRecoveryCode: (props: ResetByRecoveryCode) => Promise<MessageResult>;
-            requestReset: (props: RequestReset) => Promise<MessageResult>;
-            resetByToken: (props: ResetByToken) => Promise<MessageResult>;
+            requestResetOTP: (props: RequestResetOTP) => Promise<MessageResult>;
+            resetByOTP: (props: ResetByOTP) => Promise<MessageResult>;
             change: (props: Change) => Promise<MessageResult>;
         }
 
@@ -17,7 +17,7 @@ declare namespace Handlers {
                 };
             };
             type Result = MessageResult & {
-                data: { recoveryCodes: string[] };
+                recoveryCodes: string[];
             };
         }
 
@@ -30,13 +30,13 @@ declare namespace Handlers {
             };
         };
 
-        type RequestReset = {
+        type RequestResetOTP = {
             input: {
-                value: string;
+                identifier: string;
             };
         };
 
-        type ResetByToken = {
+        type ResetByOTP = {
             context: RequestContext;
             input: {
                 newPassword: string;

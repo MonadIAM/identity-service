@@ -22,6 +22,7 @@ export class Password {
             hash: this.hash,
         };
         this.hash = hash;
+        ++this.version;
         return history;
     }
 }

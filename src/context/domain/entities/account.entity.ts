@@ -59,6 +59,7 @@ export class Account {
     public setPrimaryIdentifier(identifier: Identifier): void {
         this.primaryIdentifier = identifier;
         this.updatedAt = new Date();
+        ++this.version;
     }
 
     public activate(): void {
@@ -66,6 +67,7 @@ export class Account {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
             this.primaryIdentifier?.verify();
+            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVATED`);
         }
@@ -75,6 +77,7 @@ export class Account {
         if (this.status === AccountStatus.ACTIVE) {
             this.status = AccountStatus.DEACTIVATED;
             this.updatedAt = new Date();
+            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.DEACTIVATION_NOT_ALLOWED`);
         }
@@ -84,6 +87,7 @@ export class Account {
         if (this.status === AccountStatus.DEACTIVATED) {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
+            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.RESTORE_NOT_ALLOWED`);
         }
@@ -95,6 +99,7 @@ export class Account {
         } else {
             this.status = AccountStatus.SUSPENDED;
             this.updatedAt = new Date();
+            ++this.version;
         }
     }
 
@@ -102,6 +107,7 @@ export class Account {
         if (this.status === AccountStatus.SUSPENDED) {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
+            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_SUSPENDED`);
         }
@@ -113,6 +119,7 @@ export class Account {
         } else {
             this.is2FAEnforced = true;
             this.updatedAt = new Date();
+            ++this.version;
         }
     }
 
@@ -120,6 +127,7 @@ export class Account {
         if (this.is2FAEnforced) {
             this.is2FAEnforced = false;
             this.updatedAt = new Date();
+            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_ENFORCED`);
         }
@@ -128,5 +136,6 @@ export class Account {
     public resetEnforce(): void {
         this.is2FAEnforced = false;
         this.updatedAt = new Date();
+        ++this.version;
     }
 }

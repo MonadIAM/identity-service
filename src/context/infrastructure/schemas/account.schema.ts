@@ -91,6 +91,6 @@ export const AccountSchema = new EntitySchema<Account>({
 
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
-        version: { type: "int", version: true },
+        version: { type: "int" },
     },
 });
