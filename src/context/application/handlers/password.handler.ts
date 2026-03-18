@@ -4,8 +4,8 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { ConfigService } from "@nestjs/config";
 
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
+import { CREDENTIAL_SERVICE, RECOVERY_CODE_SERVICE } from "~context/domain/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
-import { CREDENTIAL_SERVICE } from "~context/domain/services";
 import { RecoveryCode } from "~context/domain/entities";
 import { HandlerException } from "~common/exceptions";
 import { IdentifierType } from "~context/enums";
@@ -32,6 +32,8 @@ export class PasswordHandler implements Handlers.Password.Contract {
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
+        @Inject(RECOVERY_CODE_SERVICE)
+        private readonly recoveryCodeService: Services.RecoveryCode.Contract,
         @Inject(CREDENTIAL_SERVICE)
         private readonly credentialService: Services.Credential.Contract,
         @Inject(OTP_CACHE_SERVICE)
@@ -155,6 +157,50 @@ export class PasswordHandler implements Handlers.Password.Contract {
                 return { message: `${this.dictionaryPath}.PASSWORD_RESET` };
             } else {
                 throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+            }
+        } catch (error) {
+            throw HandlerException.fromOrmError(error);
+        }
+    }
+
+    public async regenerateRecoveryCodes({
+        input: { account, password },
+        context,
+    }: Handlers.Password.RegenerateRecoveryCodes.Props): Promise<Handlers.Password.RegenerateRecoveryCodes.Result> {
+        try {
+            const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                options: { populate: ["password"] },
+                where: { id: account },
+            });
+
+            if (accountEntity.password) {
+                const isValid = await this.hashingService.verify({
+                    storedHash: accountEntity.password.hash,
+                    value: password,
+                });
+
+                if (isValid) {
+                    const codes = this.cryptoService.generateRecoveryCodes();
+                    const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
+
+                    const writeManager = this.writeManager.fork();
+                    await writeManager.transactional(async (transaction) => {
+                        await this.recoveryCodeService.regenerate({
+                            input: { account: accountEntity, hashes: hashedCodes },
+                            transaction,
+                            context,
+                        });
+                    });
+
+                    return {
+                        message: `${this.dictionaryPath}.RECOVERY_CODES_REGENERATED`,
+                        data: { recoveryCodes: codes },
+                    };
+                } else {
+                    throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                }
+            } else {
+                throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
             }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
