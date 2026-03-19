@@ -5,37 +5,23 @@ import { AuditJournal, Notification, RecoveryCode } from "~context/domain/entiti
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeService implements Services.RecoveryCode.Contract {
-    public async generate({ input: { account, hashes }, transaction }: Services.RecoveryCode.Generate): Promise<void> {
-        for (const hash of hashes) {
-            transaction.persist(new RecoveryCode({ account, hash }));
+    public generate({ input, transaction }: Services.RecoveryCode.Generate): void {
+        for (const hash of input.hashes) {
+            transaction.persist(new RecoveryCode({ account: input.account, hash }));
         }
-        await transaction.flush();
     }
 
-    public async regenerate({
-        context: { userAgent, ip },
-        input: { account, hashes },
-        transaction,
-    }: Services.RecoveryCode.Regenerate): Promise<void> {
-        const existing = await account.recoveryCodes.loadItems();
-
-        for (const code of existing) {
+    public regenerate({ transaction, context: { userAgent, ip }, input }: Services.RecoveryCode.Regenerate): void {
+        for (const code of input.account.recoveryCodes) {
             transaction.remove(code);
         }
 
-        for (const hash of hashes) {
-            const code = new RecoveryCode({
-                hash,
-                account,
-            });
-
-            transaction.persist(code);
-        }
+        this.generate({ transaction, input });
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.REGENERATE_RECOVERY_CODES,
             entityType: IdentityEntityType.RECOVERY_CODE,
-            entity: account.id,
+            entity: input.account.id,
             at: new Date(),
             userAgent,
             ip,
@@ -46,12 +32,10 @@ export class RecoveryCodeService implements Services.RecoveryCode.Contract {
             source: NotificationSource.IDENTITY,
             title: "Recovery codes regenerated",
             body: "Your recovery codes have been regenerated. Previous codes are no longer valid.",
-            account,
+            account: input.account,
         });
 
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 }

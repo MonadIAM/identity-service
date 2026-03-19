@@ -51,36 +51,34 @@ export class PasswordHandler implements Handlers.Password.Contract {
         this.historyCheckDays = this.configService.getOrThrow<number>("PASSWORD_HISTORY_CHECK_DAYS");
     }
 
-    public async change({
-        input: { account, currentPassword, newPassword },
-        context,
-    }: Handlers.Password.Change): Promise<MessageResult> {
+    public async change({ context, input }: Handlers.Password.Change): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-
             return await writeManager.transactional(async (transaction) => {
                 const accountEntity = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["password"] },
-                    where: { id: account },
+                    where: { id: input.account },
                     transaction,
                 });
 
                 if (accountEntity.password) {
                     const isCurrentValid = await this.hashingService.verify({
                         storedHash: accountEntity.password.hash,
-                        value: currentPassword,
+                        value: input.currentPassword,
                     });
 
                     if (isCurrentValid) {
-                        await this.checkPasswordHistory(account, newPassword);
+                        await this.checkPasswordHistory(input.account, input.newPassword);
 
-                        const newHash = await this.hashingService.hash({ value: newPassword });
+                        const newHash = await this.hashingService.hash({ value: input.newPassword });
 
-                        await this.credentialService.changePassword({
+                        this.credentialService.changePassword({
                             input: { password: accountEntity.password, newHash },
                             transaction,
                             context,
                         });
+
+                        await transaction.flush();
 
                         return { message: `${this.dictionaryPath}.PASSWORD_CHANGED` };
                     } else {
@@ -96,19 +94,19 @@ export class PasswordHandler implements Handlers.Password.Contract {
     }
 
     public async regenerateRecoveryCodes({
-        input: { account, password },
         context,
+        input,
     }: Handlers.Password.RegenerateRecoveryCodes.Props): Promise<Handlers.Password.RegenerateRecoveryCodes.Result> {
         try {
             const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                options: { populate: ["password"] },
-                where: { id: account },
+                options: { populate: ["password", "recoveryCodes"] },
+                where: { id: input.account },
             });
 
             if (accountEntity.password) {
                 const isValid = await this.hashingService.verify({
                     storedHash: accountEntity.password.hash,
-                    value: password,
+                    value: input.password,
                 });
 
                 if (isValid) {
@@ -117,11 +115,13 @@ export class PasswordHandler implements Handlers.Password.Contract {
 
                     const writeManager = this.writeManager.fork();
                     await writeManager.transactional(async (transaction) => {
-                        await this.recoveryCodeService.regenerate({
+                        this.recoveryCodeService.regenerate({
                             input: { account: accountEntity, hashes: hashedCodes },
                             transaction,
                             context,
                         });
+
+                        await transaction.flush();
                     });
 
                     return {
@@ -139,14 +139,11 @@ export class PasswordHandler implements Handlers.Password.Contract {
         }
     }
 
-    public async resetByRecoveryCode({
-        input: { identifier, code, newPassword },
-        context,
-    }: Handlers.Password.ResetByRecoveryCode): Promise<MessageResult> {
+    public async resetByRecoveryCode({ context, input }: Handlers.Password.ResetByRecoveryCode): Promise<MessageResult> {
         try {
             const identifierEntity = await this.identifierRepository.findUnique({
                 options: { populate: ["account.password"] },
-                where: { value: identifier },
+                where: { value: input.identifier },
             });
 
             if (identifierEntity) {
@@ -154,25 +151,27 @@ export class PasswordHandler implements Handlers.Password.Contract {
                     where: { account: identifierEntity.account.id, usedAt: null },
                 });
 
-                const matched = await this.findMatchingRecoveryCode(recoveryCodes, code);
+                const matched = await this.findMatchingRecoveryCode(recoveryCodes, input.code);
 
                 if (matched) {
                     if (matched.usedAt) {
                         throw HandlerException.badRequest(`${this.dictionaryPath}.RECOVERY_CODE_ALREADY_USED`);
                     } else if (identifierEntity.account.password) {
-                        const newHash = await this.hashingService.hash({ value: newPassword });
+                        const newHash = await this.hashingService.hash({ value: input.newPassword });
 
                         const writeManager = this.writeManager.fork();
                         await writeManager.transactional(async (transaction) => {
-                            await transaction.merge(matched);
+                            transaction.merge(matched);
 
                             matched.use();
 
-                            await this.credentialService.resetPassword({
+                            this.credentialService.resetPassword({
                                 input: { password: identifierEntity.account.password!, newHash },
                                 transaction,
                                 context,
                             });
+
+                            await transaction.flush();
                         });
 
                         return { message: `${this.dictionaryPath}.PASSWORD_RESET` };
@@ -190,11 +189,11 @@ export class PasswordHandler implements Handlers.Password.Contract {
         }
     }
 
-    public async requestResetOTP({ input: { identifier } }: Handlers.Password.RequestResetOTP): Promise<MessageResult> {
+    public async requestResetOTP({ input }: Handlers.Password.RequestResetOTP): Promise<MessageResult> {
         try {
             const identifierEntity = await this.identifierRepository.findUnique({
                 options: { populate: ["account"] },
-                where: { value: identifier },
+                where: { value: input.identifier },
             });
 
             if (identifierEntity?.isVerified && identifierEntity.account) {
@@ -218,17 +217,14 @@ export class PasswordHandler implements Handlers.Password.Contract {
         }
     }
 
-    public async resetByOTP({
-        input: { newPassword, code },
-        context,
-    }: Handlers.Password.ResetByOTP): Promise<MessageResult> {
+    public async resetByOTP({ context, input }: Handlers.Password.ResetByOTP): Promise<MessageResult> {
         try {
-            const account = await this.otpCacheService.getReset({ code });
+            const account = await this.otpCacheService.getReset({ code: input.code });
 
             if (account) {
-                await this.otpCacheService.deleteReset({ code });
+                await this.otpCacheService.deleteReset({ code: input.code });
 
-                const newHash = await this.hashingService.hash({ value: newPassword });
+                const newHash = await this.hashingService.hash({ value: input.newPassword });
 
                 const writeManager = this.writeManager.fork();
                 await writeManager.transactional(async (transaction) => {
@@ -239,11 +235,13 @@ export class PasswordHandler implements Handlers.Password.Contract {
                     });
 
                     if (accountEntity.password) {
-                        await this.credentialService.resetPassword({
+                        this.credentialService.resetPassword({
                             input: { password: accountEntity.password, newHash },
                             transaction,
                             context,
                         });
+
+                        await transaction.flush();
                     } else {
                         throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
                     }

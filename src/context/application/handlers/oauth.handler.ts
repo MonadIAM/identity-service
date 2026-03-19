@@ -35,12 +35,10 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
         private readonly jwtService: CommonServices.JWT.Contract,
     ) {}
 
-    public async authorize({
-        input: { provider },
-    }: Handlers.OAuth.Authorize.Props): Promise<Handlers.OAuth.Authorize.Result> {
+    public async authorize({ input }: Handlers.OAuth.Authorize.Props): Promise<Handlers.OAuth.Authorize.Result> {
         const state = this.cryptoService.generateToken();
-        await this.oauthStateCacheService.set({ state, metadata: { provider } });
-        return { url: this.resolveProvider(provider).getAuthorizationUrl(state) };
+        await this.oauthStateCacheService.set({ state, metadata: { provider: input.provider } });
+        return { url: this.resolveProvider(input.provider).getAuthorizationUrl(state) };
     }
 
     // public async createByOAuth({
@@ -96,22 +94,19 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
     //     }
     // }
 
-    public async callback({
-        input: { provider, code, state },
-        context,
-    }: Handlers.OAuth.Callback.Props): Promise<Handlers.OAuth.Callback.Result> {
+    public async callback({ context, input }: Handlers.OAuth.Callback.Props): Promise<Handlers.OAuth.Callback.Result> {
         try {
-            const cached = await this.oauthStateCacheService.get({ state });
+            const cached = await this.oauthStateCacheService.get({ state: input.state });
 
-            if (cached?.provider === provider) {
-                await this.oauthStateCacheService.delete({ state });
+            if (cached?.provider === input.provider) {
+                await this.oauthStateCacheService.delete({ state: input.state });
 
-                const oauthService = this.resolveProvider(provider);
-                const { access_token } = await oauthService.exchangeCode(code);
+                const oauthService = this.resolveProvider(input.provider);
+                const { access_token } = await oauthService.exchangeCode(input.code);
                 const profile = await oauthService.fetchProfile(access_token);
 
                 const existingByProvider = await this.identifierRepository.findUnique({
-                    where: { provider, providerUserId: profile.providerUserId },
+                    where: { provider: input.provider, providerUserId: profile.providerUserId },
                 });
 
                 if (existingByProvider) {
@@ -128,7 +123,7 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
                     }
                 }
 
-                return await this.signup({ provider, profile, context });
+                return await this.signup({ provider: input.provider, profile, context });
             } else {
                 throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_STATE`);
             }
@@ -141,7 +136,7 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
         const writeManager = this.writeManager.fork();
 
         return writeManager.transactional(async (transaction) => {
-            const account = await this.accountService.createByOAuth({
+            const account = this.accountService.createByOAuth({
                 transaction,
                 context,
                 input: {
@@ -175,11 +170,13 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
 
             session.refresh(refreshTokenHash);
 
-            await this.sessionService.create({
+            this.sessionService.create({
                 input: { session, account },
                 transaction,
                 context,
             });
+
+            await transaction.flush();
 
             const accessToken = await this.jwtService.signAccessToken({
                 sub: account.id,
@@ -209,11 +206,13 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
 
             session.refresh(refreshTokenHash);
 
-            await this.sessionService.create({
+            this.sessionService.create({
                 input: { session, account: identifier.account },
                 transaction,
                 context,
             });
+
+            await transaction.flush();
 
             const accessToken = await this.jwtService.signAccessToken({
                 sub: identifier.account.id,

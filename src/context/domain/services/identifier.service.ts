@@ -5,24 +5,20 @@ import { AuditJournal, Identifier, Notification } from "~context/domain/entities
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierService implements Services.Identifier.Contract {
-    public async create({
-        transaction,
-        context: { userAgent, ip },
-        input: { identifier, account },
-    }: Services.Identifier.Create): Promise<Identifier> {
+    public create({ transaction, context: { userAgent, ip }, input }: Services.Identifier.Create): Identifier {
         const identifierEntity = new Identifier({
-            providerUserId: identifier.providerUserId,
-            provider: identifier.provider,
-            value: identifier.value,
-            type: identifier.type,
-            account,
+            providerUserId: input.identifier.providerUserId,
+            provider: input.identifier.provider,
+            value: input.identifier.value,
+            type: input.identifier.type,
+            account: input.account,
         });
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.ADD_IDENTIFIER,
             entityType: IdentityEntityType.IDENTIFIER,
             at: identifierEntity.createdAt,
-            entity: account.id,
+            entity: input.account.id,
             userAgent,
             ip,
         });
@@ -32,36 +28,28 @@ export class IdentifierService implements Services.Identifier.Contract {
             source: NotificationSource.IDENTITY,
             title: "",
             body: "",
-            account,
+            account: input.account,
         });
 
         transaction.persist(notificationEntity);
         transaction.persist(identifierEntity);
         transaction.persist(auditEntity);
 
-        await transaction.flush();
-
         return identifierEntity;
     }
 
-    public async purge({
-        transaction,
-        context: { userAgent, ip },
-        input: { reason, identifier },
-    }: Services.Identifier.Purge): Promise<void> {
-        const { account } = identifier;
+    public purge({ transaction, context: { userAgent, ip }, input }: Services.Identifier.Purge): void {
+        input.identifier.canRemove();
 
-        identifier.canRemove();
-
-        transaction.remove(identifier);
+        transaction.remove(input.identifier);
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.REMOVE_IDENTIFIER,
             entityType: IdentityEntityType.IDENTIFIER,
+            entity: input.identifier.account.id,
+            reason: input.reason,
             at: new Date(),
-            entity: account.id,
             userAgent,
-            reason,
             ip,
         });
 
@@ -69,28 +57,22 @@ export class IdentifierService implements Services.Identifier.Contract {
             category: NotificationCategory.SECURITY,
             source: NotificationSource.IDENTITY,
             title: "Identifier removed",
-            body: `Your ${identifier.type} identifier has been removed.`,
-            account,
+            body: `Your ${input.identifier.type} identifier has been removed.`,
+            account: input.identifier.account,
         });
 
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async verify({
-        transaction,
-        context: { userAgent, ip },
-        input: { identifier },
-    }: Services.Identifier.Verify): Promise<void> {
-        identifier.verify();
+    public verify({ transaction, context: { userAgent, ip }, input }: Services.Identifier.Verify): void {
+        input.identifier.verify();
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.VERIFY_IDENTIFIER,
             entityType: IdentityEntityType.IDENTIFIER,
-            at: identifier.verifiedAt!,
-            entity: identifier.account.id,
+            entity: input.identifier.account.id,
+            at: input.identifier.verifiedAt!,
             userAgent,
             ip,
         });
@@ -99,31 +81,23 @@ export class IdentifierService implements Services.Identifier.Contract {
             category: NotificationCategory.ACCOUNT,
             source: NotificationSource.IDENTITY,
             title: "Identifier verified",
-            body: `Your ${identifier.type} has been verified.`,
-            account: identifier.account,
+            body: `Your ${input.identifier.type} has been verified.`,
+            account: input.identifier.account,
         });
 
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async setPrimary({
-        transaction,
-        context: { userAgent, ip },
-        input: { identifier },
-    }: Services.Identifier.SetPrimary): Promise<void> {
-        const { account } = identifier;
-
-        identifier.canSetAsPrimary();
-        account.setPrimaryIdentifier(identifier);
+    public setPrimary({ transaction, context: { userAgent, ip }, input }: Services.Identifier.SetPrimary): void {
+        input.identifier.canSetAsPrimary();
+        input.identifier.account.setPrimaryIdentifier(input.identifier);
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.SET_PRIMARY_IDENTIFIER,
             entityType: IdentityEntityType.IDENTIFIER,
-            at: account.updatedAt!,
-            entity: account.id,
+            at: input.identifier.account.updatedAt!,
+            entity: input.identifier.account.id,
             userAgent,
             ip,
         });
@@ -132,55 +106,49 @@ export class IdentifierService implements Services.Identifier.Contract {
             category: NotificationCategory.SECURITY,
             source: NotificationSource.IDENTITY,
             title: "Primary identifier changed",
-            body: `Your primary identifier has been changed to ${identifier.type}.`,
-            account,
+            body: `Your primary identifier has been changed to ${input.identifier.type}.`,
+            account: input.identifier.account,
         });
 
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async toggleNotifications({
+    public toggleNotifications({
         transaction,
         context: { userAgent, ip },
-        input: { identifier },
-    }: Services.Identifier.ToggleNotifications): Promise<void> {
-        identifier.toggleNotifications();
+        input,
+    }: Services.Identifier.ToggleNotifications): void {
+        input.identifier.toggleNotifications();
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.UPDATE_IDENTIFIER,
             entityType: IdentityEntityType.IDENTIFIER,
-            entity: identifier.account.id,
+            entity: input.identifier.account.id,
             at: new Date(),
             userAgent,
             ip,
         });
 
         transaction.persist(auditEntity);
-
-        await transaction.flush();
     }
 
-    public async togglePasswordlessLogin({
+    public togglePasswordlessLogin({
         transaction,
         context: { userAgent, ip },
-        input: { identifier },
-    }: Services.Identifier.TogglePasswordlessLogin): Promise<void> {
-        identifier.togglePasswordlessLogin();
+        input,
+    }: Services.Identifier.TogglePasswordlessLogin): void {
+        input.identifier.togglePasswordlessLogin();
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.UPDATE_IDENTIFIER,
             entityType: IdentityEntityType.IDENTIFIER,
-            entity: identifier.account.id,
+            entity: input.identifier.account.id,
             at: new Date(),
             userAgent,
             ip,
         });
 
         transaction.persist(auditEntity);
-
-        await transaction.flush();
     }
 }

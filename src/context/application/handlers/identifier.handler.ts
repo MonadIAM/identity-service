@@ -34,10 +34,10 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async create({ input: { account, type, value }, context }: Handlers.Identifier.Create): Promise<MessageResult> {
+    public async create({ context, input }: Handlers.Identifier.Create): Promise<MessageResult> {
         try {
             const existing = await this.identifierRepository.findUnique({
-                where: { type, value },
+                where: { type: input.type, value: input.value },
             });
 
             if (existing) {
@@ -46,25 +46,29 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
                 const writeManager = this.writeManager.fork();
                 const identifier = await writeManager.transactional(async (transaction) => {
                     const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                        where: { id: account },
+                        where: { id: input.account },
                         transaction,
                     });
 
-                    return this.identifierService.create({
+                    const identifier = this.identifierService.create({
+                        transaction,
+                        context,
                         input: {
                             account: accountEntity,
                             identifier: {
+                                value: input.value,
                                 isVerified: false,
-                                value,
-                                type,
+                                type: input.type,
                             },
                         },
-                        context,
-                        transaction,
                     });
+
+                    await transaction.flush();
+
+                    return identifier;
                 });
 
-                await this.sendOTP({ identifier: identifier.id, type, value });
+                await this.sendOTP({ identifier: identifier.id, value: input.value, type: input.type });
 
                 return { message: `${this.dictionaryPath}.VERIFICATION_CODE_SENT` };
             }
@@ -73,10 +77,10 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async resend({ input: { identifier, account } }: Handlers.Identifier.Resend): Promise<MessageResult> {
+    public async resend({ input }: Handlers.Identifier.Resend): Promise<MessageResult> {
         try {
             const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                where: { id: identifier, account },
+                where: { id: input.identifier, account: input.account },
             });
 
             if (identifierEntity.isVerified) {
@@ -95,12 +99,12 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async confirm({ input: { code }, context }: Handlers.Identifier.Confirm): Promise<MessageResult> {
+    public async confirm({ context, input }: Handlers.Identifier.Confirm): Promise<MessageResult> {
         try {
-            const identifier = await this.otpCacheService.getIdentifier({ code });
+            const identifier = await this.otpCacheService.getIdentifier({ code: input.code });
 
             if (identifier) {
-                await this.otpCacheService.deleteIdentifier({ code });
+                await this.otpCacheService.deleteIdentifier({ code: input.code });
 
                 const writeManager = this.writeManager.fork();
                 await writeManager.transactional(async (transaction) => {
@@ -112,11 +116,13 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
                     if (identifierEntity.isVerified) {
                         throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
                     } else {
-                        await this.identifierService.verify({
+                        this.identifierService.verify({
                             input: { identifier: identifierEntity },
                             transaction,
                             context,
                         });
+
+                        await transaction.flush();
                     }
                 });
 
@@ -129,24 +135,21 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async purge({
-        input: { identifier, password, account },
-        context,
-    }: Handlers.Identifier.Purge): Promise<MessageResult> {
+    public async purge({ context, input }: Handlers.Identifier.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                    where: { id: input.identifier, account: input.account },
                     options: { populate: ["account.password"] },
-                    where: { id: identifier, account },
                     transaction,
                 });
 
                 if (identifierEntity.isVerified) {
-                    if (password) {
+                    if (input.password) {
                         const isValid = await this.hashingService.verify({
                             storedHash: identifierEntity.account.password?.hash!,
-                            value: password,
+                            value: input.password,
                         });
 
                         if (!isValid) {
@@ -157,11 +160,13 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
                     }
                 }
 
-                await this.identifierService.purge({
+                this.identifierService.purge({
                     input: { identifier: identifierEntity },
                     transaction,
                     context,
                 });
+
+                await transaction.flush();
             });
 
             return { message: `${this.dictionaryPath}.IDENTIFIER_REMOVED` };
@@ -170,30 +175,29 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async setPrimary({
-        input: { identifier, password, account },
-        context,
-    }: Handlers.Identifier.SetPrimary): Promise<MessageResult> {
+    public async setPrimary({ context, input }: Handlers.Identifier.SetPrimary): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                    where: { id: input.identifier, account: input.account },
                     options: { populate: ["account.password"] },
-                    where: { id: identifier, account },
                     transaction,
                 });
 
                 const isValid = await this.hashingService.verify({
                     storedHash: identifierEntity.account.password?.hash!,
-                    value: password,
+                    value: input.password,
                 });
 
                 if (isValid) {
-                    await this.identifierService.setPrimary({
+                    this.identifierService.setPrimary({
                         input: { identifier: identifierEntity },
                         transaction,
                         context,
                     });
+
+                    await transaction.flush();
                 } else {
                     throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
                 }
@@ -205,23 +209,22 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async toggleNotifications({
-        input: { identifier, account },
-        context,
-    }: Handlers.Identifier.ToggleNotifications): Promise<MessageResult> {
+    public async toggleNotifications({ context, input }: Handlers.Identifier.ToggleNotifications): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                    where: { id: identifier, account },
+                    where: { id: input.identifier, account: input.account },
                     transaction,
                 });
 
-                await this.identifierService.toggleNotifications({
+                this.identifierService.toggleNotifications({
                     input: { identifier: identifierEntity },
                     transaction,
                     context,
                 });
+
+                await transaction.flush();
             });
 
             return { message: `${this.dictionaryPath}.NOTIFICATIONS_TOGGLED` };
@@ -231,22 +234,24 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
     }
 
     public async togglePasswordlessLogin({
-        input: { identifier, account },
         context,
+        input,
     }: Handlers.Identifier.TogglePasswordlessLogin): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                    where: { id: identifier, account },
+                    where: { id: input.identifier, account: input.account },
                     transaction,
                 });
 
-                await this.identifierService.togglePasswordlessLogin({
+                this.identifierService.togglePasswordlessLogin({
                     input: { identifier: identifierEntity },
                     transaction,
                     context,
                 });
+
+                await transaction.flush();
             });
 
             return { message: `${this.dictionaryPath}.PASSWORDLESS_LOGIN_TOGGLED` };

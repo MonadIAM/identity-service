@@ -2,10 +2,10 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { ACCOUNT_SERVICE } from "~context/domain/services";
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { HASHING_SERVICE } from "~common/services";
+import { ACCOUNT_SERVICE } from "~context/domain/services";
 import { HandlerException } from "~common/exceptions";
+import { HASHING_SERVICE } from "~common/services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountHandler implements Handlers.Account.Contract {
@@ -16,64 +16,65 @@ export class AccountHandler implements Handlers.Account.Contract {
         private readonly writeManager: EntityManager,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
-        @Inject(ACCOUNT_SERVICE)
-        private readonly accountService: Services.Account.Contract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.Contract,
+        @Inject(ACCOUNT_SERVICE)
+        private readonly accountService: Services.Account.Contract,
     ) {}
 
-    public async deactivate({
-        input: { password, account },
-        context,
-    }: Handlers.Account.Deactivate): Promise<MessageResult> {
+    public async deactivate({ context, input }: Handlers.Account.Deactivate): Promise<MessageResult> {
         try {
             const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                options: { populate: ["password"] },
-                where: { id: account },
+                options: { populate: ["password", "sessions"] },
+                where: { id: input.account },
             });
 
-            if (accountEntity.password) {
-                const isValid = await this.hashingService.verify({
-                    storedHash: accountEntity.password.hash,
-                    value: password,
-                });
+            const isValid = await this.hashingService.verify({
+                storedHash: accountEntity.password!.hash,
+                value: input.password,
+            });
 
-                if (isValid) {
-                    const writeManager = this.writeManager.fork();
-                    await writeManager.transactional(async (transaction) => {
-                        await this.accountService.deactivate({
-                            input: { entity: accountEntity },
-                            transaction,
-                            context,
-                        });
+            if (isValid) {
+                const writeManager = this.writeManager.fork();
+                await writeManager.transactional(async (transaction) => {
+                    this.accountService.deactivate({
+                        input: { account: accountEntity },
+                        transaction,
+                        context,
                     });
-                    return { message: `${this.dictionaryPath}.DEACTIVATED` };
-                } else {
-                    throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
-                }
+
+                    await transaction.flush();
+                });
+                return { message: `${this.dictionaryPath}.DEACTIVATED` };
             } else {
-                throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
             }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
         }
     }
 
-    public async suspend({ input: { account, reason }, context, actor }: Handlers.Account.Suspend): Promise<MessageResult> {
+    public async suspend({ context, input, actor }: Handlers.Account.Suspend): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                    where: { id: account },
+                    options: { populate: ["sessions"] },
+                    where: { id: input.account },
                     transaction,
                 });
 
-                await this.accountService.suspend({
-                    input: { entity: accountEntity, reason },
+                this.accountService.suspend({
+                    input: {
+                        account: accountEntity,
+                        reason: input.reason,
+                    },
                     transaction,
                     context,
                     actor,
                 });
+
+                await transaction.flush();
             });
 
             return { message: `${this.dictionaryPath}.SUSPENDED` };
@@ -82,25 +83,26 @@ export class AccountHandler implements Handlers.Account.Contract {
         }
     }
 
-    public async unsuspend({
-        input: { account, reason },
-        context,
-        actor,
-    }: Handlers.Account.Unsuspend): Promise<MessageResult> {
+    public async unsuspend({ context, input, actor }: Handlers.Account.Unsuspend): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                    where: { id: account },
+                    where: { id: input.account },
                     transaction,
                 });
 
-                await this.accountService.unsuspend({
-                    input: { entity: accountEntity, reason },
+                this.accountService.unsuspend({
+                    input: {
+                        account: accountEntity,
+                        reason: input.reason,
+                    },
                     transaction,
                     context,
                     actor,
                 });
+
+                await transaction.flush();
             });
 
             return { message: `${this.dictionaryPath}.UNSUSPENDED` };

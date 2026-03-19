@@ -11,29 +11,25 @@ import {
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountService implements Services.Account.Contract {
-    public async create({
-        transaction,
-        context: { userAgent, ip },
-        input: { displayName, identifier, password, subject },
-    }: Services.Account.Create): Promise<Account> {
+    public create({ transaction, context: { userAgent, ip }, input }: Services.Account.Create): Account {
         const account = new Account({
             status: AccountStatus.PENDING,
-            subject,
+            subject: input.subject,
         });
 
         const profileEntity = new Profile({
-            displayName,
+            displayName: input.displayName,
             account,
         });
 
         const identifierEntity = new Identifier({
-            value: identifier.value,
-            type: identifier.type,
+            value: input.identifier.value,
+            type: input.identifier.type,
             account,
         });
 
         const passwordEntity = new Password({
-            hash: password,
+            hash: input.password,
             account,
         });
 
@@ -58,33 +54,27 @@ export class AccountService implements Services.Account.Contract {
         transaction.persist(passwordEntity);
         transaction.persist(auditEntity);
 
-        await transaction.flush();
-
         return account;
     }
 
-    public async createByOAuth({
-        transaction,
-        context: { userAgent, ip },
-        input: { subject, profile, oauth, email },
-    }: Services.Account.CreateByOAuth): Promise<Account> {
+    public createByOAuth({ transaction, context: { userAgent, ip }, input }: Services.Account.CreateByOAuth): Account {
         const account = new Account({
             status: AccountStatus.ACTIVE,
-            subject,
+            subject: input.subject,
         });
 
         const profileEntity = new Profile({
-            displayName: profile.displayName,
-            timeZone: profile.timeZone,
-            locale: profile.locale,
+            displayName: input.profile.displayName,
+            timeZone: input.profile.timeZone,
+            locale: input.profile.locale,
             account,
         });
 
         const oauthIdentifierEntity = new Identifier({
-            providerUserId: oauth.providerUserId,
-            provider: oauth.provider,
-            value: oauth.value,
-            type: oauth.type,
+            providerUserId: input.oauth.providerUserId,
+            provider: input.oauth.provider,
+            value: input.oauth.value,
+            type: input.oauth.type,
             isVerified: true,
             account,
         });
@@ -94,12 +84,12 @@ export class AccountService implements Services.Account.Contract {
             profile: profileEntity,
         });
 
-        if (email) {
+        if (input.email) {
             const emailIdentifierEntity = new Identifier({
-                providerUserId: email.providerUserId,
-                provider: email.provider,
-                value: email.value,
-                type: email.type,
+                providerUserId: input.email.providerUserId,
+                provider: input.email.provider,
+                value: input.email.value,
+                type: input.email.type,
                 isVerified: true,
                 account,
             });
@@ -121,23 +111,17 @@ export class AccountService implements Services.Account.Contract {
         transaction.persist(auditEntity);
         transaction.persist(account);
 
-        await transaction.flush();
-
         return account;
     }
 
-    public async verify({
-        transaction,
-        context: { userAgent, ip },
-        input: { entity },
-    }: Services.Account.Verify): Promise<void> {
-        entity.activate();
+    public verify({ transaction, context: { userAgent, ip }, input }: Services.Account.Verify): void {
+        input.account.activate();
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.VERIFY_ACCOUNT,
             entityType: IdentityEntityType.ACCOUNT,
-            at: entity.updatedAt!,
-            entity: entity.id,
+            at: input.account.updatedAt!,
+            entity: input.account.id,
             userAgent,
             ip,
         });
@@ -149,34 +133,26 @@ export class AccountService implements Services.Account.Contract {
             source: NotificationSource.IDENTITY,
             title: "Account verified",
             body: "Your account has been successfully verified.",
-            account: entity,
+            account: input.account,
         });
 
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async deactivate({
-        transaction,
-        context: { userAgent, ip },
-        input: { reason, entity },
-    }: Services.Account.Deactivate): Promise<void> {
-        entity.deactivate();
+    public deactivate({ transaction, context: { userAgent, ip }, input }: Services.Account.Deactivate): void {
+        input.account.deactivate();
 
-        const sessions = await entity.sessions.loadItems();
-
-        for (const session of sessions) {
+        for (const session of input.account.sessions) {
             transaction.remove(session);
         }
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
             entityType: IdentityEntityType.ACCOUNT,
-            at: entity.updatedAt!,
-            entity: entity.id,
+            at: input.account.updatedAt!,
+            entity: input.account.id,
+            reason: input.reason,
             userAgent,
-            reason,
             ip,
         });
 
@@ -187,26 +163,20 @@ export class AccountService implements Services.Account.Contract {
             source: NotificationSource.IDENTITY,
             title: "Account deactivated",
             body: "Your account has been deactivated.",
-            account: entity,
+            account: input.account,
         });
 
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async restore({
-        transaction,
-        context: { userAgent, ip },
-        input: { entity },
-    }: Services.Account.Restore): Promise<void> {
-        entity.restore();
+    public restore({ transaction, context: { userAgent, ip }, input }: Services.Account.Restore): void {
+        input.account.restore();
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.RESTORE_ACCOUNT,
             entityType: IdentityEntityType.ACCOUNT,
-            at: entity.updatedAt!,
-            entity: entity.id,
+            at: input.account.updatedAt!,
+            entity: input.account.id,
             userAgent,
             ip,
         });
@@ -218,36 +188,27 @@ export class AccountService implements Services.Account.Contract {
             source: NotificationSource.IDENTITY,
             title: "Account restored",
             body: "Your account has been reactivated.",
-            account: entity,
+            account: input.account,
         });
 
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async suspend({
-        transaction,
-        context: { userAgent, ip },
-        input: { reason, entity },
-        actor,
-    }: Services.Account.Suspend): Promise<void> {
-        entity.suspend();
+    public suspend({ transaction, context: { userAgent, ip }, input, actor }: Services.Account.Suspend): void {
+        input.account.suspend();
 
-        const sessions = await entity.sessions.loadItems();
-
-        for (const session of sessions) {
+        for (const session of input.account.sessions) {
             transaction.remove(session);
         }
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.SUSPEND_ACCOUNT,
             entityType: IdentityEntityType.ACCOUNT,
-            at: entity.updatedAt!,
-            entity: entity.id,
+            at: input.account.updatedAt!,
+            entity: input.account.id,
+            reason: input.reason,
             userAgent,
             by: actor,
-            reason,
             ip,
         });
 
@@ -258,31 +219,24 @@ export class AccountService implements Services.Account.Contract {
             source: NotificationSource.IDENTITY,
             title: "Account suspended",
             body: "Your account has been suspended.",
-            account: entity,
+            account: input.account,
             /* TODO: implement metadata with reason */
         });
 
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async unsuspend({
-        transaction,
-        context: { userAgent, ip },
-        input: { reason, entity },
-        actor,
-    }: Services.Account.Unsuspend): Promise<void> {
-        entity.unsuspend();
+    public unsuspend({ transaction, context: { userAgent, ip }, input, actor }: Services.Account.Unsuspend): void {
+        input.account.unsuspend();
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.UNSUSPEND_ACCOUNT,
             entityType: IdentityEntityType.ACCOUNT,
-            at: entity.updatedAt!,
-            entity: entity.id,
+            at: input.account.updatedAt!,
+            entity: input.account.id,
+            reason: input.reason,
             userAgent,
             by: actor,
-            reason,
             ip,
         });
 
@@ -293,11 +247,9 @@ export class AccountService implements Services.Account.Contract {
             source: NotificationSource.IDENTITY,
             title: "Account restored",
             body: "Your account has been restored.",
-            account: entity,
+            account: input.account,
         });
 
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 }

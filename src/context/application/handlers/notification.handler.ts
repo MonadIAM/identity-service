@@ -27,10 +27,10 @@ export class NotificationHandler implements Handlers.Notification.Contract {
         }
     }
 
-    public async markAllAsRead({ input: { account } }: Handlers.Notification.MarkAllAsRead): Promise<MessageResult> {
+    public async markAllAsRead({ input }: Handlers.Notification.MarkAllAsRead): Promise<MessageResult> {
         try {
             const affected = await this.notificationRepository.markAsRead({
-                account,
+                account: input.account,
             });
 
             return {

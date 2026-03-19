@@ -6,8 +6,8 @@ declare global {
     namespace Services {
         namespace Credential {
             interface Contract {
-                changePassword: (props: ChangePassword) => Promise<void>;
-                resetPassword: (props: ResetPassword) => Promise<void>;
+                changePassword: (props: ChangePassword) => void;
+                resetPassword: (props: ResetPassword) => void;
             }
 
             type ChangePassword = {

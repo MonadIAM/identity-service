@@ -7,13 +7,13 @@ declare global {
     namespace Services {
         namespace Account {
             interface Contract {
-                create: (props: Create) => Promise<AccountEntity>;
-                createByOAuth: (props: CreateByOAuth) => Promise<AccountEntity>;
-                verify: (props: Verify) => Promise<void>;
-                deactivate: (props: Deactivate) => Promise<void>;
-                restore: (props: Restore) => Promise<void>;
-                suspend: (props: Suspend) => Promise<void>;
-                unsuspend: (props: Unsuspend) => Promise<void>;
+                createByOAuth: (props: CreateByOAuth) => AccountEntity;
+                create: (props: Create) => AccountEntity;
+                deactivate: (props: Deactivate) => void;
+                unsuspend: (props: Unsuspend) => void;
+                suspend: (props: Suspend) => void;
+                restore: (props: Restore) => void;
+                verify: (props: Verify) => void;
             }
 
             type Create = {
@@ -42,7 +42,7 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    entity: AccountEntity;
+                    account: AccountEntity;
                 };
             };
 
@@ -50,7 +50,7 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    entity: AccountEntity;
+                    account: AccountEntity;
                     reason?: string;
                 };
             };
@@ -59,7 +59,7 @@ declare global {
                 transaction: EntityManager;
                 context: RequestContext;
                 input: {
-                    entity: AccountEntity;
+                    account: AccountEntity;
                 };
             };
 
@@ -68,7 +68,7 @@ declare global {
                 context: RequestContext;
                 actor: string;
                 input: {
-                    entity: AccountEntity;
+                    account: AccountEntity;
                     reason?: string;
                 };
             };
@@ -78,7 +78,7 @@ declare global {
                 context: RequestContext;
                 actor: string;
                 input: {
-                    entity: AccountEntity;
+                    account: AccountEntity;
                     reason?: string;
                 };
             };

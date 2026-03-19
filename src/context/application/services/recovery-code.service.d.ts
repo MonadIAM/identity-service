@@ -6,8 +6,8 @@ declare global {
     namespace Services {
         namespace RecoveryCode {
             interface Contract {
-                regenerate: (props: Regenerate) => Promise<void>;
-                generate: (props: Generate) => Promise<void>;
+                regenerate: (props: Regenerate) => void;
+                generate: (props: Generate) => void;
             }
 
             type Regenerate = {

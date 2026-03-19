@@ -6,12 +6,11 @@ declare global {
     namespace Services {
         namespace Session {
             interface Contract {
-                create: (props: Create) => Promise<SessionEntity>;
-                revoke: (props: Revoke) => Promise<void>;
-                revokeAll: (props: RevokeAll) => Promise<void>;
-                forceLogout: (props: ForceLogout) => Promise<void>;
-                refresh: (props: Refresh) => Promise<void>;
+                forceLogout: (props: ForceLogout) => void;
+                revokeAll: (props: RevokeAll) => void;
                 resolveSessionExpiry: () => Date;
+                create: (props: Create) => void;
+                revoke: (props: Revoke) => void;
             }
 
             type Create = {
@@ -46,14 +45,6 @@ declare global {
                     account: AccountEntity;
                     reason: string;
                     actor: string;
-                };
-            };
-
-            type Refresh = {
-                transaction: EntityManager;
-                input: {
-                    session: SessionEntity;
-                    hash: string;
                 };
             };
         }

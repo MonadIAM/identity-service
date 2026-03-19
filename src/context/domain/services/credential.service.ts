@@ -5,24 +5,20 @@ import { AuditJournal, Notification, PasswordHistory } from "~context/domain/ent
 
 @Injectable({ scope: Scope.DEFAULT })
 export class CredentialService implements Services.Credential.Contract {
-    public async changePassword({
-        transaction,
-        context: { userAgent, ip },
-        input: { password, newHash },
-    }: Services.Credential.ChangePassword): Promise<void> {
-        const previous = password.rotate(newHash);
+    public changePassword({ transaction, context: { userAgent, ip }, input }: Services.Credential.ChangePassword): void {
+        const previous = input.password.rotate(input.newHash);
 
         const historyEntity = new PasswordHistory({
+            account: input.password.account,
             version: previous.version,
-            account: password.account,
             hash: previous.hash,
         });
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.CHANGE_PASSWORD,
             entityType: IdentityEntityType.PASSWORD,
-            entity: password.account.id,
-            at: password.setAt,
+            entity: input.password.account.id,
+            at: input.password.setAt,
             userAgent,
             ip,
         });
@@ -32,25 +28,19 @@ export class CredentialService implements Services.Credential.Contract {
             source: NotificationSource.IDENTITY,
             title: "Password changed",
             body: "Your password has been changed.",
-            account: password.account,
+            account: input.password.account,
         });
 
         transaction.persist(historyEntity);
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async resetPassword({
-        transaction,
-        context: { userAgent, ip },
-        input: { password, newHash },
-    }: Services.Credential.ResetPassword): Promise<void> {
-        const previous = password.rotate(newHash);
+    public resetPassword({ transaction, context: { userAgent, ip }, input }: Services.Credential.ResetPassword): void {
+        const previous = input.password.rotate(input.newHash);
 
         const historyEntity = new PasswordHistory({
-            account: password.account,
+            account: input.password.account,
             version: previous.version,
             hash: previous.hash,
         });
@@ -58,8 +48,8 @@ export class CredentialService implements Services.Credential.Contract {
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.RESET_PASSWORD,
             entityType: IdentityEntityType.PASSWORD,
-            entity: password.account.id,
-            at: password.setAt,
+            entity: input.password.account.id,
+            at: input.password.setAt,
             userAgent,
             ip,
         });
@@ -69,13 +59,11 @@ export class CredentialService implements Services.Credential.Contract {
             source: NotificationSource.IDENTITY,
             title: "Password reset",
             body: "Your password has been reset.",
-            account: password.account,
+            account: input.password.account,
         });
 
         transaction.persist(historyEntity);
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 }

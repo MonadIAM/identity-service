@@ -16,17 +16,17 @@ export class ProfileHandler implements Handlers.Profile.Contract {
         private readonly accountRepository: Repositories.Account.Contract,
     ) {}
 
-    public async update({ input: { account, patch } }: Handlers.Profile.Update): Promise<MessageResult> {
+    public async update({ input }: Handlers.Profile.Update): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
                 const accountEntity = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["profile"] },
-                    where: { id: account },
+                    where: { id: input.account },
                     transaction,
                 });
 
-                accountEntity.profile?.changeData(patch);
+                accountEntity.profile?.changeData(input.patch);
 
                 await transaction.flush();
             });

@@ -43,19 +43,19 @@ export class LoginHandler implements Handlers.Login.Contract {
     ) {}
 
     public async byPassword({
-        input: { identifier, password },
         context,
+        input,
     }: Handlers.Login.ByPassword.Props): Promise<Handlers.Login.ByPassword.Result> {
         try {
             const identifierEntity = await this.identifierRepository.findUnique({
-                where: { value: identifier },
                 options: { populate: ["account.password"] },
+                where: { value: input.identifier },
             });
 
             if (identifierEntity?.account?.password) {
                 const isValid = await this.hashingService.verify({
                     storedHash: identifierEntity.account.password.hash,
-                    value: password,
+                    value: input.password,
                 });
 
                 if (isValid) {
@@ -81,10 +81,10 @@ export class LoginHandler implements Handlers.Login.Contract {
         }
     }
 
-    public async requestOTP({ input: { value } }: Handlers.Login.RequestOTP): Promise<MessageResult> {
+    public async requestOTP({ input }: Handlers.Login.RequestOTP): Promise<MessageResult> {
         try {
             const identifier = await this.identifierRepository.findUnique({
-                where: { value },
+                where: { value: input.value },
             });
 
             if (!identifier || !identifier.isVerified || !identifier.allowPasswordlessLogin) {
@@ -108,16 +108,16 @@ export class LoginHandler implements Handlers.Login.Contract {
         }
     }
 
-    public async confirmOTP({ input: { code }, context }: Handlers.Login.ConfirmOTP): Promise<Handlers.Login.Session> {
+    public async confirmOTP({ context, input }: Handlers.Login.ConfirmOTP): Promise<Handlers.Login.Session> {
         try {
-            const identifier = await this.otpCacheService.getLogin({ code });
+            const identifier = await this.otpCacheService.getLogin({ code: input.code });
 
             if (identifier) {
-                await this.otpCacheService.deleteLogin({ code });
+                await this.otpCacheService.deleteLogin({ code: input.code });
 
                 const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                    where: { id: identifier },
                     options: { populate: ["account"] },
+                    where: { id: identifier },
                 });
 
                 return await this.createSession({ account: identifierEntity.account, context });
@@ -129,12 +129,9 @@ export class LoginHandler implements Handlers.Login.Contract {
         }
     }
 
-    public async verify2FA({
-        input: { pendingToken, totpCode },
-        context,
-    }: Handlers.Login.Verify2FA): Promise<Handlers.Login.Session> {
+    public async verify2FA({ context, input }: Handlers.Login.Verify2FA): Promise<Handlers.Login.Session> {
         try {
-            const account = await this.pendingAuthCacheService.get({ token: pendingToken });
+            const account = await this.pendingAuthCacheService.get({ token: input.pendingToken });
 
             if (account) {
                 const secondFactor = await this.secondFactorRepository.findUnique({
@@ -145,10 +142,10 @@ export class LoginHandler implements Handlers.Login.Contract {
                     throw HandlerException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
                 } else {
                     const totp = new TOTP({ secret: secondFactor.secret });
-                    const isValid = totp.validate({ token: totpCode, window: 1 }) !== null;
+                    const isValid = totp.validate({ token: input.totpCode, window: 1 }) !== null;
 
                     if (isValid) {
-                        await this.pendingAuthCacheService.delete({ token: pendingToken });
+                        await this.pendingAuthCacheService.delete({ token: input.pendingToken });
 
                         const accountEntity = await this.accountRepository.findUniqueOrThrow({
                             where: { id: account },
@@ -186,11 +183,13 @@ export class LoginHandler implements Handlers.Login.Contract {
 
             session.refresh(refreshTokenHash);
 
-            await this.sessionService.create({
+            this.sessionService.create({
                 input: { session, account },
                 transaction,
                 context,
             });
+
+            await transaction.flush();
 
             const accessToken = await this.jwtService.signAccessToken({
                 sub: account.id,

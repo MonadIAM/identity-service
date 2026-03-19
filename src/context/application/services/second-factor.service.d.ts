@@ -7,11 +7,11 @@ declare global {
     namespace Services {
         namespace SecondFactor {
             interface Contract {
-                confirm: (props: Confirm) => Promise<void>;
-                remove: (props: Remove) => Promise<void>;
-                enableEnforce: (props: EnableEnforce) => Promise<void>;
-                disableEnforce: (props: DisableEnforce) => Promise<void>;
-                resetByMasterCode: (props: ResetByMasterCode) => Promise<void>;
+                confirm: (props: Confirm) => void;
+                remove: (props: Remove) => void;
+                enableEnforce: (props: EnableEnforce) => void;
+                disableEnforce: (props: DisableEnforce) => void;
+                resetByMasterCode: (props: ResetByMasterCode) => void;
             }
 
             type Confirm = {

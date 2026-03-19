@@ -36,28 +36,29 @@ export class SignupHandler implements Handlers.Signup.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async byEmail({
-        input: { email, password, displayName },
-        context,
-    }: Handlers.Signup.ByEmail): Promise<MessageResult> {
+    public async byEmail({ context, input }: Handlers.Signup.ByEmail): Promise<MessageResult> {
         try {
-            const hashedPassword = await this.hashingService.hash({ value: password });
+            const hashedPassword = await this.hashingService.hash({ value: input.password });
 
             const writeManager = this.writeManager.fork();
             const account = await writeManager.transactional(async (transaction) => {
-                return await this.accountService.create({
+                const account = this.accountService.create({
+                    transaction,
+                    context,
                     input: {
-                        identifier: { type: IdentifierType.EMAIL, value: email },
+                        identifier: { type: IdentifierType.EMAIL, value: input.email },
+                        displayName: input.displayName,
                         subject: AccountSubject.HUMAN,
                         password: hashedPassword,
-                        displayName,
                     },
-                    context,
-                    transaction,
                 });
+
+                await transaction.flush();
+
+                return account;
             });
 
-            this.sendOTP({ type: IdentifierType.EMAIL, account: account.id, value: email });
+            await this.sendOTP({ type: IdentifierType.EMAIL, account: account.id, value: input.email });
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
@@ -65,28 +66,29 @@ export class SignupHandler implements Handlers.Signup.Contract {
         }
     }
 
-    public async byPhone({
-        input: { phone, password, displayName },
-        context,
-    }: Handlers.Signup.ByPhone): Promise<MessageResult> {
+    public async byPhone({ context, input }: Handlers.Signup.ByPhone): Promise<MessageResult> {
         try {
-            const hashedPassword = await this.hashingService.hash({ value: password });
+            const hashedPassword = await this.hashingService.hash({ value: input.password });
 
             const writeManager = this.writeManager.fork();
             const account = await writeManager.transactional(async (transaction) => {
-                return await this.accountService.create({
+                const account = this.accountService.create({
+                    transaction,
+                    context,
                     input: {
-                        identifier: { type: IdentifierType.PHONE, value: phone },
+                        identifier: { type: IdentifierType.PHONE, value: input.phone },
+                        displayName: input.displayName,
                         subject: AccountSubject.HUMAN,
                         password: hashedPassword,
-                        displayName,
                     },
-                    context,
-                    transaction,
                 });
+
+                await transaction.flush();
+
+                return account;
             });
 
-            this.sendOTP({ type: IdentifierType.PHONE, account: account.id, value: phone });
+            await this.sendOTP({ type: IdentifierType.PHONE, account: account.id, value: input.phone });
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
@@ -94,10 +96,10 @@ export class SignupHandler implements Handlers.Signup.Contract {
         }
     }
 
-    public async resend({ input: { identifier } }: Handlers.Signup.Resend): Promise<MessageResult> {
+    public async resend({ input }: Handlers.Signup.Resend): Promise<MessageResult> {
         try {
             const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                where: { value: identifier },
+                where: { value: input.identifier },
             });
 
             if (identifierEntity.isVerified) {
@@ -116,15 +118,12 @@ export class SignupHandler implements Handlers.Signup.Contract {
         }
     }
 
-    public async confirm({
-        input: { code },
-        context,
-    }: Handlers.Signup.Confirm.Props): Promise<Handlers.Signup.Confirm.Result> {
+    public async confirm({ context, input }: Handlers.Signup.Confirm.Props): Promise<Handlers.Signup.Confirm.Result> {
         try {
-            const cachedAccount = await this.otpCacheService.getVerification({ code });
+            const cachedAccount = await this.otpCacheService.getVerification({ code: input.code });
 
             if (cachedAccount) {
-                await this.otpCacheService.deleteVerification({ code });
+                await this.otpCacheService.deleteVerification({ code: input.code });
 
                 const codes = this.cryptoService.generateRecoveryCodes();
                 const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
@@ -136,16 +135,18 @@ export class SignupHandler implements Handlers.Signup.Contract {
                         transaction,
                     });
 
-                    await this.accountService.verify({
-                        input: { entity: accountEntity },
+                    this.accountService.verify({
+                        input: { account: accountEntity },
                         transaction,
                         context,
                     });
 
-                    await this.recoveryCodeService.generate({
+                    this.recoveryCodeService.generate({
                         input: { account: accountEntity, hashes: hashedCodes },
                         transaction,
                     });
+
+                    await transaction.flush();
                 });
 
                 return {

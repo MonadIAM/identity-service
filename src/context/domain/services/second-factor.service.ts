@@ -5,30 +5,26 @@ import { AuditJournal, MasterCode, Notification, SecondFactor } from "~context/d
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorService implements Services.SecondFactor.Contract {
-    public async confirm({
-        transaction,
-        context: { userAgent, ip },
-        input: { masterCodeHash, account, secret, type, name },
-    }: Services.SecondFactor.Confirm): Promise<void> {
+    public confirm({ transaction, context: { userAgent, ip }, input }: Services.SecondFactor.Confirm): void {
         const secondFactor = new SecondFactor({
-            account,
-            secret,
-            type,
-            name,
+            account: input.account,
+            secret: input.secret,
+            type: input.type,
+            name: input.name,
         });
 
         secondFactor.confirm();
 
         const masterCode = new MasterCode({
-            hash: masterCodeHash,
-            account,
+            hash: input.masterCodeHash,
+            account: input.account,
         });
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.CONFIRM_SECOND_FACTOR,
             entityType: IdentityEntityType.SECOND_FACTOR,
             at: secondFactor.confirmedAt!,
-            entity: account.id,
+            entity: input.account.id,
             userAgent,
             ip,
         });
@@ -37,38 +33,30 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
             category: NotificationCategory.SECURITY,
             source: NotificationSource.IDENTITY,
             title: "Two-factor authentication enabled",
-            body: `A ${type} authenticator has been added to your account.`,
-            account,
+            body: `A ${input.type} authenticator has been added to your account.`,
+            account: input.account,
         });
 
         transaction.persist(secondFactor);
         transaction.persist(masterCode);
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async remove({
-        transaction,
-        context: { userAgent, ip },
-        input: { reason, factor },
-    }: Services.SecondFactor.Remove): Promise<void> {
-        const { account } = factor;
+    public remove({ transaction, context: { userAgent, ip }, input }: Services.SecondFactor.Remove): void {
+        transaction.remove(input.factor);
 
-        transaction.remove(factor);
-
-        if (account.masterCode) {
-            transaction.remove(account.masterCode);
+        if (input.factor.account.masterCode) {
+            transaction.remove(input.factor.account.masterCode);
         }
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.REMOVE_SECOND_FACTOR,
             entityType: IdentityEntityType.SECOND_FACTOR,
-            entity: account.id,
+            entity: input.factor.account.id,
+            reason: input.reason,
             at: new Date(),
             userAgent,
-            reason,
             ip,
         });
 
@@ -76,28 +64,22 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
             category: NotificationCategory.SECURITY,
             source: NotificationSource.IDENTITY,
             title: "Two-factor authentication removed",
-            body: `A ${factor.type} authenticator has been removed from your account.`,
-            account,
+            body: `A ${input.factor.type} authenticator has been removed from your account.`,
+            account: input.factor.account,
         });
 
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async enableEnforce({
-        transaction,
-        context: { userAgent, ip },
-        input: { account },
-    }: Services.SecondFactor.EnableEnforce): Promise<void> {
-        account.enableEnforce();
+    public enableEnforce({ transaction, context: { userAgent, ip }, input }: Services.SecondFactor.EnableEnforce): void {
+        input.account.enableEnforce();
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.ENABLE_ENFORCE_2FA,
             entityType: IdentityEntityType.ACCOUNT,
-            at: account.updatedAt!,
-            entity: account.id,
+            at: input.account.updatedAt!,
+            entity: input.account.id,
             userAgent,
             ip,
         });
@@ -107,27 +89,21 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
             source: NotificationSource.IDENTITY,
             title: "Mandatory two-factor authentication enabled",
             body: "Two-factor authentication is now required for every sign-in.",
-            account,
+            account: input.account,
         });
 
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async disableEnforce({
-        transaction,
-        context: { userAgent, ip },
-        input: { account },
-    }: Services.SecondFactor.DisableEnforce): Promise<void> {
-        account.disableEnforce();
+    public disableEnforce({ transaction, context: { userAgent, ip }, input }: Services.SecondFactor.DisableEnforce): void {
+        input.account.disableEnforce();
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.DISABLE_ENFORCE_2FA,
             entityType: IdentityEntityType.ACCOUNT,
-            at: account.updatedAt!,
-            entity: account.id,
+            at: input.account.updatedAt!,
+            entity: input.account.id,
             userAgent,
             ip,
         });
@@ -137,37 +113,33 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
             source: NotificationSource.IDENTITY,
             title: "Mandatory two-factor authentication disabled",
             body: "Two-factor authentication is no longer required for sign-in.",
-            account,
+            account: input.account,
         });
 
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 
-    public async resetByMasterCode({
+    public resetByMasterCode({
         transaction,
         context: { userAgent, ip },
-        input: { account },
-    }: Services.SecondFactor.ResetByMasterCode): Promise<void> {
-        account.resetEnforce();
+        input,
+    }: Services.SecondFactor.ResetByMasterCode): void {
+        input.account.resetEnforce();
 
-        const secondFactors = await account.secondFactors.loadItems();
-
-        for (const factor of secondFactors) {
+        for (const factor of input.account.secondFactors) {
             transaction.remove(factor);
         }
 
-        if (account.masterCode) {
-            transaction.remove(account.masterCode);
+        if (input.account.masterCode) {
+            transaction.remove(input.account.masterCode);
         }
 
         const auditEntity = new AuditJournal({
             actionType: IdentityActionType.RESET_BY_MASTER_CODE,
             entityType: IdentityEntityType.ACCOUNT,
-            at: account.updatedAt!,
-            entity: account.id,
+            at: input.account.updatedAt!,
+            entity: input.account.id,
             userAgent,
             ip,
         });
@@ -177,12 +149,10 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
             source: NotificationSource.IDENTITY,
             title: "Two-factor authentication reset",
             body: "All authenticators have been removed and mandatory 2FA has been disabled via master code.",
-            account,
+            account: input.account,
         });
 
         transaction.persist(auditEntity);
         transaction.persist(notificationEntity);
-
-        await transaction.flush();
     }
 }

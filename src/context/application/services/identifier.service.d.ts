@@ -6,12 +6,12 @@ declare global {
     namespace Services {
         namespace Identifier {
             interface Contract {
-                create: (props: Create) => Promise<IdentifierEntity>;
-                purge: (props: Purge) => Promise<void>;
-                verify: (props: Verify) => Promise<void>;
-                setPrimary: (props: SetPrimary) => Promise<void>;
-                toggleNotifications: (props: ToggleNotifications) => Promise<void>;
-                togglePasswordlessLogin: (props: TogglePasswordlessLogin) => Promise<void>;
+                togglePasswordlessLogin: (props: TogglePasswordlessLogin) => void;
+                toggleNotifications: (props: ToggleNotifications) => void;
+                create: (props: Create) => IdentifierEntity;
+                setPrimary: (props: SetPrimary) => void;
+                verify: (props: Verify) => void;
+                purge: (props: Purge) => void;
             }
 
             type Create = {
