@@ -33,10 +33,10 @@ export class SecondFactor {
     }
 
     public confirm(): void {
-        if (this.createdAt) {
+        if (this.confirmedAt) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
         } else {
-            this.createdAt = new Date();
+            this.confirmedAt = new Date();
         }
     }
 

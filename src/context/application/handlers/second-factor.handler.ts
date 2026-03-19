@@ -103,7 +103,7 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
 
                     return {
                         message: `${this.dictionaryPath}.TOTP_CONFIRMED`,
-                        data: { masterCode: masterCodePlaintext },
+                        masterCode: masterCodePlaintext,
                     };
                 } else {
                     throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
@@ -137,9 +137,9 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
                     if (isValid === null) {
                         throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
                     }
-                } else if (input.masterCode && factor.account.masterCode) {
+                } else if (input.masterCode) {
                     const isValid = await this.hashingService.verify({
-                        storedHash: factor.account.masterCode.hash,
+                        storedHash: factor.account.masterCode!.hash,
                         value: input.masterCode,
                     });
 
@@ -199,15 +199,13 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
     public async disableEnforce({ context, input }: Handlers.SecondFactor.DisableEnforce): Promise<MessageResult> {
         try {
             const secondFactor = await this.secondFactorRepository.findUniqueOrThrow({
-                where: { account: input.account, type: SecondFactorType.TOTP },
+                where: { account: { id: input.account }, type: SecondFactorType.TOTP },
             });
 
             const totp = new TOTP({ secret: Secret.fromBase32(secondFactor.secret) });
-            const isValid = totp.validate({ token: input.totpCode, window: 1 });
+            const isValid = totp.validate({ token: input.totpCode, window: 1 }) !== null;
 
-            if (isValid === null) {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
-            } else {
+            if (isValid) {
                 const writeManager = this.writeManager.fork();
                 await writeManager.transactional(async (transaction) => {
                     const accountEntity = await this.accountRepository.findUniqueOrThrow({
@@ -225,6 +223,8 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
                 });
 
                 return { message: `${this.dictionaryPath}.ENFORCE_DISABLED` };
+            } else {
+                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
             }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
@@ -234,19 +234,21 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
     public async resetByMasterCode({ context, input }: Handlers.SecondFactor.ResetByMasterCode): Promise<MessageResult> {
         try {
             const identifierEntity = await this.identifierRepository.findUnique({
-                options: { populate: ["account.masterCode"] },
+                options: { populate: ["account.masterCode", "account.secondFactors"] },
                 where: { value: input.identifier },
             });
 
             if (identifierEntity?.account?.masterCode) {
                 const isValid = await this.hashingService.verify({
-                    storedHash: identifierEntity.account.masterCode.hash,
+                    storedHash: identifierEntity.account.masterCode!.hash,
                     value: input.masterCode,
                 });
 
                 if (isValid) {
                     const writeManager = this.writeManager.fork();
                     await writeManager.transactional(async (transaction) => {
+                        transaction.merge(identifierEntity);
+
                         this.secondFactorService.resetByMasterCode({
                             input: { account: identifierEntity.account },
                             transaction,

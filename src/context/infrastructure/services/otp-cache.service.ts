@@ -9,6 +9,7 @@ export class OTPCacheService implements InfrastructureServices.OTPCache.Contract
     private readonly namespace = "otp";
 
     private readonly verificationTTL: number;
+    private readonly pending2FATTL: number;
     private readonly loginTTL: number;
     private readonly resetTTL: number;
 
@@ -18,6 +19,7 @@ export class OTPCacheService implements InfrastructureServices.OTPCache.Contract
         private readonly configService: ConfigService,
     ) {
         this.verificationTTL = this.configService.getOrThrow<number>("OTP_VERIFICATION_TTL");
+        this.pending2FATTL = this.configService.getOrThrow<number>("PENDING_2FA_TTL");
         this.loginTTL = this.configService.getOrThrow<number>("OTP_LOGIN_TTL");
         this.resetTTL = this.configService.getOrThrow<number>("OTP_RESET_TTL");
     }
@@ -59,7 +61,7 @@ export class OTPCacheService implements InfrastructureServices.OTPCache.Contract
     }
 
     public async setSetup2FA({ account, secret }: InfrastructureServices.OTPCache.SetSetup2FA): Promise<void> {
-        await this.redis.set(`${this.namespace}:2fa-setup:${account}`, secret, "EX", this.verificationTTL);
+        await this.redis.set(`${this.namespace}:2fa-setup:${account}`, secret, "EX", this.pending2FATTL);
     }
 
     public async getSetup2FA({ account }: InfrastructureServices.OTPCache.GetSetup2FA): Promise<Nullable<string>> {
