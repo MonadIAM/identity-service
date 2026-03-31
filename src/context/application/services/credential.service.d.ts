@@ -12,7 +12,6 @@ declare global {
 
             type ChangePassword = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     password: PasswordEntity;
                     newHash: string;
@@ -21,7 +20,6 @@ declare global {
 
             type ResetPassword = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     password: PasswordEntity;
                     newHash: string;

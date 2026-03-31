@@ -24,7 +24,6 @@ declare global {
 
             type Revoke = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     session: SessionEntity;
                 };
@@ -32,7 +31,6 @@ declare global {
 
             type RevokeAll = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                 };
@@ -40,7 +38,6 @@ declare global {
 
             type ForceLogout = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                     reason: string;

@@ -8,6 +8,7 @@ declare namespace Handlers {
 
         type Deactivate = {
             context: RequestContext;
+            actor: string;
             input: {
                 password: string;
                 account: string;

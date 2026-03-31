@@ -12,13 +12,11 @@ export class NotificationHandler implements Handlers.Notification.Contract {
         private readonly notificationRepository: Repositories.Notification.Contract,
     ) {}
 
-    public async markAsRead({
-        input: { account, notification },
-    }: Handlers.Notification.MarkAsRead): Promise<MessageResult> {
+    public async markAsRead(props: Handlers.Notification.MarkAsRead): Promise<MessageResult> {
         try {
             await this.notificationRepository.markAsRead({
-                id: notification,
-                account,
+                account: props.input.account,
+                id: props.input.notification,
             });
 
             return { message: `${this.dictionaryPath}.MARKED_AS_READ` };
@@ -27,10 +25,10 @@ export class NotificationHandler implements Handlers.Notification.Contract {
         }
     }
 
-    public async markAllAsRead({ input }: Handlers.Notification.MarkAllAsRead): Promise<MessageResult> {
+    public async markAllAsRead(props: Handlers.Notification.MarkAllAsRead): Promise<MessageResult> {
         try {
             const affected = await this.notificationRepository.markAsRead({
-                account: input.account,
+                account: props.input.account,
             });
 
             return {

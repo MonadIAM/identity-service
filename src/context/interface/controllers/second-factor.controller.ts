@@ -4,7 +4,7 @@ import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 
 import { SECOND_FACTOR_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
+import { ExtractActor, ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 
@@ -36,12 +36,13 @@ export class SecondFactorController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SetupSecondFactorDTO })
     public setup(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: Setup2FABodyDTO,
         @Lang() lang: string,
     ): Promise<SetupSecondFactorDTO> {
         return this.secondFactorHandler
-            .setup({ context, input })
+            .setup({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SetupSecondFactorDTO, data, lang }));
     }
 
@@ -50,12 +51,13 @@ export class SecondFactorController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: ConfirmSecondFactorDTO })
     public confirm(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: Confirm2FABodyDTO,
         @Lang() lang: string,
     ): Promise<ConfirmSecondFactorDTO> {
         return this.secondFactorHandler
-            .confirm({ context, input })
+            .confirm({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: ConfirmSecondFactorDTO, data, lang }));
     }
 
@@ -64,12 +66,13 @@ export class SecondFactorController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     public remove(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: Remove2FABodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.secondFactorHandler
-            .remove({ context, input })
+            .remove({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -78,12 +81,13 @@ export class SecondFactorController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     public enableEnforce(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: EnableEnforceBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.secondFactorHandler
-            .enableEnforce({ context, input })
+            .enableEnforce({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -92,12 +96,13 @@ export class SecondFactorController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     public disableEnforce(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: DisableEnforceBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.secondFactorHandler
-            .disableEnforce({ context, input })
+            .disableEnforce({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -106,12 +111,13 @@ export class SecondFactorController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     public resetByMasterCode(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: ResetByMasterCodeBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.secondFactorHandler
-            .resetByMasterCode({ context, input })
+            .resetByMasterCode({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

@@ -1,21 +1,20 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
+import { IdentifierType, IdentityActionType, IdentityEntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_SERVICE } from "~context/domain/services";
+import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { HandlerException } from "~common/exceptions";
-import { IdentifierType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierHandler implements Handlers.Identifier.Contract {
     private readonly dictionaryPath = "handlers.identifier";
 
     public constructor(
-        @InjectEntityManager("write")
-        private readonly writeManager: EntityManager,
+        @Inject(TRANSACTIONAL_SERVICE)
+        private readonly transactional: Tracking.Transactional.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_REPOSITORY)
@@ -34,41 +33,51 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async create({ context, input }: Handlers.Identifier.Create): Promise<MessageResult> {
+    public async create(props: Handlers.Identifier.Create): Promise<MessageResult> {
         try {
             const existing = await this.identifierRepository.findUnique({
-                where: { type: input.type, value: input.value },
+                where: {
+                    value: props.input.value,
+                    type: props.input.type,
+                },
             });
 
             if (existing) {
                 throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_EXISTS`);
             } else {
-                const writeManager = this.writeManager.fork();
-                const identifier = await writeManager.transactional(async (transaction) => {
-                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                        where: { id: input.account },
-                        transaction,
-                    });
+                const identifier = await this.transactional.run({
+                    audit: {
+                        actionType: IdentityActionType.CREATE_ACCOUNT,
+                        entityType: IdentityEntityType.IDENTIFIER,
+                        ...props,
+                    },
+                    execute: async (transaction) => {
+                        const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                            where: { id: props.input.account },
+                            transaction,
+                        });
 
-                    const identifier = this.identifierService.create({
-                        transaction,
-                        context,
-                        input: {
-                            account: accountEntity,
-                            identifier: {
-                                value: input.value,
-                                isVerified: false,
-                                type: input.type,
+                        const identifier = this.identifierService.create({
+                            transaction,
+                            input: {
+                                account: accountEntity,
+                                identifier: {
+                                    value: props.input.value,
+                                    type: props.input.type,
+                                    isVerified: false,
+                                },
                             },
-                        },
-                    });
+                        });
 
-                    await transaction.flush();
-
-                    return identifier;
+                        return identifier;
+                    },
                 });
 
-                await this.sendOTP({ identifier: identifier.id, value: input.value, type: input.type });
+                await this.sendOTP({
+                    identifier: identifier.id,
+                    value: props.input.value,
+                    type: props.input.type,
+                });
 
                 return { message: `${this.dictionaryPath}.VERIFICATION_CODE_SENT` };
             }
@@ -77,10 +86,13 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async resend({ input }: Handlers.Identifier.Resend): Promise<MessageResult> {
+    public async resend(props: Handlers.Identifier.Resend): Promise<MessageResult> {
         try {
             const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                where: { id: input.identifier, account: input.account },
+                where: {
+                    account: props.input.account,
+                    id: props.input.identifier,
+                },
             });
 
             if (identifierEntity.isVerified) {
@@ -99,31 +111,34 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async confirm({ context, input }: Handlers.Identifier.Confirm): Promise<MessageResult> {
+    public async confirm(props: Handlers.Identifier.Confirm): Promise<MessageResult> {
         try {
-            const identifier = await this.otpCacheService.getIdentifier({ code: input.code });
+            const identifier = await this.otpCacheService.getIdentifier({ code: props.input.code });
 
             if (identifier) {
-                await this.otpCacheService.deleteIdentifier({ code: input.code });
+                await this.otpCacheService.deleteIdentifier({ code: props.input.code });
 
-                const writeManager = this.writeManager.fork();
-                await writeManager.transactional(async (transaction) => {
-                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                        where: { id: identifier },
-                        transaction,
-                    });
-
-                    if (identifierEntity.isVerified) {
-                        throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
-                    } else {
-                        this.identifierService.verify({
-                            input: { identifier: identifierEntity },
+                await this.transactional.run({
+                    audit: {
+                        actionType: IdentityActionType.CREATE_ACCOUNT,
+                        entityType: IdentityEntityType.IDENTIFIER,
+                        ...props,
+                    },
+                    execute: async (transaction) => {
+                        const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                            where: { id: identifier },
                             transaction,
-                            context,
                         });
 
-                        await transaction.flush();
-                    }
+                        if (identifierEntity.isVerified) {
+                            throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
+                        } else {
+                            this.identifierService.verify({
+                                input: { identifier: identifierEntity },
+                                transaction,
+                            });
+                        }
+                    },
                 });
 
                 return { message: `${this.dictionaryPath}.IDENTIFIER_VERIFIED` };
@@ -135,38 +150,44 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async purge({ context, input }: Handlers.Identifier.Purge): Promise<MessageResult> {
+    public async purge(props: Handlers.Identifier.Purge): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                    where: { id: input.identifier, account: input.account },
-                    options: { populate: ["account.password"] },
-                    transaction,
-                });
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.CREATE_ACCOUNT,
+                    entityType: IdentityEntityType.IDENTIFIER,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                        options: { populate: ["account.password"] },
+                        where: {
+                            account: props.input.account,
+                            id: props.input.identifier,
+                        },
+                        transaction,
+                    });
 
-                if (identifierEntity.isVerified) {
-                    if (input.password) {
-                        const isValid = await this.hashingService.verify({
-                            storedHash: identifierEntity.account.password?.hash!,
-                            value: input.password,
-                        });
+                    if (identifierEntity.isVerified) {
+                        if (props.input.password) {
+                            const isValid = await this.hashingService.verify({
+                                storedHash: identifierEntity.account.password?.hash!,
+                                value: props.input.password,
+                            });
 
-                        if (!isValid) {
-                            throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                            if (!isValid) {
+                                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                            }
+                        } else {
+                            throw HandlerException.badRequest(`${this.dictionaryPath}.PASSWORD_REQUIRED`);
                         }
-                    } else {
-                        throw HandlerException.badRequest(`${this.dictionaryPath}.PASSWORD_REQUIRED`);
                     }
-                }
 
-                this.identifierService.purge({
-                    input: { identifier: identifierEntity },
-                    transaction,
-                    context,
-                });
-
-                await transaction.flush();
+                    this.identifierService.purge({
+                        input: { identifier: identifierEntity },
+                        transaction,
+                    });
+                },
             });
 
             return { message: `${this.dictionaryPath}.IDENTIFIER_REMOVED` };
@@ -175,32 +196,38 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async setPrimary({ context, input }: Handlers.Identifier.SetPrimary): Promise<MessageResult> {
+    public async setPrimary(props: Handlers.Identifier.SetPrimary): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                    where: { id: input.identifier, account: input.account },
-                    options: { populate: ["account.password"] },
-                    transaction,
-                });
-
-                const isValid = await this.hashingService.verify({
-                    storedHash: identifierEntity.account.password?.hash!,
-                    value: input.password,
-                });
-
-                if (isValid) {
-                    this.identifierService.setPrimary({
-                        input: { identifier: identifierEntity },
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.CREATE_ACCOUNT,
+                    entityType: IdentityEntityType.IDENTIFIER,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                        options: { populate: ["account.password"] },
+                        where: {
+                            account: props.input.account,
+                            id: props.input.identifier,
+                        },
                         transaction,
-                        context,
                     });
 
-                    await transaction.flush();
-                } else {
-                    throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
-                }
+                    const isValid = await this.hashingService.verify({
+                        storedHash: identifierEntity.account.password?.hash!,
+                        value: props.input.password,
+                    });
+
+                    if (isValid) {
+                        this.identifierService.setPrimary({
+                            input: { identifier: identifierEntity },
+                            transaction,
+                        });
+                    } else {
+                        throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                    }
+                },
             });
 
             return { message: `${this.dictionaryPath}.PRIMARY_CHANGED` };
@@ -209,22 +236,27 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async toggleNotifications({ context, input }: Handlers.Identifier.ToggleNotifications): Promise<MessageResult> {
+    public async toggleNotifications(props: Handlers.Identifier.ToggleNotifications): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                    where: { id: input.identifier, account: input.account },
-                    transaction,
-                });
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.CREATE_ACCOUNT,
+                    entityType: IdentityEntityType.IDENTIFIER,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                        where: {
+                            account: props.input.account,
+                            id: props.input.identifier,
+                        },
+                        transaction,
+                    });
 
-                this.identifierService.toggleNotifications({
-                    input: { identifier: identifierEntity },
-                    transaction,
-                    context,
-                });
-
-                await transaction.flush();
+                    this.identifierService.toggleNotifications({
+                        input: { identifier: identifierEntity },
+                    });
+                },
             });
 
             return { message: `${this.dictionaryPath}.NOTIFICATIONS_TOGGLED` };
@@ -233,25 +265,27 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
         }
     }
 
-    public async togglePasswordlessLogin({
-        context,
-        input,
-    }: Handlers.Identifier.TogglePasswordlessLogin): Promise<MessageResult> {
+    public async togglePasswordlessLogin(props: Handlers.Identifier.TogglePasswordlessLogin): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                    where: { id: input.identifier, account: input.account },
-                    transaction,
-                });
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.CREATE_ACCOUNT,
+                    entityType: IdentityEntityType.IDENTIFIER,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                        where: {
+                            account: props.input.account,
+                            id: props.input.identifier,
+                        },
+                        transaction,
+                    });
 
-                this.identifierService.togglePasswordlessLogin({
-                    input: { identifier: identifierEntity },
-                    transaction,
-                    context,
-                });
-
-                await transaction.flush();
+                    this.identifierService.togglePasswordlessLogin({
+                        input: { identifier: identifierEntity },
+                    });
+                },
             });
 
             return { message: `${this.dictionaryPath}.PASSWORDLESS_LOGIN_TOGGLED` };

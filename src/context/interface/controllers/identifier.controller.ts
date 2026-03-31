@@ -17,7 +17,7 @@ import {
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { IDENTIFIER_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
+import { ExtractActor, ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 
@@ -74,12 +74,13 @@ export class IdentifierController extends BaseController {
     @ApiOperation({ summary: "Creates a new identifier" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     public create(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: CreateIdentifierBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.identifierHandler
-            .create({ context, input })
+            .create({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -98,12 +99,13 @@ export class IdentifierController extends BaseController {
     @ApiOperation({ summary: "Confirms a new identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public confirm(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: ConfirmIdentifierBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.identifierHandler
-            .confirm({ context, input })
+            .confirm({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -112,12 +114,13 @@ export class IdentifierController extends BaseController {
     @ApiOperation({ summary: "Purge an identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public purge(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: RemoveIdentifierBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.identifierHandler
-            .purge({ context, input })
+            .purge({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -126,12 +129,13 @@ export class IdentifierController extends BaseController {
     @ApiOperation({ summary: "Sets an identifier as primary" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public setPrimary(
-        @ExtractContext() context: RequestContext,
+        @ExtractActor() { account: actor }: ActorContext,
         @Body() input: SetIdentifierAsPrimaryBodyDTO,
+        @ExtractContext() context: RequestContext,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.identifierHandler
-            .setPrimary({ context, input })
+            .setPrimary({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -140,12 +144,13 @@ export class IdentifierController extends BaseController {
     @ApiOperation({ summary: "Updates identifier notification settings" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public toggleNotifications(
-        @ExtractContext() context: RequestContext,
         @Body() input: ToggleIdentifierNotificationsBodyDTO,
+        @ExtractActor() { account: actor }: ActorContext,
+        @ExtractContext() context: RequestContext,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.identifierHandler
-            .toggleNotifications({ context, input })
+            .toggleNotifications({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -154,12 +159,13 @@ export class IdentifierController extends BaseController {
     @ApiOperation({ summary: "Updates identifier passwordless login settings" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public togglePasswordlessLogin(
-        @ExtractContext() context: RequestContext,
         @Body() input: ToggleIdentifierPasswordlessLoginBodyDTO,
+        @ExtractActor() { account: actor }: ActorContext,
+        @ExtractContext() context: RequestContext,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.identifierHandler
-            .togglePasswordlessLogin({ context, input })
+            .togglePasswordlessLogin({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

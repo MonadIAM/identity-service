@@ -19,6 +19,7 @@ declare global {
             namespace ByPassword {
                 type Props = {
                     context: RequestContext;
+                    actor: string;
                     input: {
                         identifier: string;
                         password: string;
@@ -42,6 +43,7 @@ declare global {
 
             type ConfirmOTP = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     code: string;
                 };
@@ -49,6 +51,7 @@ declare global {
 
             type Verify2FA = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     pendingToken: string;
                     totpCode: string;
@@ -58,6 +61,7 @@ declare global {
             type CreateSession = {
                 context: RequestContext;
                 account: Account;
+                actor: string;
             };
         }
     }

@@ -1,5 +1,6 @@
 {
   "namespaces": [
+    "tracking",
     "identity"
   ],
   "name": "public",
@@ -15,60 +16,53 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "entity": {
-          "name": "entity",
+        "action_type": {
+          "name": "action_type",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 64,
+          "mappedType": "string"
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 64,
+          "mappedType": "string"
+        },
+        "realm": {
+          "name": "realm",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "uuid"
+        },
+        "actor": {
+          "name": "actor",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "mappedType": "uuid"
-        },
-        "by": {
-          "name": "by",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "uuid"
-        },
-        "at": {
-          "name": "at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 3,
-          "mappedType": "datetime"
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "text"
-        },
-        "patch": {
-          "name": "patch",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "json"
         },
         "ip": {
           "name": "ip",
-          "type": "text",
+          "type": "varchar(45)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "mappedType": "text"
+          "length": 45,
+          "mappedType": "string"
         },
         "user_agent": {
           "name": "user_agent",
@@ -79,66 +73,14 @@
           "nullable": true,
           "mappedType": "text"
         },
-        "action_type": {
-          "name": "action_type",
-          "type": "text",
+        "input": {
+          "name": "input",
+          "type": "jsonb",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
-          "enumItems": [
-            "DISABLE_RECEIVE_NOTIFICATIONS",
-            "ENABLE_RECEIVE_NOTIFICATIONS",
-            "REGENERATE_RECOVERY_CODES",
-            "SET_PRIMARY_IDENTIFIER",
-            "CONFIRM_SECOND_FACTOR",
-            "REMOVE_SECOND_FACTOR",
-            "DISABLE_ENFORCED_2FA",
-            "DISABLE_USAGE_AS_2FA",
-            "RESET_BY_MASTER_CODE",
-            "REVOKE_ALL_SESSIONS",
-            "ENABLE_ENFORCED_2FA",
-            "ENABLE_USAGE_AS_2FA",
-            "DISABLE_ENFORCE_2FA",
-            "ENABLE_ENFORCE_2FA",
-            "DEACTIVATE_ACCOUNT",
-            "VERIFY_IDENTIFIER",
-            "UNSUSPEND_ACCOUNT",
-            "REMOVE_IDENTIFIER",
-            "UPDATE_IDENTIFIER",
-            "RESTORE_ACCOUNT",
-            "SUSPEND_ACCOUNT",
-            "CHANGE_PASSWORD",
-            "RESET_PASSWORD",
-            "CREATE_ACCOUNT",
-            "VERIFY_ACCOUNT",
-            "UPDATE_PROFILE",
-            "ADD_IDENTIFIER",
-            "CREATE_SESSION",
-            "REVOKE_SESSION",
-            "FORCE_LOGOUT",
-            "SET_PASSWORD"
-          ],
-          "mappedType": "enum"
-        },
-        "entity_type": {
-          "name": "entity_type",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "enumItems": [
-            "RECOVERY_CODE",
-            "SECOND_FACTOR",
-            "MASTER_CODE",
-            "IDENTIFIER",
-            "PASSWORD",
-            "PROFILE",
-            "SESSION",
-            "ACCOUNT"
-          ],
-          "mappedType": "enum"
+          "nullable": true,
+          "mappedType": "json"
         },
         "created_at": {
           "name": "created_at",
@@ -151,11 +93,140 @@
           "mappedType": "datetime"
         }
       },
-      "name": "audit_journal",
-      "schema": "identity",
+      "name": "audit_log",
+      "schema": "tracking",
       "indexes": [
         {
-          "keyName": "audit_journal_entity_idx",
+          "keyName": "audit_log_realm_idx",
+          "columnNames": [
+            "realm"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "audit_log_actor_created_at_idx",
+          "columnNames": [
+            "actor",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "audit_log_entity_type_action_type_idx",
+          "columnNames": [
+            "entity_type",
+            "action_type"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "audit_log_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "audit_entry_id": {
+          "name": "audit_entry_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "change_type": {
+          "name": "change_type",
+          "type": "varchar(16)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 16,
+          "mappedType": "string"
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 64,
+          "mappedType": "string"
+        },
+        "entity": {
+          "name": "entity",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "delta": {
+          "name": "delta",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "change_log",
+      "schema": "tracking",
+      "indexes": [
+        {
+          "keyName": "change_log_audit_entry_idx",
+          "columnNames": [
+            "audit_entry_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "change_log_entity_type_entity_id_idx",
           "columnNames": [
             "entity_type",
             "entity"
@@ -166,18 +237,7 @@
           "unique": false
         },
         {
-          "keyName": "audit_journal_by_at_idx",
-          "columnNames": [
-            "by",
-            "at"
-          ],
-          "composite": true,
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "keyName": "audit_journal_pkey",
+          "keyName": "change_log_pkey",
           "columnNames": [
             "id"
           ],

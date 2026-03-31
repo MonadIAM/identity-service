@@ -1,17 +1,11 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { Account, AuditJournal, Identifier, Notification, Password, Profile } from "~context/domain/entities";
-import {
-    NotificationCategory,
-    NotificationSource,
-    IdentityActionType,
-    IdentityEntityType,
-    AccountStatus,
-} from "~context/enums";
+import { Account, Identifier, Notification, Password, Profile } from "~context/domain/entities";
+import { NotificationCategory, NotificationSource, AccountStatus } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountService implements Services.Account.Contract {
-    public create({ transaction, context: { userAgent, ip }, input }: Services.Account.Create): Account {
+    public create({ transaction, input }: Services.Account.Create): Account {
         const account = new Account({
             status: AccountStatus.PENDING,
             subject: input.subject,
@@ -33,15 +27,6 @@ export class AccountService implements Services.Account.Contract {
             account,
         });
 
-        const auditEntity = new AuditJournal({
-            actionType: IdentityActionType.CREATE_ACCOUNT,
-            entityType: IdentityEntityType.ACCOUNT,
-            at: account.createdAt,
-            entity: account.id,
-            userAgent,
-            ip,
-        });
-
         account.assignRelations({
             identifier: identifierEntity,
             password: passwordEntity,
@@ -52,12 +37,11 @@ export class AccountService implements Services.Account.Contract {
         transaction.persist(profileEntity);
         transaction.persist(identifierEntity);
         transaction.persist(passwordEntity);
-        transaction.persist(auditEntity);
 
         return account;
     }
 
-    public createByOAuth({ transaction, context: { userAgent, ip }, input }: Services.Account.CreateByOAuth): Account {
+    public createByOAuth({ transaction, input }: Services.Account.CreateByOAuth): Account {
         const account = new Account({
             status: AccountStatus.ACTIVE,
             subject: input.subject,
@@ -97,159 +81,89 @@ export class AccountService implements Services.Account.Contract {
             transaction.persist(emailIdentifierEntity);
         }
 
-        const auditEntity = new AuditJournal({
-            actionType: IdentityActionType.CREATE_ACCOUNT,
-            entityType: IdentityEntityType.ACCOUNT,
-            at: account.createdAt,
-            entity: account.id,
-            userAgent,
-            ip,
-        });
-
         transaction.persist(oauthIdentifierEntity);
         transaction.persist(profileEntity);
-        transaction.persist(auditEntity);
         transaction.persist(account);
 
         return account;
     }
 
-    public verify({ transaction, context: { userAgent, ip }, input }: Services.Account.Verify): void {
+    public verify({ transaction, input }: Services.Account.Verify): void {
         input.account.activate();
 
-        const auditEntity = new AuditJournal({
-            actionType: IdentityActionType.VERIFY_ACCOUNT,
-            entityType: IdentityEntityType.ACCOUNT,
-            at: input.account.updatedAt!,
-            entity: input.account.id,
-            userAgent,
-            ip,
-        });
-
-        transaction.persist(auditEntity);
-
-        const notificationEntity = new Notification({
-            category: NotificationCategory.SECURITY,
-            source: NotificationSource.IDENTITY,
-            title: "Account verified",
-            body: "Your account has been successfully verified.",
-            account: input.account,
-        });
-
-        transaction.persist(notificationEntity);
+        transaction.persist(
+            new Notification({
+                category: NotificationCategory.SECURITY,
+                source: NotificationSource.IDENTITY,
+                title: "Account verified",
+                body: "Your account has been successfully verified.",
+                account: input.account,
+            }),
+        );
     }
 
-    public deactivate({ transaction, context: { userAgent, ip }, input }: Services.Account.Deactivate): void {
+    public deactivate({ transaction, input }: Services.Account.Deactivate): void {
         input.account.deactivate();
 
         for (const session of input.account.sessions) {
             transaction.remove(session);
         }
 
-        const auditEntity = new AuditJournal({
-            actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-            entityType: IdentityEntityType.ACCOUNT,
-            at: input.account.updatedAt!,
-            entity: input.account.id,
-            reason: input.reason,
-            userAgent,
-            ip,
-        });
-
-        transaction.persist(auditEntity);
-
-        const notificationEntity = new Notification({
-            category: NotificationCategory.SECURITY,
-            source: NotificationSource.IDENTITY,
-            title: "Account deactivated",
-            body: "Your account has been deactivated.",
-            account: input.account,
-        });
-
-        transaction.persist(notificationEntity);
+        transaction.persist(
+            new Notification({
+                category: NotificationCategory.SECURITY,
+                source: NotificationSource.IDENTITY,
+                title: "Account deactivated",
+                body: "Your account has been deactivated.",
+                account: input.account,
+            }),
+        );
     }
 
-    public restore({ transaction, context: { userAgent, ip }, input }: Services.Account.Restore): void {
+    public restore({ transaction, input }: Services.Account.Restore): void {
         input.account.restore();
 
-        const auditEntity = new AuditJournal({
-            actionType: IdentityActionType.RESTORE_ACCOUNT,
-            entityType: IdentityEntityType.ACCOUNT,
-            at: input.account.updatedAt!,
-            entity: input.account.id,
-            userAgent,
-            ip,
-        });
-
-        transaction.persist(auditEntity);
-
-        const notificationEntity = new Notification({
-            category: NotificationCategory.SECURITY,
-            source: NotificationSource.IDENTITY,
-            title: "Account restored",
-            body: "Your account has been reactivated.",
-            account: input.account,
-        });
-
-        transaction.persist(notificationEntity);
+        transaction.persist(
+            new Notification({
+                category: NotificationCategory.SECURITY,
+                source: NotificationSource.IDENTITY,
+                title: "Account restored",
+                body: "Your account has been reactivated.",
+                account: input.account,
+            }),
+        );
     }
 
-    public suspend({ transaction, context: { userAgent, ip }, input, actor }: Services.Account.Suspend): void {
+    public suspend({ transaction, input }: Services.Account.Suspend): void {
         input.account.suspend();
 
         for (const session of input.account.sessions) {
             transaction.remove(session);
         }
 
-        const auditEntity = new AuditJournal({
-            actionType: IdentityActionType.SUSPEND_ACCOUNT,
-            entityType: IdentityEntityType.ACCOUNT,
-            at: input.account.updatedAt!,
-            entity: input.account.id,
-            reason: input.reason,
-            userAgent,
-            by: actor,
-            ip,
-        });
-
-        transaction.persist(auditEntity);
-
-        const notificationEntity = new Notification({
-            category: NotificationCategory.SECURITY,
-            source: NotificationSource.IDENTITY,
-            title: "Account suspended",
-            body: "Your account has been suspended.",
-            account: input.account,
-            /* TODO: implement metadata with reason */
-        });
-
-        transaction.persist(notificationEntity);
+        transaction.persist(
+            new Notification({
+                category: NotificationCategory.SECURITY,
+                source: NotificationSource.IDENTITY,
+                title: "Account suspended",
+                body: "Your account has been suspended.",
+                account: input.account,
+                /* TODO: implement metadata with reason */
+            }),
+        );
     }
 
-    public unsuspend({ transaction, context: { userAgent, ip }, input, actor }: Services.Account.Unsuspend): void {
+    public unsuspend({ transaction, input }: Services.Account.Unsuspend): void {
         input.account.unsuspend();
 
-        const auditEntity = new AuditJournal({
-            actionType: IdentityActionType.UNSUSPEND_ACCOUNT,
-            entityType: IdentityEntityType.ACCOUNT,
-            at: input.account.updatedAt!,
-            entity: input.account.id,
-            reason: input.reason,
-            userAgent,
-            by: actor,
-            ip,
-        });
-
-        transaction.persist(auditEntity);
-
-        const notificationEntity = new Notification({
-            category: NotificationCategory.SECURITY,
-            source: NotificationSource.IDENTITY,
-            title: "Account restored",
-            body: "Your account has been restored.",
-            account: input.account,
-        });
-
-        transaction.persist(notificationEntity);
+        transaction.persist(
+            new Notification({
+                category: NotificationCategory.SECURITY,
+                source: NotificationSource.IDENTITY,
+                title: "Account restored",
+                body: "Your account has been restored.",
+                account: input.account,
+            }),
+        );
     }
 }

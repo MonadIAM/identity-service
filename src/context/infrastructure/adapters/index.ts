@@ -4,6 +4,8 @@ export { SecondFactorAdapter } from "./second-factor.adapter";
 export { NotificationAdapter } from "./notification.adapter";
 export { MasterCodeAdapter } from "./master-code.adapter";
 export { IdentifierAdapter } from "./identifier.adapter";
+export { ChangeLogAdapter } from "./change-log.adapter";
+export { AuditLogAdapter } from "./audit-log.adapter";
 export { PasswordAdapter } from "./password.adapter";
 export { SessionAdapter } from "./session.adapter";
 export { ProfileAdapter } from "./profile.adapter";

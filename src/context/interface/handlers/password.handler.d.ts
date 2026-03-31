@@ -11,6 +11,7 @@ declare namespace Handlers {
         namespace RegenerateRecoveryCodes {
             type Props = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     password: string;
                     account: string;
@@ -23,6 +24,7 @@ declare namespace Handlers {
 
         type Change = {
             context: RequestContext;
+            actor: string;
             input: {
                 currentPassword: string;
                 newPassword: string;

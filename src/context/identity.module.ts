@@ -1,6 +1,8 @@
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 
+import { TrackingModule } from "~common/tracking";
+
 import { CONTROLLERS } from "./interface/controllers";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { REPOSITORIES } from "./infrastructure/repositories";
@@ -10,7 +12,7 @@ import { SCHEDULERS } from "./interface/schedulers";
 import { HANDLERS } from "./application/handlers";
 
 @Module({
-    imports: [BullModule.registerQueue({ name: "cleanup" })],
+    imports: [TrackingModule, BullModule.registerQueue({ name: "cleanup" })],
     providers: [...INFRASTRUCTURE_SERVICES, ...DOMAIN_SERVICES, ...REPOSITORIES, ...SCHEDULERS, ...PROCESSORS, ...HANDLERS],
     controllers: [...CONTROLLERS],
 })

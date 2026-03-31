@@ -2,9 +2,9 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Patch 
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 
+import { ExtractActor, ExtractContext } from "~common/decorators";
 import { ACCOUNT_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 
@@ -27,12 +27,13 @@ export class AccountController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     public deactivate(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: DeactivateAccountBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.accountHandler
-            .deactivate({ context, input })
+            .deactivate({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -41,12 +42,13 @@ export class AccountController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     public suspend(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: SuspendAccountBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.accountHandler
-            .suspend({ context, input, actor: "00000000-0000-4000-8000-000000000000" })
+            .suspend({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -55,12 +57,13 @@ export class AccountController extends BaseController {
     @ApiOperation({ summary: "" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     public unsuspend(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: UnsuspendAccountBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.accountHandler
-            .unsuspend({ context, input, actor: "00000000-0000-4000-8000-000000000000" })
+            .unsuspend({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

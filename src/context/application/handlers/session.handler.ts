@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 
 import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { IdentityActionType, IdentityEntityType } from "~context/enums";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { SESSION_SERVICE } from "~context/domain/services";
+import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { HandlerException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -12,8 +12,8 @@ export class SessionHandler implements Handlers.Session.Contract {
     private readonly dictionaryPath = "handlers.session";
 
     public constructor(
-        @InjectEntityManager("write")
-        private readonly writeManager: EntityManager,
+        @Inject(TRANSACTIONAL_SERVICE)
+        private readonly transactional: Tracking.Transactional.Contract,
         @Inject(SESSION_REPOSITORY)
         private readonly sessionRepository: Repositories.Session.Contract,
         @Inject(ACCOUNT_REPOSITORY)
@@ -26,11 +26,11 @@ export class SessionHandler implements Handlers.Session.Contract {
         private readonly jwtService: CommonServices.JWT.Contract,
     ) {}
 
-    public async refresh({ input }: Handlers.Session.Refresh.Props): Promise<Handlers.Session.Refresh.Result> {
+    public async refresh(props: Handlers.Session.Refresh.Props): Promise<Handlers.Session.Refresh.Result> {
         try {
             const sessionEntity = await this.sessionRepository.findUnique({
                 options: { populate: ["account"] },
-                where: { id: input.session },
+                where: { id: props.input.session },
             });
 
             if (!sessionEntity) {
@@ -41,7 +41,7 @@ export class SessionHandler implements Handlers.Session.Contract {
                 throw HandlerException.unauthorized(`${this.dictionaryPath}.SESSION_EXPIRED`);
             }
 
-            const tokenHash = this.cryptoService.hashToken(input.refreshToken);
+            const tokenHash = this.cryptoService.hashToken(props.input.refreshToken);
             if (tokenHash !== sessionEntity.refreshTokenHash) {
                 throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_REFRESH_TOKEN`);
             }
@@ -52,10 +52,15 @@ export class SessionHandler implements Handlers.Session.Contract {
             });
             const newRefreshTokenHash = this.cryptoService.hashToken(newRefreshToken);
 
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                sessionEntity.refresh(newRefreshTokenHash);
-                await transaction.flush();
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                    entityType: IdentityEntityType.ACCOUNT,
+                    ...props,
+                },
+                execute: () => {
+                    sessionEntity.refresh(newRefreshTokenHash);
+                },
             });
 
             const accessToken = await this.jwtService.signAccessToken({
@@ -69,22 +74,25 @@ export class SessionHandler implements Handlers.Session.Contract {
         }
     }
 
-    public async logout({ context, input }: Handlers.Session.Logout): Promise<MessageResult> {
+    public async logout(props: Handlers.Session.Logout): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                const sessionEntity = await this.sessionRepository.findUniqueOrThrow({
-                    where: { id: input.session },
-                    transaction,
-                });
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                    entityType: IdentityEntityType.ACCOUNT,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const sessionEntity = await this.sessionRepository.findUniqueOrThrow({
+                        where: { id: props.input.session },
+                        transaction,
+                    });
 
-                this.sessionService.revoke({
-                    input: { session: sessionEntity },
-                    context,
-                    transaction,
-                });
-
-                await transaction.flush();
+                    this.sessionService.revoke({
+                        input: { session: sessionEntity },
+                        transaction,
+                    });
+                },
             });
 
             return { message: `${this.dictionaryPath}.LOGGED_OUT` };
@@ -93,23 +101,26 @@ export class SessionHandler implements Handlers.Session.Contract {
         }
     }
 
-    public async logoutAll({ context, input }: Handlers.Session.LogoutAll): Promise<MessageResult> {
+    public async logoutAll(props: Handlers.Session.LogoutAll): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                    options: { populate: ["sessions"] },
-                    where: { id: input.account },
-                    transaction,
-                });
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                    entityType: IdentityEntityType.ACCOUNT,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                        options: { populate: ["sessions"] },
+                        where: { id: props.input.account },
+                        transaction,
+                    });
 
-                this.sessionService.revokeAll({
-                    input: { account: accountEntity },
-                    transaction,
-                    context,
-                });
-
-                await transaction.flush();
+                    this.sessionService.revokeAll({
+                        input: { account: accountEntity },
+                        transaction,
+                    });
+                },
             });
 
             return { message: `${this.dictionaryPath}.ALL_SESSIONS_REVOKED` };
@@ -118,22 +129,25 @@ export class SessionHandler implements Handlers.Session.Contract {
         }
     }
 
-    public async revoke({ context, input }: Handlers.Session.Revoke): Promise<MessageResult> {
+    public async revoke(props: Handlers.Session.Revoke): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                const sessionEntity = await this.sessionRepository.findUniqueOrThrow({
-                    where: { id: input.session, account: input.account },
-                    transaction,
-                });
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                    entityType: IdentityEntityType.ACCOUNT,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const sessionEntity = await this.sessionRepository.findUniqueOrThrow({
+                        where: { id: props.input.session, account: props.input.account },
+                        transaction,
+                    });
 
-                this.sessionService.revoke({
-                    input: { session: sessionEntity },
-                    transaction,
-                    context,
-                });
-
-                await transaction.flush();
+                    this.sessionService.revoke({
+                        input: { session: sessionEntity },
+                        transaction,
+                    });
+                },
             });
 
             return { message: `${this.dictionaryPath}.SESSION_REVOKED` };
@@ -142,26 +156,29 @@ export class SessionHandler implements Handlers.Session.Contract {
         }
     }
 
-    public async forceLogout({ context, input, actor }: Handlers.Session.ForceLogout): Promise<MessageResult> {
+    public async forceLogout(props: Handlers.Session.ForceLogout): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            await writeManager.transactional(async (transaction) => {
-                const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                    where: { id: input.account },
-                    transaction,
-                });
+            await this.transactional.run({
+                audit: {
+                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                    entityType: IdentityEntityType.ACCOUNT,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                        where: { id: props.input.account },
+                        transaction,
+                    });
 
-                this.sessionService.forceLogout({
-                    input: {
-                        account: accountEntity,
-                        reason: input.reason,
-                        actor,
-                    },
-                    transaction,
-                    context,
-                });
-
-                await transaction.flush();
+                    this.sessionService.forceLogout({
+                        input: {
+                            account: accountEntity,
+                            reason: props.input.reason,
+                            actor: props.actor,
+                        },
+                        transaction,
+                    });
+                },
             });
 
             return { message: `${this.dictionaryPath}.FORCE_LOGOUT_COMPLETE` };

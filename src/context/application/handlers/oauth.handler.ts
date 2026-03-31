@@ -1,12 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 
 import { GOOGLE_OAUTH_SERVICE, GITHUB_OAUTH_SERVICE, CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
+import { AccountSubject, IdentifierType, IdentityActionType, IdentityEntityType } from "~context/enums";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
-import { AccountSubject, IdentifierType } from "~context/enums";
+import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { HandlerException } from "~common/exceptions";
 import { Session } from "~context/domain/entities";
 
@@ -15,8 +14,8 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
     private readonly dictionaryPath = "handlers.oauth";
 
     public constructor(
-        @InjectEntityManager("write")
-        private readonly writeManager: EntityManager,
+        @Inject(TRANSACTIONAL_SERVICE)
+        private readonly transactional: Tracking.Transactional.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_SERVICE)
@@ -94,23 +93,23 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
     //     }
     // }
 
-    public async callback({ context, input }: Handlers.OAuth.Callback.Props): Promise<Handlers.OAuth.Callback.Result> {
+    public async callback(props: Handlers.OAuth.Callback.Props): Promise<Handlers.OAuth.Callback.Result> {
         try {
-            const cached = await this.oauthStateCacheService.get({ state: input.state });
+            const cached = await this.oauthStateCacheService.get({ state: props.input.state });
 
-            if (cached?.provider === input.provider) {
-                await this.oauthStateCacheService.delete({ state: input.state });
+            if (cached?.provider === props.input.provider) {
+                await this.oauthStateCacheService.delete({ state: props.input.state });
 
-                const oauthService = this.resolveProvider(input.provider);
-                const { access_token } = await oauthService.exchangeCode(input.code);
+                const oauthService = this.resolveProvider(props.input.provider);
+                const { access_token } = await oauthService.exchangeCode(props.input.code);
                 const profile = await oauthService.fetchProfile(access_token);
 
                 const existingByProvider = await this.identifierRepository.findUnique({
-                    where: { provider: input.provider, providerUserId: profile.providerUserId },
+                    where: { provider: props.input.provider, providerUserId: profile.providerUserId },
                 });
 
                 if (existingByProvider) {
-                    return await this.login({ context, identifier: existingByProvider });
+                    return await this.login({ context: props.context, identifier: existingByProvider });
                 }
 
                 if (profile.email) {
@@ -123,7 +122,11 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
                     }
                 }
 
-                return await this.signup({ provider: input.provider, profile, context });
+                return await this.signup({
+                    provider: props.input.provider,
+                    context: props.context,
+                    profile,
+                });
             } else {
                 throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_STATE`);
             }
@@ -132,94 +135,102 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
         }
     }
 
-    private signup({ context, provider, profile }: Handlers.OAuth.Signup): Promise<Handlers.OAuth.Callback.Result> {
-        const writeManager = this.writeManager.fork();
-
-        return writeManager.transactional(async (transaction) => {
-            const account = this.accountService.createByOAuth({
-                transaction,
-                context,
-                input: {
-                    email: profile.email ? { type: IdentifierType.EMAIL, value: profile.email } : undefined,
-                    subject: AccountSubject.HUMAN,
-                    oauth: {
-                        value: profile.email ?? profile.providerUserId,
-                        providerUserId: profile.providerUserId,
-                        type: IdentifierType.OAUTH,
-                        provider,
+    private signup(props: Handlers.OAuth.Signup): Promise<Handlers.OAuth.Callback.Result> {
+        return this.transactional.run({
+            audit: {
+                actionType: IdentityActionType.CREATE_SESSION,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const account = this.accountService.createByOAuth({
+                    transaction,
+                    input: {
+                        email: props.profile.email ? { type: IdentifierType.EMAIL, value: props.profile.email } : undefined,
+                        subject: AccountSubject.HUMAN,
+                        oauth: {
+                            value: props.profile.email ?? props.profile.providerUserId,
+                            providerUserId: props.profile.providerUserId,
+                            type: IdentifierType.OAUTH,
+                            provider: props.provider,
+                        },
+                        profile: {
+                            displayName: props.profile.displayName,
+                            pictureUrl: props.profile.pictureUrl,
+                        },
                     },
-                    profile: {
-                        displayName: profile.displayName,
-                        pictureUrl: profile.pictureUrl,
-                    },
-                },
-            });
+                });
 
-            const session = new Session({
-                expiresAt: this.sessionService.resolveSessionExpiry(),
-                userAgent: context.userAgent,
-                ip: context.ip,
-                account,
-            });
+                const session = new Session({
+                    expiresAt: this.sessionService.resolveSessionExpiry(),
+                    userAgent: props.context.userAgent,
+                    ip: props.context.ip,
+                    account,
+                });
 
-            const refreshToken = await this.jwtService.signRefreshToken({
-                sub: account.id,
-                jti: session.id,
-            });
-            const refreshTokenHash = this.cryptoService.hashToken(refreshToken);
+                const refreshToken = await this.jwtService.signRefreshToken({
+                    sub: account.id,
+                    jti: session.id,
+                });
+                const refreshTokenHash = this.cryptoService.hashToken(refreshToken);
 
-            session.refresh(refreshTokenHash);
+                session.refresh(refreshTokenHash);
 
-            this.sessionService.create({
-                input: { session, account },
-                transaction,
-                context,
-            });
+                this.sessionService.create({
+                    input: { session, account },
+                    context: props.context,
+                    transaction,
+                });
 
-            await transaction.flush();
+                const accessToken = await this.jwtService.signAccessToken({
+                    sub: account.id,
+                    jti: session.id,
+                });
 
-            const accessToken = await this.jwtService.signAccessToken({
-                sub: account.id,
-                jti: session.id,
-            });
-
-            return { accessToken, refreshToken, session: session.id };
+                return { accessToken, refreshToken, session: session.id };
+            },
         });
     }
 
-    private login({ context, identifier }: Handlers.OAuth.Login): Promise<Handlers.OAuth.Callback.Result> {
-        const writeManager = this.writeManager.fork();
+    private login(props: Handlers.OAuth.Login): Promise<Handlers.OAuth.Callback.Result> {
+        return this.transactional.run({
+            audit: {
+                actionType: IdentityActionType.CREATE_SESSION,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const session = new Session({
+                    expiresAt: this.sessionService.resolveSessionExpiry(),
+                    userAgent: props.context.userAgent,
+                    account: props.identifier.account,
+                    ip: props.context.ip,
+                });
 
-        return writeManager.transactional(async (transaction) => {
-            const session = new Session({
-                expiresAt: this.sessionService.resolveSessionExpiry(),
-                userAgent: context.userAgent,
-                account: identifier.account,
-                ip: context.ip,
-            });
+                const refreshToken = await this.jwtService.signRefreshToken({
+                    sub: props.identifier.account.id,
+                    jti: session.id,
+                });
+                const refreshTokenHash = this.cryptoService.hashToken(refreshToken);
 
-            const refreshToken = await this.jwtService.signRefreshToken({
-                sub: identifier.account.id,
-                jti: session.id,
-            });
-            const refreshTokenHash = this.cryptoService.hashToken(refreshToken);
+                session.refresh(refreshTokenHash);
 
-            session.refresh(refreshTokenHash);
+                this.sessionService.create({
+                    context: props.context,
+                    transaction,
+                    input: {
+                        account: props.identifier.account,
+                        session,
+                    },
+                });
 
-            this.sessionService.create({
-                input: { session, account: identifier.account },
-                transaction,
-                context,
-            });
+                const accessToken = await this.jwtService.signAccessToken({
+                    sub: props.identifier.account.id,
+                    jti: session.id,
+                });
 
-            await transaction.flush();
-
-            const accessToken = await this.jwtService.signAccessToken({
-                sub: identifier.account.id,
-                jti: session.id,
-            });
-
-            return { accessToken, refreshToken, session: session.id };
+                return { accessToken, refreshToken, session: session.id };
+            },
         });
     }
 

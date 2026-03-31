@@ -12,6 +12,7 @@ declare namespace Handlers {
         namespace Setup {
             type Props = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     account: string;
                 };
@@ -24,6 +25,7 @@ declare namespace Handlers {
         namespace Confirm {
             type Props = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     totpCode: string;
                     account: string;
@@ -38,6 +40,7 @@ declare namespace Handlers {
 
         type Remove = {
             context: RequestContext;
+            actor: string;
             input: {
                 masterCode?: string;
                 totpCode?: string;
@@ -48,6 +51,7 @@ declare namespace Handlers {
 
         type EnableEnforce = {
             context: RequestContext;
+            actor: string;
             input: {
                 account: string;
             };
@@ -55,6 +59,7 @@ declare namespace Handlers {
 
         type DisableEnforce = {
             context: RequestContext;
+            actor: string;
             input: {
                 totpCode: string;
                 account: string;
@@ -63,6 +68,7 @@ declare namespace Handlers {
 
         type ResetByMasterCode = {
             context: RequestContext;
+            actor: string;
             input: {
                 identifier: string;
                 masterCode: string;

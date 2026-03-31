@@ -5,6 +5,8 @@ declare namespace Handlers {
         }
 
         type Update = {
+            context: RequestContext;
+            actor: string;
             input: {
                 patch: Entities.Profile.ChangeDataProps;
                 account: string;

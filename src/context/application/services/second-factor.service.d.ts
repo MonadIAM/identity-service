@@ -16,7 +16,6 @@ declare global {
 
             type Confirm = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     masterCodeHash: string;
                     account: AccountEntity;
@@ -28,7 +27,6 @@ declare global {
 
             type Remove = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     factor: SecondFactorEntity;
                     reason: string;
@@ -37,7 +35,6 @@ declare global {
 
             type EnableEnforce = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                 };
@@ -45,7 +42,6 @@ declare global {
 
             type DisableEnforce = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                 };
@@ -53,7 +49,6 @@ declare global {
 
             type ResetByMasterCode = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                 };

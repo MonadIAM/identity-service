@@ -9,6 +9,8 @@ declare namespace Handlers {
 
         namespace Refresh {
             type Props = {
+                context: RequestContext;
+                actor: string;
                 input: {
                     refreshToken: string;
                     session: string;
@@ -24,6 +26,7 @@ declare namespace Handlers {
 
         type Logout = {
             context: RequestContext;
+            actor: string;
             input: {
                 session: string;
             };
@@ -39,6 +42,7 @@ declare namespace Handlers {
 
         type Revoke = {
             context: RequestContext;
+            actor: string;
             input: {
                 account: string;
                 session: string;

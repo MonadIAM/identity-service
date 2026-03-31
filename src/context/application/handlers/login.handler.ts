@@ -1,13 +1,12 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 import { TOTP } from "otpauth";
 
 import { IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, JWT_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
+import { IdentifierType, IdentityActionType, IdentityEntityType, SecondFactorType } from "~context/enums";
 import { OTP_CACHE_SERVICE, PENDING_AUTH_CACHE_SERVICE } from "~context/infrastructure/services";
-import { IdentifierType, SecondFactorType } from "~context/enums";
 import { SESSION_SERVICE } from "~context/domain/services";
+import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { HandlerException } from "~common/exceptions";
 import { Session } from "~context/domain/entities";
 
@@ -16,8 +15,8 @@ export class LoginHandler implements Handlers.Login.Contract {
     private readonly dictionaryPath = "handlers.login";
 
     public constructor(
-        @InjectEntityManager("write")
-        private readonly writeManager: EntityManager,
+        @Inject(TRANSACTIONAL_SERVICE)
+        private readonly transactional: Tracking.Transactional.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_REPOSITORY)
@@ -42,20 +41,17 @@ export class LoginHandler implements Handlers.Login.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async byPassword({
-        context,
-        input,
-    }: Handlers.Login.ByPassword.Props): Promise<Handlers.Login.ByPassword.Result> {
+    public async byPassword(props: Handlers.Login.ByPassword.Props): Promise<Handlers.Login.ByPassword.Result> {
         try {
             const identifierEntity = await this.identifierRepository.findUnique({
                 options: { populate: ["account.password"] },
-                where: { value: input.identifier },
+                where: { value: props.input.identifier },
             });
 
             if (identifierEntity?.account?.password) {
                 const isValid = await this.hashingService.verify({
                     storedHash: identifierEntity.account.password.hash,
-                    value: input.password,
+                    value: props.input.password,
                 });
 
                 if (isValid) {
@@ -68,7 +64,11 @@ export class LoginHandler implements Handlers.Login.Contract {
 
                         return { pendingToken, requires2FA: true };
                     } else {
-                        return await this.createSession({ account: identifierEntity.account, context });
+                        return await this.createSession({
+                            account: identifierEntity.account,
+                            context: props.context,
+                            actor: props.actor,
+                        });
                     }
                 } else {
                     throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
@@ -81,10 +81,10 @@ export class LoginHandler implements Handlers.Login.Contract {
         }
     }
 
-    public async requestOTP({ input }: Handlers.Login.RequestOTP): Promise<MessageResult> {
+    public async requestOTP(props: Handlers.Login.RequestOTP): Promise<MessageResult> {
         try {
             const identifier = await this.identifierRepository.findUnique({
-                where: { value: input.value },
+                where: { value: props.input.value },
             });
 
             if (!identifier || !identifier.isVerified || !identifier.allowPasswordlessLogin) {
@@ -108,19 +108,23 @@ export class LoginHandler implements Handlers.Login.Contract {
         }
     }
 
-    public async confirmOTP({ context, input }: Handlers.Login.ConfirmOTP): Promise<Handlers.Login.Session> {
+    public async confirmOTP(props: Handlers.Login.ConfirmOTP): Promise<Handlers.Login.Session> {
         try {
-            const identifier = await this.otpCacheService.getLogin({ code: input.code });
+            const identifier = await this.otpCacheService.getLogin({ code: props.input.code });
 
             if (identifier) {
-                await this.otpCacheService.deleteLogin({ code: input.code });
+                await this.otpCacheService.deleteLogin({ code: props.input.code });
 
                 const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
                     options: { populate: ["account"] },
                     where: { id: identifier },
                 });
 
-                return await this.createSession({ account: identifierEntity.account, context });
+                return await this.createSession({
+                    account: identifierEntity.account,
+                    context: props.context,
+                    actor: props.actor,
+                });
             } else {
                 throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
             }
@@ -129,9 +133,9 @@ export class LoginHandler implements Handlers.Login.Contract {
         }
     }
 
-    public async verify2FA({ context, input }: Handlers.Login.Verify2FA): Promise<Handlers.Login.Session> {
+    public async verify2FA(props: Handlers.Login.Verify2FA): Promise<Handlers.Login.Session> {
         try {
-            const account = await this.pendingAuthCacheService.get({ token: input.pendingToken });
+            const account = await this.pendingAuthCacheService.get({ token: props.input.pendingToken });
 
             if (account) {
                 const secondFactor = await this.secondFactorRepository.findUnique({
@@ -142,16 +146,20 @@ export class LoginHandler implements Handlers.Login.Contract {
                     throw HandlerException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
                 } else {
                     const totp = new TOTP({ secret: secondFactor.secret });
-                    const isValid = totp.validate({ token: input.totpCode, window: 1 }) !== null;
+                    const isValid = totp.validate({ token: props.input.totpCode, window: 1 }) !== null;
 
                     if (isValid) {
-                        await this.pendingAuthCacheService.delete({ token: input.pendingToken });
+                        await this.pendingAuthCacheService.delete({ token: props.input.pendingToken });
 
                         const accountEntity = await this.accountRepository.findUniqueOrThrow({
                             where: { id: account },
                         });
 
-                        return await this.createSession({ account: accountEntity, context });
+                        return await this.createSession({
+                            account: accountEntity,
+                            context: props.context,
+                            actor: props.actor,
+                        });
                     } else {
                         throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
                     }
@@ -164,39 +172,42 @@ export class LoginHandler implements Handlers.Login.Contract {
         }
     }
 
-    private async createSession({ account, context }: Handlers.Login.CreateSession): Promise<Handlers.Login.Session> {
-        const writeManager = this.writeManager.fork();
+    private async createSession(props: Handlers.Login.CreateSession): Promise<Handlers.Login.Session> {
+        return await this.transactional.run({
+            audit: {
+                actionType: IdentityActionType.CREATE_SESSION,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const session = new Session({
+                    expiresAt: this.sessionService.resolveSessionExpiry(),
+                    userAgent: props.context.userAgent,
+                    account: props.account,
+                    ip: props.context.ip,
+                });
 
-        return await writeManager.transactional(async (transaction) => {
-            const session = new Session({
-                expiresAt: this.sessionService.resolveSessionExpiry(),
-                userAgent: context.userAgent,
-                ip: context.ip,
-                account,
-            });
+                const refreshToken = await this.jwtService.signRefreshToken({
+                    sub: props.account.id,
+                    jti: session.id,
+                });
+                const refreshTokenHash = this.cryptoService.hashToken(refreshToken);
 
-            const refreshToken = await this.jwtService.signRefreshToken({
-                sub: account.id,
-                jti: session.id,
-            });
-            const refreshTokenHash = this.cryptoService.hashToken(refreshToken);
+                session.refresh(refreshTokenHash);
 
-            session.refresh(refreshTokenHash);
+                this.sessionService.create({
+                    input: { account: props.account, session },
+                    context: props.context,
+                    transaction,
+                });
 
-            this.sessionService.create({
-                input: { session, account },
-                transaction,
-                context,
-            });
+                const accessToken = await this.jwtService.signAccessToken({
+                    sub: props.account.id,
+                    jti: session.id,
+                });
 
-            await transaction.flush();
-
-            const accessToken = await this.jwtService.signAccessToken({
-                sub: account.id,
-                jti: session.id,
-            });
-
-            return { accessToken, refreshToken, session: session.id };
+                return { accessToken, refreshToken, session: session.id };
+            },
         });
     }
 }

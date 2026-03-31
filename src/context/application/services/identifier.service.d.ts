@@ -16,7 +16,6 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
                     account: AccountEntity;
@@ -25,7 +24,6 @@ declare global {
 
             type Purge = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     identifier: IdentifierEntity;
                     reason?: string;
@@ -34,7 +32,6 @@ declare global {
 
             type Verify = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     identifier: IdentifierEntity;
                 };
@@ -42,23 +39,18 @@ declare global {
 
             type SetPrimary = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     identifier: IdentifierEntity;
                 };
             };
 
             type ToggleNotifications = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     identifier: IdentifierEntity;
                 };
             };
 
             type TogglePasswordlessLogin = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     identifier: IdentifierEntity;
                 };

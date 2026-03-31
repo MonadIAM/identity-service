@@ -4,7 +4,7 @@ import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 
 import { PASSWORD_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
+import { ExtractActor, ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 
@@ -34,12 +34,13 @@ export class PasswordController extends BaseController {
     @ApiOperation({ summary: "Change user password using current password" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public change(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: ChangePasswordBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.passwordHandler
-            .change({ context, input })
+            .change({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
@@ -48,12 +49,13 @@ export class PasswordController extends BaseController {
     @ApiOperation({ summary: "Regenerate recovery codes" })
     @ApiResponse({ status: HttpStatus.OK, type: RegenerateRecoveryCodesDTO })
     public regenerateRecoveryCodes(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: RegenerateRecoveryCodesBodyDTO,
         @Lang() lang: string,
     ): Promise<RegenerateRecoveryCodesDTO> {
         return this.passwordHandler
-            .regenerateRecoveryCodes({ context, input })
+            .regenerateRecoveryCodes({ context, input, actor })
             .then((data) => super.formatResponse({ DTO: RegenerateRecoveryCodesDTO, data, lang }));
     }
 

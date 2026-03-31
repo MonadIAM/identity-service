@@ -15,6 +15,7 @@ declare global {
 
             type Create = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     type: IdentifierType;
                     account: string;
@@ -31,6 +32,7 @@ declare global {
 
             type Confirm = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     code: string;
                 };
@@ -38,6 +40,7 @@ declare global {
 
             type Purge = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     identifier: string;
                     password?: string;
@@ -47,6 +50,7 @@ declare global {
 
             type SetPrimary = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     identifier: string;
                     password: string;
@@ -56,6 +60,7 @@ declare global {
 
             type ToggleNotifications = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     identifier: string;
                     account: string;
@@ -64,6 +69,7 @@ declare global {
 
             type TogglePasswordlessLogin = {
                 context: RequestContext;
+                actor: string;
                 input: {
                     identifier: string;
                     account: string;

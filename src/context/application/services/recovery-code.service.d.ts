@@ -12,7 +12,6 @@ declare global {
 
             type Regenerate = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                     hashes: string[];

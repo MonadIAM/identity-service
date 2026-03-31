@@ -18,7 +18,6 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
                     subject: AccountSubject;
@@ -29,7 +28,6 @@ declare global {
 
             type CreateByOAuth = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     oauth: Omit<Entities.Identifier.ConstructorProps, "account">;
                     email?: Omit<Entities.Identifier.ConstructorProps, "account">;
@@ -40,7 +38,6 @@ declare global {
 
             type Verify = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                 };
@@ -48,7 +45,6 @@ declare global {
 
             type Deactivate = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                     reason?: string;
@@ -57,7 +53,6 @@ declare global {
 
             type Restore = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     account: AccountEntity;
                 };
@@ -65,8 +60,6 @@ declare global {
 
             type Suspend = {
                 transaction: EntityManager;
-                context: RequestContext;
-                actor: string;
                 input: {
                     account: AccountEntity;
                     reason?: string;
@@ -75,8 +68,6 @@ declare global {
 
             type Unsuspend = {
                 transaction: EntityManager;
-                context: RequestContext;
-                actor: string;
                 input: {
                     account: AccountEntity;
                     reason?: string;
