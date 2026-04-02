@@ -13,6 +13,7 @@ import { Session } from "~context/domain/entities";
 @Injectable({ scope: Scope.DEFAULT })
 export class LoginHandler implements Handlers.Login.Contract {
     private readonly dictionaryPath = "handlers.login";
+    private readonly resource = "Login";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -42,138 +43,123 @@ export class LoginHandler implements Handlers.Login.Contract {
     ) {}
 
     public async byPassword(props: Handlers.Login.ByPassword.Props): Promise<Handlers.Login.ByPassword.Result> {
-        try {
-            const identifierEntity = await this.identifierRepository.findUnique({
-                options: { populate: ["account.password"] },
-                where: { value: props.input.identifier },
+        const identifierEntity = await this.identifierRepository.findUnique({
+            options: { populate: ["account.password"] },
+            where: { value: props.input.identifier },
+        });
+
+        if (identifierEntity?.account?.password) {
+            const isValid = await this.hashingService.verify({
+                storedHash: identifierEntity.account.password.hash,
+                value: props.input.password,
             });
 
-            if (identifierEntity?.account?.password) {
-                const isValid = await this.hashingService.verify({
-                    storedHash: identifierEntity.account.password.hash,
-                    value: props.input.password,
-                });
+            if (isValid) {
+                if (identifierEntity.account.is2FAEnforced) {
+                    const pendingToken = this.cryptoService.generateToken();
+                    await this.pendingAuthCacheService.set({
+                        account: identifierEntity.account.id,
+                        token: pendingToken,
+                    });
 
-                if (isValid) {
-                    if (identifierEntity.account.is2FAEnforced) {
-                        const pendingToken = this.cryptoService.generateToken();
-                        await this.pendingAuthCacheService.set({
-                            account: identifierEntity.account.id,
-                            token: pendingToken,
-                        });
-
-                        return { pendingToken, requires2FA: true };
-                    } else {
-                        return await this.createSession({
-                            account: identifierEntity.account,
-                            context: props.context,
-                            actor: props.actor,
-                        });
-                    }
+                    return { pendingToken, requires2FA: true };
                 } else {
-                    throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
+                    return await this.createSession({
+                        account: identifierEntity.account,
+                        context: props.context,
+                        actor: props.actor,
+                    });
                 }
             } else {
                 throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
             }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+        } else {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
         }
     }
 
     public async requestOTP(props: Handlers.Login.RequestOTP): Promise<MessageResult> {
-        try {
-            const identifier = await this.identifierRepository.findUnique({
-                where: { value: props.input.value },
-            });
+        const identifier = await this.identifierRepository.findUnique({
+            where: { value: props.input.value },
+        });
 
-            if (!identifier || !identifier.isVerified || !identifier.allowPasswordlessLogin) {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.PASSWORDLESS_NOT_AVAILABLE`);
-            } else {
-                const otp = this.cryptoService.generateOTP();
-                await this.otpCacheService.setLogin({ code: otp, identifier: identifier.id });
-                if (identifier.type === IdentifierType.EMAIL) {
-                    await this.emailService.send({
-                        to: identifier.value,
-                        subject: "Sign-in code",
-                        html: `Your sign-in code: ${otp}`,
-                    });
-                } else if (identifier.type === IdentifierType.PHONE) {
-                    await this.smsService.send({ to: identifier.value, body: `Your sign-in code: ${otp}` });
-                }
-                return { message: `${this.dictionaryPath}.OTP_SENT` };
+        if (!identifier || !identifier.isVerified || !identifier.allowPasswordlessLogin) {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.PASSWORDLESS_NOT_AVAILABLE`);
+        } else {
+            const otp = this.cryptoService.generateOTP();
+            await this.otpCacheService.setLogin({ code: otp, identifier: identifier.id });
+            if (identifier.type === IdentifierType.EMAIL) {
+                await this.emailService.send({
+                    to: identifier.value,
+                    subject: "Sign-in code",
+                    html: `Your sign-in code: ${otp}`,
+                });
+            } else if (identifier.type === IdentifierType.PHONE) {
+                await this.smsService.send({ to: identifier.value, body: `Your sign-in code: ${otp}` });
             }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            return { message: `${this.dictionaryPath}.OTP_SENT` };
         }
     }
 
     public async confirmOTP(props: Handlers.Login.ConfirmOTP): Promise<Handlers.Login.Session> {
-        try {
-            const identifier = await this.otpCacheService.getLogin({ code: props.input.code });
+        const identifier = await this.otpCacheService.getLogin({ code: props.input.code });
 
-            if (identifier) {
-                await this.otpCacheService.deleteLogin({ code: props.input.code });
+        if (identifier) {
+            await this.otpCacheService.deleteLogin({ code: props.input.code });
 
-                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                    options: { populate: ["account"] },
-                    where: { id: identifier },
-                });
+            const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                options: { populate: ["account"] },
+                where: { id: identifier },
+            });
 
-                return await this.createSession({
-                    account: identifierEntity.account,
-                    context: props.context,
-                    actor: props.actor,
-                });
-            } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            return await this.createSession({
+                account: identifierEntity.account,
+                context: props.context,
+                actor: props.actor,
+            });
+        } else {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
     }
 
     public async verify2FA(props: Handlers.Login.Verify2FA): Promise<Handlers.Login.Session> {
-        try {
-            const account = await this.pendingAuthCacheService.get({ token: props.input.pendingToken });
+        const account = await this.pendingAuthCacheService.get({ token: props.input.pendingToken });
 
-            if (account) {
-                const secondFactor = await this.secondFactorRepository.findUnique({
-                    where: { account, type: SecondFactorType.TOTP },
-                });
+        if (account) {
+            const secondFactor = await this.secondFactorRepository.findUnique({
+                where: { account, type: SecondFactorType.TOTP },
+            });
 
-                if (!secondFactor || !secondFactor.confirmedAt) {
-                    throw HandlerException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
-                } else {
-                    const totp = new TOTP({ secret: secondFactor.secret });
-                    const isValid = totp.validate({ token: props.input.totpCode, window: 1 }) !== null;
-
-                    if (isValid) {
-                        await this.pendingAuthCacheService.delete({ token: props.input.pendingToken });
-
-                        const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                            where: { id: account },
-                        });
-
-                        return await this.createSession({
-                            account: accountEntity,
-                            context: props.context,
-                            actor: props.actor,
-                        });
-                    } else {
-                        throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
-                    }
-                }
+            if (!secondFactor || !secondFactor.confirmedAt) {
+                throw HandlerException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
             } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.EXPIRED_PENDING_AUTH`);
+                const totp = new TOTP({ secret: secondFactor.secret });
+                const isValid = totp.validate({ token: props.input.totpCode, window: 1 }) !== null;
+
+                if (isValid) {
+                    await this.pendingAuthCacheService.delete({ token: props.input.pendingToken });
+
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                        where: { id: account },
+                    });
+
+                    return await this.createSession({
+                        account: accountEntity,
+                        context: props.context,
+                        actor: props.actor,
+                    });
+                } else {
+                    throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+                }
             }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+        } else {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.EXPIRED_PENDING_AUTH`);
         }
     }
 
     private async createSession(props: Handlers.Login.CreateSession): Promise<Handlers.Login.Session> {
         return await this.transactional.run({
+            resource: this.resource,
             audit: {
                 actionType: IdentityActionType.CREATE_SESSION,
                 entityType: IdentityEntityType.IDENTIFIER,

@@ -11,6 +11,7 @@ import { HandlerException } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierHandler implements Handlers.Identifier.Contract {
     private readonly dictionaryPath = "handlers.identifier";
+    private readonly resource = "Identifier";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -34,125 +35,84 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
     ) {}
 
     public async create(props: Handlers.Identifier.Create): Promise<MessageResult> {
-        try {
-            const existing = await this.identifierRepository.findUnique({
-                where: {
-                    value: props.input.value,
-                    type: props.input.type,
+        const existing = await this.identifierRepository.findUnique({
+            where: {
+                value: props.input.value,
+                type: props.input.type,
+            },
+        });
+
+        if (existing) {
+            throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_EXISTS`);
+        } else {
+            const identifier = await this.transactional.run({
+                resource: this.resource,
+                audit: {
+                    actionType: IdentityActionType.CREATE_ACCOUNT,
+                    entityType: IdentityEntityType.IDENTIFIER,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                        where: { id: props.input.account },
+                        transaction,
+                    });
+
+                    const identifier = this.identifierService.create({
+                        transaction,
+                        input: {
+                            account: accountEntity,
+                            identifier: {
+                                value: props.input.value,
+                                type: props.input.type,
+                                isVerified: false,
+                            },
+                        },
+                    });
+
+                    return identifier;
                 },
             });
 
-            if (existing) {
-                throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_EXISTS`);
-            } else {
-                const identifier = await this.transactional.run({
-                    audit: {
-                        actionType: IdentityActionType.CREATE_ACCOUNT,
-                        entityType: IdentityEntityType.IDENTIFIER,
-                        ...props,
-                    },
-                    execute: async (transaction) => {
-                        const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                            where: { id: props.input.account },
-                            transaction,
-                        });
+            await this.sendOTP({
+                identifier: identifier.id,
+                value: props.input.value,
+                type: props.input.type,
+            });
 
-                        const identifier = this.identifierService.create({
-                            transaction,
-                            input: {
-                                account: accountEntity,
-                                identifier: {
-                                    value: props.input.value,
-                                    type: props.input.type,
-                                    isVerified: false,
-                                },
-                            },
-                        });
-
-                        return identifier;
-                    },
-                });
-
-                await this.sendOTP({
-                    identifier: identifier.id,
-                    value: props.input.value,
-                    type: props.input.type,
-                });
-
-                return { message: `${this.dictionaryPath}.VERIFICATION_CODE_SENT` };
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            return { message: `${this.dictionaryPath}.VERIFICATION_CODE_SENT` };
         }
     }
 
     public async resend(props: Handlers.Identifier.Resend): Promise<MessageResult> {
-        try {
-            const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                where: {
-                    account: props.input.account,
-                    id: props.input.identifier,
-                },
+        const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+            where: {
+                account: props.input.account,
+                id: props.input.identifier,
+            },
+        });
+
+        if (identifierEntity.isVerified) {
+            throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
+        } else {
+            await this.sendOTP({
+                identifier: identifierEntity.id,
+                value: identifierEntity.value,
+                type: identifierEntity.type,
             });
 
-            if (identifierEntity.isVerified) {
-                throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
-            } else {
-                await this.sendOTP({
-                    identifier: identifierEntity.id,
-                    value: identifierEntity.value,
-                    type: identifierEntity.type,
-                });
-
-                return { message: `${this.dictionaryPath}.VERIFICATION_CODE_SENT` };
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            return { message: `${this.dictionaryPath}.VERIFICATION_CODE_SENT` };
         }
     }
 
     public async confirm(props: Handlers.Identifier.Confirm): Promise<MessageResult> {
-        try {
-            const identifier = await this.otpCacheService.getIdentifier({ code: props.input.code });
+        const identifier = await this.otpCacheService.getIdentifier({ code: props.input.code });
 
-            if (identifier) {
-                await this.otpCacheService.deleteIdentifier({ code: props.input.code });
+        if (identifier) {
+            await this.otpCacheService.deleteIdentifier({ code: props.input.code });
 
-                await this.transactional.run({
-                    audit: {
-                        actionType: IdentityActionType.CREATE_ACCOUNT,
-                        entityType: IdentityEntityType.IDENTIFIER,
-                        ...props,
-                    },
-                    execute: async (transaction) => {
-                        const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                            where: { id: identifier },
-                            transaction,
-                        });
-
-                        if (identifierEntity.isVerified) {
-                            throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
-                        } else {
-                            this.identifierService.verify({
-                                input: { identifier: identifierEntity },
-                                transaction,
-                            });
-                        }
-                    },
-                });
-
-                return { message: `${this.dictionaryPath}.IDENTIFIER_VERIFIED` };
-            } else {
-                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async purge(props: Handlers.Identifier.Purge): Promise<MessageResult> {
-        try {
             await this.transactional.run({
+                resource: this.resource,
                 audit: {
                     actionType: IdentityActionType.CREATE_ACCOUNT,
                     entityType: IdentityEntityType.IDENTIFIER,
@@ -160,138 +120,157 @@ export class IdentifierHandler implements Handlers.Identifier.Contract {
                 },
                 execute: async (transaction) => {
                     const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                        options: { populate: ["account.password"] },
-                        where: {
-                            account: props.input.account,
-                            id: props.input.identifier,
-                        },
+                        where: { id: identifier },
                         transaction,
                     });
 
                     if (identifierEntity.isVerified) {
-                        if (props.input.password) {
-                            const isValid = await this.hashingService.verify({
-                                storedHash: identifierEntity.account.password?.hash!,
-                                value: props.input.password,
-                            });
-
-                            if (!isValid) {
-                                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
-                            }
-                        } else {
-                            throw HandlerException.badRequest(`${this.dictionaryPath}.PASSWORD_REQUIRED`);
-                        }
-                    }
-
-                    this.identifierService.purge({
-                        input: { identifier: identifierEntity },
-                        transaction,
-                    });
-                },
-            });
-
-            return { message: `${this.dictionaryPath}.IDENTIFIER_REMOVED` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async setPrimary(props: Handlers.Identifier.SetPrimary): Promise<MessageResult> {
-        try {
-            await this.transactional.run({
-                audit: {
-                    actionType: IdentityActionType.CREATE_ACCOUNT,
-                    entityType: IdentityEntityType.IDENTIFIER,
-                    ...props,
-                },
-                execute: async (transaction) => {
-                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                        options: { populate: ["account.password"] },
-                        where: {
-                            account: props.input.account,
-                            id: props.input.identifier,
-                        },
-                        transaction,
-                    });
-
-                    const isValid = await this.hashingService.verify({
-                        storedHash: identifierEntity.account.password?.hash!,
-                        value: props.input.password,
-                    });
-
-                    if (isValid) {
-                        this.identifierService.setPrimary({
+                        throw HandlerException.conflict(`${this.dictionaryPath}.IDENTIFIER_ALREADY_VERIFIED`);
+                    } else {
+                        this.identifierService.verify({
                             input: { identifier: identifierEntity },
                             transaction,
                         });
-                    } else {
-                        throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
                     }
                 },
             });
 
-            return { message: `${this.dictionaryPath}.PRIMARY_CHANGED` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            return { message: `${this.dictionaryPath}.IDENTIFIER_VERIFIED` };
+        } else {
+            throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
+    }
+
+    public async purge(props: Handlers.Identifier.Purge): Promise<MessageResult> {
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.CREATE_ACCOUNT,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                    options: { populate: ["account.password"] },
+                    where: {
+                        account: props.input.account,
+                        id: props.input.identifier,
+                    },
+                    transaction,
+                });
+
+                if (identifierEntity.isVerified) {
+                    if (props.input.password) {
+                        const isValid = await this.hashingService.verify({
+                            storedHash: identifierEntity.account.password?.hash!,
+                            value: props.input.password,
+                        });
+
+                        if (!isValid) {
+                            throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                        }
+                    } else {
+                        throw HandlerException.badRequest(`${this.dictionaryPath}.PASSWORD_REQUIRED`);
+                    }
+                }
+
+                this.identifierService.purge({
+                    input: { identifier: identifierEntity },
+                    transaction,
+                });
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.IDENTIFIER_REMOVED` };
+    }
+
+    public async setPrimary(props: Handlers.Identifier.SetPrimary): Promise<MessageResult> {
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.CREATE_ACCOUNT,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                    options: { populate: ["account.password"] },
+                    where: {
+                        account: props.input.account,
+                        id: props.input.identifier,
+                    },
+                    transaction,
+                });
+
+                const isValid = await this.hashingService.verify({
+                    storedHash: identifierEntity.account.password?.hash!,
+                    value: props.input.password,
+                });
+
+                if (isValid) {
+                    this.identifierService.setPrimary({
+                        input: { identifier: identifierEntity },
+                        transaction,
+                    });
+                } else {
+                    throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_PASSWORD`);
+                }
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.PRIMARY_CHANGED` };
     }
 
     public async toggleNotifications(props: Handlers.Identifier.ToggleNotifications): Promise<MessageResult> {
-        try {
-            await this.transactional.run({
-                audit: {
-                    actionType: IdentityActionType.CREATE_ACCOUNT,
-                    entityType: IdentityEntityType.IDENTIFIER,
-                    ...props,
-                },
-                execute: async (transaction) => {
-                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                        where: {
-                            account: props.input.account,
-                            id: props.input.identifier,
-                        },
-                        transaction,
-                    });
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.CREATE_ACCOUNT,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                    where: {
+                        account: props.input.account,
+                        id: props.input.identifier,
+                    },
+                    transaction,
+                });
 
-                    this.identifierService.toggleNotifications({
-                        input: { identifier: identifierEntity },
-                    });
-                },
-            });
+                this.identifierService.toggleNotifications({
+                    input: { identifier: identifierEntity },
+                });
+            },
+        });
 
-            return { message: `${this.dictionaryPath}.NOTIFICATIONS_TOGGLED` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
+        return { message: `${this.dictionaryPath}.NOTIFICATIONS_TOGGLED` };
     }
 
     public async togglePasswordlessLogin(props: Handlers.Identifier.TogglePasswordlessLogin): Promise<MessageResult> {
-        try {
-            await this.transactional.run({
-                audit: {
-                    actionType: IdentityActionType.CREATE_ACCOUNT,
-                    entityType: IdentityEntityType.IDENTIFIER,
-                    ...props,
-                },
-                execute: async (transaction) => {
-                    const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                        where: {
-                            account: props.input.account,
-                            id: props.input.identifier,
-                        },
-                        transaction,
-                    });
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.CREATE_ACCOUNT,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+                    where: {
+                        account: props.input.account,
+                        id: props.input.identifier,
+                    },
+                    transaction,
+                });
 
-                    this.identifierService.togglePasswordlessLogin({
-                        input: { identifier: identifierEntity },
-                    });
-                },
-            });
+                this.identifierService.togglePasswordlessLogin({
+                    input: { identifier: identifierEntity },
+                });
+            },
+        });
 
-            return { message: `${this.dictionaryPath}.PASSWORDLESS_LOGIN_TOGGLED` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
+        return { message: `${this.dictionaryPath}.PASSWORDLESS_LOGIN_TOGGLED` };
     }
 
     private async sendOTP({ identifier, value, type }: Handlers.Identifier.SendOTP): Promise<void> {

@@ -19,6 +19,7 @@ import {
 export class PasswordHandler implements Handlers.Password.Contract {
     private readonly dictionaryPath = "handlers.password";
     private readonly historyCheckDays: number;
+    private readonly resource = "Password";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -51,48 +52,45 @@ export class PasswordHandler implements Handlers.Password.Contract {
     }
 
     public change(props: Handlers.Password.Change): Promise<MessageResult> {
-        try {
-            return this.transactional.run({
-                audit: {
-                    actionType: IdentityActionType.CREATE_SESSION,
-                    entityType: IdentityEntityType.IDENTIFIER,
-                    ...props,
-                },
-                execute: async (transaction) => {
-                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                        options: { populate: ["password"] },
-                        where: { id: props.input.account },
-                        transaction,
+        return this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.CREATE_SESSION,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                    options: { populate: ["password"] },
+                    where: { id: props.input.account },
+                    transaction,
+                });
+
+                if (accountEntity.password) {
+                    const isCurrentValid = await this.hashingService.verify({
+                        storedHash: accountEntity.password.hash,
+                        value: props.input.currentPassword,
                     });
 
-                    if (accountEntity.password) {
-                        const isCurrentValid = await this.hashingService.verify({
-                            storedHash: accountEntity.password.hash,
-                            value: props.input.currentPassword,
+                    if (isCurrentValid) {
+                        await this.checkPasswordHistory(props.input.account, props.input.newPassword);
+
+                        const newHash = await this.hashingService.hash({ value: props.input.newPassword });
+
+                        this.credentialService.changePassword({
+                            input: { password: accountEntity.password, newHash },
+                            transaction,
                         });
 
-                        if (isCurrentValid) {
-                            await this.checkPasswordHistory(props.input.account, props.input.newPassword);
-
-                            const newHash = await this.hashingService.hash({ value: props.input.newPassword });
-
-                            this.credentialService.changePassword({
-                                input: { password: accountEntity.password, newHash },
-                                transaction,
-                            });
-
-                            return { message: `${this.dictionaryPath}.PASSWORD_CHANGED` };
-                        } else {
-                            throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
-                        }
+                        return { message: `${this.dictionaryPath}.PASSWORD_CHANGED` };
                     } else {
-                        throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                        throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
                     }
-                },
-            });
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
+                } else {
+                    throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                }
+            },
+        });
     }
 
     public async regenerateRecoveryCodes(
@@ -115,6 +113,7 @@ export class PasswordHandler implements Handlers.Password.Contract {
                     const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
                     await this.transactional.run({
+                        resource: this.resource,
                         audit: {
                             actionType: IdentityActionType.CREATE_SESSION,
                             entityType: IdentityEntityType.IDENTIFIER,
@@ -164,6 +163,7 @@ export class PasswordHandler implements Handlers.Password.Contract {
                         const newHash = await this.hashingService.hash({ value: props.input.newPassword });
 
                         await this.transactional.run({
+                            resource: this.resource,
                             audit: {
                                 actionType: IdentityActionType.CREATE_SESSION,
                                 entityType: IdentityEntityType.IDENTIFIER,
@@ -234,6 +234,7 @@ export class PasswordHandler implements Handlers.Password.Contract {
                 const newHash = await this.hashingService.hash({ value: props.input.newPassword });
 
                 await this.transactional.run({
+                    resource: this.resource,
                     audit: {
                         actionType: IdentityActionType.CREATE_SESSION,
                         entityType: IdentityEntityType.IDENTIFIER,

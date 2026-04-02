@@ -12,6 +12,7 @@ import { HandlerException } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
     private readonly dictionaryPath = "handlers.secondFactor";
+    private readonly resource = "SecondFactor";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -33,187 +34,45 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
     ) {}
 
     public async setup(props: Handlers.SecondFactor.Setup.Props): Promise<Handlers.SecondFactor.Setup.Result> {
-        try {
-            const existing = await this.secondFactorRepository.findUnique({
-                where: { account: props.input.account, type: SecondFactorType.TOTP },
+        const existing = await this.secondFactorRepository.findUnique({
+            where: { account: props.input.account, type: SecondFactorType.TOTP },
+        });
+
+        if (existing) {
+            throw HandlerException.conflict(`${this.dictionaryPath}.TOTP_ALREADY_EXISTS`);
+        } else {
+            const secret = new Secret({ size: 20 });
+
+            await this.otpCacheService.setSetup2FA({
+                account: props.input.account,
+                secret: secret.base32,
             });
 
-            if (existing) {
-                throw HandlerException.conflict(`${this.dictionaryPath}.TOTP_ALREADY_EXISTS`);
-            } else {
-                const secret = new Secret({ size: 20 });
+            const totp = new TOTP({
+                label: props.input.account,
+                issuer: "Lambdius",
+                secret,
+            });
 
-                await this.otpCacheService.setSetup2FA({
-                    account: props.input.account,
-                    secret: secret.base32,
-                });
-
-                const totp = new TOTP({
-                    label: props.input.account,
-                    issuer: "Lambdius",
-                    secret,
-                });
-
-                return { uri: totp.toString() };
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            return { uri: totp.toString() };
         }
     }
 
     public async confirm(props: Handlers.SecondFactor.Confirm.Props): Promise<Handlers.SecondFactor.Confirm.Result> {
-        try {
-            const secret = await this.otpCacheService.getSetup2FA({ account: props.input.account });
+        const secret = await this.otpCacheService.getSetup2FA({ account: props.input.account });
 
-            if (secret) {
-                const totp = new TOTP({ secret: Secret.fromBase32(secret) });
-                const isValid = totp.validate({ token: props.input.totpCode, window: 1 }) !== null;
-
-                if (isValid) {
-                    await this.otpCacheService.deleteSetup2FA({ account: props.input.account });
-
-                    const masterCodePlaintext = this.cryptoService.generateRecoveryCode();
-                    const masterCodeHash = await this.hashingService.hash({ value: masterCodePlaintext });
-
-                    await this.transactional.run({
-                        audit: {
-                            actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-                            entityType: IdentityEntityType.ACCOUNT,
-                            ...props,
-                        },
-                        execute: async (transaction) => {
-                            const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                                where: { id: props.input.account },
-                                transaction,
-                            });
-
-                            this.secondFactorService.confirm({
-                                transaction,
-                                input: {
-                                    type: SecondFactorType.TOTP,
-                                    account: accountEntity,
-                                    name: props.input.name,
-                                    masterCodeHash,
-                                    secret,
-                                },
-                            });
-                        },
-                    });
-
-                    return {
-                        message: `${this.dictionaryPath}.TOTP_CONFIRMED`,
-                        masterCode: masterCodePlaintext,
-                    };
-                } else {
-                    throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
-                }
-            } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_SETUP`);
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async remove(props: Handlers.SecondFactor.Remove): Promise<MessageResult> {
-        try {
-            await this.transactional.run({
-                audit: {
-                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-                    entityType: IdentityEntityType.ACCOUNT,
-                    ...props,
-                },
-                execute: async (transaction) => {
-                    const factor = await this.secondFactorRepository.findUniqueOrThrow({
-                        where: { account: props.input.account, type: SecondFactorType.TOTP },
-                        options: { populate: ["account.masterCode"] },
-                        transaction,
-                    });
-
-                    if (factor.account.is2FAEnforced) {
-                        throw HandlerException.conflict(`${this.dictionaryPath}.DISABLE_ENFORCE_FIRST`);
-                    }
-
-                    if (props.input.totpCode) {
-                        const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
-                        const isValid = totp.validate({ token: props.input.totpCode, window: 1 });
-
-                        if (isValid === null) {
-                            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
-                        }
-                    } else if (props.input.masterCode) {
-                        const isValid = await this.hashingService.verify({
-                            storedHash: factor.account.masterCode!.hash,
-                            value: props.input.masterCode,
-                        });
-
-                        if (!isValid) {
-                            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_MASTER_CODE`);
-                        }
-                    } else {
-                        throw HandlerException.badRequest(`${this.dictionaryPath}.CONFIRMATION_REQUIRED`);
-                    }
-
-                    this.secondFactorService.remove({
-                        input: { factor, reason: props.input.reason },
-                        transaction,
-                    });
-                },
-            });
-
-            return { message: `${this.dictionaryPath}.TOTP_REMOVED` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async enableEnforce(props: Handlers.SecondFactor.EnableEnforce): Promise<MessageResult> {
-        try {
-            await this.transactional.run({
-                audit: {
-                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-                    entityType: IdentityEntityType.ACCOUNT,
-                    ...props,
-                },
-                execute: async (transaction) => {
-                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                        options: { populate: ["secondFactors"] },
-                        where: { id: props.input.account },
-                        transaction,
-                    });
-
-                    const hasConfirmed = accountEntity.secondFactors
-                        .getItems()
-                        .some(({ confirmedAt }) => confirmedAt !== null);
-
-                    if (hasConfirmed) {
-                        this.secondFactorService.enableEnforce({
-                            input: { account: accountEntity },
-                            transaction,
-                        });
-                    } else {
-                        throw HandlerException.badRequest(`${this.dictionaryPath}.NO_CONFIRMED_FACTOR`);
-                    }
-                },
-            });
-
-            return { message: `${this.dictionaryPath}.ENFORCE_ENABLED` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async disableEnforce(props: Handlers.SecondFactor.DisableEnforce): Promise<MessageResult> {
-        try {
-            const secondFactor = await this.secondFactorRepository.findUniqueOrThrow({
-                where: { account: { id: props.input.account }, type: SecondFactorType.TOTP },
-            });
-
-            const totp = new TOTP({ secret: Secret.fromBase32(secondFactor.secret) });
+        if (secret) {
+            const totp = new TOTP({ secret: Secret.fromBase32(secret) });
             const isValid = totp.validate({ token: props.input.totpCode, window: 1 }) !== null;
 
             if (isValid) {
+                await this.otpCacheService.deleteSetup2FA({ account: props.input.account });
+
+                const masterCodePlaintext = this.cryptoService.generateRecoveryCode();
+                const masterCodeHash = await this.hashingService.hash({ value: masterCodePlaintext });
+
                 await this.transactional.run({
+                    resource: this.resource,
                     audit: {
                         actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
                         entityType: IdentityEntityType.ACCOUNT,
@@ -225,61 +84,182 @@ export class SecondFactorHandler implements Handlers.SecondFactor.Contract {
                             transaction,
                         });
 
-                        this.secondFactorService.disableEnforce({
-                            input: { account: accountEntity },
+                        this.secondFactorService.confirm({
+                            transaction,
+                            input: {
+                                type: SecondFactorType.TOTP,
+                                account: accountEntity,
+                                name: props.input.name,
+                                masterCodeHash,
+                                secret,
+                            },
+                        });
+                    },
+                });
+
+                return {
+                    message: `${this.dictionaryPath}.TOTP_CONFIRMED`,
+                    masterCode: masterCodePlaintext,
+                };
+            } else {
+                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+            }
+        } else {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_SETUP`);
+        }
+    }
+
+    public async remove(props: Handlers.SecondFactor.Remove): Promise<MessageResult> {
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const factor = await this.secondFactorRepository.findUniqueOrThrow({
+                    where: { account: props.input.account, type: SecondFactorType.TOTP },
+                    options: { populate: ["account.masterCode"] },
+                    transaction,
+                });
+
+                if (factor.account.is2FAEnforced) {
+                    throw HandlerException.conflict(`${this.dictionaryPath}.DISABLE_ENFORCE_FIRST`);
+                }
+
+                if (props.input.totpCode) {
+                    const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
+                    const isValid = totp.validate({ token: props.input.totpCode, window: 1 });
+
+                    if (isValid === null) {
+                        throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+                    }
+                } else if (props.input.masterCode) {
+                    const isValid = await this.hashingService.verify({
+                        storedHash: factor.account.masterCode!.hash,
+                        value: props.input.masterCode,
+                    });
+
+                    if (!isValid) {
+                        throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_MASTER_CODE`);
+                    }
+                } else {
+                    throw HandlerException.badRequest(`${this.dictionaryPath}.CONFIRMATION_REQUIRED`);
+                }
+
+                this.secondFactorService.remove({
+                    input: { factor, reason: props.input.reason },
+                    transaction,
+                });
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.TOTP_REMOVED` };
+    }
+
+    public async enableEnforce(props: Handlers.SecondFactor.EnableEnforce): Promise<MessageResult> {
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                    options: { populate: ["secondFactors"] },
+                    where: { id: props.input.account },
+                    transaction,
+                });
+
+                const hasConfirmed = accountEntity.secondFactors.getItems().some(({ confirmedAt }) => confirmedAt !== null);
+
+                if (hasConfirmed) {
+                    this.secondFactorService.enableEnforce({
+                        input: { account: accountEntity },
+                        transaction,
+                    });
+                } else {
+                    throw HandlerException.badRequest(`${this.dictionaryPath}.NO_CONFIRMED_FACTOR`);
+                }
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.ENFORCE_ENABLED` };
+    }
+
+    public async disableEnforce(props: Handlers.SecondFactor.DisableEnforce): Promise<MessageResult> {
+        const secondFactor = await this.secondFactorRepository.findUniqueOrThrow({
+            where: { account: { id: props.input.account }, type: SecondFactorType.TOTP },
+        });
+
+        const totp = new TOTP({ secret: Secret.fromBase32(secondFactor.secret) });
+        const isValid = totp.validate({ token: props.input.totpCode, window: 1 }) !== null;
+
+        if (isValid) {
+            await this.transactional.run({
+                resource: this.resource,
+                audit: {
+                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                    entityType: IdentityEntityType.ACCOUNT,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                        where: { id: props.input.account },
+                        transaction,
+                    });
+
+                    this.secondFactorService.disableEnforce({
+                        input: { account: accountEntity },
+                        transaction,
+                    });
+                },
+            });
+
+            return { message: `${this.dictionaryPath}.ENFORCE_DISABLED` };
+        } else {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+        }
+    }
+
+    public async resetByMasterCode(props: Handlers.SecondFactor.ResetByMasterCode): Promise<MessageResult> {
+        const identifierEntity = await this.identifierRepository.findUnique({
+            options: { populate: ["account.masterCode", "account.secondFactors"] },
+            where: { value: props.input.identifier },
+        });
+
+        if (identifierEntity?.account?.masterCode) {
+            const isValid = await this.hashingService.verify({
+                storedHash: identifierEntity.account.masterCode!.hash,
+                value: props.input.masterCode,
+            });
+
+            if (isValid) {
+                await this.transactional.run({
+                    resource: this.resource,
+                    audit: {
+                        actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                        entityType: IdentityEntityType.ACCOUNT,
+                        ...props,
+                    },
+                    execute: (transaction) => {
+                        transaction.merge(identifierEntity);
+
+                        this.secondFactorService.resetByMasterCode({
+                            input: { account: identifierEntity.account },
                             transaction,
                         });
                     },
                 });
 
-                return { message: `${this.dictionaryPath}.ENFORCE_DISABLED` };
-            } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
-    }
-
-    public async resetByMasterCode(props: Handlers.SecondFactor.ResetByMasterCode): Promise<MessageResult> {
-        try {
-            const identifierEntity = await this.identifierRepository.findUnique({
-                options: { populate: ["account.masterCode", "account.secondFactors"] },
-                where: { value: props.input.identifier },
-            });
-
-            if (identifierEntity?.account?.masterCode) {
-                const isValid = await this.hashingService.verify({
-                    storedHash: identifierEntity.account.masterCode!.hash,
-                    value: props.input.masterCode,
-                });
-
-                if (isValid) {
-                    await this.transactional.run({
-                        audit: {
-                            actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-                            entityType: IdentityEntityType.ACCOUNT,
-                            ...props,
-                        },
-                        execute: (transaction) => {
-                            transaction.merge(identifierEntity);
-
-                            this.secondFactorService.resetByMasterCode({
-                                input: { account: identifierEntity.account },
-                                transaction,
-                            });
-                        },
-                    });
-
-                    return { message: `${this.dictionaryPath}.RESET_COMPLETE` };
-                } else {
-                    throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_MASTER_CODE`);
-                }
+                return { message: `${this.dictionaryPath}.RESET_COMPLETE` };
             } else {
                 throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_MASTER_CODE`);
             }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+        } else {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_MASTER_CODE`);
         }
     }
 }

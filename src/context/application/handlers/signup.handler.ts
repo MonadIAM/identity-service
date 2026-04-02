@@ -11,6 +11,7 @@ import { HandlerException } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class SignupHandler implements Handlers.Signup.Contract {
     private readonly dictionaryPath = "handlers.signup";
+    private readonly resource = "Signup";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -36,144 +37,131 @@ export class SignupHandler implements Handlers.Signup.Contract {
     ) {}
 
     public async byEmail(props: Handlers.Signup.ByEmail): Promise<MessageResult> {
-        try {
-            const hashedPassword = await this.hashingService.hash({ value: props.input.password });
+        const hashedPassword = await this.hashingService.hash({ value: props.input.password });
 
-            const account = await this.transactional.run({
-                audit: {
-                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-                    entityType: IdentityEntityType.ACCOUNT,
-                    ...props,
-                },
-                execute: (transaction) => {
-                    const account = this.accountService.create({
-                        transaction,
-                        input: {
-                            identifier: { type: IdentifierType.EMAIL, value: props.input.email },
-                            displayName: props.input.displayName,
-                            subject: AccountSubject.HUMAN,
-                            password: hashedPassword,
-                        },
-                    });
+        const account = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: (transaction) => {
+                const account = this.accountService.create({
+                    transaction,
+                    input: {
+                        identifier: { type: IdentifierType.EMAIL, value: props.input.email },
+                        displayName: props.input.displayName,
+                        subject: AccountSubject.HUMAN,
+                        password: hashedPassword,
+                    },
+                });
 
-                    return account;
-                },
-            });
+                return account;
+            },
+        });
 
-            await this.sendOTP({
-                type: IdentifierType.EMAIL,
-                value: props.input.email,
-                account: account.id,
-            });
+        await this.sendOTP({
+            type: IdentifierType.EMAIL,
+            value: props.input.email,
+            account: account.id,
+        });
 
-            return { message: `${this.dictionaryPath}.CREATED` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async byPhone(props: Handlers.Signup.ByPhone): Promise<MessageResult> {
-        try {
-            const hashedPassword = await this.hashingService.hash({ value: props.input.password });
+        const hashedPassword = await this.hashingService.hash({ value: props.input.password });
 
-            const account = await this.transactional.run({
-                audit: {
-                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-                    entityType: IdentityEntityType.ACCOUNT,
-                    ...props,
-                },
-                execute: (transaction) => {
-                    const account = this.accountService.create({
-                        transaction,
-                        input: {
-                            identifier: { type: IdentifierType.PHONE, value: props.input.phone },
-                            displayName: props.input.displayName,
-                            subject: AccountSubject.HUMAN,
-                            password: hashedPassword,
-                        },
-                    });
+        const account = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: (transaction) => {
+                const account = this.accountService.create({
+                    transaction,
+                    input: {
+                        identifier: { type: IdentifierType.PHONE, value: props.input.phone },
+                        displayName: props.input.displayName,
+                        subject: AccountSubject.HUMAN,
+                        password: hashedPassword,
+                    },
+                });
 
-                    return account;
-                },
-            });
+                return account;
+            },
+        });
 
-            await this.sendOTP({
-                type: IdentifierType.PHONE,
-                value: props.input.phone,
-                account: account.id,
-            });
+        await this.sendOTP({
+            type: IdentifierType.PHONE,
+            value: props.input.phone,
+            account: account.id,
+        });
 
-            return { message: `${this.dictionaryPath}.CREATED` };
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
-        }
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async resend(props: Handlers.Signup.Resend): Promise<MessageResult> {
-        try {
-            const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
-                where: { value: props.input.identifier },
+        const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+            where: { value: props.input.identifier },
+        });
+
+        if (identifierEntity.isVerified) {
+            throw HandlerException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
+        } else {
+            await this.sendOTP({
+                account: identifierEntity.account.id,
+                value: identifierEntity.value,
+                type: identifierEntity.type,
             });
 
-            if (identifierEntity.isVerified) {
-                throw HandlerException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
-            } else {
-                await this.sendOTP({
-                    account: identifierEntity.account.id,
-                    value: identifierEntity.value,
-                    type: identifierEntity.type,
-                });
-
-                return { message: `${this.dictionaryPath}.CODE_RESENT` };
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            return { message: `${this.dictionaryPath}.CODE_RESENT` };
         }
     }
 
     public async confirm(props: Handlers.Signup.Confirm.Props): Promise<Handlers.Signup.Confirm.Result> {
-        try {
-            const cachedAccount = await this.otpCacheService.getVerification({ code: props.input.code });
+        const cachedAccount = await this.otpCacheService.getVerification({ code: props.input.code });
 
-            if (cachedAccount) {
-                await this.otpCacheService.deleteVerification({ code: props.input.code });
+        if (cachedAccount) {
+            await this.otpCacheService.deleteVerification({ code: props.input.code });
 
-                const codes = this.cryptoService.generateRecoveryCodes();
-                const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
+            const codes = this.cryptoService.generateRecoveryCodes();
+            const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-                await this.transactional.run({
-                    audit: {
-                        actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-                        entityType: IdentityEntityType.ACCOUNT,
-                        ...props,
-                    },
-                    execute: async (transaction) => {
-                        const accountEntity = await this.accountRepository.findUniqueOrThrow({
-                            where: { id: cachedAccount },
-                            transaction,
-                        });
+            await this.transactional.run({
+                resource: this.resource,
+                audit: {
+                    actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                    entityType: IdentityEntityType.ACCOUNT,
+                    ...props,
+                },
+                execute: async (transaction) => {
+                    const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                        where: { id: cachedAccount },
+                        transaction,
+                    });
 
-                        this.accountService.verify({
-                            input: { account: accountEntity },
-                            transaction,
-                        });
+                    this.accountService.verify({
+                        input: { account: accountEntity },
+                        transaction,
+                    });
 
-                        this.recoveryCodeService.generate({
-                            input: { account: accountEntity, hashes: hashedCodes },
-                            transaction,
-                        });
-                    },
-                });
+                    this.recoveryCodeService.generate({
+                        input: { account: accountEntity, hashes: hashedCodes },
+                        transaction,
+                    });
+                },
+            });
 
-                return {
-                    message: `${this.dictionaryPath}.ACCOUNT_VERIFIED`,
-                    recoveryCodes: codes,
-                };
-            } else {
-                throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
-            }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            return {
+                message: `${this.dictionaryPath}.ACCOUNT_VERIFIED`,
+                recoveryCodes: codes,
+            };
+        } else {
+            throw HandlerException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
     }
 

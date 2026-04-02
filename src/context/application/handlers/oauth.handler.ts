@@ -12,6 +12,7 @@ import { Session } from "~context/domain/entities";
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthHandler implements Handlers.OAuth.Contract {
     private readonly dictionaryPath = "handlers.oauth";
+    private readonly resource = "OAuth";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -94,49 +95,46 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
     // }
 
     public async callback(props: Handlers.OAuth.Callback.Props): Promise<Handlers.OAuth.Callback.Result> {
-        try {
-            const cached = await this.oauthStateCacheService.get({ state: props.input.state });
+        const cached = await this.oauthStateCacheService.get({ state: props.input.state });
 
-            if (cached?.provider === props.input.provider) {
-                await this.oauthStateCacheService.delete({ state: props.input.state });
+        if (cached?.provider === props.input.provider) {
+            await this.oauthStateCacheService.delete({ state: props.input.state });
 
-                const oauthService = this.resolveProvider(props.input.provider);
-                const { access_token } = await oauthService.exchangeCode(props.input.code);
-                const profile = await oauthService.fetchProfile(access_token);
+            const oauthService = this.resolveProvider(props.input.provider);
+            const { access_token } = await oauthService.exchangeCode(props.input.code);
+            const profile = await oauthService.fetchProfile(access_token);
 
-                const existingByProvider = await this.identifierRepository.findUnique({
-                    where: { provider: props.input.provider, providerUserId: profile.providerUserId },
-                });
+            const existingByProvider = await this.identifierRepository.findUnique({
+                where: { provider: props.input.provider, providerUserId: profile.providerUserId },
+            });
 
-                if (existingByProvider) {
-                    return await this.login({ context: props.context, identifier: existingByProvider });
-                }
-
-                if (profile.email) {
-                    const existingByEmail = await this.identifierRepository.findUnique({
-                        where: { type: IdentifierType.EMAIL, value: profile.email },
-                    });
-
-                    if (existingByEmail) {
-                        throw HandlerException.conflict(`${this.dictionaryPath}.EMAIL_ALREADY_EXISTS`);
-                    }
-                }
-
-                return await this.signup({
-                    provider: props.input.provider,
-                    context: props.context,
-                    profile,
-                });
-            } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_STATE`);
+            if (existingByProvider) {
+                return await this.login({ context: props.context, identifier: existingByProvider });
             }
-        } catch (error) {
-            throw HandlerException.fromOrmError(error);
+
+            if (profile.email) {
+                const existingByEmail = await this.identifierRepository.findUnique({
+                    where: { type: IdentifierType.EMAIL, value: profile.email },
+                });
+
+                if (existingByEmail) {
+                    throw HandlerException.conflict(`${this.dictionaryPath}.EMAIL_ALREADY_EXISTS`);
+                }
+            }
+
+            return await this.signup({
+                provider: props.input.provider,
+                context: props.context,
+                profile,
+            });
+        } else {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_STATE`);
         }
     }
 
     private signup(props: Handlers.OAuth.Signup): Promise<Handlers.OAuth.Callback.Result> {
         return this.transactional.run({
+            resource: this.resource,
             audit: {
                 actionType: IdentityActionType.CREATE_SESSION,
                 entityType: IdentityEntityType.IDENTIFIER,
@@ -194,6 +192,7 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
 
     private login(props: Handlers.OAuth.Login): Promise<Handlers.OAuth.Callback.Result> {
         return this.transactional.run({
+            resource: this.resource,
             audit: {
                 actionType: IdentityActionType.CREATE_SESSION,
                 entityType: IdentityEntityType.IDENTIFIER,
