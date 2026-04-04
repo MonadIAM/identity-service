@@ -20,9 +20,9 @@ export class PasswordController {
     public change(
         @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { password }: any,
+        @Body() { currentPassword, newPassword }: any,
     ) {
-        return this.passwordCommands.change({ context, actor, input: { password } });
+        return this.passwordCommands.change({ context, actor, input: { currentPassword, newPassword } });
     }
 
     @Public()

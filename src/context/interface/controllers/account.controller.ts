@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, Public } from "~common/decorators";
+import { ExtractSession, ExtractContext, Public, ElevatedAccess } from "~common/decorators";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 
@@ -38,6 +38,7 @@ export class AccountController {
         return this.accountCommands.resend({ input });
     }
 
+    @ElevatedAccess()
     @Patch("deactivate")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Deactivate account" })

@@ -11,7 +11,8 @@ declare namespace Commands {
             context: RequestContext;
             actor: string;
             input: {
-                password: string;
+                currentPassword: string;
+                newPassword: string;
             };
         };
 

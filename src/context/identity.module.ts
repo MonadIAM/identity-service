@@ -5,11 +5,11 @@ import { Module } from "@nestjs/common";
 import { PendingTokenInterceptor, AuthTokenInterceptor } from "~common/interceptors";
 import { TrackingModule } from "~common/tracking";
 
+import { ElevatedAccessGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { PROCESSORS } from "./infrastructure/processors";
 import { CONTROLLERS } from "./interface/controllers";
-import { AuthGuard } from "./infrastructure/guards";
 import { DOMAIN_SERVICES } from "./domain/services";
 import { SCHEDULERS } from "./interface/schedulers";
 import { HANDLERS } from "./application/handlers";
@@ -26,6 +26,7 @@ import { COMMANDS } from "./application/commands";
         ...HANDLERS,
         ...COMMANDS,
         AuthGuard,
+        ElevatedAccessGuard,
         {
             provide: APP_INTERCEPTOR,
             useClass: PendingTokenInterceptor,
@@ -37,6 +38,10 @@ import { COMMANDS } from "./application/commands";
         {
             provide: APP_GUARD,
             useExisting: AuthGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useExisting: ElevatedAccessGuard,
         },
     ],
     controllers: [...CONTROLLERS],

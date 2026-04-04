@@ -62,16 +62,25 @@ export class PasswordCommands implements Commands.Password.Contract {
                 });
 
                 if (account.password) {
-                    await this.checkPasswordHistory(props.actor, props.input.password);
-
-                    const newHash = await this.hashingService.hash({ value: props.input.password });
-
-                    this.passwordService.rotate({
-                        input: { password: account.password, newHash },
-                        transaction,
+                    const isValid = await this.hashingService.verify({
+                        storedHash: account.password.hash,
+                        value: props.input.currentPassword,
                     });
 
-                    return { message: `${this.dictionaryPath}.CHANGED` };
+                    if (isValid) {
+                        await this.checkPasswordHistory(props.actor, props.input.newPassword);
+
+                        const newHash = await this.hashingService.hash({ value: props.input.newPassword });
+
+                        this.passwordService.rotate({
+                            input: { password: account.password, newHash },
+                            transaction,
+                        });
+
+                        return { message: `${this.dictionaryPath}.CHANGED` };
+                    } else {
+                        throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
+                    }
                 } else {
                     throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
                 }

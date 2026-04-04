@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Patch } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, Public } from "~common/decorators";
+import { ExtractSession, ExtractContext, Public, ElevatedAccess } from "~common/decorators";
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 
@@ -67,6 +67,7 @@ export class SecondFactorController {
     }
 
     @Delete("purge")
+    @ElevatedAccess()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Purge non-active factor" })
     public purge(

@@ -130,4 +130,24 @@ declare namespace InfrastructureServices {
             token: string;
         };
     }
+
+    namespace ElevatedAccessCache {
+        interface Contract {
+            set: (props: Set) => Promise<void>;
+            exists: (props: Exists) => Promise<boolean>;
+            delete: (props: Delete) => Promise<void>;
+        }
+
+        type Set = {
+            account: string;
+        };
+
+        type Exists = {
+            account: string;
+        };
+
+        type Delete = {
+            account: string;
+        };
+    }
 }
