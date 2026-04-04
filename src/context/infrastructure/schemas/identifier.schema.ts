@@ -38,20 +38,12 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
 
         isVerified: { type: "boolean" },
         receiveNotifications: { type: "boolean" },
-        allowPasswordlessLogin: { type: "boolean" },
 
         account: {
             kind: "m:1",
             entity: () => Account,
             fieldName: "account_id",
             deleteRule: "cascade",
-        },
-
-        primaryOfAccount: {
-            kind: "1:1",
-            entity: () => Account,
-            mappedBy: "primaryIdentifier",
-            nullable: true,
         },
 
         verifiedAt: { type: "timestamptz", length: 3, nullable: true },

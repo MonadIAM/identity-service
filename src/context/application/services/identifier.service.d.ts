@@ -6,12 +6,10 @@ declare global {
     namespace Services {
         namespace Identifier {
             interface Contract {
-                togglePasswordlessLogin: (props: TogglePasswordlessLogin) => void;
                 toggleNotifications: (props: ToggleNotifications) => void;
                 create: (props: Create) => IdentifierEntity;
-                setPrimary: (props: SetPrimary) => void;
+                purge: (props: Purge) => Promise<void>;
                 verify: (props: Verify) => void;
-                purge: (props: Purge) => void;
             }
 
             type Create = {
@@ -26,6 +24,7 @@ declare global {
                 transaction: EntityManager;
                 input: {
                     identifier: IdentifierEntity;
+                    account: string;
                     reason?: string;
                 };
             };
@@ -37,20 +36,7 @@ declare global {
                 };
             };
 
-            type SetPrimary = {
-                transaction: EntityManager;
-                input: {
-                    identifier: IdentifierEntity;
-                };
-            };
-
             type ToggleNotifications = {
-                input: {
-                    identifier: IdentifierEntity;
-                };
-            };
-
-            type TogglePasswordlessLogin = {
                 input: {
                     identifier: IdentifierEntity;
                 };

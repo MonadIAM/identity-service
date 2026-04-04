@@ -1,47 +1,35 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Account as AccountEntity, Session as SessionEntity } from "~context/domain/entities";
+import { Session as SessionEntity, Account as AccountEntity } from "~context/domain/entities";
 
 declare global {
     namespace Services {
         namespace Session {
             interface Contract {
-                forceLogout: (props: ForceLogout) => void;
-                revokeAll: (props: RevokeAll) => void;
-                resolveSessionExpiry: () => Date;
-                create: (props: Create) => void;
-                revoke: (props: Revoke) => void;
+                create: (props: Create.Props) => Promise<Create.Result>;
+                purge: (props: Purge) => void;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                context: RequestContext;
-                input: {
-                    account: AccountEntity;
-                    session: SessionEntity;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        account: AccountEntity;
+                        userAgent: string;
+                        ip: string;
+                    };
                 };
-            };
 
-            type Revoke = {
-                transaction: EntityManager;
-                input: {
-                    session: SessionEntity;
+                type Result = {
+                    accessToken: string;
+                    refreshToken: string;
                 };
-            };
+            }
 
-            type RevokeAll = {
+            type Purge = {
                 transaction: EntityManager;
                 input: {
-                    account: AccountEntity;
-                };
-            };
-
-            type ForceLogout = {
-                transaction: EntityManager;
-                input: {
-                    account: AccountEntity;
-                    reason: string;
-                    actor: string;
+                    sessions: SessionEntity[];
                 };
             };
         }

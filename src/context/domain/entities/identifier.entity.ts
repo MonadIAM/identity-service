@@ -23,10 +23,8 @@ export class Identifier {
 
     public isVerified: boolean;
     public receiveNotifications: boolean;
-    public allowPasswordlessLogin: boolean;
 
     public account: Account;
-    public primaryOfAccount?: Account;
 
     public constructor(props: Entities.Identifier.ConstructorProps) {
         this.createdAt = new Date();
@@ -34,7 +32,6 @@ export class Identifier {
 
         this.isVerified = false;
         this.receiveNotifications = false;
-        this.allowPasswordlessLogin = false;
 
         this.type = props.type;
         this.value = props.value;
@@ -53,34 +50,12 @@ export class Identifier {
         }
     }
 
-    public togglePasswordlessLogin(): void {
-        if ([IdentifierType.EMAIL, IdentifierType.PHONE].includes(this.type)) {
-            this.allowPasswordlessLogin = !this.allowPasswordlessLogin;
-        } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.PASSWORDLESS_NOT_APPLICABLE`);
-        }
-    }
-
     public verify(): void {
         if (this.isVerified) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_VERIFIED`);
         } else {
             this.verifiedAt = new Date();
             this.isVerified = true;
-        }
-    }
-
-    public canRemove(): void {
-        if (this.primaryOfAccount) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_REMOVE_PRIMARY`);
-        }
-    }
-
-    public canSetAsPrimary(): void {
-        if (!this.isVerified) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.PRIMARY_MUST_BE_VERIFIED`);
-        } else if (this.primaryOfAccount) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_PRIMARY`);
         }
     }
 }

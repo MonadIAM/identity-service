@@ -17,11 +17,14 @@ declare global {
     };
 
     type Req<T extends RouteGenericInterface = RouteGenericInterface> = FastifyRequest<T> & {
-        actorContext: ActorContext;
+        sessionContext: SessionContext;
     };
 
-    type ActorContext = {
+    type SessionContext = {
+        refreshToken?: string;
+        accessToken?: string;
         account: string;
+        session: string;
     };
 
     namespace OAuth {

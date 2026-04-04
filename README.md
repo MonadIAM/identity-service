@@ -152,3 +152,120 @@ git config core.hooksPath .githooks
 </details>
 
 ----
+
+
+{
+    "message": "commands.account.CONFIRMED",
+    "recoveryCodes": [
+        "3EB2-C5A9",
+        "273F-E137",
+        "6FF0-EA00",
+        "9D10-D184",
+        "8BA8-2F10",
+        "A79D-E4F3",
+        "01C6-FA19",
+        "4CFA-9F88"
+    ]
+}
+D515-1E9E
+
+
+Сценарии тестирования
+1. Регистрация и вход по паролю:
+
+POST /account/signup → получаем message, OTP на email/phone
+POST /account/confirm → получаем session tokens + recovery codes, автологин
+POST /session/refresh → ротация токенов
+POST /session/purge-all → выход из всех сессий
+POST /auth/login → вход заново, получаем session tokens
+
+2. Регистрация с повторной отправкой OTP:
+
+POST /account/signup
+POST /account/resend → новый OTP
+POST /account/confirm
+
+3. OAuth регистрация (новый пользователь):
+
+GET /auth/oauth/google → получаем URL, redirect
+GET /auth/oauth/google/callback?code=...&state=... → получаем session tokens + recovery codes
+
+4. OAuth вход (существующий пользователь):
+
+GET /auth/oauth/google → получаем URL, redirect
+GET /auth/oauth/google/callback?code=...&state=... → получаем session tokens
+
+5. OAuth линковка (email совпал с существующим аккаунтом):
+
+POST /account/signup → регистрация по email
+POST /account/confirm → активация
+GET /auth/oauth/github → redirect
+GET /auth/oauth/github/callback?code=...&state=... → OAuth привязан к существующему аккаунту, получаем session tokens
+
+6. Passwordless вход:
+
+POST /identifier/toggle-passwordless → включаем passwordless для email/phone
+POST /session/purge-all → выходим
+POST /auth/login/otp/request → OTP на email/phone
+POST /auth/login/otp/confirm → получаем session tokens
+
+7. Вход с 2FA:
+
+POST /second-factor → получаем QR URI + factorId
+POST /second-factor/confirm → подтверждаем TOTP, получаем master code
+POST /session/purge-all → выходим
+POST /auth/login → получаем { requires2FA: true }, pending token в cookie
+POST /auth/login/2fa → TOTP код, получаем session tokens
+
+8. Сброс 2FA по master code:
+
+(2FA настроен, TOTP device потерян)
+POST /second-factor/reset → master code, все факторы удалены
+POST /auth/login → вход без 2FA, получаем session tokens
+
+9. Смена пароля:
+
+POST /password/change → новый пароль (guard проверит текущий)
+
+10. Сброс пароля по OTP:
+
+POST /password/reset/request → OTP на email/phone
+POST /password/reset/otp → новый пароль + OTP код
+
+11. Сброс пароля по recovery code:
+
+POST /password/reset/recovery → новый пароль + recovery code + account id
+
+12. Управление идентификаторами:
+
+POST /identifier → добавляем новый email, OTP отправлен
+POST /identifier/resend → повторный OTP
+POST /identifier/confirm → верификация
+POST /identifier/set-primary → установка как primary (guard проверит пароль)
+POST /identifier/toggle-notifications → включаем уведомления
+POST /identifier/purge → удаление старого идентификатора
+
+13. Lifecycle 2FA фактора:
+
+POST /second-factor → создание (PENDING)
+POST /second-factor/confirm → подтверждение (ACTIVE)
+POST /second-factor/revoke → отзыв (REVOKED)
+POST /second-factor/restore → восстановление (ACTIVE)
+POST /second-factor/revoke → повторный отзыв (REVOKED)
+POST /second-factor/purge → удаление всех PENDING/REVOKED
+
+14. Деактивация и автовосстановление:
+
+POST /account/deactivate → аккаунт DEACTIVATED, сессии удалены
+POST /auth/login → auto-restore, аккаунт ACTIVE, получаем session tokens
+
+15. Suspend/Unsuspend (admin):
+
+POST /account/suspend → аккаунт SUSPENDED, сессии удалены
+POST /auth/login → ошибка ACCOUNT_SUSPENDED
+POST /account/unsuspend → аккаунт ACTIVE
+POST /auth/login → вход успешен
+
+16. Обновление профиля:
+
+POST /profile/update → patch displayName, locale, timeZone, pictureUrl

@@ -28,6 +28,15 @@ export const RepositoryErrorKind = {
     ...DatabaseErrorKind,
 } as const;
 
+export const CommandErrorKind = {
+    Unprocessable: "Unprocessable",
+    Unauthorized: "Unauthorized",
+    BadRequest: "BadRequest",
+    Forbidden: "Forbidden",
+    Conflict: "Conflict",
+    ...DatabaseErrorKind,
+} as const;
+
 export const HandlerErrorKind = {
     Unprocessable: "Unprocessable",
     Unauthorized: "Unauthorized",

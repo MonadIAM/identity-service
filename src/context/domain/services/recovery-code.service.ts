@@ -1,7 +1,6 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { NotificationCategory, NotificationSource } from "~context/enums";
-import { Notification, RecoveryCode } from "~context/domain/entities";
+import { RecoveryCode } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeService implements Services.RecoveryCode.Contract {
@@ -17,15 +16,5 @@ export class RecoveryCodeService implements Services.RecoveryCode.Contract {
         }
 
         this.generate({ transaction, input });
-
-        transaction.persist(
-            new Notification({
-                category: NotificationCategory.SECURITY,
-                source: NotificationSource.IDENTITY,
-                title: "Recovery codes regenerated",
-                body: "Your recovery codes have been regenerated. Previous codes are no longer valid.",
-                account: input.account,
-            }),
-        );
     }
 }

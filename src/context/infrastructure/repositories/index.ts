@@ -3,7 +3,6 @@ import { Provider } from "@nestjs/common";
 import { PasswordHistoryRepository } from "./password-history.repository";
 import { RecoveryCodeRepository } from "./recovery-code.repository";
 import { SecondFactorRepository } from "./second-factor.repository";
-import { NotificationRepository } from "./notification.repository";
 import { MasterCodeRepository } from "./master-code.repository";
 import { IdentifierRepository } from "./identifier.repository";
 import { ChangeLogRepository } from "./change-log.repository";
@@ -16,7 +15,6 @@ import { AccountRepository } from "./account.repository";
 export const PASSWORD_HISTORY_REPOSITORY = Symbol("Repositories.PasswordHistory.Contract");
 export const RECOVERY_CODE_REPOSITORY = Symbol("Repositories.RecoveryCode.Contract");
 export const SECOND_FACTOR_REPOSITORY = Symbol("Repositories.SecondFactor.Contract");
-export const NOTIFICATION_REPOSITORY = Symbol("Repositories.Notification.Contract");
 export const MASTER_CODE_REPOSITORY = Symbol("Repositories.MasterCode.Contract");
 export const IDENTIFIER_REPOSITORY = Symbol("Repositories.Identifier.Contract");
 export const CHANGE_LOG_REPOSITORY = Symbol("Repositories.ChangeLog.Contract");
@@ -38,10 +36,6 @@ export const REPOSITORIES: Provider[] = [
     {
         provide: SECOND_FACTOR_REPOSITORY,
         useClass: SecondFactorRepository,
-    },
-    {
-        provide: NOTIFICATION_REPOSITORY,
-        useClass: NotificationRepository,
     },
     {
         provide: MASTER_CODE_REPOSITORY,

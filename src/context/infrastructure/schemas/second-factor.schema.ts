@@ -1,17 +1,18 @@
 import { EntitySchema } from "@mikro-orm/core";
 
 import { SecondFactor, Account } from "~context/domain/entities";
-import { SecondFactorType } from "~context/enums";
+import { SecondFactorStatus, SecondFactorType } from "~context/enums";
 
 export const SecondFactorSchema = new EntitySchema<SecondFactor>({
     class: SecondFactor,
     tableName: "second_factor",
     schema: "identity",
 
-    uniques: [
+    indexes: [
         {
-            name: "second_factor_account_type_unique",
-            properties: ["account", "type"],
+            name: "second_factor_account_type_active_unique",
+            expression:
+                'CREATE UNIQUE INDEX "second_factor_account_type_active_unique" ON "identity"."second_factor" ("account_id", "type") WHERE "status" != \'REVOKED\'',
         },
     ],
 
@@ -25,12 +26,14 @@ export const SecondFactorSchema = new EntitySchema<SecondFactor>({
             deleteRule: "cascade",
         },
 
+        status: { enum: true, items: () => SecondFactorStatus },
         type: { enum: true, items: () => SecondFactorType },
         secret: { type: "text" },
         name: { type: "string", length: 128, nullable: true },
 
         confirmedAt: { type: "timestamptz", length: 3, nullable: true },
         lastUsedAt: { type: "timestamptz", length: 3, nullable: true },
+        revokedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
     },
 });

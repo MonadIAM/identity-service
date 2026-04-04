@@ -1,171 +1,79 @@
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nLang as Lang, I18nService } from "nestjs-i18n";
-import {
-    UseInterceptors,
-    Controller,
-    HttpStatus,
-    HttpCode,
-    Inject,
-    Delete,
-    Patch,
-    Query,
-    Body,
-    Post,
-    Get,
-} from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch, Delete } from "@nestjs/common";
+import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
-import { IDENTIFIER_HANDLER } from "~context/application/handlers";
+import { ExtractSession, ExtractContext } from "~common/decorators";
+import { IDENTIFIER_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractActor, ExtractContext } from "~common/decorators";
-import { BaseController } from "~common/abstract";
-import { SuccessMessageDTO } from "~common/dto";
-
-import {
-    ToggleIdentifierPasswordlessLoginBodyDTO,
-    ToggleIdentifierNotificationsBodyDTO,
-    SetIdentifierAsPrimaryBodyDTO,
-    ResendIdentifierOTPBodyDTO,
-    GetIdentifierByIdQueryDTO,
-    GetIdentifiersListBodyDTO,
-    ConfirmIdentifierBodyDTO,
-    CreateIdentifierBodyDTO,
-    RemoveIdentifierBodyDTO,
-    IdentifierListDTO,
-    IdentifierDTO,
-} from "../dto/identifier";
 
 @ApiTags("Identifier")
 @Controller("/identifier")
 @UseInterceptors(MonitoringInterceptor)
-export class IdentifierController extends BaseController {
+export class IdentifierController {
     public constructor(
-        @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.Contract,
-        @Inject(IDENTIFIER_HANDLER)
-        private readonly identifierHandler: Handlers.Identifier.Contract,
-        i18nService: I18nService,
-    ) {
-        super(i18nService);
-    }
+        @Inject(IDENTIFIER_COMMANDS)
+        private readonly identifierCommands: Commands.Identifier.Contract,
+    ) {}
 
-    @Get()
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns an identifier by ID" })
-    @ApiResponse({ status: HttpStatus.OK, type: IdentifierDTO })
-    public getById(@Query() { id }: GetIdentifierByIdQueryDTO): Promise<IdentifierDTO> {
-        return this.identifierRepository
-            .findUniqueOrThrow({ where: { id } })
-            .then((data) => super.formatResponse({ DTO: IdentifierDTO, data }));
-    }
-
-    @Post("list")
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a paginated list of identifiers" })
-    @ApiResponse({ status: HttpStatus.OK, type: IdentifierListDTO })
-    public getList(@Body() { pagination, filters, sort }: GetIdentifiersListBodyDTO): Promise<IdentifierListDTO> {
-        return this.identifierRepository
-            .findMany({ pagination, filters, sort })
-            .then((data) => super.formatResponse({ DTO: IdentifierListDTO, pagination, data }));
-    }
-
-    @Post("create")
+    @Post()
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "Creates a new identifier" })
-    @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Add identifier" })
     public create(
-        @ExtractActor() { account: actor }: ActorContext,
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() input: CreateIdentifierBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.identifierHandler
-            .create({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+        @Body() { identifier, type }: any,
+    ) {
+        return this.identifierCommands.create({
+            input: { identifier, type },
+            context,
+            actor,
+        });
     }
 
     @Post("resend")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Resends the OTP for identifier confirmation" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    public resend(@Body() input: ResendIdentifierOTPBodyDTO, @Lang() lang: string): Promise<SuccessMessageDTO> {
-        return this.identifierHandler
-            .resend({ input })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    @ApiOperation({ summary: "Resend identifier verification" })
+    public resend(@ExtractSession() { account: actor }: SessionContext, @Body() { identifier }: any) {
+        return this.identifierCommands.resend({ actor, input: { identifier } });
     }
 
     @Post("confirm")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Confirms a new identifier" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Confirm identifier" })
     public confirm(
-        @ExtractActor() { account: actor }: ActorContext,
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() input: ConfirmIdentifierBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.identifierHandler
-            .confirm({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+        @Body() { code }: any,
+    ) {
+        return this.identifierCommands.confirm({ context, actor, input: { code } });
+    }
+
+    @Patch("toggle-notifications")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Toggle notifications" })
+    public toggleNotifications(
+        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractContext() context: RequestContext,
+        @Body() { identifier }: any,
+    ) {
+        return this.identifierCommands.toggleNotifications({
+            input: { identifier },
+            context,
+            actor,
+        });
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Purge an identifier" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Remove identifier" })
     public purge(
-        @ExtractActor() { account: actor }: ActorContext,
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() input: RemoveIdentifierBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.identifierHandler
-            .purge({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
-    }
-
-    @Patch("primary")
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Sets an identifier as primary" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    public setPrimary(
-        @ExtractActor() { account: actor }: ActorContext,
-        @Body() input: SetIdentifierAsPrimaryBodyDTO,
-        @ExtractContext() context: RequestContext,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.identifierHandler
-            .setPrimary({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
-    }
-
-    @HttpCode(HttpStatus.OK)
-    @Patch("notifications")
-    @ApiOperation({ summary: "Updates identifier notification settings" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    public toggleNotifications(
-        @Body() input: ToggleIdentifierNotificationsBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.identifierHandler
-            .toggleNotifications({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
-    }
-
-    @HttpCode(HttpStatus.OK)
-    @Patch("passwordless-login")
-    @ApiOperation({ summary: "Updates identifier passwordless login settings" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    public togglePasswordlessLogin(
-        @Body() input: ToggleIdentifierPasswordlessLoginBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.identifierHandler
-            .togglePasswordlessLogin({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+        @Body() { identifier }: any,
+    ) {
+        return this.identifierCommands.purge({
+            input: { identifier },
+            context,
+            actor,
+        });
     }
 }

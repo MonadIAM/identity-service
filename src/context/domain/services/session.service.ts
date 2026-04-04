@@ -1,58 +1,55 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { NotificationCategory, NotificationSource } from "~context/enums";
-import { Notification } from "~context/domain/entities";
+import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
+import { Session } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionService implements Services.Session.Contract {
     private readonly sessionExpiryDays: number;
 
-    public constructor(private readonly configService: ConfigService) {
+    public constructor(
+        private readonly configService: ConfigService,
+        @Inject(JWT_SERVICE)
+        private readonly jwtService: CommonServices.JWT.Contract,
+        @Inject(CRYPTO_SERVICE)
+        private readonly cryptoService: CommonServices.Crypto.Contract,
+    ) {
         this.sessionExpiryDays = this.configService.getOrThrow<number>("SESSION_EXPIRY_DAYS");
     }
 
-    public create({ transaction, context: { ip }, input }: Services.Session.Create): void {
-        transaction.persist(input.session);
+    public async create({ transaction, input }: Services.Session.Create.Props): Promise<Services.Session.Create.Result> {
+        const session = new Session({
+            expiresAt: this.resolveExpiry(),
+            userAgent: input.userAgent,
+            account: input.account,
+            ip: input.ip,
+        });
 
-        transaction.persist(
-            new Notification({
-                category: NotificationCategory.SECURITY,
-                source: NotificationSource.IDENTITY,
-                title: "New sign-in detected",
-                body: `A new sign-in was detected from ${ip}.`,
-                account: input.account,
-            }),
-        );
+        const refreshToken = await this.jwtService.signRefreshToken({
+            sub: input.account.id,
+            jti: session.id,
+        });
+
+        session.refresh(this.cryptoService.hashToken(refreshToken));
+
+        transaction.persist(session);
+
+        const accessToken = await this.jwtService.signAccessToken({
+            sub: input.account.id,
+            jti: session.id,
+        });
+
+        return { accessToken, refreshToken };
     }
 
-    public revoke({ transaction, input }: Services.Session.Revoke): void {
-        transaction.remove(input.session);
-    }
-
-    public revokeAll({ transaction, input }: Services.Session.RevokeAll): void {
-        for (const session of input.account.sessions) {
+    public purge({ transaction, input }: Services.Session.Purge): void {
+        for (const session of input.sessions) {
             transaction.remove(session);
         }
     }
 
-    public forceLogout({ transaction, input }: Services.Session.ForceLogout): void {
-        for (const session of input.account.sessions) {
-            transaction.remove(session);
-        }
-
-        transaction.persist(
-            new Notification({
-                category: NotificationCategory.SECURITY,
-                source: NotificationSource.IDENTITY,
-                title: "Session terminated by administrator",
-                body: "All your sessions have been terminated by an administrator.",
-                account: input.account,
-            }),
-        );
-    }
-
-    public resolveSessionExpiry(): Date {
+    private resolveExpiry(): Date {
         const expiry = new Date();
         expiry.setDate(expiry.getDate() + this.sessionExpiryDays);
         return expiry;

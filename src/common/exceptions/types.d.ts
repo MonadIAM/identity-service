@@ -2,6 +2,7 @@ import {
     RepositoryErrorKind,
     DatabaseErrorKind,
     ServiceErrorKind,
+    CommandErrorKind,
     HandlerErrorKind,
     CommonErrorKind,
     EntityErrorKind,
@@ -12,8 +13,9 @@ declare global {
     namespace Exception {
         type RepositoryErrorKind = keyof typeof RepositoryErrorKind;
         type DatabaseErrorKind = keyof typeof DatabaseErrorKind;
-        type ServiceErrorKind = keyof typeof ServiceErrorKind;
+        type CommandErrorKind = keyof typeof CommandErrorKind;
         type HandlerErrorKind = keyof typeof HandlerErrorKind;
+        type ServiceErrorKind = keyof typeof ServiceErrorKind;
         type CommonErrorKind = keyof typeof CommonErrorKind;
         type EntityErrorKind = keyof typeof EntityErrorKind;
         type GuardErrorKind = keyof typeof GuardErrorKind;
@@ -31,11 +33,11 @@ declare global {
 
         type ValidationDetail = {
             /* eslint-disable prettier/prettier */
-            args?: Record<string, unknown> //
-            invalidValue?: unknown;        // Field value that triggered the error
-            constraint: string;            // Name of the triggered class-validator rule
-            message: string;               // Human-readable message provided by class-validator
-            path: string;                  // Full path to the field
+            args?: UnknownObject    //
+            invalidValue?: unknown; // Field value that triggered the error
+            constraint: string;     // Name of the triggered class-validator rule
+            message: string;        // Human-readable message provided by class-validator
+            path: string;           // Full path to the field
             /* eslint-enable prettier/prettier */
         };
     }

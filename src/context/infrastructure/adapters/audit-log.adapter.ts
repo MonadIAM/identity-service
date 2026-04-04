@@ -17,9 +17,6 @@ export class AuditLogAdapter {
         if (filters.actor) {
             where.actor = MikroAdapter.applyStringFilter(filters.actor);
         }
-        if (filters.realm) {
-            where.realm = MikroAdapter.applyStringFilter(filters.realm);
-        }
         if (filters.ip) {
             where.ip = MikroAdapter.applyStringFilter(filters.ip);
         }

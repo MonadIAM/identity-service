@@ -1,123 +1,87 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nLang as Lang, I18nService } from "nestjs-i18n";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Patch } from "@nestjs/common";
+import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { SECOND_FACTOR_HANDLER } from "~context/application/handlers";
+import { ExtractSession, ExtractContext, Public } from "~common/decorators";
+import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractActor, ExtractContext } from "~common/decorators";
-import { BaseController } from "~common/abstract";
-import { SuccessMessageDTO } from "~common/dto";
 
-import {
-    ResetByMasterCodeBodyDTO,
-    ConfirmSecondFactorDTO,
-    DisableEnforceBodyDTO,
-    EnableEnforceBodyDTO,
-    SetupSecondFactorDTO,
-    Confirm2FABodyDTO,
-    Remove2FABodyDTO,
-    Setup2FABodyDTO,
-} from "../dto/second-factor";
-
-@ApiTags("SecondFactor")
+@ApiTags("Second Factor")
 @Controller("/second-factor")
 @UseInterceptors(MonitoringInterceptor)
-export class SecondFactorController extends BaseController {
+export class SecondFactorController {
     public constructor(
-        @Inject(SECOND_FACTOR_HANDLER)
-        private readonly secondFactorHandler: Handlers.SecondFactor.Contract,
-        i18nService: I18nService,
-    ) {
-        super(i18nService);
-    }
+        @Inject(SECOND_FACTOR_COMMANDS)
+        private readonly secondFactorCommands: Commands.SecondFactor.Contract,
+    ) {}
 
-    @Post("setup")
+    @Post()
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "" })
-    @ApiResponse({ status: HttpStatus.CREATED, type: SetupSecondFactorDTO })
-    public setup(
-        @ExtractActor() { account: actor }: ActorContext,
+    @ApiOperation({ summary: "Create TOTP factor" })
+    public create(
+        @ExtractSession() { account }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() input: Setup2FABodyDTO,
-        @Lang() lang: string,
-    ): Promise<SetupSecondFactorDTO> {
-        return this.secondFactorHandler
-            .setup({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SetupSecondFactorDTO, data, lang }));
+        @Body() body: any,
+    ) {
+        return this.secondFactorCommands.create({
+            context,
+            actor: account,
+            input: { name: body.name },
+        });
     }
 
     @Post("confirm")
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "" })
-    @ApiResponse({ status: HttpStatus.CREATED, type: ConfirmSecondFactorDTO })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Confirm TOTP factor" })
     public confirm(
-        @ExtractActor() { account: actor }: ActorContext,
+        @ExtractSession() { account }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() input: Confirm2FABodyDTO,
-        @Lang() lang: string,
-    ): Promise<ConfirmSecondFactorDTO> {
-        return this.secondFactorHandler
-            .confirm({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: ConfirmSecondFactorDTO, data, lang }));
+        @Body() { factor, code }: any,
+    ) {
+        return this.secondFactorCommands.confirm({
+            context,
+            actor: account,
+            input: { factor, code },
+        });
     }
 
-    @Post("remove")
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "" })
-    @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
-    public remove(
-        @ExtractActor() { account: actor }: ActorContext,
+    @Patch("revoke")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Revoke TOTP factor" })
+    public revoke(
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() input: Remove2FABodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.secondFactorHandler
-            .remove({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+        @Body() { factor }: any,
+    ) {
+        return this.secondFactorCommands.revoke({ context, actor, input: { factor } });
     }
 
-    @Post("enable-enforce")
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "" })
-    @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
-    public enableEnforce(
-        @ExtractActor() { account: actor }: ActorContext,
+    @Patch("restore")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Restore revoked factor" })
+    public restore(
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() input: EnableEnforceBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.secondFactorHandler
-            .enableEnforce({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+        @Body() { factor }: any,
+    ) {
+        return this.secondFactorCommands.restore({ context, actor, input: { factor } });
     }
 
-    @Post("disable-enforce")
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "" })
-    @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
-    public disableEnforce(
-        @ExtractActor() { account: actor }: ActorContext,
+    @Delete("purge")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Purge non-active factor" })
+    public purge(
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() input: DisableEnforceBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.secondFactorHandler
-            .disableEnforce({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+        @Body() { factor }: any,
+    ) {
+        return this.secondFactorCommands.purge({ context, actor, input: { factor } });
     }
 
-    @Post("reset-dy-master-code")
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "" })
-    @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
-    public resetByMasterCode(
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
-        @Body() input: ResetByMasterCodeBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.secondFactorHandler
-            .resetByMasterCode({ context, input, actor })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    @Public()
+    @Post("reset")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Reset all factors by master code" })
+    public reset(@ExtractContext() context: RequestContext, @Body() { identifier, code }: any) {
+        return this.secondFactorCommands.reset({ context, input: { identifier, code } });
     }
 }

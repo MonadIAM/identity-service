@@ -25,6 +25,10 @@ declare global {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
+
+                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
+
+                isLastVerifiedIdentifier: (props: IsLastVerifiedIdentifier) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -58,6 +62,17 @@ declare global {
                       sort: Sort;
                   };
 
+            type GetLookupList = {
+                pagination: Pagination;
+                term: string;
+            };
+
+            type IsLastVerifiedIdentifier = {
+                transaction?: EntityManager;
+                identifier: string;
+                account: string;
+            };
+
             type Filters = {
                 id?: StringFilterDTO;
                 email?: StringFilterDTO;
@@ -66,7 +81,6 @@ declare global {
                 account?: LinkFilterDTO;
                 isVerified?: boolean;
                 receiveNotifications?: boolean;
-                allowPasswordlessLogin?: boolean;
                 createdAt?: OrdinalFilterDTO<Date>;
                 verifiedAt?: OrdinalFilterDTO<Date>;
                 lastUsedAt?: OrdinalFilterDTO<Date>;

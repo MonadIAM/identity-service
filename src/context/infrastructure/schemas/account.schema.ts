@@ -3,7 +3,6 @@ import { EntitySchema } from "@mikro-orm/core";
 import { AccountSubject, AccountStatus } from "~context/enums";
 import {
     PasswordHistory,
-    Notification,
     SecondFactor,
     RecoveryCode,
     Identifier,
@@ -25,13 +24,6 @@ export const AccountSchema = new EntitySchema<Account>({
         subject: { enum: true, items: () => AccountSubject },
         status: { enum: true, items: () => AccountStatus },
         is2FAEnforced: { type: "boolean" },
-
-        primaryIdentifier: {
-            kind: "1:1",
-            entity: () => Identifier,
-            fieldName: "primary_identifier_id",
-            nullable: true,
-        },
 
         masterCode: {
             kind: "1:1",
@@ -80,12 +72,6 @@ export const AccountSchema = new EntitySchema<Account>({
         sessions: {
             kind: "1:m",
             entity: () => Session,
-            mappedBy: "account",
-        },
-
-        notifications: {
-            kind: "1:m",
-            entity: () => Notification,
             mappedBy: "account",
         },
 

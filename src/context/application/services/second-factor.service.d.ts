@@ -7,17 +7,17 @@ declare global {
     namespace Services {
         namespace SecondFactor {
             interface Contract {
+                create: (props: Create) => SecondFactorEntity;
                 confirm: (props: Confirm) => void;
-                remove: (props: Remove) => void;
-                enableEnforce: (props: EnableEnforce) => void;
-                disableEnforce: (props: DisableEnforce) => void;
-                resetByMasterCode: (props: ResetByMasterCode) => void;
+                revoke: (props: Revoke) => void;
+                restore: (props: Restore) => void;
+                purge: (props: Purge) => void;
+                reset: (props: Reset) => void;
             }
 
-            type Confirm = {
+            type Create = {
                 transaction: EntityManager;
                 input: {
-                    masterCodeHash: string;
                     account: AccountEntity;
                     type: SecondFactorType;
                     secret: string;
@@ -25,29 +25,34 @@ declare global {
                 };
             };
 
-            type Remove = {
+            type Confirm = {
                 transaction: EntityManager;
                 input: {
                     factor: SecondFactorEntity;
-                    reason: string;
+                    masterCodeHash: string;
                 };
             };
 
-            type EnableEnforce = {
+            type Revoke = {
+                input: {
+                    factor: SecondFactorEntity;
+                };
+            };
+
+            type Restore = {
+                input: {
+                    factor: SecondFactorEntity;
+                };
+            };
+
+            type Purge = {
                 transaction: EntityManager;
                 input: {
-                    account: AccountEntity;
+                    factor: SecondFactorEntity;
                 };
             };
 
-            type DisableEnforce = {
-                transaction: EntityManager;
-                input: {
-                    account: AccountEntity;
-                };
-            };
-
-            type ResetByMasterCode = {
+            type Reset = {
                 transaction: EntityManager;
                 input: {
                     account: AccountEntity;

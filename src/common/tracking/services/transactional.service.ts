@@ -15,7 +15,7 @@ export class TransactionalService {
         private readonly operationContext: OperationContext,
     ) {}
 
-    public run<T>(params: Tracking.Transactional.Run<T>): Promise<T> {
+    public async run<T>(params: Tracking.Transactional.Run<T>): Promise<T> {
         try {
             const writeManager = this.writeManager.fork();
 
@@ -29,7 +29,7 @@ export class TransactionalService {
 
             const auditEntry = new AuditLog(params.audit);
 
-            return this.operationContext.run(
+            return await this.operationContext.run(
                 {
                     auditEntry: auditEntry.id,
                     changeLogEnabled: params.changeLog ?? false,

@@ -1,105 +1,60 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { MasterCode, Notification, SecondFactor } from "~context/domain/entities";
-import { NotificationCategory, NotificationSource } from "~context/enums";
+import { MasterCode, SecondFactor } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorService implements Services.SecondFactor.Contract {
-    public confirm({ transaction, input }: Services.SecondFactor.Confirm): void {
-        const secondFactor = new SecondFactor({
+    public create({ transaction, input }: Services.SecondFactor.Create): SecondFactor {
+        const factor = new SecondFactor({
             account: input.account,
             secret: input.secret,
             type: input.type,
             name: input.name,
         });
 
-        secondFactor.confirm();
+        transaction.persist(factor);
 
-        transaction.persist(secondFactor);
-
-        transaction.persist(
-            new MasterCode({
-                hash: input.masterCodeHash,
-                account: input.account,
-            }),
-        );
-
-        transaction.persist(
-            new Notification({
-                category: NotificationCategory.SECURITY,
-                source: NotificationSource.IDENTITY,
-                title: "Two-factor authentication enabled",
-                body: `A ${input.type} authenticator has been added to your account.`,
-                account: input.account,
-            }),
-        );
+        return factor;
     }
 
-    public remove({ transaction, input }: Services.SecondFactor.Remove): void {
+    public confirm({ transaction, input }: Services.SecondFactor.Confirm): void {
+        input.factor.confirm();
+
+        if (!input.factor.account.masterCode) {
+            transaction.persist(
+                new MasterCode({
+                    hash: input.masterCodeHash,
+                    account: input.factor.account,
+                }),
+            );
+        }
+    }
+
+    public revoke({ input }: Services.SecondFactor.Revoke): void {
+        input.factor.revoke();
+    }
+
+    public restore({ input }: Services.SecondFactor.Restore): void {
+        input.factor.restore();
+    }
+
+    public purge({ transaction, input }: Services.SecondFactor.Purge): void {
+        input.factor.canPurge();
+
         transaction.remove(input.factor);
 
         if (input.factor.account.masterCode) {
             transaction.remove(input.factor.account.masterCode);
         }
-
-        transaction.persist(
-            new Notification({
-                category: NotificationCategory.SECURITY,
-                source: NotificationSource.IDENTITY,
-                title: "Two-factor authentication removed",
-                body: `A ${input.factor.type} authenticator has been removed from your account.`,
-                account: input.factor.account,
-            }),
-        );
     }
 
-    public enableEnforce({ transaction, input }: Services.SecondFactor.EnableEnforce): void {
-        input.account.enableEnforce();
-
-        transaction.persist(
-            new Notification({
-                category: NotificationCategory.SECURITY,
-                source: NotificationSource.IDENTITY,
-                title: "Mandatory two-factor authentication enabled",
-                body: "Two-factor authentication is now required for every sign-in.",
-                account: input.account,
-            }),
-        );
-    }
-
-    public disableEnforce({ transaction, input }: Services.SecondFactor.DisableEnforce): void {
-        input.account.disableEnforce();
-
-        transaction.persist(
-            new Notification({
-                category: NotificationCategory.SECURITY,
-                source: NotificationSource.IDENTITY,
-                title: "Mandatory two-factor authentication disabled",
-                body: "Two-factor authentication is no longer required for sign-in.",
-                account: input.account,
-            }),
-        );
-    }
-
-    public resetByMasterCode({ transaction, input }: Services.SecondFactor.ResetByMasterCode): void {
-        input.account.resetEnforce();
-
-        for (const factor of input.account.secondFactors) {
+    public reset({ transaction, input }: Services.SecondFactor.Reset): void {
+        for (const factor of input.account.secondFactors.getItems()) {
             transaction.remove(factor);
         }
 
         if (input.account.masterCode) {
             transaction.remove(input.account.masterCode);
         }
-
-        transaction.persist(
-            new Notification({
-                category: NotificationCategory.SECURITY,
-                source: NotificationSource.IDENTITY,
-                title: "Two-factor authentication reset",
-                body: "All authenticators have been removed and mandatory 2FA has been disabled via master code.",
-                account: input.account,
-            }),
-        );
     }
 }

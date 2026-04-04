@@ -7,7 +7,6 @@ import { EntityException } from "~common/exceptions";
 import { PasswordHistory } from "./password-history.entity";
 import { SecondFactor } from "./second-factor.entity";
 import { RecoveryCode } from "./recovery-code.entity";
-import { Notification } from "./notification.entity";
 import { MasterCode } from "./master-code.entity";
 import { Identifier } from "./identifier.entity";
 import { Password } from "./password.entity";
@@ -28,17 +27,15 @@ export class Account {
     public subject: AccountSubject;
     public status: AccountStatus;
 
+    public profile?: Profile;
     public password?: Password;
     public masterCode?: MasterCode;
-    public primaryIdentifier?: Identifier;
-    public profile?: Profile;
 
     public sessions = new Collection<Session>(this);
     public identifiers = new Collection<Identifier>(this);
     public secondFactors = new Collection<SecondFactor>(this);
     public recoveryCodes = new Collection<RecoveryCode>(this);
     public passwordHistory = new Collection<PasswordHistory>(this);
-    public notifications = new Collection<Notification>(this);
 
     public constructor(props: Entities.Account.ConstructorProps) {
         this.createdAt = new Date();
@@ -51,23 +48,14 @@ export class Account {
     }
 
     public assignRelations(props: Entities.Account.AssignRelations): void {
-        this.primaryIdentifier = props.identifier;
         this.password = props.password;
         this.profile = props.profile;
-    }
-
-    public setPrimaryIdentifier(identifier: Identifier): void {
-        this.primaryIdentifier = identifier;
-        this.updatedAt = new Date();
-        ++this.version;
     }
 
     public activate(): void {
         if (this.status === AccountStatus.PENDING) {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
-            this.primaryIdentifier?.verify();
-            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVATED`);
         }
@@ -77,7 +65,6 @@ export class Account {
         if (this.status === AccountStatus.ACTIVE) {
             this.status = AccountStatus.DEACTIVATED;
             this.updatedAt = new Date();
-            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.DEACTIVATION_NOT_ALLOWED`);
         }
@@ -87,7 +74,6 @@ export class Account {
         if (this.status === AccountStatus.DEACTIVATED) {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
-            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.RESTORE_NOT_ALLOWED`);
         }
@@ -99,7 +85,6 @@ export class Account {
         } else {
             this.status = AccountStatus.SUSPENDED;
             this.updatedAt = new Date();
-            ++this.version;
         }
     }
 
@@ -107,35 +92,14 @@ export class Account {
         if (this.status === AccountStatus.SUSPENDED) {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
-            ++this.version;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_SUSPENDED`);
         }
     }
 
-    public enableEnforce(): void {
-        if (this.is2FAEnforced) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ENFORCED`);
-        } else {
-            this.is2FAEnforced = true;
-            this.updatedAt = new Date();
-            ++this.version;
+    public canPurge(): void {
+        if (this.status !== AccountStatus.DEACTIVATED) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_ACTIVE`);
         }
-    }
-
-    public disableEnforce(): void {
-        if (this.is2FAEnforced) {
-            this.is2FAEnforced = false;
-            this.updatedAt = new Date();
-            ++this.version;
-        } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_ENFORCED`);
-        }
-    }
-
-    public resetEnforce(): void {
-        this.is2FAEnforced = false;
-        this.updatedAt = new Date();
-        ++this.version;
     }
 }

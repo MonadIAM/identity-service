@@ -1,67 +1,60 @@
-import { Account } from "~context/domain/entities";
+import { Account as AccountEntity } from "~context/domain/entities";
 
 declare global {
     namespace Handlers {
-        namespace Login {
-            type Session = {
-                refreshToken: string;
-                accessToken: string;
-                session: string;
-            };
-
+        namespace Auth {
             interface Contract {
                 byPassword: (props: ByPassword.Props) => Promise<ByPassword.Result>;
                 requestOTP: (props: RequestOTP) => Promise<MessageResult>;
-                confirmOTP: (props: ConfirmOTP) => Promise<Session>;
-                verify2FA: (props: Verify2FA) => Promise<Session>;
+                confirmOTP: (props: ConfirmOTP.Props) => Promise<ConfirmOTP.Result>;
+                verify2FA: (props: Verify2FA.Props) => Promise<Verify2FA.Result>;
             }
 
             namespace ByPassword {
                 type Props = {
                     context: RequestContext;
-                    actor: string;
                     input: {
                         identifier: string;
                         password: string;
                     };
                 };
 
-                type Result = Promise<
-                    | Session
-                    | {
-                          pendingToken: string;
-                          requires2FA: boolean;
-                      }
-                >;
+                type Result = MessageResult &
+                    (Services.Session.Create.Result | { pendingToken: string; requires2FA: true });
             }
 
             type RequestOTP = {
                 input: {
-                    value: string;
+                    identifier: string;
                 };
             };
 
-            type ConfirmOTP = {
-                context: RequestContext;
-                actor: string;
-                input: {
-                    code: string;
+            namespace ConfirmOTP {
+                type Props = {
+                    context: RequestContext;
+                    input: {
+                        code: string;
+                    };
                 };
-            };
 
-            type Verify2FA = {
-                context: RequestContext;
-                actor: string;
-                input: {
-                    pendingToken: string;
-                    totpCode: string;
+                type Result = MessageResult & Services.Session.Create.Result;
+            }
+
+            namespace Verify2FA {
+                type Props = {
+                    context: RequestContext;
+                    input: {
+                        pendingToken: string;
+                        code: string;
+                    };
                 };
-            };
+
+                type Result = MessageResult & Services.Session.Create.Result;
+            }
 
             type CreateSession = {
+                account: AccountEntity;
                 context: RequestContext;
-                account: Account;
-                actor: string;
             };
         }
     }

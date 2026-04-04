@@ -1,59 +1,36 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Account as AccountEntity } from "~context/domain/entities";
-import { AccountSubject } from "~context/enums";
+import { Session as SessionEntity, Account as AccountEntity } from "~context/domain/entities";
+import { AccountStatus, AccountSubject } from "~context/enums";
 
 declare global {
     namespace Services {
         namespace Account {
             interface Contract {
-                createByOAuth: (props: CreateByOAuth) => AccountEntity;
                 create: (props: Create) => AccountEntity;
                 deactivate: (props: Deactivate) => void;
                 unsuspend: (props: Unsuspend) => void;
                 suspend: (props: Suspend) => void;
                 restore: (props: Restore) => void;
-                verify: (props: Verify) => void;
+                confirm: (props: Confirm) => void;
             }
 
             type Create = {
                 transaction: EntityManager;
                 input: {
-                    identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
-                    subject: AccountSubject;
-                    displayName: string;
-                    password: string;
-                };
-            };
-
-            type CreateByOAuth = {
-                transaction: EntityManager;
-                input: {
-                    oauth: Omit<Entities.Identifier.ConstructorProps, "account">;
-                    email?: Omit<Entities.Identifier.ConstructorProps, "account">;
+                    primaryIdentifier: Omit<Entities.Identifier.ConstructorProps, "account">;
+                    additionalIdentifier?: Omit<Entities.Identifier.ConstructorProps, "account">;
                     profile: Omit<Entities.Profile.ConstructorProps, "account">;
                     subject: AccountSubject;
-                };
-            };
-
-            type Verify = {
-                transaction: EntityManager;
-                input: {
-                    account: AccountEntity;
+                    status: AccountStatus;
+                    password?: string;
                 };
             };
 
             type Deactivate = {
                 transaction: EntityManager;
                 input: {
-                    account: AccountEntity;
-                    reason?: string;
-                };
-            };
-
-            type Restore = {
-                transaction: EntityManager;
-                input: {
+                    sessions: SessionEntity[];
                     account: AccountEntity;
                 };
             };
@@ -61,16 +38,35 @@ declare global {
             type Suspend = {
                 transaction: EntityManager;
                 input: {
+                    sessions: SessionEntity[];
+                    account: AccountEntity;
+                };
+            };
+
+            type Purge = {
+                transaction: EntityManager;
+                input: {
                     account: AccountEntity;
                     reason?: string;
                 };
             };
 
+            type Confirm = {
+                input: {
+                    account: AccountEntity;
+                };
+            };
+
             type Unsuspend = {
-                transaction: EntityManager;
                 input: {
                     account: AccountEntity;
                     reason?: string;
+                };
+            };
+
+            type Restore = {
+                input: {
+                    account: AccountEntity;
                 };
             };
         }
