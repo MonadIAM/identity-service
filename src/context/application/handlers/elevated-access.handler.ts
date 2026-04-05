@@ -4,7 +4,6 @@ import { TOTP, Secret } from "otpauth";
 import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { ELEVATED_ACCESS_CACHE_SERVICE } from "~context/infrastructure/services";
 import { HandlerException } from "~common/exceptions";
-import { SecondFactorStatus } from "~context/enums";
 import { HASHING_SERVICE } from "~common/services";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -48,8 +47,8 @@ export class ElevatedAccessHandler implements Handlers.ElevatedAccess.Contract {
     public async byTOTP(props: Handlers.ElevatedAccess.ByTOTP): Promise<MessageResult> {
         const factor = await this.secondFactorRepository.findUnique({
             where: {
+                confirmedAt: { $ne: null },
                 account: props.actor,
-                status: SecondFactorStatus.ACTIVE,
             },
         });
 

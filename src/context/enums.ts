@@ -26,12 +26,6 @@ export enum SecondFactorType {
     TOTP = "totp",
 }
 
-export enum SecondFactorStatus {
-    PENDING = "PENDING",
-    ACTIVE = "ACTIVE",
-    REVOKED = "REVOKED",
-}
-
 export enum IdentityActionType {
     /* Account */
     CREATE_ACCOUNT = "CREATE_ACCOUNT",

@@ -944,20 +944,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "enumItems": [
-            "PENDING",
-            "ACTIVE",
-            "REVOKED"
-          ],
-          "mappedType": "enum"
-        },
         "type": {
           "name": "type",
           "type": "text",
@@ -1001,16 +987,6 @@
         },
         "last_used_at": {
           "name": "last_used_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
-        },
-        "revoked_at": {
-          "name": "revoked_at",
           "type": "timestamptz(3)",
           "unsigned": false,
           "autoincrement": false,

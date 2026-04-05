@@ -1,7 +1,7 @@
 import { EntitySchema } from "@mikro-orm/core";
 
 import { SecondFactor, Account } from "~context/domain/entities";
-import { SecondFactorStatus, SecondFactorType } from "~context/enums";
+import { SecondFactorType } from "~context/enums";
 
 export const SecondFactorSchema = new EntitySchema<SecondFactor>({
     class: SecondFactor,
@@ -26,14 +26,12 @@ export const SecondFactorSchema = new EntitySchema<SecondFactor>({
             deleteRule: "cascade",
         },
 
-        status: { enum: true, items: () => SecondFactorStatus },
         type: { enum: true, items: () => SecondFactorType },
         secret: { type: "text" },
         name: { type: "string", length: 128, nullable: true },
 
         confirmedAt: { type: "timestamptz", length: 3, nullable: true },
         lastUsedAt: { type: "timestamptz", length: 3, nullable: true },
-        revokedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
     },
 });

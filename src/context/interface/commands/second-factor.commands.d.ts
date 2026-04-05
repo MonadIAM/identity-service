@@ -1,10 +1,8 @@
 declare namespace Commands {
     namespace SecondFactor {
         interface Contract {
-            create: (props: Create.Props) => Promise<Create.Result>;
             confirm: (props: Confirm.Props) => Promise<Confirm.Result>;
-            revoke: (props: Revoke) => Promise<MessageResult>;
-            restore: (props: Restore) => Promise<MessageResult>;
+            create: (props: Create.Props) => Promise<Create.Result>;
             purge: (props: Purge) => Promise<MessageResult>;
             reset: (props: Reset) => Promise<MessageResult>;
         }
@@ -37,22 +35,6 @@ declare namespace Commands {
                 masterCode?: string;
             };
         }
-
-        type Revoke = {
-            context: RequestContext;
-            actor: string;
-            input: {
-                factor: string;
-            };
-        };
-
-        type Restore = {
-            context: RequestContext;
-            actor: string;
-            input: {
-                factor: string;
-            };
-        };
 
         type Purge = {
             context: RequestContext;

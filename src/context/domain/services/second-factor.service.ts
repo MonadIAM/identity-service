@@ -30,17 +30,7 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
         }
     }
 
-    public revoke({ input }: Services.SecondFactor.Revoke): void {
-        input.factor.revoke();
-    }
-
-    public restore({ input }: Services.SecondFactor.Restore): void {
-        input.factor.restore();
-    }
-
     public purge({ transaction, input }: Services.SecondFactor.Purge): void {
-        input.factor.canPurge();
-
         transaction.remove(input.factor);
 
         if (input.factor.account.masterCode) {

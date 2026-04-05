@@ -1,4 +1,4 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Patch } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { ExtractSession, ExtractContext, Public, ElevatedAccess } from "~common/decorators";
@@ -42,28 +42,6 @@ export class SecondFactorController {
             actor: account,
             input: { factor, code },
         });
-    }
-
-    @Patch("revoke")
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Revoke TOTP factor" })
-    public revoke(
-        @ExtractSession() { account: actor }: SessionContext,
-        @ExtractContext() context: RequestContext,
-        @Body() { factor }: any,
-    ) {
-        return this.secondFactorCommands.revoke({ context, actor, input: { factor } });
-    }
-
-    @Patch("restore")
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Restore revoked factor" })
-    public restore(
-        @ExtractSession() { account: actor }: SessionContext,
-        @ExtractContext() context: RequestContext,
-        @Body() { factor }: any,
-    ) {
-        return this.secondFactorCommands.restore({ context, actor, input: { factor } });
     }
 
     @Delete("purge")

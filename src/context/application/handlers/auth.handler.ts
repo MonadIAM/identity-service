@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
-import { AccountStatus, IdentifierType, IdentityActionType, IdentityEntityType, SecondFactorStatus } from "~context/enums";
+import { AccountStatus, IdentifierType, IdentityActionType, IdentityEntityType } from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE, PENDING_AUTH_CACHE_SERVICE } from "~context/infrastructure/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
@@ -55,9 +55,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
             if (isValid) {
                 this.assertCanAuth(identifier.account);
 
-                const hasActive2FA = identifier.account.secondFactors
-                    .getItems()
-                    .some(({ status }) => status === SecondFactorStatus.ACTIVE);
+                const hasActive2FA = identifier.account.secondFactors.getItems().some(({ confirmedAt }) => confirmedAt);
 
                 if (hasActive2FA) {
                     const pendingToken = this.cryptoService.generateToken();
@@ -134,8 +132,8 @@ export class AuthHandler implements Handlers.Auth.Contract {
             const factor = await this.secondFactorRepository.findUnique({
                 options: { populate: ["account"] },
                 where: {
+                    confirmedAt: { $ne: null },
                     account: cachedAccount,
-                    status: SecondFactorStatus.ACTIVE,
                 },
             });
 

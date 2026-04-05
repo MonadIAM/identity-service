@@ -9,8 +9,6 @@ declare global {
             interface Contract {
                 create: (props: Create) => SecondFactorEntity;
                 confirm: (props: Confirm) => void;
-                revoke: (props: Revoke) => void;
-                restore: (props: Restore) => void;
                 purge: (props: Purge) => void;
                 reset: (props: Reset) => void;
             }
@@ -30,18 +28,6 @@ declare global {
                 input: {
                     factor: SecondFactorEntity;
                     masterCodeHash: string;
-                };
-            };
-
-            type Revoke = {
-                input: {
-                    factor: SecondFactorEntity;
-                };
-            };
-
-            type Restore = {
-                input: {
-                    factor: SecondFactorEntity;
                 };
             };
 

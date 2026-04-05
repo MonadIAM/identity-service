@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, IdentityEntityType, SecondFactorType, SecondFactorStatus } from "~context/enums";
+import { IdentityActionType, IdentityEntityType, SecondFactorType } from "~context/enums";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
@@ -71,7 +71,6 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         const factor = await this.secondFactorRepository.findUniqueOrThrow({
             options: { populate: ["account.masterCode"] },
             where: {
-                status: SecondFactorStatus.PENDING,
                 id: props.input.factor,
                 account: props.actor,
             },
@@ -108,57 +107,6 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         } else {
             throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
         }
-    }
-
-    public async revoke(props: Commands.SecondFactor.Revoke): Promise<MessageResult> {
-        await this.transactional.run({
-            resource: this.resource,
-            audit: {
-                actionType: IdentityActionType.REVOKE_SECOND_FACTOR,
-                entityType: IdentityEntityType.ACCOUNT,
-                ...props,
-            },
-            execute: async (transaction) => {
-                const factor = await this.secondFactorRepository.findUniqueOrThrow({
-                    options: { populate: ["account"] },
-                    where: {
-                        id: props.input.factor,
-                        account: props.actor,
-                    },
-                    transaction,
-                });
-
-                this.secondFactorService.revoke({ input: { factor } });
-            },
-        });
-
-        return { message: `${this.dictionaryPath}.REVOKED` };
-    }
-
-    public async restore(props: Commands.SecondFactor.Restore): Promise<MessageResult> {
-        await this.transactional.run({
-            resource: this.resource,
-            audit: {
-                actionType: IdentityActionType.RESTORE_SECOND_FACTOR,
-                entityType: IdentityEntityType.ACCOUNT,
-                ...props,
-            },
-            execute: async (transaction) => {
-                const factor = await this.secondFactorRepository.findUniqueOrThrow({
-                    where: {
-                        id: props.input.factor,
-                        account: props.actor,
-                    },
-                    transaction,
-                });
-
-                this.secondFactorService.restore({
-                    input: { factor },
-                });
-            },
-        });
-
-        return { message: `${this.dictionaryPath}.RESTORED` };
     }
 
     public async purge(props: Commands.SecondFactor.Purge): Promise<MessageResult> {
