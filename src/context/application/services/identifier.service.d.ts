@@ -7,6 +7,7 @@ declare global {
         namespace Identifier {
             interface Contract {
                 toggleNotifications: (props: ToggleNotifications) => void;
+                togglePublicContact: (props: TogglePublicContact) => void;
                 create: (props: Create) => IdentifierEntity;
                 purge: (props: Purge) => Promise<void>;
                 verify: (props: Verify) => void;
@@ -37,6 +38,12 @@ declare global {
             };
 
             type ToggleNotifications = {
+                input: {
+                    identifier: IdentifierEntity;
+                };
+            };
+
+            type TogglePublicContact = {
                 input: {
                     identifier: IdentifierEntity;
                 };

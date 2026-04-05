@@ -35,6 +35,10 @@ export class IdentifierService implements Services.Identifier.Contract {
         input.identifier.toggleNotifications();
     }
 
+    public togglePublicContact({ input }: Services.Identifier.TogglePublicContact): void {
+        input.identifier.togglePublicContact();
+    }
+
     public async purge({ transaction, input }: Services.Identifier.Purge): Promise<void> {
         const isLastVerifiedIdentifier = await this.identifierRepository.isLastVerifiedIdentifier({
             identifier: input.identifier.id,

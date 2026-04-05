@@ -37,6 +37,7 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
         providerUserId: { type: "text", nullable: true },
 
         isVerified: { type: "boolean" },
+        isPublicContact: { type: "boolean" },
         receiveNotifications: { type: "boolean" },
 
         account: {

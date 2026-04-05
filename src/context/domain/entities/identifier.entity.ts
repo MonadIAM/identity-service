@@ -22,6 +22,7 @@ export class Identifier {
     public provider?: string;
 
     public isVerified: boolean;
+    public isPublicContact: boolean;
     public receiveNotifications: boolean;
 
     public account: Account;
@@ -31,6 +32,7 @@ export class Identifier {
         this.id = randomUUID();
 
         this.isVerified = false;
+        this.isPublicContact = false;
         this.receiveNotifications = false;
 
         this.type = props.type;
@@ -47,6 +49,16 @@ export class Identifier {
             this.receiveNotifications = !this.receiveNotifications;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NOTIFICATIONS_EMAIL_ONLY`);
+        }
+    }
+
+    public togglePublicContact(): void {
+        if (this.type === IdentifierType.OAUTH) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.PUBLIC_CONTACT_NOT_APPLICABLE`);
+        } else if (this.isVerified) {
+            this.receiveNotifications = !this.receiveNotifications;
+        } else {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.PUBLIC_CONTACT_REQUIRES_VERIFICATION`);
         }
     }
 

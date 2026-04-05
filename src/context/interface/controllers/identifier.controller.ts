@@ -47,7 +47,7 @@ export class IdentifierController {
         return this.identifierCommands.confirm({ context, actor, input: { code } });
     }
 
-    @Patch("toggle-notifications")
+    @Patch("toggle/notifications")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Toggle notifications" })
     public toggleNotifications(
@@ -56,6 +56,21 @@ export class IdentifierController {
         @Body() { identifier }: any,
     ) {
         return this.identifierCommands.toggleNotifications({
+            input: { identifier },
+            context,
+            actor,
+        });
+    }
+
+    @Patch("toggle/public-contact")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Toggle notifications" })
+    public togglePublicContact(
+        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractContext() context: RequestContext,
+        @Body() { identifier }: any,
+    ) {
+        return this.identifierCommands.togglePublicContact({
             input: { identifier },
             context,
             actor,

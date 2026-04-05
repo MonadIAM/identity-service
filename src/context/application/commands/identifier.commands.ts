@@ -146,6 +146,30 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         return { message: `${this.dictionaryPath}.NOTIFICATIONS_TOGGLED` };
     }
 
+    public async togglePublicContact(props: Commands.Identifier.TogglePublicContact): Promise<MessageResult> {
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.TOGGLE_PUBLIC_CONTACT,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const identifier = await this.identifierRepository.findUniqueOrThrow({
+                    where: {
+                        id: props.input.identifier,
+                        account: props.actor,
+                    },
+                    transaction,
+                });
+
+                this.identifierService.togglePublicContact({ input: { identifier } });
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.NOTIFICATIONS_TOGGLED` };
+    }
+
     public async purge(props: Commands.Identifier.Purge): Promise<MessageResult> {
         await this.transactional.run({
             resource: this.resource,

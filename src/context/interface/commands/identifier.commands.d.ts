@@ -9,6 +9,7 @@ declare global {
                 confirm: (props: Confirm) => Promise<MessageResult>;
                 purge: (props: Purge) => Promise<MessageResult>;
                 toggleNotifications: (props: ToggleNotifications) => Promise<MessageResult>;
+                togglePublicContact: (props: TogglePublicContact) => Promise<MessageResult>;
             }
 
             type Create = {
@@ -44,6 +45,14 @@ declare global {
             };
 
             type ToggleNotifications = {
+                context: RequestContext;
+                actor: string;
+                input: {
+                    identifier: string;
+                };
+            };
+
+            type TogglePublicContact = {
                 context: RequestContext;
                 actor: string;
                 input: {

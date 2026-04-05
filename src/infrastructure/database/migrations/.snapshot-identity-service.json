@@ -390,6 +390,15 @@
           "nullable": false,
           "mappedType": "boolean"
         },
+        "is_public_contact": {
+          "name": "is_public_contact",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "receive_notifications": {
           "name": "receive_notifications",
           "type": "boolean",
