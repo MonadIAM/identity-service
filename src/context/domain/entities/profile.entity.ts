@@ -25,17 +25,17 @@ export class Profile {
         this.account = props.account;
     }
 
-    public changeData(patch: Entities.Profile.ChangeDataProps): DeltaAudit.Patch<void> {
+    public update(patch: Entities.Profile.ChangeDataProps): void {
         const now = new Date();
-        let changes: number = 0;
+        let affected = 0;
         for (const [key, value] of Object.typedEntries(patch)) {
             if (typeof value !== "undefined" && value !== this[key]) {
                 (this[key] as unknown) = value;
-                ++changes;
+                ++affected;
             }
         }
 
-        if (changes) {
+        if (affected) {
             this.updatedAt = now;
         } else if (Object.keys(patch).length) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NO_CHANGES_DETECTED`);
