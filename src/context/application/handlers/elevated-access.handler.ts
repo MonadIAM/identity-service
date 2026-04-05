@@ -44,7 +44,7 @@ export class ElevatedAccessHandler implements Handlers.ElevatedAccess.Contract {
         }
     }
 
-    public async byTOTP(props: Handlers.ElevatedAccess.ByTOTP): Promise<MessageResult> {
+    public async bySecondFactor(props: Handlers.ElevatedAccess.BySecondFactor): Promise<MessageResult> {
         const factor = await this.secondFactorRepository.findUnique({
             where: {
                 confirmedAt: { $ne: null },

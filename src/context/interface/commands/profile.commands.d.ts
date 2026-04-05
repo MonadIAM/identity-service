@@ -7,10 +7,7 @@ declare namespace Commands {
         type Update = {
             context: RequestContext;
             actor: string;
-            input: {
-                account: string;
-                patch: Entities.Profile.ChangeDataProps;
-            };
+            input: Entities.Profile.ChangeDataProps;
         };
     }
 }

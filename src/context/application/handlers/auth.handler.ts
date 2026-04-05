@@ -40,7 +40,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async byPassword(props: Handlers.Auth.ByPassword.Props): Promise<Handlers.Auth.ByPassword.Result> {
+    public async signin(props: Handlers.Auth.Signin.Props): Promise<Handlers.Auth.Signin.Result> {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.secondFactors", "account.password"] },
             where: { value: props.input.identifier },
@@ -125,35 +125,41 @@ export class AuthHandler implements Handlers.Auth.Contract {
         }
     }
 
-    public async verify2FA(props: Handlers.Auth.Verify2FA.Props): Promise<Handlers.Auth.Verify2FA.Result> {
-        const cachedAccount = await this.pendingAuthCacheService.get({ token: props.input.pendingToken });
+    public async confirmSecondFactor(
+        props: Handlers.Auth.ConfirmSecondFactor.Props,
+    ): Promise<Handlers.Auth.ConfirmSecondFactor.Result> {
+        if (props.token) {
+            const cachedAccount = await this.pendingAuthCacheService.get({ token: props.token });
 
-        if (cachedAccount) {
-            const factor = await this.secondFactorRepository.findUnique({
-                options: { populate: ["account"] },
-                where: {
-                    confirmedAt: { $ne: null },
-                    account: cachedAccount,
-                },
-            });
+            if (cachedAccount) {
+                const factor = await this.secondFactorRepository.findUnique({
+                    options: { populate: ["account"] },
+                    where: {
+                        confirmedAt: { $ne: null },
+                        account: cachedAccount,
+                    },
+                });
 
-            if (factor) {
-                const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
-                const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
+                if (factor) {
+                    const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
+                    const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
 
-                if (isValid) {
-                    await this.pendingAuthCacheService.delete({ token: props.input.pendingToken });
+                    if (isValid) {
+                        await this.pendingAuthCacheService.delete({ token: props.token });
 
-                    const session = await this.createSession({ account: factor.account, context: props.context });
-                    return { message: `${this.dictionaryPath}.VERIFIED`, ...session };
+                        const session = await this.createSession({ account: factor.account, context: props.context });
+                        return { message: `${this.dictionaryPath}.VERIFIED`, ...session };
+                    } else {
+                        throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+                    }
                 } else {
-                    throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+                    throw HandlerException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
                 }
             } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
+                throw HandlerException.unauthorized(`${this.dictionaryPath}.EXPIRED_PENDING_AUTH`);
             }
         } else {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.EXPIRED_PENDING_AUTH`);
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.PENDING_TOKEN_MISSING`);
         }
     }
 

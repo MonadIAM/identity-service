@@ -1,8 +1,8 @@
 declare namespace Handlers {
     namespace ElevatedAccess {
         interface Contract {
+            bySecondFactor: (props: BySecondFactor) => Promise<MessageResult>;
             byPassword: (props: ByPassword) => Promise<MessageResult>;
-            byTOTP: (props: ByTOTP) => Promise<MessageResult>;
         }
 
         type ByPassword = {
@@ -13,7 +13,7 @@ declare namespace Handlers {
             };
         };
 
-        type ByTOTP = {
+        type BySecondFactor = {
             context: RequestContext;
             actor: string;
             input: {

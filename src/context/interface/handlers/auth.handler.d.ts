@@ -4,13 +4,13 @@ declare global {
     namespace Handlers {
         namespace Auth {
             interface Contract {
-                byPassword: (props: ByPassword.Props) => Promise<ByPassword.Result>;
-                requestOTP: (props: RequestOTP) => Promise<MessageResult>;
+                confirmSecondFactor: (props: ConfirmSecondFactor.Props) => Promise<ConfirmSecondFactor.Result>;
                 confirmOTP: (props: ConfirmOTP.Props) => Promise<ConfirmOTP.Result>;
-                verify2FA: (props: Verify2FA.Props) => Promise<Verify2FA.Result>;
+                requestOTP: (props: RequestOTP) => Promise<MessageResult>;
+                signin: (props: Signin.Props) => Promise<Signin.Result>;
             }
 
-            namespace ByPassword {
+            namespace Signin {
                 type Props = {
                     context: RequestContext;
                     input: {
@@ -40,11 +40,11 @@ declare global {
                 type Result = MessageResult & Services.Session.Create.Result;
             }
 
-            namespace Verify2FA {
+            namespace ConfirmSecondFactor {
                 type Props = {
                     context: RequestContext;
+                    token?: string;
                     input: {
-                        pendingToken: string;
                         code: string;
                     };
                 };

@@ -102,7 +102,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
 
             return {
                 message: `${this.dictionaryPath}.CONFIRMED`,
-                masterCode: hasMasterCode ? undefined : masterCodePlaintext,
+                code: hasMasterCode ? undefined : masterCodePlaintext,
             };
         } else {
             throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);

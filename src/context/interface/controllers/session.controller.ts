@@ -1,9 +1,12 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, Public } from "~common/decorators";
+import { ExtractSession, ExtractContext, Public, FormatResponse } from "~common/decorators";
 import { SESSION_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { SuccessMessageDTO } from "~common/dto";
+
+import { PurgeBodyDTO } from "../dto/session";
 
 @ApiTags("Session")
 @Controller("/session")
@@ -17,36 +20,46 @@ export class SessionController {
     @Public()
     @Post("refresh")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Refresh session tokens" })
-    public refresh(@ExtractSession() { refreshToken, session }: SessionContext, @ExtractContext() context: RequestContext) {
-        return this.sessionCommands.refresh({
-            input: { refreshToken, session },
-            context,
-        });
+    public refresh(
+        @ExtractSession() { refreshToken, session }: SessionContext,
+        @ExtractContext() context: RequestContext,
+    ): Promise<Commands.Session.Refresh.Result> {
+        return this.sessionCommands.refresh({ context, input: { refreshToken, session } });
     }
 
     @Delete("logout")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge specific sessions" })
-    public logout(@ExtractSession() { account, session }: SessionContext, @ExtractContext() context: RequestContext) {
-        return this.sessionCommands.purge({ context, actor: account, input: { account, sessions: [session] } });
+    public logout(
+        @ExtractSession() { account: actor, session }: SessionContext,
+        @ExtractContext() context: RequestContext,
+    ): Promise<MessageResult> {
+        return this.sessionCommands.purge({ context, actor, input: { sessions: [session] } });
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge specific sessions" })
     public purge(
-        @ExtractSession() { account }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() body: { sessions: string[] },
-    ) {
-        return this.sessionCommands.purge({ context, actor: account, input: { account, sessions: body.sessions } });
+        @Body() input: PurgeBodyDTO,
+    ): Promise<MessageResult> {
+        return this.sessionCommands.purge({ context, actor, input });
     }
 
     @Delete("purge-all")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge all sessions" })
-    public purgeAll(@ExtractSession() { account }: SessionContext, @ExtractContext() context: RequestContext) {
-        return this.sessionCommands.purgeAll({ context, actor: account, input: { account } });
+    public purgeAll(
+        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractContext() context: RequestContext,
+    ): Promise<MessageResult> {
+        return this.sessionCommands.purgeAll({ context, actor });
     }
 }

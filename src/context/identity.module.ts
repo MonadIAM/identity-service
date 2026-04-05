@@ -2,7 +2,7 @@ import { APP_INTERCEPTOR, APP_GUARD } from "@nestjs/core";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 
-import { PendingTokenInterceptor, AuthTokenInterceptor } from "~common/interceptors";
+import { FormatResponseInterceptor, PendingTokenInterceptor, AuthTokenInterceptor } from "~common/interceptors";
 import { TrackingModule } from "~common/tracking";
 
 import { ElevatedAccessGuard, AuthGuard } from "./infrastructure/guards";
@@ -25,8 +25,12 @@ import { COMMANDS } from "./application/commands";
         ...PROCESSORS,
         ...HANDLERS,
         ...COMMANDS,
-        AuthGuard,
         ElevatedAccessGuard,
+        AuthGuard,
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: FormatResponseInterceptor,
+        },
         {
             provide: APP_INTERCEPTOR,
             useClass: PendingTokenInterceptor,

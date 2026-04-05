@@ -1,9 +1,12 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, Public } from "~common/decorators";
+import { ExtractSession, ExtractContext, Public, FormatResponse } from "~common/decorators";
 import { PASSWORD_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { SuccessMessageDTO } from "~common/dto";
+
+import { ResetByRecoveryCodeBodyDTO, ResetByTOTPBodyDTO, RequestTOTPBodyDTO, ChangeBodyDTO } from "../dto/password";
 
 @ApiTags("Password")
 @Controller("/password")
@@ -16,36 +19,46 @@ export class PasswordController {
 
     @Post("change")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Change password" })
     public change(
         @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { currentPassword, newPassword }: any,
-    ) {
-        return this.passwordCommands.change({ context, actor, input: { currentPassword, newPassword } });
+        @Body() input: ChangeBodyDTO,
+    ): Promise<MessageResult> {
+        return this.passwordCommands.change({ context, actor, input });
     }
 
     @Public()
-    @Post("request/otp")
+    @Post("request/totp")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Request password reset OTP" })
-    public requestOTP(@Body() { identifier }: any) {
-        return this.passwordCommands.requestOTP({ input: { identifier } });
+    public requestOTP(@Body() input: RequestTOTPBodyDTO): Promise<MessageResult> {
+        return this.passwordCommands.requestOTP({ input });
     }
 
     @Public()
-    @Post("reset/by-otp")
+    @Post("reset/totp")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by OTP" })
-    public resetByOTP(@ExtractContext() context: RequestContext, @Body() { password, code }: any) {
-        return this.passwordCommands.resetByOTP({ context, input: { password, code } });
+    public resetByOTP(
+        @ExtractContext() context: RequestContext,
+        @Body() input: ResetByTOTPBodyDTO,
+    ): Promise<MessageResult> {
+        return this.passwordCommands.resetByOTP({ context, input });
     }
 
     @Public()
-    @Post("reset/by-code")
+    @Post("reset/code")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by recovery code" })
-    public resetByRecoveryCode(@ExtractContext() context: RequestContext, @Body() { identifier, password, code }: any) {
-        return this.passwordCommands.resetByRecoveryCode({ context, input: { identifier, password, code } });
+    public resetByRecoveryCode(
+        @ExtractContext() context: RequestContext,
+        @Body() input: ResetByRecoveryCodeBodyDTO,
+    ): Promise<MessageResult> {
+        return this.passwordCommands.resetByRecoveryCode({ context, input });
     }
 }

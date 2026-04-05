@@ -2,8 +2,8 @@ declare namespace Commands {
     namespace Session {
         interface Contract {
             refresh: (props: Refresh.Props) => Promise<Refresh.Result>;
-            purge: (props: Purge) => Promise<MessageResult>;
             purgeAll: (props: PurgeAll) => Promise<MessageResult>;
+            purge: (props: Purge) => Promise<MessageResult>;
         }
 
         namespace Refresh {
@@ -22,7 +22,6 @@ declare namespace Commands {
             context: RequestContext;
             actor: string;
             input: {
-                account: string;
                 sessions: string[];
             };
         };
@@ -30,9 +29,6 @@ declare namespace Commands {
         type PurgeAll = {
             context: RequestContext;
             actor: string;
-            input: {
-                account: string;
-            };
         };
     }
 }

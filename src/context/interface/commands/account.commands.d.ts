@@ -8,16 +8,16 @@ declare global {
                 deactivate: (props: Deactivate) => Promise<MessageResult>;
                 unsuspend: (props: Unsuspend) => Promise<MessageResult>;
                 suspend: (props: Suspend) => Promise<MessageResult>;
-                create: (props: Create) => Promise<MessageResult>;
+                signup: (props: Signup) => Promise<MessageResult>;
                 resend: (props: Resend) => Promise<MessageResult>;
             }
 
-            type Create = {
+            type Signup = {
                 context: RequestContext;
                 input: {
-                    displayName: string;
                     identifier: string;
                     password: string;
+                    name: string;
                 };
             };
 
@@ -37,7 +37,7 @@ declare global {
 
                 type Result = MessageResult &
                     Services.Session.Create.Result & {
-                        recoveryCodes: string[];
+                        codes: string[];
                     };
             }
 

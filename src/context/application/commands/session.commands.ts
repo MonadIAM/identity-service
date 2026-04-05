@@ -87,7 +87,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 const sessions = await this.sessionRepository.find({
                     where: {
                         id: { $in: props.input.sessions },
-                        account: props.input.account ?? props.actor,
+                        account: props.actor,
                     },
                     transaction,
                 });
@@ -112,8 +112,8 @@ export class SessionCommands implements Commands.Session.Contract {
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
-                    where: { id: props.input.account ?? props.actor },
                     options: { populate: ["sessions"] },
+                    where: { id: props.actor },
                     transaction,
                 });
 

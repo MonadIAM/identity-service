@@ -1,9 +1,19 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch, Delete } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, ElevatedAccess } from "~common/decorators";
+import { ExtractSession, ExtractContext, ElevatedAccess, FormatResponse } from "~common/decorators";
 import { IDENTIFIER_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { SuccessMessageDTO } from "~common/dto";
+
+import {
+    ToggleNotificationsBodyDTO,
+    TogglePublicContactBodyDTO,
+    CreateIdentifierBodyDTO,
+    PurgeIdentifierBodyDTO,
+    ConfirmTOTPBodyDTO,
+    ResendTOTPBodyDTO,
+} from "../dto/identifier";
 
 @ApiTags("Identifier")
 @Controller("/identifier")
@@ -14,82 +24,75 @@ export class IdentifierController {
         private readonly identifierCommands: Commands.Identifier.Contract,
     ) {}
 
-    @Post()
+    @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Add identifier" })
     public create(
         @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { identifier, type }: any,
-    ) {
-        return this.identifierCommands.create({
-            input: { identifier, type },
-            context,
-            actor,
-        });
+        @Body() input: CreateIdentifierBodyDTO,
+    ): Promise<MessageResult> {
+        return this.identifierCommands.create({ context, actor, input });
     }
 
     @Post("resend")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Resend identifier verification" })
-    public resend(@ExtractSession() { account: actor }: SessionContext, @Body() { identifier }: any) {
-        return this.identifierCommands.resend({ actor, input: { identifier } });
+    public resend(
+        @ExtractSession() { account: actor }: SessionContext,
+        @Body() input: ResendTOTPBodyDTO,
+    ): Promise<MessageResult> {
+        return this.identifierCommands.resend({ actor, input });
     }
 
     @Post("confirm")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Confirm identifier" })
     public confirm(
         @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { code }: any,
-    ) {
-        return this.identifierCommands.confirm({ context, actor, input: { code } });
+        @Body() input: ConfirmTOTPBodyDTO,
+    ): Promise<MessageResult> {
+        return this.identifierCommands.confirm({ context, actor, input });
     }
 
-    @Patch("toggle/notifications")
     @HttpCode(HttpStatus.OK)
+    @Patch("toggle/notifications")
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Toggle notifications" })
     public toggleNotifications(
         @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { identifier }: any,
-    ) {
-        return this.identifierCommands.toggleNotifications({
-            input: { identifier },
-            context,
-            actor,
-        });
+        @Body() input: ToggleNotificationsBodyDTO,
+    ): Promise<MessageResult> {
+        return this.identifierCommands.toggleNotifications({ context, actor, input });
     }
 
-    @Patch("toggle/public-contact")
     @HttpCode(HttpStatus.OK)
+    @Patch("toggle/public-contact")
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Toggle notifications" })
     public togglePublicContact(
         @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { identifier }: any,
-    ) {
-        return this.identifierCommands.togglePublicContact({
-            input: { identifier },
-            context,
-            actor,
-        });
+        @Body() input: TogglePublicContactBodyDTO,
+    ): Promise<MessageResult> {
+        return this.identifierCommands.togglePublicContact({ context, actor, input });
     }
 
     @Delete("purge")
     @ElevatedAccess()
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Remove identifier" })
     public purge(
         @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { identifier }: any,
-    ) {
-        return this.identifierCommands.purge({
-            input: { identifier },
-            context,
-            actor,
-        });
+        @Body() input: PurgeIdentifierBodyDTO,
+    ): Promise<MessageResult> {
+        return this.identifierCommands.purge({ context, actor, input });
     }
 }

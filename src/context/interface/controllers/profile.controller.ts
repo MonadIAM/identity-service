@@ -1,9 +1,12 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Patch } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext } from "~common/decorators";
+import { ExtractSession, ExtractContext, FormatResponse } from "~common/decorators";
 import { PROFILE_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { SuccessMessageDTO } from "~common/dto";
+
+import { UpdateBodyDTO } from "../dto/profile";
 
 @ApiTags("Profile")
 @Controller("/profile")
@@ -14,14 +17,15 @@ export class ProfileController {
         private readonly profileCommands: Commands.Profile.Contract,
     ) {}
 
-    @Post("update")
+    @Patch("update")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Update profile" })
     public update(
-        @ExtractSession() { account }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() patch: any,
-    ) {
-        return this.profileCommands.update({ context, actor: account, input: { account, patch } });
+        @Body() input: UpdateBodyDTO,
+    ): Promise<MessageResult> {
+        return this.profileCommands.update({ context, actor, input });
     }
 }

@@ -39,7 +39,7 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async create(props: Commands.Account.Create): Promise<MessageResult> {
+    public async signup(props: Commands.Account.Signup): Promise<MessageResult> {
         const hashedPassword = await this.hashingService.hash({ value: props.input.password });
         const type = isEmail(props.input.identifier) ? IdentifierType.EMAIL : IdentifierType.PHONE;
 
@@ -55,7 +55,7 @@ export class AccountCommands implements Commands.Account.Contract {
                     transaction,
                     input: {
                         primaryIdentifier: { value: props.input.identifier, type },
-                        profile: { displayName: props.input.displayName },
+                        profile: { displayName: props.input.name },
                         subject: AccountSubject.HUMAN,
                         status: AccountStatus.PENDING,
                         password: hashedPassword,
@@ -100,8 +100,8 @@ export class AccountCommands implements Commands.Account.Contract {
 
         await this.otpCacheService.deleteVerification({ code: props.input.code });
 
-        const recoveryCodes = this.cryptoService.generateRecoveryCodes();
-        const hashedCodes = await Promise.all(recoveryCodes.map((code) => this.hashingService.hash({ value: code })));
+        const codes = this.cryptoService.generateRecoveryCodes();
+        const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
         const session = await this.transactional.run({
             resource: this.resource,
@@ -136,8 +136,8 @@ export class AccountCommands implements Commands.Account.Contract {
 
         return {
             message: `${this.dictionaryPath}.CONFIRMED`,
-            recoveryCodes,
             ...session,
+            codes,
         };
     }
 

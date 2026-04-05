@@ -1,10 +1,18 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Req } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import { FastifyRequest } from "fastify";
 
-import { ExtractContext, Public } from "~common/decorators";
-import { AUTH_HANDLER } from "~context/application/handlers";
+import { ExtractContext, ExtractPendingToken, FormatResponse, Public } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { AUTH_HANDLER } from "~context/application/handlers";
+import { SuccessMessageDTO } from "~common/dto";
+
+import {
+    ConfirmSecondFactorBodyDTO,
+    RequestTOTPBodyDTO,
+    ConfirmTOTPBodyDTO,
+    SigninResultDTO,
+    SigninBodyDTO,
+} from "../dto/auth";
 
 @ApiTags("Auth")
 @Controller("/auth")
@@ -15,42 +23,49 @@ export class AuthController {
         private readonly authHandler: Handlers.Auth.Contract,
     ) {}
 
-    @Post()
     @Public()
+    @Post("signin")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SigninResultDTO)
     @ApiOperation({ summary: "Login by password" })
-    public byPassword(@ExtractContext() context: RequestContext, @Body() input: any) {
-        return this.authHandler.byPassword({ context, input });
+    public signin(
+        @ExtractContext() context: RequestContext,
+        @Body() input: SigninBodyDTO,
+    ): Promise<Handlers.Auth.Signin.Result> {
+        return this.authHandler.signin({ context, input });
     }
 
     @Public()
-    @Post("otp/request")
+    @Post("request/totp")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Request passwordless OTP" })
-    public requestOTP(@Body() input: any) {
+    @FormatResponse(SuccessMessageDTO)
+    @ApiOperation({ summary: "Request passwordless TOTP" })
+    public requestOTP(@Body() input: RequestTOTPBodyDTO): Promise<MessageResult> {
         return this.authHandler.requestOTP({ input });
     }
 
     @Public()
-    @Post("otp/confirm")
+    @Post("confirm/totp")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Confirm passwordless OTP" })
-    public confirmOTP(@ExtractContext() context: RequestContext, @Body() input: any) {
+    @FormatResponse(SuccessMessageDTO)
+    @ApiOperation({ summary: "Confirm passwordless TOTP" })
+    public confirmOTP(
+        @ExtractContext() context: RequestContext,
+        @Body() input: ConfirmTOTPBodyDTO,
+    ): Promise<Handlers.Auth.ConfirmOTP.Result> {
         return this.authHandler.confirmOTP({ context, input });
     }
 
     @Public()
-    @Post("2fa/confirm")
     @HttpCode(HttpStatus.OK)
+    @Post("confirm/second-factor")
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Verify 2FA TOTP code" })
-    public verify2FA(@ExtractContext() context: RequestContext, @Body() body: any, @Req() req: FastifyRequest) {
-        console.log(req.cookies, req.headers.cookie);
-        return this.authHandler.verify2FA({
-            context,
-            input: {
-                pendingToken: req.cookies["pending_token"]!,
-                code: body.code,
-            },
-        });
+    public confirmSecondFactor(
+        @ExtractPendingToken() token: Optional<string>,
+        @ExtractContext() context: RequestContext,
+        @Body() input: ConfirmSecondFactorBodyDTO,
+    ): Promise<Handlers.Auth.ConfirmSecondFactor.Result> {
+        return this.authHandler.confirmSecondFactor({ token, context, input });
     }
 }

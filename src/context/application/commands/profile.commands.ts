@@ -30,14 +30,14 @@ export class ProfileCommands implements Commands.Profile.Contract {
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["profile"] },
-                    where: { id: props.input.account },
+                    where: { id: props.actor },
                     transaction,
                 });
 
                 this.profileService.update({
                     input: {
                         profile: account.profile!,
-                        patch: props.input.patch,
+                        patch: props.input,
                     },
                 });
             },

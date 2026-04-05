@@ -1,9 +1,11 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Param, Get, Query } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { OAUTH_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { ExtractContext, Public } from "~common/decorators";
+
+import { AuthorizeBodyDTO, CallbackBodyDTO } from "../dto/oauth";
 
 @ApiTags("OAuth")
 @Controller("/oauth")
@@ -15,23 +17,21 @@ export class OAuthController {
     ) {}
 
     @Public()
-    @Get(":provider")
+    @Get("authorize")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Get OAuth authorization URL" })
-    public authorize(@Param("provider") provider: string) {
-        return this.oauthHandler.authorize({ input: { provider } });
+    public authorize(@Query() input: AuthorizeBodyDTO): Promise<Handlers.OAuth.Authorize.Result> {
+        return this.oauthHandler.authorize({ input });
     }
 
     @Public()
-    @Get(":provider/callback")
+    @Get("callback")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "OAuth callback" })
     public callback(
         @ExtractContext() context: RequestContext,
-        @Param("provider") provider: string,
-        @Query("code") code: string,
-        @Query("state") state: string,
-    ) {
-        return this.oauthHandler.callback({ context, input: { provider, code, state } });
+        @Query() input: CallbackBodyDTO,
+    ): Promise<Handlers.OAuth.Callback.Result> {
+        return this.oauthHandler.callback({ context, input });
     }
 }

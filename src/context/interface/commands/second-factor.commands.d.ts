@@ -32,7 +32,7 @@ declare namespace Commands {
             };
 
             type Result = MessageResult & {
-                masterCode?: string;
+                code?: string;
             };
         }
 

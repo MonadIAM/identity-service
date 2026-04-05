@@ -1,9 +1,12 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, Public, ElevatedAccess } from "~common/decorators";
+import { ExtractSession, ExtractContext, Public, ElevatedAccess, FormatResponse } from "~common/decorators";
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { SuccessMessageDTO } from "~common/dto";
+
+import { ConfirmBodyDTO, ConfirmResultDTO, CreateBodyDTO, PurgeBodyDTO, ResetBodyDTO } from "../dto/second-factor";
 
 @ApiTags("Second Factor")
 @Controller("/second-factor")
@@ -14,53 +17,49 @@ export class SecondFactorController {
         private readonly secondFactorCommands: Commands.SecondFactor.Contract,
     ) {}
 
-    @Post()
+    @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Create TOTP factor" })
     public create(
-        @ExtractSession() { account }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() body: any,
-    ) {
-        return this.secondFactorCommands.create({
-            context,
-            actor: account,
-            input: { name: body.name },
-        });
+        @Body() input: CreateBodyDTO,
+    ): Promise<Commands.SecondFactor.Create.Result> {
+        return this.secondFactorCommands.create({ context, actor, input });
     }
 
     @Post("confirm")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(ConfirmResultDTO)
     @ApiOperation({ summary: "Confirm TOTP factor" })
     public confirm(
-        @ExtractSession() { account }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { factor, code }: any,
-    ) {
-        return this.secondFactorCommands.confirm({
-            context,
-            actor: account,
-            input: { factor, code },
-        });
+        @Body() input: ConfirmBodyDTO,
+    ): Promise<Commands.SecondFactor.Confirm.Result> {
+        return this.secondFactorCommands.confirm({ context, actor, input });
     }
 
     @Delete("purge")
     @ElevatedAccess()
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge non-active factor" })
     public purge(
         @ExtractSession() { account: actor }: SessionContext,
         @ExtractContext() context: RequestContext,
-        @Body() { factor }: any,
-    ) {
-        return this.secondFactorCommands.purge({ context, actor, input: { factor } });
+        @Body() input: PurgeBodyDTO,
+    ): Promise<MessageResult> {
+        return this.secondFactorCommands.purge({ context, actor, input });
     }
 
     @Public()
     @Post("reset")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset all factors by master code" })
-    public reset(@ExtractContext() context: RequestContext, @Body() { identifier, code }: any) {
-        return this.secondFactorCommands.reset({ context, input: { identifier, code } });
+    public reset(@ExtractContext() context: RequestContext, @Body() input: ResetBodyDTO): Promise<MessageResult> {
+        return this.secondFactorCommands.reset({ context, input });
     }
 }
