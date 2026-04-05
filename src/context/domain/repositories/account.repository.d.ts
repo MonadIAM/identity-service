@@ -25,8 +25,6 @@ declare global {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
-
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
             }
 
             type FindUnique<P extends string, F extends string> = {

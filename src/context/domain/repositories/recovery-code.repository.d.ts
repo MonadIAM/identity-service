@@ -1,6 +1,4 @@
-import { EntityManager, FilterQuery, FindOptions, QueryOrder, Loaded } from "@mikro-orm/postgresql";
-
-import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { EntityManager, FilterQuery, FindOptions, Loaded } from "@mikro-orm/postgresql";
 
 import { RecoveryCode as RecoveryCodeEntity } from "../entities";
 
@@ -22,9 +20,7 @@ declare global {
                     props: Find<P, F>,
                 ) => Promise<Loaded<Entity, P, F>[]>;
 
-                findMany: <P extends string = never, F extends string = "*">(
-                    props: FindMany<P, F>,
-                ) => Promise<[Loaded<Entity, P, F>[], number]>;
+                getStatus: (props: GetStatus.Props) => Promise<GetStatus.Result>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -45,29 +41,18 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> =
-                | {
-                      transaction?: EntityManager;
-                      options?: FindOptions<Entity, P, F>;
-                      where: FilterQuery<Entity>;
-                  }
-                | {
-                      options?: FindOptions<Entity, P, F>;
-                      pagination: Pagination;
-                      filters: Filters;
-                      sort: Sort;
-                  };
+            namespace GetStatus {
+                type Props = {
+                    transaction?: EntityManager;
+                    account: string;
+                };
 
-            type Filters = {
-                id?: StringFilterDTO;
-                account?: LinkFilterDTO;
-                createdAt?: OrdinalFilterDTO<Date>;
-                usedAt?: OrdinalFilterDTO<Date>;
-            };
-
-            type Sort = {
-                createdAt?: QueryOrder;
-            };
+                type Result = {
+                    remaining: number;
+                    total: number;
+                    used: number;
+                };
+            }
         }
     }
 }

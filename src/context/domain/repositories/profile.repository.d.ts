@@ -1,6 +1,4 @@
-import { EntityManager, FilterQuery, FindOptions, QueryOrder, Loaded } from "@mikro-orm/postgresql";
-
-import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { EntityManager, FilterQuery, FindOptions, Loaded } from "@mikro-orm/postgresql";
 
 import { Profile as ProfileEntity } from "../entities";
 
@@ -21,10 +19,6 @@ declare global {
                 find: <P extends string = never, F extends string = "*">(
                     props: Find<P, F>,
                 ) => Promise<Loaded<Entity, P, F>[]>;
-
-                findMany: <P extends string = never, F extends string = "*">(
-                    props: FindMany<P, F>,
-                ) => Promise<[Loaded<Entity, P, F>[], number]>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -43,31 +37,6 @@ declare global {
                 transaction?: EntityManager;
                 options?: FindOptions<Entity, P, F>;
                 where: FilterQuery<Entity>;
-            };
-
-            type FindMany<P extends string, F extends string> =
-                | {
-                      transaction?: EntityManager;
-                      options?: FindOptions<Entity, P, F>;
-                      where: FilterQuery<Entity>;
-                  }
-                | {
-                      options?: FindOptions<Entity, P, F>;
-                      pagination: Pagination;
-                      filters: Filters;
-                      sort: Sort;
-                  };
-
-            type Filters = {
-                account?: LinkFilterDTO;
-                displayName?: StringFilterDTO;
-                timeZone?: StringFilterDTO;
-                locale?: StringFilterDTO;
-                updatedAt?: OrdinalFilterDTO<Date>;
-            };
-
-            type Sort = {
-                updatedAt?: QueryOrder;
             };
         }
     }

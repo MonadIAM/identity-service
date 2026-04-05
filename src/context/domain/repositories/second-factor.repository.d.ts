@@ -1,6 +1,4 @@
-import { EntityManager, FilterQuery, FindOptions, QueryOrder, Loaded } from "@mikro-orm/postgresql";
-
-import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { EntityManager, FilterQuery, FindOptions, Loaded } from "@mikro-orm/postgresql";
 
 import { SecondFactor as SecondFactorEntity } from "../entities";
 
@@ -45,31 +43,10 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> =
-                | {
-                      transaction?: EntityManager;
-                      options?: FindOptions<Entity, P, F>;
-                      where: FilterQuery<Entity>;
-                  }
-                | {
-                      options?: FindOptions<Entity, P, F>;
-                      pagination: Pagination;
-                      filters: Filters;
-                      sort: Sort;
-                  };
-
-            type Filters = {
-                id?: StringFilterDTO;
-                type?: StringFilterDTO;
-                name?: StringFilterDTO;
-                confirmedAt?: OrdinalFilterDTO<Date>;
-                lastUsedAt?: OrdinalFilterDTO<Date>;
-                createdAt?: OrdinalFilterDTO<Date>;
-                account?: LinkFilterDTO;
-            };
-
-            type Sort = {
-                createdAt?: QueryOrder;
+            type FindMany<P extends string, F extends string> = {
+                transaction?: EntityManager;
+                options?: FindOptions<Entity, P, F>;
+                where: FilterQuery<Entity>;
             };
         }
     }

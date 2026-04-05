@@ -14,6 +14,7 @@ import { DOMAIN_SERVICES } from "./domain/services";
 import { SCHEDULERS } from "./interface/schedulers";
 import { HANDLERS } from "./application/handlers";
 import { COMMANDS } from "./application/commands";
+import { QUERIES } from "./application/queries";
 
 @Module({
     imports: [TrackingModule, BullModule.registerQueue({ name: "cleanup" })],
@@ -25,6 +26,7 @@ import { COMMANDS } from "./application/commands";
         ...PROCESSORS,
         ...HANDLERS,
         ...COMMANDS,
+        ...QUERIES,
         ElevatedAccessGuard,
         AuthGuard,
         {

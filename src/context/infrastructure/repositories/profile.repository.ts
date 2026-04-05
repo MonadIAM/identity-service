@@ -2,20 +2,17 @@ import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { ProfileAdapter } from "~context/infrastructure/adapters";
 import { RepositoryException } from "~common/exceptions";
 import { Profile } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class ProfileRepository extends ProfileAdapter implements Repositories.Profile.Contract {
+export class ProfileRepository implements Repositories.Profile.Contract {
     private readonly resource = "Profile";
 
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
-    ) {
-        super();
-    }
+    ) {}
 
     public async findUnique<P extends string = never, F extends string = "*">({
         transaction,
@@ -50,26 +47,6 @@ export class ProfileRepository extends ProfileAdapter implements Repositories.Pr
             const { transaction, options, where } = props;
             const entityManager = transaction ?? this.readManager.fork();
             return await entityManager.find(Profile, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.Profile.FindMany<P, F>,
-    ): Promise<[Loaded<Profile, P, F>[], number]> {
-        try {
-            if ("where" in props) {
-                const { transaction, options, where } = props;
-                const entityManager = transaction ?? this.readManager.fork();
-                return await entityManager.findAndCount(Profile, where, options);
-            } else {
-                const { pagination, filters, sort, options } = props;
-                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters);
-                const entityManager = this.readManager.fork();
-                return await entityManager.findAndCount(Profile, where, opts);
-            }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

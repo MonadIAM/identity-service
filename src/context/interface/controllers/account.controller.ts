@@ -2,9 +2,9 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, 
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { ExtractSession, ExtractContext, Public, FormatResponse } from "~common/decorators";
+import { SuccessMessageDTO } from "~common/dto";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { SuccessMessageDTO } from "~common/dto";
 
 import {
     ConfirmAccountResultDTO,
