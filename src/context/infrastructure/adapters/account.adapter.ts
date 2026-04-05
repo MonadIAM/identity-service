@@ -25,12 +25,8 @@ export class AccountAdapter {
             where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
 
-        if (filters.is2FAEnforced !== undefined) {
-            where.is2FAEnforced = { $eq: filters.is2FAEnforced };
-        }
-
-        if (filters.displayName) {
-            where.profile = { displayName: MikroAdapter.applyStringFilter(filters.displayName) };
+        if (filters.name) {
+            where.profile = { displayName: MikroAdapter.applyStringFilter(filters.name) };
         }
 
         if (filters.email && filters.phone) {

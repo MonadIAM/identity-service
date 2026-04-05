@@ -1,18 +1,24 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { ExtractSession, ExtractContext, Public, FormatResponse } from "~common/decorators";
-import { SuccessMessageDTO } from "~common/dto";
+import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
+import { ACCOUNT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { ResponseViewType } from "~context/enums";
 
 import {
     ConfirmAccountResultDTO,
     UnsuspendAccountBodyDTO,
+    GetAccountByIdQueryDTO,
+    GetAccountsListBodyDTO,
     SuspendAccountBodyDTO,
     ConfirmTOTPBodyDTO,
     ResendTOTPBodyDTO,
+    AccountListDTO,
     SignupBodyDTO,
+    AccountDTO,
 } from "../dto/account";
 
 @ApiTags("Account")
@@ -22,7 +28,36 @@ export class AccountController {
     public constructor(
         @Inject(ACCOUNT_COMMANDS)
         private readonly accountCommands: Commands.Account.Contract,
+        @Inject(ACCOUNT_QUERIES)
+        private readonly accountQueries: Queries.Account.Contract,
     ) {}
+
+    @Get("me")
+    @HttpCode(HttpStatus.OK)
+    @FormatResponse(AccountDTO)
+    @ApiOperation({ summary: "Get current account" })
+    public getMe(@ExtractSession() { account }: SessionContext): Promise<Queries.Account.Entity> {
+        return this.accountQueries.findUnique({ account, view: ResponseViewType.DETAILED });
+    }
+
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    @FormatResponse(AccountDTO)
+    @ApiOperation({ summary: "Get account by ID" })
+    public findUnique(@Query() { account, view }: GetAccountByIdQueryDTO): Promise<Queries.Account.Entity> {
+        return this.accountQueries.findUnique({ account, view });
+    }
+
+    @Post("list")
+    @HttpCode(HttpStatus.OK)
+    @FormatResponse(AccountListDTO)
+    @ApiOperation({ summary: "Get paginated list of accounts" })
+    public findMany(
+        @Body() { pagination, filters, sort }: GetAccountsListBodyDTO,
+        @Query() { view }: BaseReadQueryDTO,
+    ): Promise<[Queries.Account.Entity[], number]> {
+        return this.accountQueries.findMany({ pagination, filters, sort, view });
+    }
 
     @Public()
     @Post("signup")

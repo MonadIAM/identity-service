@@ -68,11 +68,11 @@ declare global {
                 is2FAEnforced?: boolean;
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
-                displayName?: StringFilterDTO;
                 subject?: StringFilterDTO;
                 status?: StringFilterDTO;
                 email?: StringFilterDTO;
                 phone?: StringFilterDTO;
+                name?: StringFilterDTO;
             };
 
             type Sort = {
