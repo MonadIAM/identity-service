@@ -28,7 +28,7 @@ export class SessionCommands implements Commands.Session.Contract {
     ) {}
 
     public async refresh(props: Commands.Session.Refresh.Props): Promise<Commands.Session.Refresh.Result> {
-        if (props.input.refreshToken) {
+        if (props.input.refreshToken && props.input.session) {
             const session = await this.sessionRepository.findUnique({
                 options: { populate: ["account"] },
                 where: { id: props.input.session },

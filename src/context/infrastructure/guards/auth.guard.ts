@@ -26,40 +26,34 @@ export class AuthGuard implements CanActivate {
 
         if (token) {
             try {
-                const payload = await this.jwtService.verify(token);
+                const payload = await this.jwtService.decode(token);
 
-                if (payload.sub && payload.jti) {
-                    request.sessionContext = {
-                        account: payload.sub,
-                        session: payload.jti,
-                    } satisfies SessionContext;
+                request.sessionContext = {
+                    account: payload.sub,
+                    session: payload.jti,
+                };
 
+                if (isPublic || (payload.exp ?? 0) > Math.floor(Date.now() / 1000)) {
                     return true;
+                } else {
+                    throw GuardException.unauthorized(`${this.dictionaryPath}.INVALID_TOKEN`);
                 }
-
-                if (isPublic) {
-                    return true;
-                }
-
-                throw GuardException.unauthorized(`${this.dictionaryPath}.INVALID_TOKEN`);
             } catch (error) {
                 if (isPublic) {
                     return true;
-                }
-
-                if (error instanceof GuardException) {
+                } else if (error instanceof GuardException) {
                     throw error;
+                } else {
+                    throw GuardException.unauthorized(`${this.dictionaryPath}.INVALID_TOKEN`);
                 }
-
-                throw GuardException.unauthorized(`${this.dictionaryPath}.INVALID_TOKEN`);
             }
         }
 
         if (isPublic) {
             return true;
+        } else {
+            throw GuardException.unauthorized(`${this.dictionaryPath}.TOKEN_MISSING`);
         }
-
-        throw GuardException.unauthorized(`${this.dictionaryPath}.TOKEN_MISSING`);
     }
 
     private extractToken(request: Req): Nullable<string> {

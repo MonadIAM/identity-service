@@ -22,7 +22,7 @@ export class PasswordController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Change password" })
     public change(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: ChangeBodyDTO,
     ): Promise<MessageResult> {

@@ -36,7 +36,7 @@ export class AccountController {
     @HttpCode(HttpStatus.OK)
     @FormatResponse(AccountDTO)
     @ApiOperation({ summary: "Get current account" })
-    public getMe(@ExtractSession() { account }: SessionContext): Promise<Queries.Account.Entity> {
+    public getMe(@ExtractSession() { account }: SessionContext.Auth): Promise<Queries.Account.Entity> {
         return this.accountQueries.findUnique({ account, view: ResponseViewType.DETAILED });
     }
 
@@ -94,7 +94,7 @@ export class AccountController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Suspend account" })
     public suspend(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: SuspendAccountBodyDTO,
     ): Promise<MessageResult> {
@@ -106,7 +106,7 @@ export class AccountController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Unsuspend account" })
     public unsuspend(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: UnsuspendAccountBodyDTO,
     ): Promise<MessageResult> {

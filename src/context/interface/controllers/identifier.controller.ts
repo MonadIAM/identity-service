@@ -29,7 +29,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Add identifier" })
     public create(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: CreateIdentifierBodyDTO,
     ): Promise<MessageResult> {
@@ -41,7 +41,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Resend identifier verification" })
     public resend(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @Body() input: ResendTOTPBodyDTO,
     ): Promise<MessageResult> {
         return this.identifierCommands.resend({ actor, input });
@@ -52,7 +52,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Confirm identifier" })
     public confirm(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: ConfirmTOTPBodyDTO,
     ): Promise<MessageResult> {
@@ -64,7 +64,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Toggle notifications" })
     public toggleNotifications(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: ToggleNotificationsBodyDTO,
     ): Promise<MessageResult> {
@@ -76,7 +76,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Toggle notifications" })
     public togglePublicContact(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: TogglePublicContactBodyDTO,
     ): Promise<MessageResult> {
@@ -89,7 +89,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Remove identifier" })
     public purge(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: PurgeIdentifierBodyDTO,
     ): Promise<MessageResult> {

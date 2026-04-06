@@ -11,7 +11,7 @@ declare namespace Commands {
                 context: RequestContext;
                 input: {
                     refreshToken?: string;
-                    session: string;
+                    session?: string;
                 };
             };
 

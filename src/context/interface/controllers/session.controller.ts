@@ -23,10 +23,10 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Refresh session tokens" })
     public refresh(
-        @ExtractSession() { refreshToken, session }: SessionContext,
+        @ExtractSession() { tokens, session }: SessionContext.Public,
         @ExtractContext() context: RequestContext,
     ): Promise<Commands.Session.Refresh.Result> {
-        return this.sessionCommands.refresh({ context, input: { refreshToken, session } });
+        return this.sessionCommands.refresh({ context, input: { refreshToken: tokens?.refresh, session } });
     }
 
     @Delete("logout")
@@ -34,7 +34,7 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge specific sessions" })
     public logout(
-        @ExtractSession() { account: actor, session }: SessionContext,
+        @ExtractSession() { account: actor, session }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
         return this.sessionCommands.purge({ context, actor, input: { sessions: [session] } });
@@ -45,7 +45,7 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge specific sessions" })
     public purge(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: PurgeBodyDTO,
     ): Promise<MessageResult> {
@@ -57,7 +57,7 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge all sessions" })
     public purgeAll(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
         return this.sessionCommands.purgeAll({ context, actor });

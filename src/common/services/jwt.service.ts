@@ -54,4 +54,13 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
             })
         ).payload;
     }
+
+    public async decode(token: string): Promise<JWTPayload> {
+        return (
+            await jwtVerify(token, this.publicKey, {
+                clockTolerance: Number.MAX_SAFE_INTEGER,
+                issuer: this.issuer,
+            })
+        ).payload;
+    }
 }

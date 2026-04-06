@@ -49,6 +49,7 @@ declare global {
                 signRefreshToken: (payload: JWTPayload) => Promise<string>;
                 signAccessToken: (payload: JWTPayload) => Promise<string>;
                 verify: (token: string) => Promise<JWTPayload>;
+                decode: (token: string) => Promise<JWTPayload>;
             }
         }
 

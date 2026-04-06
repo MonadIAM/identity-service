@@ -20,7 +20,7 @@ export class ElevatedAccessController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Confirm identity by password" })
     public byPassword(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: ByPasswordBodyDTO,
     ): Promise<MessageResult> {
@@ -32,7 +32,7 @@ export class ElevatedAccessController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Confirm identity by TOTP" })
     public bySecondFactor(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: BySecondFactorBodyDTO,
     ): Promise<MessageResult> {

@@ -22,7 +22,7 @@ export class SecondFactorController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Create TOTP factor" })
     public create(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: CreateBodyDTO,
     ): Promise<Commands.SecondFactor.Create.Result> {
@@ -34,7 +34,7 @@ export class SecondFactorController {
     @FormatResponse(ConfirmResultDTO)
     @ApiOperation({ summary: "Confirm TOTP factor" })
     public confirm(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: ConfirmBodyDTO,
     ): Promise<Commands.SecondFactor.Confirm.Result> {
@@ -47,7 +47,7 @@ export class SecondFactorController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge non-active factor" })
     public purge(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: PurgeBodyDTO,
     ): Promise<MessageResult> {

@@ -22,7 +22,7 @@ export class ProfileController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Update profile" })
     public update(
-        @ExtractSession() { account: actor }: SessionContext,
+        @ExtractSession() { account: actor }: SessionContext.Auth,
         @ExtractContext() context: RequestContext,
         @Body() input: UpdateBodyDTO,
     ): Promise<MessageResult> {
