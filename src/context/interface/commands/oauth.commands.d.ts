@@ -11,7 +11,7 @@ declare global {
 
             namespace Signup {
                 type Props = {
-                    context: RequestContext;
+                    context: Extract.Meta;
                     input: {
                         oauth: {
                             providerUserId: string;
@@ -36,7 +36,7 @@ declare global {
 
             namespace Signin {
                 type Props = {
-                    context: RequestContext;
+                    context: Extract.Meta;
                     input: {
                         account: AccountEntity;
                     };

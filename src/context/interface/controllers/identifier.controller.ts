@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch, Delete } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, ElevatedAccess, FormatResponse } from "~common/decorators";
+import { Extract, ElevatedAccess, FormatResponse } from "~common/decorators";
 import { IDENTIFIER_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -29,8 +29,8 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Add identifier" })
     public create(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: CreateIdentifierBodyDTO,
     ): Promise<MessageResult> {
         return this.identifierCommands.create({ context, actor, input });
@@ -41,7 +41,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Resend identifier verification" })
     public resend(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: ResendTOTPBodyDTO,
     ): Promise<MessageResult> {
         return this.identifierCommands.resend({ actor, input });
@@ -52,8 +52,8 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Confirm identifier" })
     public confirm(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: ConfirmTOTPBodyDTO,
     ): Promise<MessageResult> {
         return this.identifierCommands.confirm({ context, actor, input });
@@ -64,8 +64,8 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Toggle notifications" })
     public toggleNotifications(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: ToggleNotificationsBodyDTO,
     ): Promise<MessageResult> {
         return this.identifierCommands.toggleNotifications({ context, actor, input });
@@ -76,8 +76,8 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Toggle notifications" })
     public togglePublicContact(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: TogglePublicContactBodyDTO,
     ): Promise<MessageResult> {
         return this.identifierCommands.togglePublicContact({ context, actor, input });
@@ -89,8 +89,8 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Remove identifier" })
     public purge(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: PurgeIdentifierBodyDTO,
     ): Promise<MessageResult> {
         return this.identifierCommands.purge({ context, actor, input });

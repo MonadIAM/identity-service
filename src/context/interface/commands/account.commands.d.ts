@@ -13,7 +13,7 @@ declare global {
             }
 
             type Signup = {
-                context: RequestContext;
+                context: Extract.Meta;
                 input: {
                     identifier: string;
                     password: string;
@@ -29,7 +29,7 @@ declare global {
 
             namespace Confirm {
                 type Props = {
-                    context: RequestContext;
+                    context: Extract.Meta;
                     input: {
                         code: string;
                     };
@@ -48,12 +48,12 @@ declare global {
             };
 
             type Deactivate = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
             };
 
             type Suspend = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     account: string;
@@ -62,7 +62,7 @@ declare global {
             };
 
             type Unsuspend = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     account: string;

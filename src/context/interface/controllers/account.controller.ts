@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, Public, FormatResponse } from "~common/decorators";
+import { Extract, Public, FormatResponse } from "~common/decorators";
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { ACCOUNT_QUERIES } from "~context/application/queries";
@@ -36,7 +36,7 @@ export class AccountController {
     @HttpCode(HttpStatus.OK)
     @FormatResponse(AccountDTO)
     @ApiOperation({ summary: "Get current account" })
-    public getMe(@ExtractSession() { account }: SessionContext.Auth): Promise<Queries.Account.Entity> {
+    public getMe(@Extract.Session() { account }: Extract.Session.Auth): Promise<Queries.Account.Entity> {
         return this.accountQueries.findUnique({ account, view: ResponseViewType.DETAILED });
     }
 
@@ -64,7 +64,7 @@ export class AccountController {
     @HttpCode(HttpStatus.CREATED)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Register a new account" })
-    public signup(@ExtractContext() context: RequestContext, @Body() input: SignupBodyDTO): Promise<MessageResult> {
+    public signup(@Extract.Meta() context: Extract.Meta, @Body() input: SignupBodyDTO): Promise<MessageResult> {
         return this.accountCommands.signup({ context, input });
     }
 
@@ -83,7 +83,7 @@ export class AccountController {
     @FormatResponse(ConfirmAccountResultDTO)
     @ApiOperation({ summary: "Confirm account with TOTP" })
     public confirm(
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: ConfirmTOTPBodyDTO,
     ): Promise<Commands.Account.Confirm.Result> {
         return this.accountCommands.confirm({ context, input });
@@ -94,8 +94,8 @@ export class AccountController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Suspend account" })
     public suspend(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: SuspendAccountBodyDTO,
     ): Promise<MessageResult> {
         return this.accountCommands.suspend({ context, actor, input });
@@ -106,8 +106,8 @@ export class AccountController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Unsuspend account" })
     public unsuspend(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: UnsuspendAccountBodyDTO,
     ): Promise<MessageResult> {
         return this.accountCommands.unsuspend({ context, actor, input });

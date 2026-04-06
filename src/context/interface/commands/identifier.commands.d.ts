@@ -13,7 +13,7 @@ declare global {
             }
 
             type Create = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     type: IdentifierType;
@@ -29,7 +29,7 @@ declare global {
             };
 
             type Confirm = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     code: string;
@@ -37,7 +37,7 @@ declare global {
             };
 
             type Purge = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     identifier: string;
@@ -45,7 +45,7 @@ declare global {
             };
 
             type ToggleNotifications = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     identifier: string;
@@ -53,7 +53,7 @@ declare global {
             };
 
             type TogglePublicContact = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     identifier: string;

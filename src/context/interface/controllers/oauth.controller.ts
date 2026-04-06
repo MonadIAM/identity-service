@@ -3,7 +3,7 @@ import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { OAUTH_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext, Public } from "~common/decorators";
+import { Extract, Public } from "~common/decorators";
 
 import { AuthorizeBodyDTO, CallbackBodyDTO } from "../dto/oauth";
 
@@ -29,7 +29,7 @@ export class OAuthController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "OAuth callback" })
     public callback(
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Query() input: CallbackBodyDTO,
     ): Promise<Handlers.OAuth.Callback.Result> {
         return this.oauthHandler.callback({ context, input });

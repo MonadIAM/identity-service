@@ -28,7 +28,7 @@ export class AuthGuard implements CanActivate {
             try {
                 const payload = await this.jwtService.decode(token);
 
-                request.sessionContext = {
+                request.session = {
                     account: payload.sub,
                     session: payload.jti,
                 };

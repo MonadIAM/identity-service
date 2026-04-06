@@ -12,7 +12,7 @@ declare global {
 
             namespace Signin {
                 type Props = {
-                    context: RequestContext;
+                    context: Extract.Meta;
                     input: {
                         identifier: string;
                         password: string;
@@ -31,7 +31,7 @@ declare global {
 
             namespace ConfirmOTP {
                 type Props = {
-                    context: RequestContext;
+                    context: Extract.Meta;
                     input: {
                         code: string;
                     };
@@ -42,7 +42,7 @@ declare global {
 
             namespace ConfirmSecondFactor {
                 type Props = {
-                    context: RequestContext;
+                    context: Extract.Meta;
                     token?: string;
                     input: {
                         code: string;
@@ -54,7 +54,7 @@ declare global {
 
             type CreateSession = {
                 account: AccountEntity;
-                context: RequestContext;
+                context: Extract.Meta;
             };
         }
     }

@@ -6,7 +6,7 @@ declare namespace Handlers {
         }
 
         type ByPassword = {
-            context: RequestContext;
+            context: Extract.Meta;
             actor: string;
             input: {
                 password: string;
@@ -14,7 +14,7 @@ declare namespace Handlers {
         };
 
         type BySecondFactor = {
-            context: RequestContext;
+            context: Extract.Meta;
             actor: string;
             input: {
                 code: string;

@@ -19,7 +19,7 @@ declare namespace Handlers {
 
         namespace Callback {
             type Props = {
-                context: RequestContext;
+                context: Extract.Meta;
                 input: {
                     provider: string;
                     state: string;

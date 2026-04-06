@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, Public, FormatResponse } from "~common/decorators";
+import { Extract, Tokens, Public, FormatResponse } from "~common/decorators";
 import { SESSION_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -23,10 +23,11 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Refresh session tokens" })
     public refresh(
-        @ExtractSession() { tokens, session }: SessionContext.Public,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { session }: Extract.Session.Public,
+        @Extract.Meta() context: Extract.Meta,
+        @Tokens.Refresh() refreshToken?: string,
     ): Promise<Commands.Session.Refresh.Result> {
-        return this.sessionCommands.refresh({ context, input: { refreshToken: tokens?.refresh, session } });
+        return this.sessionCommands.refresh({ context, input: { refreshToken, session } });
     }
 
     @Delete("logout")
@@ -34,8 +35,8 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge specific sessions" })
     public logout(
-        @ExtractSession() { account: actor, session }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor, session }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.sessionCommands.purge({ context, actor, input: { sessions: [session] } });
     }
@@ -45,8 +46,8 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge specific sessions" })
     public purge(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: PurgeBodyDTO,
     ): Promise<MessageResult> {
         return this.sessionCommands.purge({ context, actor, input });
@@ -57,8 +58,8 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Purge all sessions" })
     public purgeAll(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.sessionCommands.purgeAll({ context, actor });
     }

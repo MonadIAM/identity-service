@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractSession, ExtractContext, Public, FormatResponse } from "~common/decorators";
+import { Extract, Public, FormatResponse } from "~common/decorators";
 import { PASSWORD_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -22,8 +22,8 @@ export class PasswordController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Change password" })
     public change(
-        @ExtractSession() { account: actor }: SessionContext.Auth,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: ChangeBodyDTO,
     ): Promise<MessageResult> {
         return this.passwordCommands.change({ context, actor, input });
@@ -43,10 +43,7 @@ export class PasswordController {
     @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by OTP" })
-    public resetByOTP(
-        @ExtractContext() context: RequestContext,
-        @Body() input: ResetByTOTPBodyDTO,
-    ): Promise<MessageResult> {
+    public resetByOTP(@Extract.Meta() context: Extract.Meta, @Body() input: ResetByTOTPBodyDTO): Promise<MessageResult> {
         return this.passwordCommands.resetByOTP({ context, input });
     }
 
@@ -56,7 +53,7 @@ export class PasswordController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by recovery code" })
     public resetByRecoveryCode(
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: ResetByRecoveryCodeBodyDTO,
     ): Promise<MessageResult> {
         return this.passwordCommands.resetByRecoveryCode({ context, input });

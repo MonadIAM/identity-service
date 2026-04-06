@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ExtractContext, ExtractPendingToken, FormatResponse, Public } from "~common/decorators";
+import { Extract, FormatResponse, Tokens, Public } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { AUTH_HANDLER } from "~context/application/handlers";
 import { SuccessMessageDTO } from "~common/dto";
@@ -29,7 +29,7 @@ export class AuthController {
     @FormatResponse(SigninResultDTO)
     @ApiOperation({ summary: "Login by password" })
     public signin(
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: SigninBodyDTO,
     ): Promise<Handlers.Auth.Signin.Result> {
         return this.authHandler.signin({ context, input });
@@ -50,7 +50,7 @@ export class AuthController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Confirm passwordless TOTP" })
     public confirmOTP(
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: ConfirmTOTPBodyDTO,
     ): Promise<Handlers.Auth.ConfirmOTP.Result> {
         return this.authHandler.confirmOTP({ context, input });
@@ -62,9 +62,9 @@ export class AuthController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Verify 2FA TOTP code" })
     public confirmSecondFactor(
-        @ExtractPendingToken() token: Optional<string>,
-        @ExtractContext() context: RequestContext,
         @Body() input: ConfirmSecondFactorBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
+        @Tokens.Pending() token?: string,
     ): Promise<Handlers.Auth.ConfirmSecondFactor.Result> {
         return this.authHandler.confirmSecondFactor({ token, context, input });
     }

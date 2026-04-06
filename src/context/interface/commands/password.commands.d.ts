@@ -8,7 +8,7 @@ declare namespace Commands {
         }
 
         type Change = {
-            context: RequestContext;
+            context: Extract.Meta;
             actor: string;
             input: {
                 currentPassword: string;
@@ -23,7 +23,7 @@ declare namespace Commands {
         };
 
         type ResetByOTP = {
-            context: RequestContext;
+            context: Extract.Meta;
             input: {
                 password: string;
                 code: string;
@@ -31,7 +31,7 @@ declare namespace Commands {
         };
 
         type ResetByRecoveryCode = {
-            context: RequestContext;
+            context: Extract.Meta;
             input: {
                 identifier: string;
                 password: string;

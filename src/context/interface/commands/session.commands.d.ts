@@ -8,7 +8,7 @@ declare namespace Commands {
 
         namespace Refresh {
             type Props = {
-                context: RequestContext;
+                context: Extract.Meta;
                 input: {
                     refreshToken?: string;
                     session?: string;
@@ -19,7 +19,7 @@ declare namespace Commands {
         }
 
         type Purge = {
-            context: RequestContext;
+            context: Extract.Meta;
             actor: string;
             input: {
                 sessions: string[];
@@ -27,7 +27,7 @@ declare namespace Commands {
         };
 
         type PurgeAll = {
-            context: RequestContext;
+            context: Extract.Meta;
             actor: string;
         };
     }

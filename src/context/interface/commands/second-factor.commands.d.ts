@@ -9,7 +9,7 @@ declare namespace Commands {
 
         namespace Create {
             type Props = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     name: string;
@@ -23,7 +23,7 @@ declare namespace Commands {
 
         namespace Confirm {
             type Props = {
-                context: RequestContext;
+                context: Extract.Meta;
                 actor: string;
                 input: {
                     factor: string;
@@ -37,7 +37,7 @@ declare namespace Commands {
         }
 
         type Purge = {
-            context: RequestContext;
+            context: Extract.Meta;
             actor: string;
             input: {
                 factor: string;
@@ -45,7 +45,7 @@ declare namespace Commands {
         };
 
         type Reset = {
-            context: RequestContext;
+            context: Extract.Meta;
             input: {
                 identifier: string;
                 code: string;

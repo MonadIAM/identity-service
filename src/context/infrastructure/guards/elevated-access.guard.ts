@@ -23,7 +23,7 @@ export class ElevatedAccessGuard implements CanActivate {
 
         if (requiresElevatedAccess) {
             const request = context.switchToHttp().getRequest<Req>();
-            const account = request.sessionContext?.account;
+            const account = request.session?.account;
 
             if (account) {
                 const active = await this.elevatedAccessCacheService.exists({ account });

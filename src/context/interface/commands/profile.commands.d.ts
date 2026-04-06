@@ -5,7 +5,7 @@ declare namespace Commands {
         }
 
         type Update = {
-            context: RequestContext;
+            context: Extract.Meta;
             actor: string;
             input: Entities.Profile.ChangeDataProps;
         };
