@@ -1,6 +1,8 @@
 import { ElevatedAccessController } from "./elevated-access.controller";
 import { SecondFactorController } from "./second-factor.controller";
 import { IdentifierController } from "./identifier.controller";
+import { ChangeLogController } from "./change-log.controller";
+import { AuditLogController } from "./audit-log.controller";
 import { PasswordController } from "./password.controller";
 import { ProfileController } from "./profile.controller";
 import { SessionController } from "./session.controller";
@@ -12,6 +14,8 @@ export const CONTROLLERS = [
     ElevatedAccessController,
     SecondFactorController,
     IdentifierController,
+    ChangeLogController,
+    AuditLogController,
     PasswordController,
     ProfileController,
     SessionController,
@@ -24,6 +28,8 @@ export {
     ElevatedAccessController,
     SecondFactorController,
     IdentifierController,
+    ChangeLogController,
+    AuditLogController,
     PasswordController,
     ProfileController,
     SessionController,
