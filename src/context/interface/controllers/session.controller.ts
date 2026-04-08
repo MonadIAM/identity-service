@@ -1,12 +1,13 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Tokens, Public, FormatResponse } from "~common/decorators";
 import { SESSION_COMMANDS } from "~context/application/commands";
+import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 
-import { PurgeBodyDTO } from "../dto/session";
+import { PurgeBodyDTO, SessionDTO, SessionListDTO } from "../dto/session";
 
 @ApiTags("Session")
 @Controller("/session")
@@ -15,7 +16,25 @@ export class SessionController {
     public constructor(
         @Inject(SESSION_COMMANDS)
         private readonly sessionCommands: Commands.Session.Contract,
+        @Inject(SESSION_QUERIES)
+        private readonly sessionQueries: Queries.Session.Contract,
     ) {}
+
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    @FormatResponse(SessionDTO)
+    @ApiOperation({ summary: "Get session by ID" })
+    public findUnique(@Extract.Session() { session, account }: Extract.Session.Auth): Promise<Queries.Session.Entity> {
+        return this.sessionQueries.getCurrent({ session, account });
+    }
+
+    @Get("list")
+    @HttpCode(HttpStatus.OK)
+    @FormatResponse(SessionListDTO)
+    @ApiOperation({ summary: "Get paginated list of sessions" })
+    public findMany(@Extract.Session() { account }: Extract.Session.Auth): Promise<[Queries.Session.Entity[], number]> {
+        return this.sessionQueries.findMany({ account });
+    }
 
     @Public()
     @Post("refresh")
