@@ -25,6 +25,7 @@ declare global {
 
             type GetLookupList = {
                 pagination: Pagination;
+                account: string;
                 term: string;
             };
         }

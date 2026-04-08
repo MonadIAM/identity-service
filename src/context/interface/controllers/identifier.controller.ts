@@ -1,18 +1,38 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch, Delete } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+    UseInterceptors,
+    Controller,
+    HttpStatus,
+    HttpCode,
+    Inject,
+    Delete,
+    Patch,
+    Query,
+    Body,
+    Post,
+    Get,
+} from "@nestjs/common";
 
 import { Extract, ElevatedAccess, FormatResponse } from "~common/decorators";
 import { IDENTIFIER_COMMANDS } from "~context/application/commands";
+import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
+import { IDENTIFIER_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { SuccessMessageDTO } from "~common/dto";
 
 import {
+    GetIdentifiersLookupListQueryDTO,
+    GetIdentifiersLookupListBodyDTO,
     ToggleNotificationsBodyDTO,
     TogglePublicContactBodyDTO,
+    GetIdentifierByIdQueryDTO,
+    GetIdentifiersListBodyDTO,
+    IdentifierLookupListDTO,
     CreateIdentifierBodyDTO,
     PurgeIdentifierBodyDTO,
     ConfirmTOTPBodyDTO,
     ResendTOTPBodyDTO,
+    IdentifierListDTO,
+    IdentifierDTO,
 } from "../dto/identifier";
 
 @ApiTags("Identifier")
@@ -22,7 +42,40 @@ export class IdentifierController {
     public constructor(
         @Inject(IDENTIFIER_COMMANDS)
         private readonly identifierCommands: Commands.Identifier.Contract,
+        @Inject(IDENTIFIER_QUERIES)
+        private readonly identifierQueries: Queries.Identifier.Contract,
     ) {}
+
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    @FormatResponse(IdentifierDTO)
+    @ApiOperation({ summary: "Get identifier by ID" })
+    public findUnique(@Query() { identifier, view }: GetIdentifierByIdQueryDTO): Promise<Queries.Identifier.Entity> {
+        return this.identifierQueries.findUnique({ identifier, view });
+    }
+
+    @Post("list")
+    @HttpCode(HttpStatus.OK)
+    @FormatResponse(IdentifierListDTO)
+    @ApiOperation({ summary: "Get paginated list of identifiers" })
+    public findMany(
+        @Body() { pagination, filters, sort }: GetIdentifiersListBodyDTO,
+        @Query() { view }: BaseReadQueryDTO,
+    ): Promise<[Queries.Identifier.Entity[], number]> {
+        return this.identifierQueries.findMany({ pagination, filters, sort, view });
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Post("list/lookup")
+    @FormatResponse(IdentifierLookupListDTO)
+    @ApiOperation({ summary: "Returns a lookup list of identifiers" })
+    public getLookupList(
+        @Extract.Session() { account }: Extract.Session.Auth,
+        @Body() { pagination }: GetIdentifiersLookupListBodyDTO,
+        @Query() { term }: GetIdentifiersLookupListQueryDTO,
+    ): Promise<[Queries.Identifier.Entity[], number]> {
+        return this.identifierQueries.getLookupList({ pagination, account, term });
+    }
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)

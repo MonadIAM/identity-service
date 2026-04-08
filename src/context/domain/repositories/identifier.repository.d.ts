@@ -64,6 +64,7 @@ declare global {
 
             type GetLookupList = {
                 pagination: Pagination;
+                account: string;
                 term: string;
             };
 
@@ -80,6 +81,7 @@ declare global {
                 provider?: StringFilterDTO;
                 account?: LinkFilterDTO;
                 isVerified?: boolean;
+                isPublicContact?: boolean;
                 receiveNotifications?: boolean;
                 createdAt?: OrdinalFilterDTO<Date>;
                 verifiedAt?: OrdinalFilterDTO<Date>;

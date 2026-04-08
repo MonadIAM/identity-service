@@ -27,6 +27,7 @@ export class IdentifierQueries implements Queries.Identifier.Contract {
     public getLookupList(props: Queries.Identifier.GetLookupList): Promise<[Identifier[], number]> {
         return this.identifierRepository.getLookupList({
             pagination: props.pagination,
+            account: props.account,
             term: props.term,
         });
     }

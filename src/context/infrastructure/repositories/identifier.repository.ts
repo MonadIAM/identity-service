@@ -77,6 +77,7 @@ export class IdentifierRepository extends IdentifierAdapter implements Repositor
 
     public async getLookupList({
         pagination,
+        account,
         term,
     }: Repositories.Identifier.GetLookupList): Promise<[Identifier[], number]> {
         try {
@@ -87,6 +88,7 @@ export class IdentifierRepository extends IdentifierAdapter implements Repositor
                 .select(["i.id", "i.type", "i.value", "i.isVerified"])
                 .leftJoinAndSelect("i.account", "a")
                 .leftJoinAndSelect("a.profile", "p")
+                .where({ "a.id": account })
                 .limit(pagination.elementsPerPage)
                 .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
 

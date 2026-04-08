@@ -30,6 +30,9 @@ export class IdentifierAdapter {
         if (filters.isVerified !== undefined) {
             where.isVerified = { $eq: filters.isVerified };
         }
+        if (filters.isPublicContact !== undefined) {
+            where.isPublicContact = { $eq: filters.isPublicContact };
+        }
         if (filters.receiveNotifications !== undefined) {
             where.receiveNotifications = { $eq: filters.receiveNotifications };
         }
