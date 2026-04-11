@@ -1,5 +1,6 @@
 import { Provider } from "@nestjs/common";
 
+import { RecoveryCodeCommands } from "./recovery-code.commands";
 import { SecondFactorCommands } from "./second-factor.commands";
 import { IdentifierCommands } from "./identifier.commands";
 import { PasswordCommands } from "./password.commands";
@@ -8,6 +9,7 @@ import { ProfileCommands } from "./profile.commands";
 import { SessionCommands } from "./session.commands";
 import { OAuthCommands } from "./oauth.commands";
 
+export const RECOVERY_CODE_COMMANDS = Symbol("Commands.RecoveryCode.Contract");
 export const SECOND_FACTOR_COMMANDS = Symbol("Commands.SecondFactor.Contract");
 export const IDENTIFIER_COMMANDS = Symbol("Commands.Identifier.Contract");
 export const PASSWORD_COMMANDS = Symbol("Commands.Password.Contract");
@@ -17,6 +19,10 @@ export const SESSION_COMMANDS = Symbol("Commands.Session.Contract");
 export const OAUTH_COMMANDS = Symbol("Commands.OAuth.Contract");
 
 export const COMMANDS: Provider[] = [
+    {
+        provide: RECOVERY_CODE_COMMANDS,
+        useClass: RecoveryCodeCommands,
+    },
     {
         provide: SECOND_FACTOR_COMMANDS,
         useClass: SecondFactorCommands,

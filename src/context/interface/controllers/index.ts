@@ -1,5 +1,6 @@
 import { ElevatedAccessController } from "./elevated-access.controller";
 import { SecondFactorController } from "./second-factor.controller";
+import { RecoveryCodeController } from "./recovery-code.controller";
 import { IdentifierController } from "./identifier.controller";
 import { ChangeLogController } from "./change-log.controller";
 import { AuditLogController } from "./audit-log.controller";
@@ -13,6 +14,7 @@ import { AuthController } from "./auth.controller";
 export const CONTROLLERS = [
     ElevatedAccessController,
     SecondFactorController,
+    RecoveryCodeController,
     IdentifierController,
     ChangeLogController,
     AuditLogController,
@@ -27,6 +29,7 @@ export const CONTROLLERS = [
 export {
     ElevatedAccessController,
     SecondFactorController,
+    RecoveryCodeController,
     IdentifierController,
     ChangeLogController,
     AuditLogController,
