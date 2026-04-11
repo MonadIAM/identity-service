@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
+import { ApiProperty } from "@nestjs/swagger";
 
 import { AccountSubject, AccountStatus } from "~context/enums";
 import { Validator } from "~common/validator";
@@ -25,17 +25,17 @@ export class AccountDTO {
 
     @Expose()
     @Type(() => ProfileDTO)
-    @ApiPropertyOptional({ type: ProfileDTO })
+    @ApiProperty({ required: false, type: ProfileDTO })
     public profile?: ProfileDTO;
 
     @Expose()
     @Type(() => IdentifierDTO)
-    @ApiPropertyOptional({ type: [IdentifierDTO] })
+    @ApiProperty({ required: false, type: [IdentifierDTO] })
     public identifiers?: IdentifierDTO[];
 
     @Expose()
     @Validator.IsDate()
-    @ApiPropertyOptional({ type: Date })
+    @ApiProperty({ required: false, type: Date })
     public updatedAt?: Date;
 
     @Expose()

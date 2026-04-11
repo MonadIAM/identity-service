@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
@@ -10,19 +10,19 @@ export class ProfileDTO {
     public displayName!: string;
 
     @Expose()
-    @ApiPropertyOptional({ type: String })
+    @ApiProperty({ required: false, type: String })
     public pictureUrl?: string;
 
     @Expose()
-    @ApiPropertyOptional({ type: String })
+    @ApiProperty({ required: false, type: String })
     public locale?: string;
 
     @Expose()
-    @ApiPropertyOptional({ type: String })
+    @ApiProperty({ required: false, type: String })
     public timeZone?: string;
 
     @Expose()
     @Validator.IsDate()
-    @ApiPropertyOptional({ type: Date })
+    @ApiProperty({ required: false, type: Date })
     public updatedAt?: Date;
 }

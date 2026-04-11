@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
+import { ApiProperty } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 
@@ -17,22 +17,22 @@ export class SecondFactorDTO {
     public type!: string;
 
     @Expose()
-    @ApiPropertyOptional({ type: String })
+    @ApiProperty({ required: false, type: String })
     public name?: string;
 
     @Expose()
     @Type(() => AccountDTO)
-    @ApiPropertyOptional({ type: AccountDTO })
+    @ApiProperty({ required: false, type: AccountDTO })
     public account!: AccountDTO;
 
     @Expose()
     @Validator.IsDate()
-    @ApiPropertyOptional({ type: Date })
+    @ApiProperty({ required: false, type: Date })
     public lastUsedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
-    @ApiPropertyOptional({ type: Date })
+    @ApiProperty({ required: false, type: Date })
     public confirmedAt?: Date;
 
     @Expose()

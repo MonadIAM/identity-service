@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { IdentifierType } from "~context/enums";
@@ -21,7 +21,7 @@ export class IdentifierDTO {
     public value!: string;
 
     @Expose()
-    @ApiPropertyOptional({ type: String })
+    @ApiProperty({ required: false, type: String })
     public provider?: string;
 
     @Expose()
@@ -41,7 +41,7 @@ export class IdentifierDTO {
 
     @Expose()
     @Validator.IsDate()
-    @ApiPropertyOptional({ type: Date })
+    @ApiProperty({ required: false, type: Date })
     public verifiedAt?: Date;
 
     @Expose()
