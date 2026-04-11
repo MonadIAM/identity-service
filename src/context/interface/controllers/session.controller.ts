@@ -31,7 +31,7 @@ export class SessionController {
     @Get("list")
     @HttpCode(HttpStatus.OK)
     @FormatResponse(SessionListDTO)
-    @ApiOperation({ summary: "Get paginated list of sessions" })
+    @ApiOperation({ summary: "Get list of sessions" })
     public findMany(@Extract.Session() { account }: Extract.Session.Auth): Promise<[Queries.Session.Entity[], number]> {
         return this.sessionQueries.findMany({ account });
     }

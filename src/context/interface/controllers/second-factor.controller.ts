@@ -1,12 +1,21 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, ElevatedAccess, FormatResponse } from "~common/decorators";
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
+import { SECOND_FACTOR_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 
-import { ConfirmBodyDTO, ConfirmResultDTO, CreateBodyDTO, PurgeBodyDTO, ResetBodyDTO } from "../dto/second-factor";
+import {
+    SecondFactorListDTO,
+    ConfirmResultDTO,
+    CreateResultDTO,
+    ConfirmBodyDTO,
+    CreateBodyDTO,
+    PurgeBodyDTO,
+    ResetBodyDTO,
+} from "../dto/second-factor";
 
 @ApiTags("Second Factor")
 @Controller("/second-factor")
@@ -15,11 +24,23 @@ export class SecondFactorController {
     public constructor(
         @Inject(SECOND_FACTOR_COMMANDS)
         private readonly secondFactorCommands: Commands.SecondFactor.Contract,
+        @Inject(SECOND_FACTOR_QUERIES)
+        private readonly secondFactorQueries: Queries.SecondFactor.Contract,
     ) {}
+
+    @Get("list")
+    @HttpCode(HttpStatus.OK)
+    @FormatResponse(SecondFactorListDTO)
+    @ApiOperation({ summary: "Get list of second factors" })
+    public findMany(
+        @Extract.Session() { account }: Extract.Session.Auth,
+    ): Promise<[Queries.SecondFactor.Entity[], number]> {
+        return this.secondFactorQueries.findMany({ account });
+    }
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
-    @FormatResponse(SuccessMessageDTO)
+    @FormatResponse(CreateResultDTO)
     @ApiOperation({ summary: "Create TOTP factor" })
     public create(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
