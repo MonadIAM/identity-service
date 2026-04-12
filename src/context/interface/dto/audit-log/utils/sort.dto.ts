@@ -1,10 +1,11 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class AuditLogsSortDTO implements Repositories.AuditLog.Sort {
+@ApiSchema({ name: "AuditLogSort" })
+export class SortDTO implements Repositories.AuditLog.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

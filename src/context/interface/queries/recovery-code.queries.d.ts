@@ -5,8 +5,8 @@ declare namespace Queries {
         }
 
         namespace GetStatus {
-            type Props = Repositories.RecoveryCode.GetStatus.Props;
             type Result = Repositories.RecoveryCode.GetStatus.Result;
+            type Props = Repositories.RecoveryCode.GetStatus.Props;
         }
     }
 }

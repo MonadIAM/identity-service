@@ -12,7 +12,7 @@ declare global {
                 unsuspend: (props: Unsuspend) => void;
                 suspend: (props: Suspend) => void;
                 restore: (props: Restore) => void;
-                confirm: (props: Confirm) => void;
+                verify: (props: Verify) => void;
             }
 
             type Create = {
@@ -51,7 +51,7 @@ declare global {
                 };
             };
 
-            type Confirm = {
+            type Verify = {
                 input: {
                     account: AccountEntity;
                 };

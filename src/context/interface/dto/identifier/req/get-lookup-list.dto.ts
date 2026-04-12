@@ -1,11 +1,12 @@
 import { IsNotEmptyObject, ValidateIf } from "class-validator";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 import { PaginationDTO } from "~common/dto";
 
-export class GetIdentifiersLookupListBodyDTO {
+@ApiSchema({ name: "IdentifierGetLookupListBody" })
+export class GetLookupListBodyDTO {
     @Expose()
     @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
@@ -15,7 +16,8 @@ export class GetIdentifiersLookupListBodyDTO {
     public pagination!: PaginationDTO;
 }
 
-export class GetIdentifiersLookupListQueryDTO {
+@ApiSchema({ name: "IdentifierGetLookupListQuery" })
+export class GetLookupListQueryDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })

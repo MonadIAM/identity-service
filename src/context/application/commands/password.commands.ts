@@ -61,29 +61,29 @@ export class PasswordCommands implements Commands.Password.Contract {
                     transaction,
                 });
 
-                if (account.password) {
-                    const isValid = await this.hashingService.verify({
-                        storedHash: account.password.hash,
-                        value: props.input.currentPassword,
-                    });
-
-                    if (isValid) {
-                        await this.checkPasswordHistory(props.actor, props.input.newPassword);
-
-                        const newHash = await this.hashingService.hash({ value: props.input.newPassword });
-
-                        this.passwordService.rotate({
-                            input: { password: account.password, newHash },
-                            transaction,
-                        });
-
-                        return { message: `${this.dictionaryPath}.CHANGED` };
-                    } else {
-                        throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
-                    }
-                } else {
+                if (!account.password) {
                     throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
                 }
+
+                const isValid = await this.hashingService.verify({
+                    storedHash: account.password.hash,
+                    value: props.input.currentPassword,
+                });
+
+                if (!isValid) {
+                    throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
+                }
+
+                await this.checkPasswordHistory(props.actor, props.input.newPassword);
+
+                const newHash = await this.hashingService.hash({ value: props.input.newPassword });
+
+                this.passwordService.rotate({
+                    input: { password: account.password, newHash },
+                    transaction,
+                });
+
+                return { message: `${this.dictionaryPath}.CHANGED` };
             },
         });
     }
@@ -118,42 +118,42 @@ export class PasswordCommands implements Commands.Password.Contract {
     public async resetByOTP(props: Commands.Password.ResetByOTP): Promise<MessageResult> {
         const cachedAccount = await this.otpCacheService.getReset({ code: props.input.code });
 
-        if (cachedAccount) {
-            await this.otpCacheService.deleteReset({ code: props.input.code });
-
-            await this.checkPasswordHistory(cachedAccount, props.input.password);
-
-            return this.transactional.run({
-                resource: this.resource,
-                audit: {
-                    actionType: IdentityActionType.RESET_PASSWORD,
-                    entityType: IdentityEntityType.ACCOUNT,
-                    ...props,
-                },
-                execute: async (transaction) => {
-                    const account = await this.accountRepository.findUniqueOrThrow({
-                        options: { populate: ["password"] },
-                        where: { id: cachedAccount },
-                        transaction,
-                    });
-
-                    if (account.password) {
-                        const newHash = await this.hashingService.hash({ value: props.input.password });
-
-                        this.passwordService.rotate({
-                            input: { password: account.password, newHash },
-                            transaction,
-                        });
-
-                        return { message: `${this.dictionaryPath}.RESET` };
-                    } else {
-                        throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
-                    }
-                },
-            });
-        } else {
+        if (!cachedAccount) {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
+
+        return this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.RESET_PASSWORD_BY_OTP,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: async (transaction) => {
+                await this.otpCacheService.deleteReset({ code: props.input.code });
+
+                await this.checkPasswordHistory(cachedAccount, props.input.password);
+
+                const account = await this.accountRepository.findUniqueOrThrow({
+                    options: { populate: ["password"] },
+                    where: { id: cachedAccount },
+                    transaction,
+                });
+
+                if (!account.password) {
+                    throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                }
+
+                const newHash = await this.hashingService.hash({ value: props.input.password });
+
+                this.passwordService.rotate({
+                    input: { password: account.password, newHash },
+                    transaction,
+                });
+
+                return { message: `${this.dictionaryPath}.RESET` };
+            },
+        });
     }
 
     public async resetByRecoveryCode(props: Commands.Password.ResetByRecoveryCode): Promise<MessageResult> {
@@ -166,37 +166,37 @@ export class PasswordCommands implements Commands.Password.Contract {
 
         const matched = await this.findMatchingRecoveryCode(recoveryCodes, props.input.code);
 
-        if (matched) {
-            await this.checkPasswordHistory(identifier.account.id, props.input.password);
-
-            const newHash = await this.hashingService.hash({ value: props.input.password });
-
-            return this.transactional.run({
-                resource: this.resource,
-                audit: {
-                    actionType: IdentityActionType.RESET_PASSWORD,
-                    entityType: IdentityEntityType.ACCOUNT,
-                    ...props,
-                },
-                execute: (transaction) => {
-                    if (identifier.account.password) {
-                        transaction.merge(identifier.account);
-                        matched.use();
-
-                        this.passwordService.rotate({
-                            input: { password: identifier.account.password, newHash },
-                            transaction,
-                        });
-
-                        return { message: `${this.dictionaryPath}.RESET` };
-                    } else {
-                        throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
-                    }
-                },
-            });
-        } else {
+        if (!matched) {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_RECOVERY_CODE`);
         }
+
+        return this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.RESET_PASSWORD_BY_RECOVERY_CODE,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: async (transaction) => {
+                await this.checkPasswordHistory(identifier.account.id, props.input.password);
+
+                const newHash = await this.hashingService.hash({ value: props.input.password });
+
+                if (!identifier.account.password) {
+                    throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                }
+
+                transaction.merge(identifier.account);
+                matched.use();
+
+                this.passwordService.rotate({
+                    input: { password: identifier.account.password, newHash },
+                    transaction,
+                });
+
+                return { message: `${this.dictionaryPath}.RESET` };
+            },
+        });
     }
 
     private async checkPasswordHistory(account: string, password: string): Promise<void> {

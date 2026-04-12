@@ -1113,8 +1113,8 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "last_active_at": {
-          "name": "last_active_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamptz(3)",
           "unsigned": false,
           "autoincrement": false,
@@ -1123,8 +1123,8 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "created_at": {
-          "name": "created_at",
+        "last_refreshed_at": {
+          "name": "last_refreshed_at",
           "type": "timestamptz(3)",
           "unsigned": false,
           "autoincrement": false,

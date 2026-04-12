@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class ConfirmTOTPBodyDTO {
+@ApiSchema({ name: "AccountVerifyBody" })
+export class VerifyBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })

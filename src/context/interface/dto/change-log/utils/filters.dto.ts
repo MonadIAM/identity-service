@@ -1,10 +1,11 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class ChangeLogsFiltersDTO implements Repositories.ChangeLog.Filters {
+@ApiSchema({ name: "ChangeLogFilters" })
+export class FiltersDTO implements Repositories.ChangeLog.Filters {
     @Expose()
     @Validator.IsOptional()
     @Type(() => StringFilterDTO)

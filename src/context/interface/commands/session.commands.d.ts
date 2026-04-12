@@ -2,8 +2,8 @@ declare namespace Commands {
     namespace Session {
         interface Contract {
             refresh: (props: Refresh.Props) => Promise<Refresh.Result>;
-            purgeAll: (props: PurgeAll) => Promise<MessageResult>;
-            purge: (props: Purge) => Promise<MessageResult>;
+            revokeAll: (props: RevokeAll) => Promise<MessageResult>;
+            revoke: (props: Revoke) => Promise<MessageResult>;
         }
 
         namespace Refresh {
@@ -18,7 +18,7 @@ declare namespace Commands {
             type Result = MessageResult & Services.Session.Create.Result;
         }
 
-        type Purge = {
+        type Revoke = {
             context: Extract.Meta;
             actor: string;
             input: {
@@ -26,7 +26,7 @@ declare namespace Commands {
             };
         };
 
-        type PurgeAll = {
+        type RevokeAll = {
             context: Extract.Meta;
             actor: string;
         };

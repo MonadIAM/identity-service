@@ -1,14 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class ResetByTOTPBodyDTO {
-    @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    public password!: string;
-
+@ApiSchema({ name: "AuthVerifySecondFactorBody" })
+export class VerifySecondFactorBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })

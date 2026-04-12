@@ -4,8 +4,8 @@ declare global {
     namespace Handlers {
         namespace Auth {
             interface Contract {
-                confirmSecondFactor: (props: ConfirmSecondFactor.Props) => Promise<ConfirmSecondFactor.Result>;
-                confirmOTP: (props: ConfirmOTP.Props) => Promise<ConfirmOTP.Result>;
+                verifySecondFactor: (props: VerifySecondFactor.Props) => Promise<VerifySecondFactor.Result>;
+                verifyOTP: (props: VerifyOTP.Props) => Promise<VerifyOTP.Result>;
                 requestOTP: (props: RequestOTP) => Promise<MessageResult>;
                 signin: (props: Signin.Props) => Promise<Signin.Result>;
             }
@@ -29,7 +29,7 @@ declare global {
                 };
             };
 
-            namespace ConfirmOTP {
+            namespace VerifyOTP {
                 type Props = {
                     context: Extract.Meta;
                     input: {
@@ -40,7 +40,7 @@ declare global {
                 type Result = MessageResult & Services.Session.Create.Result;
             }
 
-            namespace ConfirmSecondFactor {
+            namespace VerifySecondFactor {
                 type Props = {
                     context: Extract.Meta;
                     token?: string;

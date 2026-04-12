@@ -1,10 +1,11 @@
 import { ChangeSetType, UnknownType } from "@mikro-orm/postgresql";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { IdentityEntityType } from "~context/enums";
 import { Validator } from "~common/validator";
 
+@ApiSchema({ name: "ChangeLog" })
 export class ChangeLogDTO {
     @Expose()
     @Validator.IsUUID()

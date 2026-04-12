@@ -89,44 +89,44 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         return { message: `${this.dictionaryPath}.CODE_RESENT` };
     }
 
-    public async confirm(props: Commands.Identifier.Confirm): Promise<MessageResult> {
+    public async verify(props: Commands.Identifier.Verify): Promise<MessageResult> {
         const cachedIdentifier = await this.otpCacheService.getIdentifier({ code: props.input.code });
 
-        if (cachedIdentifier) {
-            await this.otpCacheService.deleteIdentifier({ code: props.input.code });
-
-            await this.transactional.run({
-                resource: this.resource,
-                audit: {
-                    actionType: IdentityActionType.VERIFY_IDENTIFIER,
-                    entityType: IdentityEntityType.IDENTIFIER,
-                    ...props,
-                },
-                execute: async (transaction) => {
-                    const identifier = await this.identifierRepository.findUniqueOrThrow({
-                        where: { id: cachedIdentifier },
-                        transaction,
-                    });
-
-                    if (identifier.isVerified) {
-                        throw CommandException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
-                    }
-
-                    this.identifierService.verify({ transaction, input: { identifier } });
-                },
-            });
-
-            return { message: `${this.dictionaryPath}.VERIFIED` };
-        } else {
+        if (!cachedIdentifier) {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
+
+        await this.otpCacheService.deleteIdentifier({ code: props.input.code });
+
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.VERIFY_IDENTIFIER,
+                entityType: IdentityEntityType.IDENTIFIER,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const identifier = await this.identifierRepository.findUniqueOrThrow({
+                    where: { id: cachedIdentifier },
+                    transaction,
+                });
+
+                if (identifier.isVerified) {
+                    throw CommandException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
+                }
+
+                this.identifierService.verify({ transaction, input: { identifier } });
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.VERIFIED` };
     }
 
     public async toggleNotifications(props: Commands.Identifier.ToggleNotifications): Promise<MessageResult> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.TOGGLE_IDENTIFIER_NOTIFICATIONS,
+                actionType: IdentityActionType.TOGGLE_NOTIFICATIONS,
                 entityType: IdentityEntityType.IDENTIFIER,
                 ...props,
             },
@@ -167,14 +167,14 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
             },
         });
 
-        return { message: `${this.dictionaryPath}.NOTIFICATIONS_TOGGLED` };
+        return { message: `${this.dictionaryPath}.PUBLIC_CONTACT_TOGGLED` };
     }
 
     public async purge(props: Commands.Identifier.Purge): Promise<MessageResult> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.REMOVE_IDENTIFIER,
+                actionType: IdentityActionType.PURGE_IDENTIFIER,
                 entityType: IdentityEntityType.IDENTIFIER,
                 ...props,
             },
@@ -195,7 +195,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
             },
         });
 
-        return { message: `${this.dictionaryPath}.REMOVED` };
+        return { message: `${this.dictionaryPath}.PURGED` };
     }
 
     private async sendOTP({ identifier, value, type }: Commands.Identifier.SendOTP): Promise<void> {

@@ -28,58 +28,58 @@ export class SessionCommands implements Commands.Session.Contract {
     ) {}
 
     public async refresh(props: Commands.Session.Refresh.Props): Promise<Commands.Session.Refresh.Result> {
-        if (props.input.refreshToken && props.input.session) {
-            const session = await this.sessionRepository.findUnique({
-                options: { populate: ["account"] },
-                where: { id: props.input.session },
-            });
-
-            if (session) {
-                session.isExpired();
-
-                const tokenHash = this.cryptoService.hashToken(props.input.refreshToken);
-
-                if (tokenHash === session.refreshTokenHash) {
-                    const refreshToken = await this.jwtService.signRefreshToken({
-                        sub: session.account.id,
-                        jti: session.id,
-                    });
-
-                    await this.transactional.run({
-                        resource: this.resource,
-                        audit: {
-                            actionType: IdentityActionType.CREATE_SESSION,
-                            entityType: IdentityEntityType.ACCOUNT,
-                            ...props,
-                        },
-                        execute: (transaction) => {
-                            transaction.merge(session);
-                            session.refresh(this.cryptoService.hashToken(refreshToken));
-                        },
-                    });
-
-                    const accessToken = await this.jwtService.signAccessToken({
-                        sub: session.account.id,
-                        jti: session.id,
-                    });
-
-                    return { message: `${this.dictionaryPath}.REFRESHED`, accessToken, refreshToken };
-                } else {
-                    throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_REFRESH_TOKEN`);
-                }
-            } else {
-                throw CommandException.unauthorized(`${this.dictionaryPath}.SESSION_NOT_FOUND`);
-            }
-        } else {
+        if (!props.input.refreshToken || !props.input.session) {
             throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_REFRESH_TOKEN`);
         }
-    }
 
-    public async purge(props: Commands.Session.Purge): Promise<MessageResult> {
+        const session = await this.sessionRepository.findUnique({
+            options: { populate: ["account"] },
+            where: { id: props.input.session },
+        });
+
+        if (!session) {
+            throw CommandException.unauthorized(`${this.dictionaryPath}.SESSION_NOT_FOUND`);
+        }
+
+        session.isExpired();
+
+        const tokenHash = this.cryptoService.hashToken(props.input.refreshToken);
+
+        if (tokenHash !== session.refreshTokenHash) {
+            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_REFRESH_TOKEN`);
+        }
+
+        const refreshToken = await this.jwtService.signRefreshToken({
+            sub: session.account.id,
+            jti: session.id,
+        });
+
         await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.PURGE_SESSIONS,
+                actionType: IdentityActionType.REFRESH_SESSION,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: (transaction) => {
+                transaction.merge(session);
+                session.refresh(this.cryptoService.hashToken(refreshToken));
+            },
+        });
+
+        const accessToken = await this.jwtService.signAccessToken({
+            sub: session.account.id,
+            jti: session.id,
+        });
+
+        return { message: `${this.dictionaryPath}.REFRESHED`, accessToken, refreshToken };
+    }
+
+    public async revoke(props: Commands.Session.Revoke): Promise<MessageResult> {
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.REVOKE_SESSIONS,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -99,14 +99,14 @@ export class SessionCommands implements Commands.Session.Contract {
             },
         });
 
-        return { message: `${this.dictionaryPath}.PURGED` };
+        return { message: `${this.dictionaryPath}.REVOKED` };
     }
 
-    public async purgeAll(props: Commands.Session.PurgeAll): Promise<MessageResult> {
+    public async revokeAll(props: Commands.Session.RevokeAll): Promise<MessageResult> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.PURGE_SESSIONS,
+                actionType: IdentityActionType.REVOKE_ALL_SESSIONS,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -124,6 +124,6 @@ export class SessionCommands implements Commands.Session.Contract {
             },
         });
 
-        return { message: `${this.dictionaryPath}.ALL_PURGED` };
+        return { message: `${this.dictionaryPath}.ALL_REVOKED` };
     }
 }

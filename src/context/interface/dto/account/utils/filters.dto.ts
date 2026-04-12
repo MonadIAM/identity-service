@@ -1,10 +1,11 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class AccountsFiltersDTO implements Repositories.Account.Filters {
+@ApiSchema({ name: "AccountFilters" })
+export class FiltersDTO implements Repositories.Account.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

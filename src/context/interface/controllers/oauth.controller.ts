@@ -7,6 +7,8 @@ import { Extract, Public } from "~common/decorators";
 
 import { AuthorizeBodyDTO, CallbackBodyDTO } from "../dto/oauth";
 
+const { OK } = HttpStatus;
+
 @ApiTags("OAuth")
 @Controller("/oauth")
 @UseInterceptors(MonitoringInterceptor)
@@ -17,20 +19,20 @@ export class OAuthController {
     ) {}
 
     @Public()
+    @HttpCode(OK)
     @Get("authorize")
-    @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Get OAuth authorization URL" })
     public authorize(@Query() input: AuthorizeBodyDTO): Promise<Handlers.OAuth.Authorize.Result> {
         return this.oauthHandler.authorize({ input });
     }
 
     @Public()
+    @HttpCode(OK)
     @Get("callback")
-    @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "OAuth callback" })
     public callback(
-        @Extract.Meta() context: Extract.Meta,
         @Query() input: CallbackBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<Handlers.OAuth.Callback.Result> {
         return this.oauthHandler.callback({ context, input });
     }

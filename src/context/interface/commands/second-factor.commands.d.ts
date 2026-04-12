@@ -1,7 +1,7 @@
 declare namespace Commands {
     namespace SecondFactor {
         interface Contract {
-            confirm: (props: Confirm.Props) => Promise<Confirm.Result>;
+            verify: (props: Verify.Props) => Promise<Verify.Result>;
             create: (props: Create.Props) => Promise<Create.Result>;
             purge: (props: Purge) => Promise<MessageResult>;
             reset: (props: Reset) => Promise<MessageResult>;
@@ -21,7 +21,7 @@ declare namespace Commands {
             };
         }
 
-        namespace Confirm {
+        namespace Verify {
             type Props = {
                 context: Extract.Meta;
                 actor: string;

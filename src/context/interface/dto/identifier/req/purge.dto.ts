@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class PurgeIdentifierBodyDTO {
+@ApiSchema({ name: "IdentifierPurgeQuery" })
+export class PurgeQueryDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })

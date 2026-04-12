@@ -6,7 +6,9 @@ import { PASSWORD_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 
-import { ResetByRecoveryCodeBodyDTO, ResetByTOTPBodyDTO, RequestTOTPBodyDTO, ChangeBodyDTO } from "../dto/password";
+import { ResetByRecoveryCodeBodyDTO, ResetByOTPBodyDTO, RequestOTPBodyDTO, ChangeBodyDTO } from "../dto/password";
+
+const { OK } = HttpStatus;
 
 @ApiTags("Password")
 @Controller("/password")
@@ -17,44 +19,44 @@ export class PasswordController {
         private readonly passwordCommands: Commands.Password.Contract,
     ) {}
 
+    @HttpCode(OK)
     @Post("change")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Change password" })
     public change(
+        @Body() input: ChangeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: ChangeBodyDTO,
     ): Promise<MessageResult> {
         return this.passwordCommands.change({ context, actor, input });
     }
 
     @Public()
-    @Post("request/totp")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
+    @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Request password reset OTP" })
-    public requestOTP(@Body() input: RequestTOTPBodyDTO): Promise<MessageResult> {
+    public requestOTP(@Body() input: RequestOTPBodyDTO): Promise<MessageResult> {
         return this.passwordCommands.requestOTP({ input });
     }
 
     @Public()
-    @Post("reset/totp")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
+    @Post("reset/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by OTP" })
-    public resetByOTP(@Extract.Meta() context: Extract.Meta, @Body() input: ResetByTOTPBodyDTO): Promise<MessageResult> {
+    public resetByOTP(@Body() input: ResetByOTPBodyDTO, @Extract.Meta() context: Extract.Meta): Promise<MessageResult> {
         return this.passwordCommands.resetByOTP({ context, input });
     }
 
     @Public()
+    @HttpCode(OK)
     @Post("reset/code")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by recovery code" })
     public resetByRecoveryCode(
-        @Extract.Meta() context: Extract.Meta,
         @Body() input: ResetByRecoveryCodeBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.passwordCommands.resetByRecoveryCode({ context, input });
     }

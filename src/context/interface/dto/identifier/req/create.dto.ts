@@ -1,10 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { IdentifierType } from "~context/enums";
 import { Validator } from "~common/validator";
 
-export class CreateIdentifierBodyDTO {
+@ApiSchema({ name: "IdentifierCreateBody" })
+export class CreateBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })

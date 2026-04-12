@@ -17,7 +17,7 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
         return factor;
     }
 
-    public confirm({ transaction, input }: Services.SecondFactor.Confirm): void {
+    public verify({ transaction, input }: Services.SecondFactor.Verify): void {
         input.factor.confirm();
 
         if (!input.factor.account.masterCode) {

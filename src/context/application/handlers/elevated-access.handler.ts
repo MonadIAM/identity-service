@@ -27,21 +27,21 @@ export class ElevatedAccessHandler implements Handlers.ElevatedAccess.Contract {
             where: { id: props.actor },
         });
 
-        if (account.password) {
-            const isValid = await this.hashingService.verify({
-                storedHash: account.password.hash,
-                value: props.input.password,
-            });
-
-            if (isValid) {
-                await this.elevatedAccessCacheService.set({ account: props.actor });
-                return { message: `${this.dictionaryPath}.CONFIRMED` };
-            } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_PASSWORD`);
-            }
-        } else {
+        if (!account.password) {
             throw HandlerException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
         }
+
+        const isValid = await this.hashingService.verify({
+            storedHash: account.password.hash,
+            value: props.input.password,
+        });
+
+        if (!isValid) {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_PASSWORD`);
+        }
+
+        await this.elevatedAccessCacheService.set({ account: props.actor });
+        return { message: `${this.dictionaryPath}.ELEVATED` };
     }
 
     public async bySecondFactor(props: Handlers.ElevatedAccess.BySecondFactor): Promise<MessageResult> {
@@ -52,18 +52,18 @@ export class ElevatedAccessHandler implements Handlers.ElevatedAccess.Contract {
             },
         });
 
-        if (factor) {
-            const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
-            const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
-
-            if (isValid) {
-                await this.elevatedAccessCacheService.set({ account: props.actor });
-                return { message: `${this.dictionaryPath}.CONFIRMED` };
-            } else {
-                throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
-            }
-        } else {
+        if (!factor) {
             throw HandlerException.badRequest(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
         }
+
+        const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
+        const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
+
+        if (!isValid) {
+            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+        }
+
+        await this.elevatedAccessCacheService.set({ account: props.actor });
+        return { message: `${this.dictionaryPath}.ELEVATED` };
     }
 }

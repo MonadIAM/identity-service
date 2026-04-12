@@ -5,7 +5,7 @@ import { AUDIT_LOG_QUERIES } from "~context/application/queries";
 import { Swagger, FormatResponse } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 
-import { GetAuditLogsListBodyDTO, GetAuditLogByIdQueryDTO, AuditLogListDTO, AuditLogDTO } from "../dto/audit-log";
+import { GetListBodyDTO, GetByIdQueryDTO, AuditLogDTO, ListDTO } from "../dto/audit-log";
 
 const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
 
@@ -24,19 +24,17 @@ export class AuditLogController {
     @ApiResponse({ status: OK, type: AuditLogDTO })
     @ApiOperation({ summary: "Returns a audit log by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
-    public findUnique(@Query() { log }: GetAuditLogByIdQueryDTO): Promise<Queries.AuditLog.Entity> {
+    public getById(@Query() { log }: GetByIdQueryDTO): Promise<Queries.AuditLog.Entity> {
         return this.auditLogQueries.findUnique({ log });
     }
 
     @Post("list")
     @HttpCode(OK)
-    @FormatResponse(AuditLogListDTO)
-    @ApiResponse({ status: OK, type: AuditLogListDTO })
+    @FormatResponse(ListDTO)
+    @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({ summary: "Returns a paginated list of audit logs" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
-    public getList(
-        @Body() { pagination, filters, sort }: GetAuditLogsListBodyDTO,
-    ): Promise<[Queries.AuditLog.Entity[], number]> {
+    public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Promise<[Queries.AuditLog.Entity[], number]> {
         return this.auditLogQueries.findMany({ pagination, filters, sort });
     }
 }

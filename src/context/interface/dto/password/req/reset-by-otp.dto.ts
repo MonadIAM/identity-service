@@ -1,14 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class SignupBodyDTO {
-    @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    public identifier!: string;
-
+@ApiSchema({ name: "PasswordResetByOTPBody" })
+export class ResetByOTPBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
@@ -17,5 +13,5 @@ export class SignupBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public name!: string;
+    public code!: string;
 }

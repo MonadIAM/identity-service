@@ -7,7 +7,9 @@ import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 
-import { PurgeBodyDTO, SessionDTO, SessionListDTO } from "../dto/session";
+import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
+
+const { OK } = HttpStatus;
 
 @ApiTags("Session")
 @Controller("/session")
@@ -21,24 +23,24 @@ export class SessionController {
     ) {}
 
     @Get()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(SessionDTO)
-    @ApiOperation({ summary: "Get session by ID" })
-    public findUnique(@Extract.Session() { session, account }: Extract.Session.Auth): Promise<Queries.Session.Entity> {
+    @ApiOperation({ summary: "Get current session" })
+    public getCurrent(@Extract.Session() { session, account }: Extract.Session.Auth): Promise<Queries.Session.Entity> {
         return this.sessionQueries.getCurrent({ session, account });
     }
 
     @Get("list")
-    @HttpCode(HttpStatus.OK)
-    @FormatResponse(SessionListDTO)
+    @HttpCode(OK)
+    @FormatResponse(ListDTO)
     @ApiOperation({ summary: "Get list of sessions" })
-    public findMany(@Extract.Session() { account }: Extract.Session.Auth): Promise<[Queries.Session.Entity[], number]> {
+    public getList(@Extract.Session() { account }: Extract.Session.Auth): Promise<[Queries.Session.Entity[], number]> {
         return this.sessionQueries.findMany({ account });
     }
 
     @Public()
+    @HttpCode(OK)
     @Post("refresh")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Refresh session tokens" })
     public refresh(
@@ -49,37 +51,37 @@ export class SessionController {
         return this.sessionCommands.refresh({ context, input: { refreshToken, session } });
     }
 
+    @HttpCode(OK)
     @Delete("logout")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Purge specific sessions" })
+    @ApiOperation({ summary: "Revoke current session" })
     public logout(
         @Extract.Session() { account: actor, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
-        return this.sessionCommands.purge({ context, actor, input: { sessions: [session] } });
+        return this.sessionCommands.revoke({ context, actor, input: { sessions: [session] } });
     }
 
-    @Delete("purge")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
+    @Delete("revoke")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Purge specific sessions" })
-    public purge(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Meta() context: Extract.Meta,
-        @Body() input: PurgeBodyDTO,
-    ): Promise<MessageResult> {
-        return this.sessionCommands.purge({ context, actor, input });
-    }
-
-    @Delete("purge-all")
-    @HttpCode(HttpStatus.OK)
-    @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Purge all sessions" })
-    public purgeAll(
+    @ApiOperation({ summary: "Revoke specific sessions" })
+    public revoke(
+        @Body() input: RevokeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
-        return this.sessionCommands.purgeAll({ context, actor });
+        return this.sessionCommands.revoke({ context, actor, input });
+    }
+
+    @HttpCode(OK)
+    @Delete("revoke-all")
+    @FormatResponse(SuccessMessageDTO)
+    @ApiOperation({ summary: "Revoke all sessions" })
+    public revokeAll(
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Promise<MessageResult> {
+        return this.sessionCommands.revokeAll({ context, actor });
     }
 }

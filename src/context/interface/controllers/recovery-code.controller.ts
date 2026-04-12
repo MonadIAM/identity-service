@@ -8,6 +8,8 @@ import { MonitoringInterceptor } from "~common/interceptors";
 
 import { RegenerateResultDTO, StatusResultDTO } from "../dto/recovery-code";
 
+const { OK } = HttpStatus;
+
 @ApiTags("RecoveryCodes")
 @Controller("/recovery-codes")
 @UseInterceptors(MonitoringInterceptor)
@@ -19,17 +21,17 @@ export class RecoveryCodeController {
         private readonly recoveryCodeQueries: Queries.RecoveryCode.Contract,
     ) {}
 
+    @HttpCode(OK)
     @Get("status")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(StatusResultDTO)
     @ApiOperation({ summary: "Get recovery codes status" })
     public getStatus(@Extract.Session() { account }: Extract.Session.Auth): Promise<Queries.RecoveryCode.GetStatus.Result> {
         return this.recoveryCodeQueries.getStatus({ account });
     }
 
+    @HttpCode(OK)
     @ElevatedAccess()
     @Post("regenerate")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(RegenerateResultDTO)
     @ApiOperation({ summary: "Regenerate recovery codes" })
     public regenerate(

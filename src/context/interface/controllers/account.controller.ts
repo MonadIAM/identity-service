@@ -1,5 +1,5 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Patch, Get, Query } from "@nestjs/common";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Get, Query } from "@nestjs/common";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, FormatResponse } from "~common/decorators";
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
@@ -9,17 +9,19 @@ import { MonitoringInterceptor } from "~common/interceptors";
 import { ResponseViewType } from "~context/enums";
 
 import {
-    ConfirmAccountResultDTO,
-    UnsuspendAccountBodyDTO,
-    GetAccountByIdQueryDTO,
-    GetAccountsListBodyDTO,
-    SuspendAccountBodyDTO,
-    ConfirmTOTPBodyDTO,
-    ResendTOTPBodyDTO,
-    AccountListDTO,
+    GetByIdQueryDTO,
+    VerifyResultDTO,
+    SuspendBodyDTO,
+    RestoreBodyDTO,
+    GetListBodyDTO,
     SignupBodyDTO,
+    VerifyBodyDTO,
+    ResendBodyDTO,
     AccountDTO,
+    ListDTO,
 } from "../dto/account";
+
+const { CREATED, OK } = HttpStatus;
 
 @ApiTags("Account")
 @Controller("/account")
@@ -33,27 +35,30 @@ export class AccountController {
     ) {}
 
     @Get("me")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(AccountDTO)
+    @ApiResponse({ status: OK, type: AccountDTO })
     @ApiOperation({ summary: "Get current account" })
     public getMe(@Extract.Session() { account }: Extract.Session.Auth): Promise<Queries.Account.Entity> {
         return this.accountQueries.findUnique({ account, view: ResponseViewType.DETAILED });
     }
 
     @Get()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(AccountDTO)
+    @ApiResponse({ status: OK, type: AccountDTO })
     @ApiOperation({ summary: "Get account by ID" })
-    public findUnique(@Query() { account, view }: GetAccountByIdQueryDTO): Promise<Queries.Account.Entity> {
+    public getById(@Query() { account, view }: GetByIdQueryDTO): Promise<Queries.Account.Entity> {
         return this.accountQueries.findUnique({ account, view });
     }
 
+    @HttpCode(OK)
     @Post("list")
-    @HttpCode(HttpStatus.OK)
-    @FormatResponse(AccountListDTO)
+    @FormatResponse(ListDTO)
+    @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({ summary: "Get paginated list of accounts" })
-    public findMany(
-        @Body() { pagination, filters, sort }: GetAccountsListBodyDTO,
+    public getList(
+        @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { view }: BaseReadQueryDTO,
     ): Promise<[Queries.Account.Entity[], number]> {
         return this.accountQueries.findMany({ pagination, filters, sort, view });
@@ -61,55 +66,55 @@ export class AccountController {
 
     @Public()
     @Post("signup")
-    @HttpCode(HttpStatus.CREATED)
+    @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Register a new account" })
-    public signup(@Extract.Meta() context: Extract.Meta, @Body() input: SignupBodyDTO): Promise<MessageResult> {
+    public signup(@Body() input: SignupBodyDTO, @Extract.Meta() context: Extract.Meta): Promise<MessageResult> {
         return this.accountCommands.signup({ context, input });
     }
 
     @Public()
+    @HttpCode(OK)
     @Post("resend")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Resend verification code" })
-    public resend(@Body() input: ResendTOTPBodyDTO): Promise<MessageResult> {
+    public resend(@Body() input: ResendBodyDTO): Promise<MessageResult> {
         return this.accountCommands.resend({ input });
     }
 
     @Public()
-    @Post("confirm")
-    @HttpCode(HttpStatus.OK)
-    @FormatResponse(ConfirmAccountResultDTO)
-    @ApiOperation({ summary: "Confirm account with TOTP" })
-    public confirm(
+    @HttpCode(OK)
+    @Post("verify")
+    @FormatResponse(VerifyResultDTO)
+    @ApiOperation({ summary: "Verify account with OTP" })
+    public verify(
+        @Body() input: VerifyBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: ConfirmTOTPBodyDTO,
-    ): Promise<Commands.Account.Confirm.Result> {
-        return this.accountCommands.confirm({ context, input });
+    ): Promise<Commands.Account.Verify.Result> {
+        return this.accountCommands.verify({ context, input });
     }
 
-    @Patch("suspend")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
+    @Post("suspend")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Suspend account" })
     public suspend(
+        @Body() input: SuspendBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: SuspendAccountBodyDTO,
     ): Promise<MessageResult> {
         return this.accountCommands.suspend({ context, actor, input });
     }
 
-    @Patch("unsuspend")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
+    @Post("restore")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Unsuspend account" })
-    public unsuspend(
+    @ApiOperation({ summary: "Restore account" })
+    public restore(
+        @Body() input: RestoreBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: UnsuspendAccountBodyDTO,
     ): Promise<MessageResult> {
-        return this.accountCommands.unsuspend({ context, actor, input });
+        return this.accountCommands.restore({ context, actor, input });
     }
 }

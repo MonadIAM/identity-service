@@ -1,10 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { SuccessMessageDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class ConfirmAccountResultDTO extends SuccessMessageDTO {
+@ApiSchema({ name: "VerifyAccountResult" })
+export class VerifyResultDTO extends SuccessMessageDTO {
     @Expose()
     @Validator.IsArray()
     @Validator.IsString({ each: true })

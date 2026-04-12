@@ -1,10 +1,11 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 
 import { AccountDTO } from "../../account";
 
+@ApiSchema({ name: "Session" })
 export class SessionDTO {
     @Expose()
     @Validator.IsUUID()
@@ -28,7 +29,7 @@ export class SessionDTO {
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })
-    public lastActiveAt?: Date;
+    public lastRefreshedAt?: Date;
 
     @Expose()
     @Validator.IsDate()

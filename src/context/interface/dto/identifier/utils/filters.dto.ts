@@ -1,10 +1,11 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class IdentifiersFiltersDTO implements Repositories.Identifier.Filters {
+@ApiSchema({ name: "IdentifierFilters" })
+export class FiltersDTO implements Repositories.Identifier.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

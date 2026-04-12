@@ -22,7 +22,7 @@ export const SessionSchema = new EntitySchema<Session>({
         userAgent: { type: "text" },
 
         expiresAt: { type: "timestamptz", length: 3 },
-        lastActiveAt: { type: "timestamptz", length: 3 },
         createdAt: { type: "timestamptz", length: 3 },
+        lastRefreshedAt: { type: "timestamptz", length: 3 },
     },
 });

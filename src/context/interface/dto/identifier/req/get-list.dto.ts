@@ -1,14 +1,15 @@
 import { IsNotEmptyObject, ValidateIf } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 import { PaginationDTO } from "~common/dto";
 
-import { IdentifiersFiltersDTO } from "../utils/filters.dto";
-import { IdentifiersSortDTO } from "../utils/sort.dto";
+import { FiltersDTO } from "../utils/filters.dto";
+import { SortDTO } from "../utils/sort.dto";
 
-export class GetIdentifiersListBodyDTO {
+@ApiSchema({ name: "IdentifierListBody" })
+export class GetListBodyDTO {
     @Expose()
     @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
@@ -21,15 +22,15 @@ export class GetIdentifiersListBodyDTO {
     @ValidateIf(({ filters }) => filters)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => IdentifiersFiltersDTO)
-    @ApiProperty({ required: true, type: IdentifiersFiltersDTO })
-    public filters!: IdentifiersFiltersDTO;
+    @Type(() => FiltersDTO)
+    @ApiProperty({ required: true, type: FiltersDTO })
+    public filters!: FiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => IdentifiersSortDTO)
-    @ApiProperty({ required: true, type: IdentifiersSortDTO })
-    public sort!: IdentifiersSortDTO;
+    @Type(() => SortDTO)
+    @ApiProperty({ required: true, type: SortDTO })
+    public sort!: SortDTO;
 }

@@ -46,7 +46,7 @@ export class AccountCommands implements Commands.Account.Contract {
         const account = await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.CREATE_ACCOUNT,
+                actionType: IdentityActionType.SIGN_UP_ACCOUNT,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -70,28 +70,28 @@ export class AccountCommands implements Commands.Account.Contract {
             type,
         });
 
-        return { message: `${this.dictionaryPath}.CREATED` };
+        return { message: `${this.dictionaryPath}.SIGNED_UP` };
     }
 
     public async resend(props: Commands.Account.Resend): Promise<MessageResult> {
-        const identifierEntity = await this.identifierRepository.findUniqueOrThrow({
+        const identifier = await this.identifierRepository.findUniqueOrThrow({
             where: { value: props.input.identifier },
         });
 
-        if (identifierEntity.isVerified) {
+        if (identifier.isVerified) {
             throw CommandException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
         }
 
         await this.sendOTP({
-            account: identifierEntity.account.id,
-            value: identifierEntity.value,
-            type: identifierEntity.type,
+            account: identifier.account.id,
+            value: identifier.value,
+            type: identifier.type,
         });
 
         return { message: `${this.dictionaryPath}.CODE_RESENT` };
     }
 
-    public async confirm(props: Commands.Account.Confirm.Props): Promise<Commands.Account.Confirm.Result> {
+    public async verify(props: Commands.Account.Verify.Props): Promise<Commands.Account.Verify.Result> {
         const cachedAccount = await this.otpCacheService.getVerification({ code: props.input.code });
 
         if (!cachedAccount) {
@@ -106,36 +106,36 @@ export class AccountCommands implements Commands.Account.Contract {
         const session = await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.CONFIRM_ACCOUNT,
+                actionType: IdentityActionType.VERIFY_ACCOUNT,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {
-                const accountEntity = await this.accountRepository.findUniqueOrThrow({
+                const account = await this.accountRepository.findUniqueOrThrow({
                     where: { id: cachedAccount },
                     transaction,
                 });
 
-                this.accountService.confirm({ input: { account: accountEntity } });
+                this.accountService.verify({ input: { account } });
 
                 this.recoveryCodeService.generate({
                     transaction,
-                    input: { account: accountEntity, hashes: hashedCodes },
+                    input: { account, hashes: hashedCodes },
                 });
 
                 return this.sessionService.create({
                     transaction,
                     input: {
-                        account: accountEntity,
                         userAgent: props.context.userAgent,
                         ip: props.context.ip,
+                        account,
                     },
                 });
             },
         });
 
         return {
-            message: `${this.dictionaryPath}.CONFIRMED`,
+            message: `${this.dictionaryPath}.VERIFIED`,
             ...session,
             codes,
         };
@@ -189,11 +189,11 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.SUSPENDED` };
     }
 
-    public async unsuspend(props: Commands.Account.Unsuspend): Promise<MessageResult> {
+    public async restore(props: Commands.Account.Restore): Promise<MessageResult> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.UNSUSPEND_ACCOUNT,
+                actionType: IdentityActionType.RESTORE_ACCOUNT,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -207,7 +207,7 @@ export class AccountCommands implements Commands.Account.Contract {
             },
         });
 
-        return { message: `${this.dictionaryPath}.UNSUSPENDED` };
+        return { message: `${this.dictionaryPath}.RESTORED` };
     }
 
     private async sendOTP(props: Commands.Account.SendOTP): Promise<void> {

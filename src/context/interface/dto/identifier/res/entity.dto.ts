@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { IdentifierType } from "~context/enums";
 import { Validator } from "~common/validator";
 
+@ApiSchema({ name: "Identifier" })
 export class IdentifierDTO {
     @Expose()
     @Validator.IsUUID()

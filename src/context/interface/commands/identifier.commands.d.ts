@@ -4,12 +4,12 @@ declare global {
     namespace Commands {
         namespace Identifier {
             interface Contract {
-                create: (props: Create) => Promise<MessageResult>;
-                resend: (props: Resend) => Promise<MessageResult>;
-                confirm: (props: Confirm) => Promise<MessageResult>;
-                purge: (props: Purge) => Promise<MessageResult>;
                 toggleNotifications: (props: ToggleNotifications) => Promise<MessageResult>;
                 togglePublicContact: (props: TogglePublicContact) => Promise<MessageResult>;
+                verify: (props: Verify) => Promise<MessageResult>;
+                create: (props: Create) => Promise<MessageResult>;
+                resend: (props: Resend) => Promise<MessageResult>;
+                purge: (props: Purge) => Promise<MessageResult>;
             }
 
             type Create = {
@@ -28,7 +28,7 @@ declare global {
                 };
             };
 
-            type Confirm = {
+            type Verify = {
                 context: Extract.Meta;
                 actor: string;
                 input: {

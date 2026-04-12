@@ -7,12 +7,14 @@ import { AUTH_HANDLER } from "~context/application/handlers";
 import { SuccessMessageDTO } from "~common/dto";
 
 import {
-    ConfirmSecondFactorBodyDTO,
-    RequestTOTPBodyDTO,
-    ConfirmTOTPBodyDTO,
+    VerifySecondFactorBodyDTO,
+    RequestOTPBodyDTO,
+    VerifyOTPBodyDTO,
     SigninResultDTO,
     SigninBodyDTO,
 } from "../dto/auth";
+
+const { OK } = HttpStatus;
 
 @ApiTags("Auth")
 @Controller("/auth")
@@ -24,48 +26,48 @@ export class AuthController {
     ) {}
 
     @Public()
+    @HttpCode(OK)
     @Post("signin")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SigninResultDTO)
-    @ApiOperation({ summary: "Login by password" })
+    @ApiOperation({ summary: "Signin by password" })
     public signin(
-        @Extract.Meta() context: Extract.Meta,
         @Body() input: SigninBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<Handlers.Auth.Signin.Result> {
         return this.authHandler.signin({ context, input });
     }
 
     @Public()
-    @Post("request/totp")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
+    @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Request passwordless TOTP" })
-    public requestOTP(@Body() input: RequestTOTPBodyDTO): Promise<MessageResult> {
+    @ApiOperation({ summary: "Request passwordless OTP" })
+    public requestOTP(@Body() input: RequestOTPBodyDTO): Promise<MessageResult> {
         return this.authHandler.requestOTP({ input });
     }
 
     @Public()
-    @Post("confirm/totp")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
+    @Post("verify/otp")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Confirm passwordless TOTP" })
-    public confirmOTP(
+    @ApiOperation({ summary: "Verify passwordless OTP" })
+    public verifyOTP(
+        @Body() input: VerifyOTPBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: ConfirmTOTPBodyDTO,
-    ): Promise<Handlers.Auth.ConfirmOTP.Result> {
-        return this.authHandler.confirmOTP({ context, input });
+    ): Promise<Handlers.Auth.VerifyOTP.Result> {
+        return this.authHandler.verifyOTP({ context, input });
     }
 
     @Public()
-    @HttpCode(HttpStatus.OK)
-    @Post("confirm/second-factor")
+    @HttpCode(OK)
+    @Post("verify/second-factor")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Verify 2FA TOTP code" })
-    public confirmSecondFactor(
-        @Body() input: ConfirmSecondFactorBodyDTO,
+    @ApiOperation({ summary: "Verify second-factor TOTP" })
+    public verifySecondFactor(
+        @Body() input: VerifySecondFactorBodyDTO,
         @Extract.Meta() context: Extract.Meta,
         @Tokens.Pending() token?: string,
-    ): Promise<Handlers.Auth.ConfirmSecondFactor.Result> {
-        return this.authHandler.confirmSecondFactor({ token, context, input });
+    ): Promise<Handlers.Auth.VerifySecondFactor.Result> {
+        return this.authHandler.verifySecondFactor({ token, context, input });
     }
 }

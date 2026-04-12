@@ -8,6 +8,8 @@ import { SuccessMessageDTO } from "~common/dto";
 
 import { UpdateBodyDTO } from "../dto/profile";
 
+const { OK } = HttpStatus;
+
 @ApiTags("Profile")
 @Controller("/profile")
 @UseInterceptors(MonitoringInterceptor)
@@ -17,14 +19,14 @@ export class ProfileController {
         private readonly profileCommands: Commands.Profile.Contract,
     ) {}
 
+    @HttpCode(OK)
     @Patch("update")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Update profile" })
     public update(
+        @Body() input: UpdateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: UpdateBodyDTO,
     ): Promise<MessageResult> {
         return this.profileCommands.update({ context, actor, input });
     }

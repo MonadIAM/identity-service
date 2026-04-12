@@ -12,7 +12,7 @@ export class Session {
     public id: string;
     public createdAt: Date;
     public expiresAt: Date;
-    public lastActiveAt: Date;
+    public lastRefreshedAt: Date;
 
     public refreshTokenHash?: string;
     public userAgent: string;
@@ -23,9 +23,9 @@ export class Session {
     public constructor(props: Entities.Session.ConstructorProps) {
         const now = new Date();
 
-        this.id = randomUUID();
-        this.lastActiveAt = now;
         this.createdAt = now;
+        this.lastRefreshedAt = now;
+        this.id = randomUUID();
 
         this.expiresAt = props.expiresAt;
 
@@ -36,7 +36,7 @@ export class Session {
     }
 
     public refresh(hash: string): void {
-        this.lastActiveAt = new Date();
+        this.lastRefreshedAt = new Date();
         this.refreshTokenHash = hash;
     }
 

@@ -8,7 +8,7 @@ declare global {
         namespace SecondFactor {
             interface Contract {
                 create: (props: Create) => SecondFactorEntity;
-                confirm: (props: Confirm) => void;
+                verify: (props: Verify) => void;
                 purge: (props: Purge) => void;
                 reset: (props: Reset) => void;
             }
@@ -23,7 +23,7 @@ declare global {
                 };
             };
 
-            type Confirm = {
+            type Verify = {
                 transaction: EntityManager;
                 input: {
                     factor: SecondFactorEntity;

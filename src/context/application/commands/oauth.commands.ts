@@ -40,16 +40,16 @@ export class OAuthCommands implements Commands.OAuth.Contract {
 
         if (identifier) {
             return this.linkToExisting({ ...props, identifier });
+        } else {
+            return this.createNew(props);
         }
-
-        return this.createNew(props);
     }
 
     public async signin(props: Commands.OAuth.Signin.Props): Promise<Commands.OAuth.Signin.Result> {
         const session = await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.CREATE_SESSION,
+                actionType: IdentityActionType.SIGN_IN_ACCOUNT,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -78,7 +78,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const result = await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.CREATE_ACCOUNT,
+                actionType: IdentityActionType.SIGN_UP_ACCOUNT,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -129,7 +129,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const session = await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.LINK_OAUTH,
+                actionType: IdentityActionType.LINK_OAUTH_IDENTIFIER,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -160,7 +160,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         });
 
         return {
-            message: `${this.dictionaryPath}.LINKED`,
+            message: `${this.dictionaryPath}.LINKED_AND_SIGNED_IN`,
             ...session,
         };
     }

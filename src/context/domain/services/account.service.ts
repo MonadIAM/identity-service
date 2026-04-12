@@ -78,7 +78,7 @@ export class AccountService implements Services.Account.Contract {
         transaction.remove(input.account);
     }
 
-    public confirm({ input }: Services.Account.Confirm): void {
+    public verify({ input }: Services.Account.Verify): void {
         input.account.activate();
     }
 

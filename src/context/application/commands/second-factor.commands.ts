@@ -36,7 +36,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.CREATE_SECOND_FACTOR,
+                actionType: IdentityActionType.INITIATE_SECOND_FACTOR_SETUP,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -67,7 +67,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         return { uri: totp.toString() };
     }
 
-    public async confirm(props: Commands.SecondFactor.Confirm.Props): Promise<Commands.SecondFactor.Confirm.Result> {
+    public async verify(props: Commands.SecondFactor.Verify.Props): Promise<Commands.SecondFactor.Verify.Result> {
         const factor = await this.secondFactorRepository.findUniqueOrThrow({
             options: { populate: ["account.masterCode"] },
             where: {
@@ -80,40 +80,40 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
         const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
 
-        if (isValid) {
-            const masterCodePlaintext = this.cryptoService.generateRecoveryCode();
-            const masterCodeHash = await this.hashingService.hash({ value: masterCodePlaintext });
-
-            await this.transactional.run({
-                resource: this.resource,
-                audit: {
-                    actionType: IdentityActionType.CONFIRM_SECOND_FACTOR,
-                    entityType: IdentityEntityType.ACCOUNT,
-                    ...props,
-                },
-                execute: (transaction) => {
-                    transaction.merge(factor);
-                    this.secondFactorService.confirm({
-                        input: { factor, masterCodeHash },
-                        transaction,
-                    });
-                },
-            });
-
-            return {
-                message: `${this.dictionaryPath}.CONFIRMED`,
-                code: hasMasterCode ? undefined : masterCodePlaintext,
-            };
-        } else {
+        if (!isValid) {
             throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
         }
+
+        const masterCodePlaintext = this.cryptoService.generateRecoveryCode();
+        const masterCodeHash = await this.hashingService.hash({ value: masterCodePlaintext });
+
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.VERIFY_SECOND_FACTOR,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: (transaction) => {
+                transaction.merge(factor);
+                this.secondFactorService.verify({
+                    input: { factor, masterCodeHash },
+                    transaction,
+                });
+            },
+        });
+
+        return {
+            message: `${this.dictionaryPath}.VERIFIED`,
+            code: hasMasterCode ? undefined : masterCodePlaintext,
+        };
     }
 
     public async purge(props: Commands.SecondFactor.Purge): Promise<MessageResult> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.PURGE_SECOND_FACTORS,
+                actionType: IdentityActionType.PURGE_SECOND_FACTOR,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
@@ -143,35 +143,35 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             where: { value: props.input.identifier },
         });
 
-        if (identifier?.account?.masterCode) {
-            const isValid = await this.hashingService.verify({
-                storedHash: identifier.account.masterCode.hash,
-                value: props.input.code,
-            });
-
-            if (isValid) {
-                await this.transactional.run({
-                    resource: this.resource,
-                    audit: {
-                        actionType: IdentityActionType.RESET_SECOND_FACTORS,
-                        entityType: IdentityEntityType.ACCOUNT,
-                        ...props,
-                    },
-                    execute: (transaction) => {
-                        transaction.merge(identifier.account);
-                        this.secondFactorService.reset({
-                            input: { account: identifier.account },
-                            transaction,
-                        });
-                    },
-                });
-
-                return { message: `${this.dictionaryPath}.RESET` };
-            } else {
-                throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CODE`);
-            }
-        } else {
+        if (!identifier?.account?.masterCode) {
             throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CODE`);
         }
+
+        const isValid = await this.hashingService.verify({
+            storedHash: identifier.account.masterCode.hash,
+            value: props.input.code,
+        });
+
+        if (!isValid) {
+            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CODE`);
+        }
+
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: IdentityActionType.RESET_SECOND_FACTORS,
+                entityType: IdentityEntityType.ACCOUNT,
+                ...props,
+            },
+            execute: (transaction) => {
+                transaction.merge(identifier.account);
+                this.secondFactorService.reset({
+                    input: { account: identifier.account },
+                    transaction,
+                });
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.RESET` };
     }
 }

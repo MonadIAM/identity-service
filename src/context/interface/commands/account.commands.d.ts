@@ -4,9 +4,9 @@ declare global {
     namespace Commands {
         namespace Account {
             interface Contract {
-                confirm: (props: Confirm.Props) => Promise<Confirm.Result>;
                 deactivate: (props: Deactivate) => Promise<MessageResult>;
-                unsuspend: (props: Unsuspend) => Promise<MessageResult>;
+                verify: (props: Verify.Props) => Promise<Verify.Result>;
+                restore: (props: Restore) => Promise<MessageResult>;
                 suspend: (props: Suspend) => Promise<MessageResult>;
                 signup: (props: Signup) => Promise<MessageResult>;
                 resend: (props: Resend) => Promise<MessageResult>;
@@ -27,7 +27,7 @@ declare global {
                 };
             };
 
-            namespace Confirm {
+            namespace Verify {
                 type Props = {
                     context: Extract.Meta;
                     input: {
@@ -61,7 +61,7 @@ declare global {
                 };
             };
 
-            type Unsuspend = {
+            type Restore = {
                 context: Extract.Meta;
                 actor: string;
                 input: {

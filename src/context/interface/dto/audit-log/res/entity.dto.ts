@@ -1,10 +1,11 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { UnknownType } from "@mikro-orm/core";
-import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { IdentityActionType, IdentityEntityType } from "~context/enums";
 import { Validator } from "~common/validator";
 
+@ApiSchema({ name: "AuditLog" })
 export class AuditLogDTO {
     @Expose()
     @Validator.IsUUID()

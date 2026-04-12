@@ -33,7 +33,7 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
         await this.transactional.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.GENERATE_RECOVERY_CODES,
+                actionType: IdentityActionType.REGENERATE_RECOVERY_CODES,
                 entityType: IdentityEntityType.ACCOUNT,
                 ...props,
             },
