@@ -4,61 +4,85 @@ declare global {
     namespace Commands {
         namespace Identifier {
             interface Contract {
-                toggleNotifications: (props: ToggleNotifications) => Promise<MessageResult>;
-                togglePublicContact: (props: TogglePublicContact) => Promise<MessageResult>;
-                verify: (props: Verify) => Promise<MessageResult>;
-                create: (props: Create) => Promise<MessageResult>;
-                resend: (props: Resend) => Promise<MessageResult>;
-                purge: (props: Purge) => Promise<MessageResult>;
+                toggleNotifications: (props: ToggleNotifications.Props) => Promise<ToggleNotifications.Result>;
+                togglePublicContact: (props: TogglePublicContact.Props) => Promise<ToggleNotifications.Result>;
+                verify: (props: Verify.Props) => Promise<MessageResult>;
+                create: (props: Create.Props) => Promise<Create.Result>;
+                resend: (props: Resend.Props) => Promise<Resend.Pesult>;
+                purge: (props: Purge.Props) => Promise<Purge.Result>;
             }
 
-            type Create = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    type: IdentifierType;
-                    identifier: string;
+            namespace Create {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        type: IdentifierType;
+                        identifier: string;
+                    };
                 };
-            };
 
-            type Resend = {
-                actor: string;
-                input: {
-                    identifier: string;
-                };
-            };
+                type Result = MessageResult;
+            }
 
-            type Verify = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    code: string;
+            namespace Resend {
+                type Props = {
+                    actor: string;
+                    input: {
+                        identifier: string;
+                    };
                 };
-            };
 
-            type Purge = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    identifier: string;
-                };
-            };
+                type Pesult = MessageResult;
+            }
 
-            type ToggleNotifications = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    identifier: string;
+            namespace Verify {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        code: string;
+                    };
                 };
-            };
 
-            type TogglePublicContact = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    identifier: string;
+                type Result = MessageResult;
+            }
+
+            namespace Purge {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        identifier: string;
+                    };
                 };
-            };
+
+                type Result = MessageResult;
+            }
+
+            namespace ToggleNotifications {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        identifier: string;
+                    };
+                };
+
+                type Result = MessageResult;
+            }
+
+            namespace TogglePublicContact {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        identifier: string;
+                    };
+                };
+
+                type Result = MessageResult;
+            }
 
             type SendOTP = {
                 identifier: string;

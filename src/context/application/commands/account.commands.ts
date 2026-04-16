@@ -39,7 +39,7 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async signup(props: Commands.Account.Signup): Promise<MessageResult> {
+    public async signup(props: Commands.Account.Signup.Props): Promise<Commands.Account.Signup.Result> {
         const hashedPassword = await this.hashingService.hash({ value: props.input.password });
         const type = isEmail(props.input.identifier) ? IdentifierType.EMAIL : IdentifierType.PHONE;
 
@@ -73,7 +73,7 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.SIGNED_UP` };
     }
 
-    public async resend(props: Commands.Account.Resend): Promise<MessageResult> {
+    public async resend(props: Commands.Account.Resend.Props): Promise<Commands.Account.Resend.Result> {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             where: { value: props.input.identifier },
         });
@@ -141,7 +141,7 @@ export class AccountCommands implements Commands.Account.Contract {
         };
     }
 
-    public async deactivate(props: Commands.Account.Deactivate): Promise<MessageResult> {
+    public async deactivate(props: Commands.Account.Deactivate.Props): Promise<Commands.Account.Deactivate.Result> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -165,7 +165,7 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.DEACTIVATED` };
     }
 
-    public async suspend(props: Commands.Account.Suspend): Promise<MessageResult> {
+    public async suspend(props: Commands.Account.Suspend.Props): Promise<Commands.Account.Suspend.Result> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -189,7 +189,7 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.SUSPENDED` };
     }
 
-    public async restore(props: Commands.Account.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.Account.Restore.Props): Promise<Commands.Account.Restore.Result> {
         await this.transactional.run({
             resource: this.resource,
             audit: {

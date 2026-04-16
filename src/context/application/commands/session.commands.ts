@@ -75,7 +75,7 @@ export class SessionCommands implements Commands.Session.Contract {
         return { message: `${this.dictionaryPath}.REFRESHED`, accessToken, refreshToken };
     }
 
-    public async revoke(props: Commands.Session.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.Session.Revoke.Props): Promise<Commands.Session.Revoke.Result> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -102,7 +102,7 @@ export class SessionCommands implements Commands.Session.Contract {
         return { message: `${this.dictionaryPath}.REVOKED` };
     }
 
-    public async revokeAll(props: Commands.Session.RevokeAll): Promise<MessageResult> {
+    public async revokeAll(props: Commands.Session.RevokeAll.Props): Promise<Commands.Session.RevokeAll.Result> {
         await this.transactional.run({
             resource: this.resource,
             audit: {

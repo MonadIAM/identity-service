@@ -19,7 +19,7 @@ export class ProfileCommands implements Commands.Profile.Contract {
         private readonly profileService: Services.Profile.Contract,
     ) {}
 
-    public async update(props: Commands.Profile.Update): Promise<MessageResult> {
+    public async update(props: Commands.Profile.Update.Props): Promise<Commands.Profile.Update.Result> {
         await this.transactional.run({
             resource: this.resource,
             audit: {

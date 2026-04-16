@@ -5,7 +5,7 @@ import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "IdentifierFilters" })
-export class FiltersDTO implements Repositories.Identifier.Filters {
+export class FiltersDTO implements Adapters.Identifier.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

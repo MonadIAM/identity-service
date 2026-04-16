@@ -1,4 +1,11 @@
+export { PasswordHistoryAdapter } from "./password-history.adapter";
+export { RecoveryCodeAdapter } from "./recovery-code.adapter";
+export { SecondFactorAdapter } from "./second-factor.adapter";
+export { MasterCodeAdapter } from "./master-code.adapter";
 export { IdentifierAdapter } from "./identifier.adapter";
 export { ChangeLogAdapter } from "./change-log.adapter";
 export { AuditLogAdapter } from "./audit-log.adapter";
+export { PasswordAdapter } from "./password.adapter";
 export { AccountAdapter } from "./account.adapter";
+export { ProfileAdapter } from "./profile.adapter";
+export { SessionAdapter } from "./session.adapter";

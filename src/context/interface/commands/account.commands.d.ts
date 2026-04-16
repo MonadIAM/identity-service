@@ -4,28 +4,61 @@ declare global {
     namespace Commands {
         namespace Account {
             interface Contract {
-                deactivate: (props: Deactivate) => Promise<MessageResult>;
+                deactivate: (props: Deactivate.Props) => Promise<Deactivate.Result>;
+                suspend: (props: Suspend.Props) => Promise<Suspend.Result>;
+                restore: (props: Restore.Props) => Promise<Restore.Result>;
+                signup: (props: Signup.Props) => Promise<Signup.Result>;
                 verify: (props: Verify.Props) => Promise<Verify.Result>;
-                restore: (props: Restore) => Promise<MessageResult>;
-                suspend: (props: Suspend) => Promise<MessageResult>;
-                signup: (props: Signup) => Promise<MessageResult>;
-                resend: (props: Resend) => Promise<MessageResult>;
+                resend: (props: Resend.Props) => Promise<Resend.Result>;
             }
 
-            type Signup = {
-                context: Extract.Meta;
-                input: {
-                    identifier: string;
-                    password: string;
-                    name: string;
+            namespace Deactivate {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
                 };
-            };
 
-            type Resend = {
-                input: {
-                    identifier: string;
+                type Result = MessageResult;
+            }
+
+            namespace Suspend {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        account: string;
+                        reason: string;
+                    };
                 };
-            };
+
+                type Result = MessageResult;
+            }
+
+            namespace Restore {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        account: string;
+                        reason: string;
+                    };
+                };
+
+                type Result = MessageResult;
+            }
+
+            namespace Signup {
+                type Props = {
+                    context: Extract.Meta;
+                    input: {
+                        identifier: string;
+                        password: string;
+                        name: string;
+                    };
+                };
+
+                type Result = MessageResult;
+            }
 
             namespace Verify {
                 type Props = {
@@ -41,33 +74,20 @@ declare global {
                     };
             }
 
+            namespace Resend {
+                type Props = {
+                    input: {
+                        identifier: string;
+                    };
+                };
+
+                type Result = MessageResult;
+            }
+
             type SendOTP = {
                 type: IdentifierType;
                 account: string;
                 value: string;
-            };
-
-            type Deactivate = {
-                context: Extract.Meta;
-                actor: string;
-            };
-
-            type Suspend = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    account: string;
-                    reason: string;
-                };
-            };
-
-            type Restore = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    account: string;
-                    reason: string;
-                };
             };
         }
     }

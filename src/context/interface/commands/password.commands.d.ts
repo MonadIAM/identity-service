@@ -1,42 +1,58 @@
 declare namespace Commands {
     namespace Password {
         interface Contract {
-            requestOTP: (props: RequestOTP) => Promise<MessageResult>;
-            change: (props: Change) => Promise<MessageResult>;
-            resetByOTP: (props: ResetByOTP) => Promise<MessageResult>;
-            resetByRecoveryCode: (props: ResetByRecoveryCode) => Promise<MessageResult>;
+            resetByRecoveryCode: (props: ResetByRecoveryCode.Props) => Promise<ResetByRecoveryCode.Result>;
+            requestOTP: (props: RequestOTP.Props) => Promise<RequestOTP.Result>;
+            resetByOTP: (props: ResetByOTP.Props) => Promise<ResetByOTP.Result>;
+            change: (props: Change.Props) => Promise<Change.Result>;
         }
 
-        type Change = {
-            context: Extract.Meta;
-            actor: string;
-            input: {
-                currentPassword: string;
-                newPassword: string;
+        namespace ResetByRecoveryCode {
+            type Props = {
+                context: Extract.Meta;
+                input: {
+                    identifier: string;
+                    password: string;
+                    code: string;
+                };
             };
-        };
 
-        type RequestOTP = {
-            input: {
-                identifier: string;
-            };
-        };
+            type Result = MessageResult;
+        }
 
-        type ResetByOTP = {
-            context: Extract.Meta;
-            input: {
-                password: string;
-                code: string;
+        namespace RequestOTP {
+            type Props = {
+                input: {
+                    identifier: string;
+                };
             };
-        };
 
-        type ResetByRecoveryCode = {
-            context: Extract.Meta;
-            input: {
-                identifier: string;
-                password: string;
-                code: string;
+            type Result = MessageResult;
+        }
+
+        namespace ResetByOTP {
+            type Props = {
+                context: Extract.Meta;
+                input: {
+                    password: string;
+                    code: string;
+                };
             };
-        };
+
+            type Result = MessageResult;
+        }
+
+        namespace Change {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    currentPassword: string;
+                    newPassword: string;
+                };
+            };
+
+            type Result = MessageResult;
+        }
     }
 }

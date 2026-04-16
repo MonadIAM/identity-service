@@ -5,7 +5,7 @@ import { Expose } from "class-transformer";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "AccountSort" })
-export class SortDTO implements Repositories.Account.Sort {
+export class SortDTO implements Adapters.Account.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

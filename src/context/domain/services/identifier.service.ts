@@ -13,7 +13,7 @@ export class IdentifierService implements Services.Identifier.Contract {
         private readonly identifierRepository: Repositories.Identifier.Contract,
     ) {}
 
-    public create({ transaction, input }: Services.Identifier.Create): Identifier {
+    public create({ transaction, input }: Services.Identifier.Create.Props): Services.Identifier.Create.Result {
         const identifierEntity = new Identifier({
             providerUserId: input.identifier.providerUserId,
             provider: input.identifier.provider,

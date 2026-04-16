@@ -3,17 +3,25 @@ declare namespace Queries {
         type Entity = Repositories.Session.Entity;
 
         interface Contract {
-            findMany: (props: FindMany) => Promise<[Entity[], number]>;
-            getCurrent: (props: GetCurrent) => Promise<Entity>;
+            getCurrent: (props: GetCurrent.Props) => Promise<GetCurrent.Result>;
+            findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
         }
 
-        type GetCurrent = {
-            account: string;
-            session: string;
-        };
+        namespace GetCurrent {
+            type Props = {
+                account: string;
+                session: string;
+            };
 
-        type FindMany = {
-            account: string;
-        };
+            type Result = Entity;
+        }
+
+        namespace FindMany {
+            type Props = {
+                account: string;
+            };
+
+            type Result = [Entity[], number];
+        }
     }
 }

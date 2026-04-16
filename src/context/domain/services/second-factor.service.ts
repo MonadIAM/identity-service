@@ -4,7 +4,7 @@ import { MasterCode, SecondFactor } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorService implements Services.SecondFactor.Contract {
-    public create({ transaction, input }: Services.SecondFactor.Create): SecondFactor {
+    public create({ transaction, input }: Services.SecondFactor.Create.Props): Services.SecondFactor.Create.Result {
         const factor = new SecondFactor({
             account: input.account,
             secret: input.secret,

@@ -4,7 +4,7 @@ import { Account, Identifier, Password, Profile } from "~context/domain/entities
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountService implements Services.Account.Contract {
-    public create({ transaction, input }: Services.Account.Create): Account {
+    public create({ transaction, input }: Services.Account.Create.Props): Services.Account.Create.Result {
         const account = new Account({
             status: input.status,
             subject: input.subject,

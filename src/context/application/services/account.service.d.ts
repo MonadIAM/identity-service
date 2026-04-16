@@ -7,7 +7,7 @@ declare global {
     namespace Services {
         namespace Account {
             interface Contract {
-                create: (props: Create) => AccountEntity;
+                create: (props: Create.Props) => Create.Result;
                 deactivate: (props: Deactivate) => void;
                 unsuspend: (props: Unsuspend) => void;
                 suspend: (props: Suspend) => void;
@@ -15,17 +15,21 @@ declare global {
                 verify: (props: Verify) => void;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    primaryIdentifier: Omit<Entities.Identifier.ConstructorProps, "account">;
-                    additionalIdentifier?: Omit<Entities.Identifier.ConstructorProps, "account">;
-                    profile: Omit<Entities.Profile.ConstructorProps, "account">;
-                    subject: AccountSubject;
-                    status: AccountStatus;
-                    password?: string;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        additionalIdentifier?: Omit<Entities.Identifier.ConstructorProps, "account">;
+                        primaryIdentifier: Omit<Entities.Identifier.ConstructorProps, "account">;
+                        profile: Omit<Entities.Profile.ConstructorProps, "account">;
+                        subject: AccountSubject;
+                        status: AccountStatus;
+                        password?: string;
+                    };
                 };
-            };
+
+                type Result = AccountEntity;
+            }
 
             type Deactivate = {
                 transaction: EntityManager;

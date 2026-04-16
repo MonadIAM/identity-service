@@ -5,7 +5,7 @@ import { Expose } from "class-transformer";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "ChangeLogSort" })
-export class SortDTO implements Repositories.ChangeLog.Sort {
+export class SortDTO implements Adapters.ChangeLog.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

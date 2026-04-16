@@ -5,7 +5,7 @@ import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "AccountFilters" })
-export class FiltersDTO implements Repositories.Account.Filters {
+export class FiltersDTO implements Adapters.Account.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

@@ -1,7 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { Account } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountQueries implements Queries.Account.Contract {
@@ -15,14 +14,14 @@ export class AccountQueries implements Queries.Account.Contract {
         private readonly accountRepository: Repositories.Account.Contract,
     ) {}
 
-    public findUnique(props: Queries.Account.FindUnique): Promise<Account> {
+    public findUnique(props: Queries.Account.FindUnique.Props): Promise<Queries.Account.FindUnique.Result> {
         return this.accountRepository.findUniqueOrThrow({
             options: { populate: this.populate[props.view] },
             where: { id: props.account },
         });
     }
 
-    public findMany(props: Queries.Account.FindMany): Promise<[Account[], number]> {
+    public findMany(props: Queries.Account.FindMany.Props): Promise<Queries.Account.FindMany.Result> {
         return this.accountRepository.findMany({
             options: { populate: this.populate[props.view] },
             pagination: props.pagination,

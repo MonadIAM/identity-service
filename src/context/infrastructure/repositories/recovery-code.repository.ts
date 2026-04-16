@@ -1,55 +1,25 @@
-import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
+import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 
+import { RecoveryCodeAdapter } from "~context/infrastructure/adapters";
 import { RepositoryException } from "~common/exceptions";
 import { RecoveryCode } from "~context/domain/entities";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RecoveryCodeRepository implements Repositories.RecoveryCode.Contract {
-    private readonly resource = "RecoveryCode";
-
+export class RecoveryCodeRepository
+    extends BaseRepository<RecoveryCode, Adapters.RecoveryCode.Types>({
+        Adapter: RecoveryCodeAdapter,
+        Entity: RecoveryCode,
+    })
+    implements Repositories.RecoveryCode.Contract
+{
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-    ) {}
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RecoveryCode.FindUnique<P, F>): Promise<Nullable<Loaded<RecoveryCode, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(RecoveryCode, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RecoveryCode.FindUniqueOrThrow<P, F>): Promise<Loaded<RecoveryCode, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(RecoveryCode, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.RecoveryCode.Find<P, F>,
-    ): Promise<Loaded<RecoveryCode, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(RecoveryCode, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
+        protected readonly readManager: EntityManager,
+    ) {
+        super();
     }
 
     public async getStatus({
@@ -72,7 +42,7 @@ export class RecoveryCodeRepository implements Repositories.RecoveryCode.Contrac
                 used: Number(used),
             };
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 }

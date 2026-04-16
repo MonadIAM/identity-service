@@ -4,8 +4,8 @@ import { AccountSubject, AccountStatus, IdentifierType } from "~context/enums";
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { Account } from "~context/domain/entities";
 
-export class AccountAdapter {
-    protected buildWhereORM(filters: Repositories.Account.Filters, basic: ObjectQuery<Account> = {}): ObjectQuery<Account> {
+export class AccountAdapter implements Adapters.Contract<Account, Adapters.Account.Types> {
+    public buildWhereORM(filters: Adapters.Account.Filters, basic: ObjectQuery<Account> = {}): ObjectQuery<Account> {
         const where: ObjectQuery<Account> = basic;
 
         if (filters.id) {
@@ -59,8 +59,8 @@ export class AccountAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.Account.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.Account.Sort,
         pagination: Pagination,
         basic: FindOptions<Account, P, F> = {},
     ): FindOptions<Account, P, F> {

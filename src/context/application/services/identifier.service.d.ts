@@ -8,18 +8,22 @@ declare global {
             interface Contract {
                 toggleNotifications: (props: ToggleNotifications) => void;
                 togglePublicContact: (props: TogglePublicContact) => void;
-                create: (props: Create) => IdentifierEntity;
+                create: (props: Create.Props) => Create.Result;
                 purge: (props: Purge) => Promise<void>;
                 verify: (props: Verify) => void;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
-                    account: AccountEntity;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
+                        account: AccountEntity;
+                    };
                 };
-            };
+
+                type Result = IdentifierEntity;
+            }
 
             type Purge = {
                 transaction: EntityManager;

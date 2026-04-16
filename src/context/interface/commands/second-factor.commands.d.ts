@@ -1,10 +1,10 @@
 declare namespace Commands {
     namespace SecondFactor {
         interface Contract {
-            verify: (props: Verify.Props) => Promise<Verify.Result>;
             create: (props: Create.Props) => Promise<Create.Result>;
-            purge: (props: Purge) => Promise<MessageResult>;
-            reset: (props: Reset) => Promise<MessageResult>;
+            verify: (props: Verify.Props) => Promise<Verify.Result>;
+            purge: (props: Purge.Props) => Promise<Purge.Result>;
+            reset: (props: Reset.Props) => Promise<Reset.Result>;
         }
 
         namespace Create {
@@ -36,20 +36,28 @@ declare namespace Commands {
             };
         }
 
-        type Purge = {
-            context: Extract.Meta;
-            actor: string;
-            input: {
-                factor: string;
+        namespace Purge {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    factor: string;
+                };
             };
-        };
 
-        type Reset = {
-            context: Extract.Meta;
-            input: {
-                identifier: string;
-                code: string;
+            type Result = MessageResult;
+        }
+
+        namespace Reset {
+            type Props = {
+                context: Extract.Meta;
+                input: {
+                    identifier: string;
+                    code: string;
+                };
             };
-        };
+
+            type Result = MessageResult;
+        }
     }
 }

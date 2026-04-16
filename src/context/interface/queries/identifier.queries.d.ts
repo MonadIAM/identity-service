@@ -6,28 +6,40 @@ declare global {
             type Entity = Repositories.Identifier.Entity;
 
             interface Contract {
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
-                findMany: (props: FindMany) => Promise<[Entity[], number]>;
-                findUnique: (props: FindUnique) => Promise<Entity>;
+                getLookupList: (props: GetLookupList.Props) => Promise<GetLookupList.Result>;
+                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
             }
 
-            type FindUnique = {
-                view: ResponseViewType;
-                identifier: string;
-            };
+            namespace GetLookupList {
+                type Props = {
+                    pagination: Pagination;
+                    account: string;
+                    term: string;
+                };
 
-            type FindMany = {
-                filters: Repositories.Identifier.Filters;
-                sort: Repositories.Identifier.Sort;
-                view: ResponseViewType;
-                pagination: Pagination;
-            };
+                type Result = [Entity[], number];
+            }
 
-            type GetLookupList = {
-                pagination: Pagination;
-                account: string;
-                term: string;
-            };
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    identifier: string;
+                };
+
+                type Result = Entity;
+            }
+
+            namespace FindMany {
+                type Props = {
+                    filters: Adapters.Identifier.Filters;
+                    sort: Adapters.Identifier.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                };
+
+                type Result = [Entity[], number];
+            }
         }
     }
 }

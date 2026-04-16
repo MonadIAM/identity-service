@@ -109,7 +109,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         };
     }
 
-    public async purge(props: Commands.SecondFactor.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.SecondFactor.Purge.Props): Promise<Commands.SecondFactor.Purge.Result> {
         await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -137,7 +137,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         return { message: `${this.dictionaryPath}.PURGED` };
     }
 
-    public async reset(props: Commands.SecondFactor.Reset): Promise<MessageResult> {
+    public async reset(props: Commands.SecondFactor.Reset.Props): Promise<Commands.SecondFactor.Reset.Result> {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.masterCode", "account.secondFactors"] },
             where: { value: props.input.identifier },

@@ -5,8 +5,8 @@ import { Identifier } from "~context/domain/entities";
 import { IdentifierType } from "~context/enums";
 
 export class IdentifierAdapter {
-    protected buildWhereORM(
-        filters: Repositories.Identifier.Filters,
+    public buildWhereORM(
+        filters: Adapters.Identifier.Filters,
         basic: ObjectQuery<Identifier> = {},
     ): ObjectQuery<Identifier> {
         const where: ObjectQuery<Identifier> = basic;
@@ -54,8 +54,8 @@ export class IdentifierAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.Identifier.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.Identifier.Sort,
         pagination: Pagination,
         basic: FindOptions<Identifier, P, F> = {},
     ): FindOptions<Identifier, P, F> {

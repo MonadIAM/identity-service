@@ -46,7 +46,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         this.historyCheckDays = this.configService.getOrThrow<number>("PASSWORD_HISTORY_CHECK_DAYS");
     }
 
-    public async change(props: Commands.Password.Change): Promise<MessageResult> {
+    public async change(props: Commands.Password.Change.Props): Promise<Commands.Password.Change.Result> {
         return await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -88,7 +88,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         });
     }
 
-    public async requestOTP(props: Commands.Password.RequestOTP): Promise<MessageResult> {
+    public async requestOTP(props: Commands.Password.RequestOTP.Props): Promise<Commands.Password.RequestOTP.Result> {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account"] },
             where: { value: props.input.identifier },
@@ -115,7 +115,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         return { message: `${this.dictionaryPath}.RESET_CODE_SENT` };
     }
 
-    public async resetByOTP(props: Commands.Password.ResetByOTP): Promise<MessageResult> {
+    public async resetByOTP(props: Commands.Password.ResetByOTP.Props): Promise<Commands.Password.ResetByOTP.Result> {
         const cachedAccount = await this.otpCacheService.getReset({ code: props.input.code });
 
         if (!cachedAccount) {
@@ -156,7 +156,9 @@ export class PasswordCommands implements Commands.Password.Contract {
         });
     }
 
-    public async resetByRecoveryCode(props: Commands.Password.ResetByRecoveryCode): Promise<MessageResult> {
+    public async resetByRecoveryCode(
+        props: Commands.Password.ResetByRecoveryCode.Props,
+    ): Promise<Commands.Password.ResetByRecoveryCode.Result> {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             options: { populate: ["account.password", "account.recoveryCodes"] },
             where: { value: props.input.identifier },

@@ -1,66 +1,23 @@
-import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
+import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { RepositoryException } from "~common/exceptions";
+import { SessionAdapter } from "~context/infrastructure/adapters";
 import { Session } from "~context/domain/entities";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class SessionRepository implements Repositories.Session.Contract {
-    private readonly resource = "Session";
-
+export class SessionRepository
+    extends BaseRepository<Session, Adapters.Session.Types>({
+        Adapter: SessionAdapter,
+        Entity: Session,
+    })
+    implements Repositories.Session.Contract
+{
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-    ) {}
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Session.FindUnique<P, F>): Promise<Nullable<Loaded<Session, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(Session, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Session.FindUniqueOrThrow<P, F>): Promise<Loaded<Session, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(Session, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.Session.Find<P, F>,
-    ): Promise<Loaded<Session, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(Session, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.Session.FindMany<P, F>,
-    ): Promise<[Loaded<Session, P, F>[], number]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findAndCount(Session, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
+        protected readonly readManager: EntityManager,
+    ) {
+        super();
     }
 }
