@@ -10,34 +10,34 @@ export class ChangeLogDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public auditEntry!: string;
+    declare public auditEntry: string;
 
     @Expose()
     @Validator.IsEnum(ChangeSetType)
     @ApiProperty({ required: true, enum: ChangeSetType, enumName: "ChangeSetType" })
-    public changeType!: ChangeSetType;
+    declare public changeType: ChangeSetType;
 
     @Expose()
     @Validator.IsEnum(IdentityEntityType)
     @ApiProperty({ required: true, enum: IdentityEntityType, enumName: "IdentityEntityType" })
-    public entityType!: IdentityEntityType;
+    declare public entityType: IdentityEntityType;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public entity!: string;
+    declare public entity: string;
 
     @Expose()
     @ApiProperty({ required: true, type: UnknownType })
-    public delta!: UnknownType;
+    declare public delta: UnknownType;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 }

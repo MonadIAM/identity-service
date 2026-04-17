@@ -8,5 +8,5 @@ export class ByPasswordBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public password!: string;
+    declare public password: string;
 }

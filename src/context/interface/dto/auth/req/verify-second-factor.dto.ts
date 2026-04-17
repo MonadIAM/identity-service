@@ -8,5 +8,5 @@ export class VerifySecondFactorBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public code!: string;
+    declare public code: string;
 }

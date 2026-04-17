@@ -8,5 +8,5 @@ export class AuthorizeBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public provider!: string;
+    declare public provider: string;
 }

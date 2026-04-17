@@ -8,10 +8,10 @@ export class ChangeBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public currentPassword!: string;
+    declare public currentPassword: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public newPassword!: string;
+    declare public newPassword: string;
 }

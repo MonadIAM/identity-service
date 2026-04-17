@@ -8,8 +8,8 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
     private readonly accessTTL: string;
     private readonly refreshTTL: string;
 
-    private privateKey!: CryptoKey;
-    private publicKey!: CryptoKey;
+    declare public privateKey: CryptoKey;
+    declare public publicKey: CryptoKey;
 
     public constructor(private readonly config: ConfigService) {
         this.refreshTTL = this.config.getOrThrow<string>("JWT_REFRESH_TTL");

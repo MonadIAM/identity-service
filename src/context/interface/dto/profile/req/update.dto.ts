@@ -8,15 +8,15 @@ export class UpdateBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public displayName!: string;
+    declare public displayName: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public timeZone!: string;
+    declare public timeZone: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public locale!: string;
+    declare public locale: string;
 }

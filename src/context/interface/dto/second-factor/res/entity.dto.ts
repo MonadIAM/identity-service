@@ -10,34 +10,34 @@ export class SecondFactorDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public type!: string;
+    declare public type: string;
 
     @Expose()
     @ApiProperty({ required: false, type: String })
-    public name?: string;
+    declare public name?: string;
 
     @Expose()
     @Type(() => AccountDTO)
     @ApiProperty({ required: false, type: AccountDTO })
-    public account!: AccountDTO;
+    declare public account: AccountDTO;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })
-    public lastUsedAt?: Date;
+    declare public lastUsedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })
-    public confirmedAt?: Date;
+    declare public confirmedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 }

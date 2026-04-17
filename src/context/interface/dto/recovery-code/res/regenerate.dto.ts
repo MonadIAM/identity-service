@@ -10,5 +10,5 @@ export class RegenerateResultDTO extends SuccessMessageDTO {
     @Validator.IsArray()
     @Validator.IsString({ each: true })
     @ApiProperty({ required: true, type: String })
-    public codes!: string[];
+    declare public codes: string[];
 }

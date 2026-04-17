@@ -9,5 +9,5 @@ export class CreateResultDTO extends SuccessMessageDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public uri!: string;
+    declare public uri: string;
 }

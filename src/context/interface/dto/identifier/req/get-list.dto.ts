@@ -16,7 +16,7 @@ export class GetListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -24,7 +24,7 @@ export class GetListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => FiltersDTO)
     @ApiProperty({ required: true, type: FiltersDTO })
-    public filters!: FiltersDTO;
+    declare public filters: FiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -32,5 +32,5 @@ export class GetListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => SortDTO)
     @ApiProperty({ required: true, type: SortDTO })
-    public sort!: SortDTO;
+    declare public sort: SortDTO;
 }

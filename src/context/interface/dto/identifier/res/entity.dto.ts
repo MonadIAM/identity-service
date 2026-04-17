@@ -9,44 +9,44 @@ export class IdentifierDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsEnum(IdentifierType)
     @ApiProperty({ required: true, enum: IdentifierType, enumName: "IdentifierType" })
-    public type!: IdentifierType;
+    declare public type: IdentifierType;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public value!: string;
+    declare public value: string;
 
     @Expose()
     @ApiProperty({ required: false, type: String })
-    public provider?: string;
+    declare public provider?: string;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isVerified!: boolean;
+    declare public isVerified: boolean;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public receiveNotifications!: boolean;
+    declare public receiveNotifications: boolean;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isPublicContact!: boolean;
+    declare public isPublicContact: boolean;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })
-    public verifiedAt?: Date;
+    declare public verifiedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 }

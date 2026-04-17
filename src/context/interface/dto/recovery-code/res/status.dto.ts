@@ -8,15 +8,15 @@ export class StatusResultDTO {
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public remaining!: number;
+    declare public remaining: number;
 
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public total!: number;
+    declare public total: number;
 
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public used!: number;
+    declare public used: number;
 }

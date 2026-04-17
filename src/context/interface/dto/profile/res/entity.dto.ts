@@ -8,22 +8,22 @@ export class ProfileDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public displayName!: string;
+    declare public displayName: string;
 
     @Expose()
     @ApiProperty({ required: false, type: String })
-    public pictureUrl?: string;
+    declare public pictureUrl?: string;
 
     @Expose()
     @ApiProperty({ required: false, type: String })
-    public locale?: string;
+    declare public locale?: string;
 
     @Expose()
     @ApiProperty({ required: false, type: String })
-    public timeZone?: string;
+    declare public timeZone?: string;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })
-    public updatedAt?: Date;
+    declare public updatedAt?: Date;
 }

@@ -7,76 +7,76 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public SERVICE_NAME!: string;
+    declare public SERVICE_NAME: string;
 
     @Validator.IsEnum(NodeEnv)
-    public NODE_ENV!: NodeEnv;
+    declare public NODE_ENV: NodeEnv;
 
     @Validator.IsPositiveInt()
-    public API_VERSION!: number;
+    declare public API_VERSION: number;
 
     @Validator.IsString()
-    public APP_BASE_IMAGE!: string;
+    declare public APP_BASE_IMAGE: string;
 
     @Validator.IsString()
-    public APP_HOST!: string;
+    declare public APP_HOST: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public APP_PORT!: number;
+    declare public APP_PORT: number;
 
     @Validator.IsPositiveInt()
-    public THROTTLE_LIMIT!: number;
+    declare public THROTTLE_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public THROTTLE_TTL!: number;
+    declare public THROTTLE_TTL: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - common
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public POSTGRES_IMAGE!: string;
+    declare public POSTGRES_IMAGE: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRES_PORT!: number;
+    declare public POSTGRES_PORT: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRES_REPLICA_PORT!: number;
+    declare public POSTGRES_REPLICA_PORT: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRES_CONTAINER_PORT!: number;
+    declare public POSTGRES_CONTAINER_PORT: number;
 
     @Validator.IsString()
-    public POSTGRES_USER!: string;
+    declare public POSTGRES_USER: string;
 
     @Validator.IsString()
-    public POSTGRES_PASSWORD!: string;
+    declare public POSTGRES_PASSWORD: string;
 
     @Validator.IsString()
-    public POSTGRES_DB!: string;
+    declare public POSTGRES_DB: string;
 
     @Validator.IsBoolean()
-    public POSTGRES_SSL!: boolean;
+    declare public POSTGRES_SSL: boolean;
 
     @Validator.IsBoolean()
-    public POSTGRES_SSL_REJECT_UNAUTHORIZED!: boolean;
+    declare public POSTGRES_SSL_REJECT_UNAUTHORIZED: boolean;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRES_POOL_IDLE_MS!: number;
+    declare public POSTGRES_POOL_IDLE_MS: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRES_POOL_MAX!: number;
+    declare public POSTGRES_POOL_MAX: number;
 
     @Validator.IsBoolean()
-    public POSTGRES_LOGGING!: boolean;
+    declare public POSTGRES_LOGGING: boolean;
 
     @Validator.IsBoolean()
-    public POSTGRES_CQRS_ENABLED!: boolean;
+    declare public POSTGRES_CQRS_ENABLED: boolean;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - write-side
@@ -84,23 +84,23 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     @Validator.IsOptional()
-    public POSTGRES_HOST?: string;
+    declare public POSTGRES_HOST?: string;
 
     @Validator.IsString()
     @Validator.IsOptional()
-    public POSTGRES_WRITE_HOST?: string;
+    declare public POSTGRES_WRITE_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     @Validator.IsOptional()
-    public POSTGRES_WRITE_PORT?: number;
+    declare public POSTGRES_WRITE_PORT?: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRES_WRITE_POOL_MAX!: number;
+    declare public POSTGRES_WRITE_POOL_MAX: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRES_WRITE_POOL_IDLE_MS!: number;
+    declare public POSTGRES_WRITE_POOL_IDLE_MS: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - read-side
@@ -108,79 +108,79 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     @Validator.IsOptional()
-    public POSTGRES_READ_HOST?: string;
+    declare public POSTGRES_READ_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     @Validator.IsOptional()
-    public POSTGRES_READ_PORT?: number;
+    declare public POSTGRES_READ_PORT?: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRES_READ_POOL_MAX!: number;
+    declare public POSTGRES_READ_POOL_MAX: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRES_READ_POOL_IDLE_MS!: number;
+    declare public POSTGRES_READ_POOL_IDLE_MS: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - replication
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public POSTGRES_REPLICATION_USER!: string;
+    declare public POSTGRES_REPLICATION_USER: string;
 
     @Validator.IsString()
-    public POSTGRES_REPLICATION_PASSWORD!: string;
+    declare public POSTGRES_REPLICATION_PASSWORD: string;
 
     @Validator.IsString()
-    public POSTGRES_REPLICATION_SLOT!: string;
+    declare public POSTGRES_REPLICATION_SLOT: string;
 
     // ---------------------------------------------------------------------------
     // Redis
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public REDIS_IMAGE!: string;
+    declare public REDIS_IMAGE: string;
 
     @Validator.IsString()
     @Validator.IsOptional()
-    public REDIS_HOST?: string;
+    declare public REDIS_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public REDIS_PORT!: number;
+    declare public REDIS_PORT: number;
 
     @Validator.IsString()
-    public REDIS_PASSWORD!: string;
+    declare public REDIS_PASSWORD: string;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public REDIS_DB_CACHE!: number;
+    declare public REDIS_DB_CACHE: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public REDIS_DB_LIMITER!: number;
+    declare public REDIS_DB_LIMITER: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public REDIS_DB_QUEUE!: number;
+    declare public REDIS_DB_QUEUE: number;
 
     // ---------------------------------------------------------------------------
     // Kafka
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public KAFKA_BROKER!: string;
+    declare public KAFKA_BROKER: string;
 
     @Validator.IsPositiveInt()
-    public KAFKA_RETRY_ATTEMPTS!: number;
+    declare public KAFKA_RETRY_ATTEMPTS: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public KAFKA_RETRY_INITIAL_TIME!: number;
+    declare public KAFKA_RETRY_INITIAL_TIME: number;
 
     @Validator.IsString()
-    public DOCKER_NETWORK_NAME!: string;
+    declare public DOCKER_NETWORK_NAME: string;
 
     // ---------------------------------------------------------------------------
     // Auth & Security
@@ -188,114 +188,114 @@ export class EnvironmentVariablesDTO {
 
     // Hashing (Argon2)
     @Validator.IsString()
-    public ARGON2_TYPE!: string;
+    declare public ARGON2_TYPE: string;
 
     @Validator.IsPositiveInt()
-    public ARGON2_MEMORY_COST_KIB!: number;
+    declare public ARGON2_MEMORY_COST_KIB: number;
 
     @Validator.IsPositiveInt()
-    public ARGON2_HASH_LENGTH!: number;
+    declare public ARGON2_HASH_LENGTH: number;
 
     @Validator.IsPositiveInt()
-    public ARGON2_PARALLELISM!: number;
+    declare public ARGON2_PARALLELISM: number;
 
     @Validator.IsPositiveInt()
-    public ARGON2_TIME_COST!: number;
+    declare public ARGON2_TIME_COST: number;
 
     @Validator.IsPositiveInt()
-    public ARGON2_VERSION!: number;
+    declare public ARGON2_VERSION: number;
 
     // JWT (ES256)
     @Validator.IsString()
-    public JWT_ISSUER!: string;
+    declare public JWT_ISSUER: string;
 
     @Validator.IsString()
-    public JWT_ACCESS_TTL!: string;
+    declare public JWT_ACCESS_TTL: string;
 
     @Validator.IsString()
-    public JWT_REFRESH_TTL!: string;
+    declare public JWT_REFRESH_TTL: string;
 
     @Validator.IsString()
-    public JWT_PRIVATE_KEY!: string;
+    declare public JWT_PRIVATE_KEY: string;
 
     @Validator.IsString()
-    public JWT_PUBLIC_KEY!: string;
+    declare public JWT_PUBLIC_KEY: string;
 
     // Session
     @Validator.IsPositiveInt()
-    public SESSION_EXPIRY_DAYS!: number;
+    declare public SESSION_EXPIRY_DAYS: number;
 
     // Password
     @Validator.IsPositiveInt()
-    public PASSWORD_HISTORY_CHECK_DAYS!: number;
+    declare public PASSWORD_HISTORY_CHECK_DAYS: number;
 
     // ---------------------------------------------------------------------------
     // Cache TTLs
     // ---------------------------------------------------------------------------
 
     @Validator.IsPositiveInt()
-    public OTP_VERIFICATION_TTL!: number;
+    declare public OTP_VERIFICATION_TTL: number;
 
     @Validator.IsPositiveInt()
-    public OTP_LOGIN_TTL!: number;
+    declare public OTP_LOGIN_TTL: number;
 
     @Validator.IsPositiveInt()
-    public OTP_RESET_TTL!: number;
+    declare public OTP_RESET_TTL: number;
 
     @Validator.IsPositiveInt()
-    public OAUTH_STATE_TTL!: number;
+    declare public OAUTH_STATE_TTL: number;
 
     @Validator.IsPositiveInt()
-    public PENDING_2FA_TTL!: number;
+    declare public PENDING_2FA_TTL: number;
 
     // ---------------------------------------------------------------------------
     // OAuth Providers
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public OAUTH_GOOGLE_CLIENT_ID!: string;
+    declare public OAUTH_GOOGLE_CLIENT_ID: string;
 
     @Validator.IsString()
-    public OAUTH_GOOGLE_CLIENT_SECRET!: string;
+    declare public OAUTH_GOOGLE_CLIENT_SECRET: string;
 
     @Validator.IsString()
-    public OAUTH_GOOGLE_REDIRECT_URI!: string;
+    declare public OAUTH_GOOGLE_REDIRECT_URI: string;
 
     @Validator.IsString()
-    public OAUTH_GITHUB_CLIENT_ID!: string;
+    declare public OAUTH_GITHUB_CLIENT_ID: string;
 
     @Validator.IsString()
-    public OAUTH_GITHUB_CLIENT_SECRET!: string;
+    declare public OAUTH_GITHUB_CLIENT_SECRET: string;
 
     @Validator.IsString()
-    public OAUTH_GITHUB_REDIRECT_URI!: string;
+    declare public OAUTH_GITHUB_REDIRECT_URI: string;
 
     // ---------------------------------------------------------------------------
     // AWS (SES/SNS)
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public AWS_REGION!: string;
+    declare public AWS_REGION: string;
 
     @Validator.IsString()
-    public AWS_ACCESS_KEY_ID!: string;
+    declare public AWS_ACCESS_KEY_ID: string;
 
     @Validator.IsString()
-    public AWS_SECRET_ACCESS_KEY!: string;
+    declare public AWS_SECRET_ACCESS_KEY: string;
 
     @Validator.IsString()
-    public EMAIL_FROM!: string;
+    declare public EMAIL_FROM: string;
 
     // ---------------------------------------------------------------------------
     // BullMQ - cleanup
     // ---------------------------------------------------------------------------
 
     @Validator.IsPositiveInt()
-    public CLEANUP_BATCH_SIZE!: number;
+    declare public CLEANUP_BATCH_SIZE: number;
 
     @Validator.IsPositiveInt()
-    public PENDING_ACCOUNT_TTL_HOURS!: number;
+    declare public PENDING_ACCOUNT_TTL_HOURS: number;
 
     @Validator.IsPositiveInt()
-    public NOTIFICATION_TTL_DAYS!: number;
+    declare public NOTIFICATION_TTL_DAYS: number;
 }

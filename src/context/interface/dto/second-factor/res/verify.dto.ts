@@ -9,5 +9,5 @@ export class VerifyResultDTO extends SuccessMessageDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public code!: string;
+    declare public code: string;
 }

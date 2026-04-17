@@ -8,5 +8,5 @@ export class PurgeQueryDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public factor!: string;
+    declare public factor: string;
 }

@@ -9,5 +9,5 @@ export class RevokeBodyDTO {
     @Validator.IsArray()
     @Validator.IsString({ each: true })
     @ApiProperty({ required: true, type: [String] })
-    public sessions!: string[];
+    declare public sessions: string[];
 }

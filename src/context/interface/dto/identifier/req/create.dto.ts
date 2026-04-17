@@ -9,10 +9,10 @@ export class CreateBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public identifier!: string;
+    declare public identifier: string;
 
     @Expose()
     @Validator.IsEnum(IdentifierType)
     @ApiProperty({ required: true, enum: IdentifierType, enumName: "IdentifierType" })
-    public type!: IdentifierType;
+    declare public type: IdentifierType;
 }

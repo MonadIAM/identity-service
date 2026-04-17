@@ -8,10 +8,10 @@ export class RestoreBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public account!: string;
+    declare public account: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public reason!: string;
+    declare public reason: string;
 }

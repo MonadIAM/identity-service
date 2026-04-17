@@ -8,5 +8,5 @@ export class ToggleNotificationsBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public identifier!: string;
+    declare public identifier: string;
 }

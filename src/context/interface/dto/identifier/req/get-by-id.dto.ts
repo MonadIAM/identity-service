@@ -9,5 +9,5 @@ export class GetByIdQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public identifier!: string;
+    declare public identifier: string;
 }

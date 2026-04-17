@@ -10,34 +10,34 @@ export class SessionDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public userAgent!: string;
+    declare public userAgent: string;
 
     @Expose()
     @ApiProperty({ required: false, type: String })
-    public ip?: string;
+    declare public ip?: string;
 
     @Expose()
     @Type(() => AccountDTO)
     @ApiProperty({ required: false, type: AccountDTO })
-    public account!: AccountDTO;
+    declare public account: AccountDTO;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })
-    public lastRefreshedAt?: Date;
+    declare public lastRefreshedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })
-    public expiresAt?: Date;
+    declare public expiresAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 }
