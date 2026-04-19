@@ -10,6 +10,7 @@ import { SessionController } from "./session.controller";
 import { AccountController } from "./account.controller";
 import { OAuthController } from "./oauth.controller";
 import { AuthController } from "./auth.controller";
+import { JWKSController } from "./jwks.controller";
 
 export const CONTROLLERS = [
     ElevatedAccessController,
@@ -24,6 +25,7 @@ export const CONTROLLERS = [
     AccountController,
     OAuthController,
     AuthController,
+    JWKSController,
 ];
 
 export {
@@ -39,4 +41,5 @@ export {
     AccountController,
     OAuthController,
     AuthController,
+    JWKSController,
 };

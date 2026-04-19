@@ -26,11 +26,11 @@ export class AuthGuard implements CanActivate {
 
         if (token) {
             try {
-                const payload = await this.jwtService.decode(token);
+                const payload = await this.jwtService.verifyIgnoringExpiry(token);
 
                 request.session = {
+                    session: payload.sid as string,
                     account: payload.sub,
-                    session: payload.jti,
                 };
 
                 if (isPublic || (payload.exp ?? 0) > Math.floor(Date.now() / 1000)) {

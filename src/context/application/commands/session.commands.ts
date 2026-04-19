@@ -51,7 +51,7 @@ export class SessionCommands implements Commands.Session.Contract {
 
         const refreshToken = await this.jwtService.signRefreshToken({
             sub: session.account.id,
-            jti: session.id,
+            sid: session.id,
         });
 
         await this.transactional.run({
@@ -69,7 +69,7 @@ export class SessionCommands implements Commands.Session.Contract {
 
         const accessToken = await this.jwtService.signAccessToken({
             sub: session.account.id,
-            jti: session.id,
+            sid: session.id,
         });
 
         return { message: `${this.dictionaryPath}.REFRESHED`, accessToken, refreshToken };

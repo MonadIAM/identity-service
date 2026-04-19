@@ -28,7 +28,7 @@ export class SessionService implements Services.Session.Contract {
 
         const refreshToken = await this.jwtService.signRefreshToken({
             sub: input.account.id,
-            jti: session.id,
+            sid: session.id,
         });
 
         session.refresh(this.cryptoService.hashToken(refreshToken));
@@ -37,7 +37,7 @@ export class SessionService implements Services.Session.Contract {
 
         const accessToken = await this.jwtService.signAccessToken({
             sub: input.account.id,
-            jti: session.id,
+            sid: session.id,
         });
 
         return { accessToken, refreshToken };

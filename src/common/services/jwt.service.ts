@@ -1,15 +1,17 @@
-import { SignJWT, jwtVerify, JWTPayload, importPKCS8, importSPKI, CryptoKey } from "jose";
+import { SignJWT, jwtVerify, importPKCS8, importSPKI, exportJWK, JWTPayload, calculateJwkThumbprint } from "jose";
 import { Injectable, OnModuleInit, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { randomUUID } from "node:crypto";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
-    private readonly issuer: string;
-    private readonly accessTTL: string;
-    private readonly refreshTTL: string;
+    declare private signingKey: CommonServices.JWT.SigningKey;
 
-    declare public privateKey: CryptoKey;
-    declare public publicKey: CryptoKey;
+    private readonly refreshTTL: string;
+    private readonly accessTTL: string;
+    private readonly issuer: string;
+
+    private readonly algorithm = "ES256";
 
     public constructor(private readonly config: ConfigService) {
         this.refreshTTL = this.config.getOrThrow<string>("JWT_REFRESH_TTL");
@@ -21,46 +23,69 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
         const rawPrivate = this.config.getOrThrow<string>("JWT_PRIVATE_KEY").replace(/\\n/g, "\n");
         const rawPublic = this.config.getOrThrow<string>("JWT_PUBLIC_KEY").replace(/\\n/g, "\n");
 
-        this.privateKey = await importPKCS8(rawPrivate, "ES256");
-        this.publicKey = await importSPKI(rawPublic, "ES256");
+        const publicKey = await importSPKI(rawPublic, this.algorithm);
+
+        this.signingKey = {
+            kid: await calculateJwkThumbprint(await exportJWK(publicKey), "sha256"),
+            privateKey: await importPKCS8(rawPrivate, this.algorithm),
+            publicKey,
+        };
     }
 
     public signAccessToken(payload: JWTPayload): Promise<string> {
         return new SignJWT(payload)
-            .setProtectedHeader({ alg: "ES256" })
+            .setProtectedHeader({
+                kid: this.signingKey.kid,
+                alg: this.algorithm,
+            })
             .setIssuer(this.issuer)
             .setSubject(payload.sub!)
-            .setJti(payload.jti!)
+            .setJti(payload.jti ?? randomUUID())
             .setIssuedAt()
             .setExpirationTime(this.accessTTL)
-            .sign(this.privateKey);
+            .sign(this.signingKey.privateKey);
     }
 
     public signRefreshToken(payload: JWTPayload): Promise<string> {
         return new SignJWT(payload)
-            .setProtectedHeader({ alg: "ES256" })
+            .setProtectedHeader({
+                kid: this.signingKey.kid,
+                alg: this.algorithm,
+            })
             .setIssuer(this.issuer)
             .setSubject(payload.sub!)
-            .setJti(payload.jti!)
+            .setJti(payload.jti ?? randomUUID())
             .setIssuedAt()
             .setExpirationTime(this.refreshTTL)
-            .sign(this.privateKey);
+            .sign(this.signingKey.privateKey);
     }
 
     public async verify(token: string): Promise<JWTPayload> {
-        return (
-            await jwtVerify(token, this.publicKey, {
-                issuer: this.issuer,
-            })
-        ).payload;
+        const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
+            issuer: this.issuer,
+        });
+        return payload;
     }
 
-    public async decode(token: string): Promise<JWTPayload> {
-        return (
-            await jwtVerify(token, this.publicKey, {
-                clockTolerance: Number.MAX_SAFE_INTEGER,
-                issuer: this.issuer,
-            })
-        ).payload;
+    public async verifyIgnoringExpiry(token: string): Promise<JWTPayload> {
+        const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
+            clockTolerance: Number.MAX_SAFE_INTEGER,
+            issuer: this.issuer,
+        });
+        return payload;
+    }
+
+    public async getJWKS(): Promise<CommonServices.JWT.GetJWKS> {
+        const jwk = await exportJWK(this.signingKey.publicKey);
+        return {
+            keys: [
+                {
+                    ...jwk,
+                    kid: this.signingKey.kid,
+                    alg: this.algorithm,
+                    use: "sig",
+                },
+            ],
+        };
     }
 }

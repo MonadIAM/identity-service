@@ -1,5 +1,5 @@
 import { Options as ArgonOptions } from "argon2";
-import { JWTPayload } from "jose";
+import { JWTPayload, JWK } from "jose";
 
 declare global {
     namespace CommonServices {
@@ -46,11 +46,22 @@ declare global {
 
         namespace JWT {
             interface Contract {
+                verifyIgnoringExpiry: (token: string) => Promise<JWTPayload>;
                 signRefreshToken: (payload: JWTPayload) => Promise<string>;
                 signAccessToken: (payload: JWTPayload) => Promise<string>;
                 verify: (token: string) => Promise<JWTPayload>;
-                decode: (token: string) => Promise<JWTPayload>;
+                getJWKS: () => Promise<GetJWKS>;
             }
+
+            type GetJWKS = {
+                keys: JWK[];
+            };
+
+            type SigningKey = {
+                privateKey: CryptoKey;
+                publicKey: CryptoKey;
+                kid: string;
+            };
         }
 
         namespace Email {
