@@ -19,7 +19,7 @@ import {
 
 const { CREATED, OK } = HttpStatus;
 
-@ApiTags("Second Factor")
+@ApiTags("SecondFactor")
 @Controller("/second-factor")
 @UseInterceptors(MonitoringInterceptor)
 export class SecondFactorController {

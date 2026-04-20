@@ -10,7 +10,7 @@ import { BySecondFactorBodyDTO, ByPasswordBodyDTO } from "../dto/elevated-access
 
 const { OK } = HttpStatus;
 
-@ApiTags("Elevated Access")
+@ApiTags("ElevatedAccess")
 @Controller("/elevated-access")
 @UseInterceptors(MonitoringInterceptor)
 export class ElevatedAccessController {
