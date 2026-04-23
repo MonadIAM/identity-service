@@ -2,7 +2,7 @@ import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { UnknownType } from "@mikro-orm/core";
 import { Expose } from "class-transformer";
 
-import { IdentityActionType, IdentityEntityType } from "~context/enums";
+import { IdentityActionType, EntityType } from "~context/enums";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "AuditLog" })
@@ -37,9 +37,9 @@ export class AuditLogDTO {
     declare public actionType: IdentityActionType;
 
     @Expose()
-    @Validator.IsEnum(IdentityEntityType)
-    @ApiProperty({ required: true, enum: IdentityEntityType, enumName: "IdentityEntityType" })
-    declare public entityType: IdentityEntityType;
+    @Validator.IsEnum(EntityType)
+    @ApiProperty({ required: true, enum: EntityType, enumName: "EntityType" })
+    declare public entityType: EntityType;
 
     @Expose()
     @Validator.IsDate()

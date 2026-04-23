@@ -1,13 +1,23 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { isEmail } from "class-validator";
 
-import { AccountSubject, AccountStatus, IdentifierType, IdentityActionType, IdentityEntityType } from "~context/enums";
 import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
+import { Account } from "~context/domain/entities";
+import {
+    IdentityActionType,
+    AccountSubject,
+    IdentifierType,
+    AggregateType,
+    AccountStatus,
+    OutboxTopic,
+    EntityType,
+    EventType,
+} from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountCommands implements Commands.Account.Contract {
@@ -16,7 +26,7 @@ export class AccountCommands implements Commands.Account.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_REPOSITORY)
@@ -43,12 +53,18 @@ export class AccountCommands implements Commands.Account.Contract {
         const hashedPassword = await this.hashingService.hash({ value: props.input.password });
         const type = isEmail(props.input.identifier) ? IdentifierType.EMAIL : IdentifierType.PHONE;
 
-        const account = await this.transactional.run({
+        const account = await this.transactionalService.run<Account>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.SIGN_UP_ACCOUNT,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: ({ id }) => ({ accountId: id }),
+                eventType: EventType.ACCOUNT_REGISTERED,
+                aggregateType: AggregateType.ACCOUNT,
+                destinationTopic: OutboxTopic.ASSIGN,
             },
             execute: (transaction) => {
                 return this.accountService.create({
@@ -103,11 +119,11 @@ export class AccountCommands implements Commands.Account.Contract {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        const session = await this.transactional.run({
+        const session = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.VERIFY_ACCOUNT,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {
@@ -142,11 +158,11 @@ export class AccountCommands implements Commands.Account.Contract {
     }
 
     public async deactivate(props: Commands.Account.Deactivate.Props): Promise<Commands.Account.Deactivate.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {
@@ -166,11 +182,11 @@ export class AccountCommands implements Commands.Account.Contract {
     }
 
     public async suspend(props: Commands.Account.Suspend.Props): Promise<Commands.Account.Suspend.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.SUSPEND_ACCOUNT,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {
@@ -190,11 +206,11 @@ export class AccountCommands implements Commands.Account.Contract {
     }
 
     public async restore(props: Commands.Account.Restore.Props): Promise<Commands.Account.Restore.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.RESTORE_ACCOUNT,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {

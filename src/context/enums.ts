@@ -70,7 +70,7 @@ export enum IdentityActionType {
     PURGE_PASSWORD_HISTORY = "PURGE_PASSWORD_HISTORY",
 }
 
-export enum IdentityEntityType {
+export enum EntityType {
     RECOVERY_CODE = "RECOVERY_CODE",
     SECOND_FACTOR = "SECOND_FACTOR",
     MASTER_CODE = "MASTER_CODE",
@@ -79,6 +79,19 @@ export enum IdentityEntityType {
     PROFILE = "PROFILE",
     SESSION = "SESSION",
     ACCOUNT = "ACCOUNT",
+}
+
+export const AggregateType = EntityType;
+export type AggregateType = EntityType;
+
+export enum OutboxTopic {
+    BLACKLIST = "BLACKLIST",
+    ASSIGN = "ASSIGN",
+}
+
+export enum EventType {
+    ACCOUNT_REGISTERED = "ACCOUNT_REGISTERED",
+    SESSION_REVOKED = "SESSION_REVOKED",
 }
 
 export enum PermissionCode {}

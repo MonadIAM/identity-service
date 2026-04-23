@@ -3,7 +3,7 @@ import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 
 import { FormatResponseInterceptor, PendingTokenInterceptor, AuthTokenInterceptor } from "~common/interceptors";
-import { TrackingModule } from "~common/tracking";
+import { TransactionManagerModule } from "~common/transaction-manager";
 
 import { ElevatedAccessGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
@@ -17,7 +17,7 @@ import { COMMANDS } from "./application/commands";
 import { QUERIES } from "./application/queries";
 
 @Module({
-    imports: [TrackingModule, BullModule.registerQueue({ name: "cleanup" })],
+    imports: [TransactionManagerModule, BullModule.registerQueue({ name: "cleanup" })],
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,

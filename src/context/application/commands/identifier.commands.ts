@@ -1,11 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentifierType, IdentityActionType, IdentityEntityType } from "~context/enums";
+import { IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { IDENTIFIER_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -15,7 +15,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_REPOSITORY)
@@ -33,11 +33,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     ) {}
 
     public async create(props: Commands.Identifier.Create.Props): Promise<Commands.Identifier.Create.Result> {
-        const identifier = await this.transactional.run({
+        const identifier = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.ADD_IDENTIFIER,
-                entityType: IdentityEntityType.IDENTIFIER,
+                entityType: EntityType.IDENTIFIER,
                 ...props,
             },
             execute: async (transaction) => {
@@ -98,11 +98,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
 
         await this.otpCacheService.deleteIdentifier({ code: props.input.code });
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.VERIFY_IDENTIFIER,
-                entityType: IdentityEntityType.IDENTIFIER,
+                entityType: EntityType.IDENTIFIER,
                 ...props,
             },
             execute: async (transaction) => {
@@ -125,11 +125,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     public async toggleNotifications(
         props: Commands.Identifier.ToggleNotifications.Props,
     ): Promise<Commands.Identifier.ToggleNotifications.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.TOGGLE_NOTIFICATIONS,
-                entityType: IdentityEntityType.IDENTIFIER,
+                entityType: EntityType.IDENTIFIER,
                 ...props,
             },
             execute: async (transaction) => {
@@ -151,11 +151,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     public async togglePublicContact(
         props: Commands.Identifier.TogglePublicContact.Props,
     ): Promise<Commands.Identifier.TogglePublicContact.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.TOGGLE_PUBLIC_CONTACT,
-                entityType: IdentityEntityType.IDENTIFIER,
+                entityType: EntityType.IDENTIFIER,
                 ...props,
             },
             execute: async (transaction) => {
@@ -175,11 +175,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     }
 
     public async purge(props: Commands.Identifier.Purge.Props): Promise<Commands.Identifier.Purge.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.PURGE_IDENTIFIER,
-                entityType: IdentityEntityType.IDENTIFIER,
+                entityType: EntityType.IDENTIFIER,
                 ...props,
             },
             execute: async (transaction) => {

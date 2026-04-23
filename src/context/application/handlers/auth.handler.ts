@@ -1,12 +1,12 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
-import { AccountStatus, IdentifierType, IdentityActionType, IdentityEntityType } from "~context/enums";
+import { AccountStatus, IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE, PENDING_AUTH_CACHE_SERVICE } from "~context/infrastructure/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HandlerException } from "~common/exceptions";
 import { Account } from "~context/domain/entities";
 
@@ -17,7 +17,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(SECOND_FACTOR_REPOSITORY)
@@ -164,11 +164,11 @@ export class AuthHandler implements Handlers.Auth.Contract {
     }
 
     private async createSession(props: Handlers.Auth.CreateSession): Promise<Services.Session.Create.Result> {
-        return await this.transactional.run({
+        return await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.SIGN_IN_ACCOUNT,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: (transaction) => {

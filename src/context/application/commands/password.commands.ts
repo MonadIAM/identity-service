@@ -2,10 +2,10 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
-import { IdentifierType, IdentityActionType, IdentityEntityType } from "~context/enums";
+import { IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { PASSWORD_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 import { RecoveryCode } from "~context/domain/entities";
 import {
@@ -22,7 +22,7 @@ export class PasswordCommands implements Commands.Password.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(PASSWORD_HISTORY_REPOSITORY)
         private readonly passwordHistoryRepository: Repositories.PasswordHistory.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
@@ -47,11 +47,11 @@ export class PasswordCommands implements Commands.Password.Contract {
     }
 
     public async change(props: Commands.Password.Change.Props): Promise<Commands.Password.Change.Result> {
-        return await this.transactional.run({
+        return await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.CHANGE_PASSWORD,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {
@@ -122,11 +122,11 @@ export class PasswordCommands implements Commands.Password.Contract {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
 
-        return this.transactional.run({
+        return this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.RESET_PASSWORD_BY_OTP,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {
@@ -172,11 +172,11 @@ export class PasswordCommands implements Commands.Password.Contract {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_RECOVERY_CODE`);
         }
 
-        return this.transactional.run({
+        return this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.RESET_PASSWORD_BY_RECOVERY_CODE,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {

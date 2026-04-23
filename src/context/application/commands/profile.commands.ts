@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, IdentityEntityType } from "~context/enums";
+import { IdentityActionType, EntityType } from "~context/enums";
 import { PROFILE_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ProfileCommands implements Commands.Profile.Contract {
@@ -12,7 +12,7 @@ export class ProfileCommands implements Commands.Profile.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
         @Inject(PROFILE_SERVICE)
@@ -20,11 +20,11 @@ export class ProfileCommands implements Commands.Profile.Contract {
     ) {}
 
     public async update(props: Commands.Profile.Update.Props): Promise<Commands.Profile.Update.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.UPDATE_PROFILE,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {

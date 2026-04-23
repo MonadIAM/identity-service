@@ -27,8 +27,8 @@ export const KAFKA_MICROSERVICE_CONFIG = Symbol("KAFKA_MICROSERVICE_CONFIG");
     ],
     providers: [
         {
-            provide: KAFKA_MICROSERVICE_CONFIG,
             inject: [ConfigService],
+            provide: KAFKA_MICROSERVICE_CONFIG,
             useFactory: (config: ConfigService): MicroserviceOptions => ({
                 transport: Transport.KAFKA,
                 options: {
@@ -41,7 +41,7 @@ export const KAFKA_MICROSERVICE_CONFIG = Symbol("KAFKA_MICROSERVICE_CONFIG");
                     },
                     consumer: {
                         groupId: `${config.getOrThrow("SERVICE_NAME")}-consumer-server`,
-                        allowAutoTopicCreation: true,
+                        allowAutoTopicCreation: false,
                     },
                 },
             }),

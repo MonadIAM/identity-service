@@ -1,11 +1,12 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, IdentityEntityType } from "~context/enums";
+import { IdentityActionType, EntityType, OutboxTopic, AggregateType, EventType } from "~context/enums";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { SESSION_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
+import { Session } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionCommands implements Commands.Session.Contract {
@@ -14,7 +15,7 @@ export class SessionCommands implements Commands.Session.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(SESSION_REPOSITORY)
         private readonly sessionRepository: Repositories.Session.Contract,
         @Inject(ACCOUNT_REPOSITORY)
@@ -54,11 +55,11 @@ export class SessionCommands implements Commands.Session.Contract {
             sid: session.id,
         });
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.REFRESH_SESSION,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: (transaction) => {
@@ -76,12 +77,18 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async revoke(props: Commands.Session.Revoke.Props): Promise<Commands.Session.Revoke.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run<Session[]>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.REVOKE_SESSIONS,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.SESSION,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id })),
+                destinationTopic: OutboxTopic.BLACKLIST,
+                aggregateType: AggregateType.SESSION,
+                eventType: EventType.SESSION_REVOKED,
             },
             execute: async (transaction) => {
                 const sessions = await this.sessionRepository.find({
@@ -93,9 +100,11 @@ export class SessionCommands implements Commands.Session.Contract {
                 });
 
                 this.sessionService.purge({
-                    transaction,
                     input: { sessions },
+                    transaction,
                 });
+
+                return sessions;
             },
         });
 
@@ -103,12 +112,18 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async revokeAll(props: Commands.Session.RevokeAll.Props): Promise<Commands.Session.RevokeAll.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run<Session[]>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.REVOKE_ALL_SESSIONS,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.SESSION,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id })),
+                destinationTopic: OutboxTopic.BLACKLIST,
+                aggregateType: AggregateType.SESSION,
+                eventType: EventType.SESSION_REVOKED,
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
@@ -117,10 +132,14 @@ export class SessionCommands implements Commands.Session.Contract {
                     transaction,
                 });
 
+                const sessions = account.sessions.getItems();
+
                 this.sessionService.purge({
-                    input: { sessions: account.sessions.getItems() },
+                    input: { sessions },
                     transaction,
                 });
+
+                return sessions;
             },
         });
 

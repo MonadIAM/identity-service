@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, IdentityEntityType } from "~context/enums";
+import { IdentityActionType, EntityType } from "~context/enums";
 import { CRYPTO_SERVICE, HASHING_SERVICE } from "~common/services";
 import { RECOVERY_CODE_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
@@ -13,7 +13,7 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
         @Inject(RECOVERY_CODE_SERVICE)
@@ -30,11 +30,11 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.REGENERATE_RECOVERY_CODES,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {

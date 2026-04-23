@@ -2,10 +2,10 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, IdentityEntityType, SecondFactorType } from "~context/enums";
+import { IdentityActionType, EntityType, SecondFactorType } from "~context/enums";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -15,7 +15,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(SECOND_FACTOR_REPOSITORY)
         private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
@@ -33,11 +33,11 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
     public async create(props: Commands.SecondFactor.Create.Props): Promise<Commands.SecondFactor.Create.Result> {
         const secret = new Secret({ size: 20 });
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.INITIATE_SECOND_FACTOR_SETUP,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {
@@ -87,11 +87,11 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         const masterCodePlaintext = this.cryptoService.generateRecoveryCode();
         const masterCodeHash = await this.hashingService.hash({ value: masterCodePlaintext });
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.VERIFY_SECOND_FACTOR,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: (transaction) => {
@@ -110,11 +110,11 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
     }
 
     public async purge(props: Commands.SecondFactor.Purge.Props): Promise<Commands.SecondFactor.Purge.Result> {
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.PURGE_SECOND_FACTOR,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: async (transaction) => {
@@ -156,11 +156,11 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CODE`);
         }
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.RESET_SECOND_FACTORS,
-                entityType: IdentityEntityType.ACCOUNT,
+                entityType: EntityType.ACCOUNT,
                 ...props,
             },
             execute: (transaction) => {

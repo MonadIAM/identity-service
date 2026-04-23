@@ -182,6 +182,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public DOCKER_NETWORK_NAME: string;
 
+    @Validator.IsString()
+    declare public KAFKA_CONNECT_IMAGE: string;
+
     // ---------------------------------------------------------------------------
     // Auth & Security
     // ---------------------------------------------------------------------------

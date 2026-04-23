@@ -1,8 +1,8 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
-import { IdentityEntityType, IdentityActionType } from "~context/enums";
+import { EntityType, IdentityActionType } from "~context/enums";
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { AuditLog } from "~common/tracking";
+import { AuditLog } from "~common/transaction-manager";
 
 export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.AuditLog.Types> {
     public buildWhereORM(filters: Adapters.AuditLog.Filters, basic: ObjectQuery<AuditLog> = {}): ObjectQuery<AuditLog> {
@@ -24,7 +24,7 @@ export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.Aud
             where.actionType = MikroAdapter.applyStringFilter<IdentityActionType>(filters.actionType);
         }
         if (filters.entityType) {
-            where.entityType = MikroAdapter.applyStringFilter<IdentityEntityType>(filters.entityType);
+            where.entityType = MikroAdapter.applyStringFilter<EntityType>(filters.entityType);
         }
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
