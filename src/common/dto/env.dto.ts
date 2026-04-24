@@ -185,6 +185,17 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public KAFKA_CONNECT_IMAGE: string;
 
+    @Validator.IsInt()
+    @Validator.Min(0)
+    declare public KAFKA_CONNECT_PORT: number;
+
+    // ---------------------------------------------------------------------------
+    // Debezium
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    declare public DEBEZIUM_INIT_IMAGE: string;
+
     // ---------------------------------------------------------------------------
     // Auth & Security
     // ---------------------------------------------------------------------------

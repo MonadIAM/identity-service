@@ -15,7 +15,7 @@ declare namespace NodeJS {
         THROTTLE_TTL: `${number}`;
 
         // ---------------------------------------------------------------------------
-        // PostgreSQL - common
+        // PostgreSQL
         // ---------------------------------------------------------------------------
 
         POSTGRES_IMAGE: string;
@@ -33,7 +33,7 @@ declare namespace NodeJS {
         POSTGRES_CQRS_ENABLED: "true" | "false";
 
         // ---------------------------------------------------------------------------
-        // PostgreSQL - write-side (set by docker-compose, not in .env)
+        // PostgreSQL - write
         // ---------------------------------------------------------------------------
 
         POSTGRES_HOST?: string;
@@ -43,7 +43,7 @@ declare namespace NodeJS {
         POSTGRES_WRITE_POOL_IDLE_MS: `${number}`;
 
         // ---------------------------------------------------------------------------
-        // PostgreSQL - read-side (host/port set by docker-compose, not in .env)
+        // PostgreSQL - read
         // ---------------------------------------------------------------------------
 
         POSTGRES_READ_HOST?: string;
@@ -80,6 +80,13 @@ declare namespace NodeJS {
         KAFKA_RETRY_INITIAL_TIME: `${number}`;
         DOCKER_NETWORK_NAME: string;
         KAFKA_CONNECT_IMAGE: string;
+        KAFKA_CONNECT_PORT: `${number}`;
+
+        // ---------------------------------------------------------------------------
+        // Debezium
+        // ---------------------------------------------------------------------------
+
+        DEBEZIUM_INIT_IMAGE: string;
 
         // ---------------------------------------------------------------------------
         // Auth & Security
