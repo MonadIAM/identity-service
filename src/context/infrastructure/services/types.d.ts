@@ -150,4 +150,20 @@ declare namespace InfrastructureServices {
             account: string;
         };
     }
+
+    namespace BlacklistCache {
+        interface Contract {
+            exists: (props: Exists) => Promise<boolean>;
+            set: (props: Set) => Promise<void>;
+        }
+
+        type Set = {
+            sessionId: string;
+            ttl: number;
+        };
+
+        type Exists = {
+            sessionId: string;
+        };
+    }
 }

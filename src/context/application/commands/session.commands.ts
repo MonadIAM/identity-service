@@ -1,4 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import ms, { StringValue } from "ms";
 
 import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { IdentityActionType, EntityType, OutboxTopic, AggregateType, EventType } from "~context/enums";
@@ -12,6 +14,7 @@ import { Session } from "~context/domain/entities";
 export class SessionCommands implements Commands.Session.Contract {
     private readonly dictionaryPath = "commands.session";
     private readonly resource = "Session";
+    private readonly sessionTTL: number;
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -26,7 +29,10 @@ export class SessionCommands implements Commands.Session.Contract {
         private readonly cryptoService: CommonServices.Crypto.Contract,
         @Inject(JWT_SERVICE)
         private readonly jwtService: CommonServices.JWT.Contract,
-    ) {}
+        protected readonly configService: ConfigService,
+    ) {
+        this.sessionTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
+    }
 
     public async refresh(props: Commands.Session.Refresh.Props): Promise<Commands.Session.Refresh.Result> {
         if (!props.input.refreshToken || !props.input.session) {
@@ -85,7 +91,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id })),
+                payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id, ttl: this.sessionTTL })),
                 destinationTopic: OutboxTopic.BLACKLIST,
                 aggregateType: AggregateType.SESSION,
                 eventType: EventType.SESSION_REVOKED,
@@ -120,7 +126,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id })),
+                payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id, ttl: this.sessionTTL })),
                 destinationTopic: OutboxTopic.BLACKLIST,
                 aggregateType: AggregateType.SESSION,
                 eventType: EventType.SESSION_REVOKED,
