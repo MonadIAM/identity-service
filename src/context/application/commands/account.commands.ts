@@ -14,8 +14,8 @@ import {
     IdentifierType,
     AggregateType,
     AccountStatus,
-    OutboxTopic,
     EntityType,
+    KafkaTopic,
     EventType,
 } from "~context/enums";
 
@@ -64,7 +64,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 payloadMapper: ({ id }) => ({ accountId: id }),
                 eventType: EventType.ACCOUNT_REGISTERED,
                 aggregateType: AggregateType.ACCOUNT,
-                destinationTopic: OutboxTopic.ASSIGN,
+                destinationTopic: KafkaTopic.ASSIGN,
             },
             execute: (transaction) => {
                 return this.accountService.create({

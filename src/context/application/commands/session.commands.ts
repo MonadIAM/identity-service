@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
 import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, EntityType, OutboxTopic, AggregateType, EventType } from "~context/enums";
+import { IdentityActionType, EntityType, KafkaTopic, AggregateType, EventType } from "~context/enums";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -92,7 +92,7 @@ export class SessionCommands implements Commands.Session.Contract {
             },
             outbox: {
                 payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id, ttl: this.sessionTTL })),
-                destinationTopic: OutboxTopic.BLACKLIST,
+                destinationTopic: KafkaTopic.BLACKLIST,
                 aggregateType: AggregateType.SESSION,
                 eventType: EventType.SESSION_REVOKED,
             },
@@ -127,7 +127,7 @@ export class SessionCommands implements Commands.Session.Contract {
             },
             outbox: {
                 payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id, ttl: this.sessionTTL })),
-                destinationTopic: OutboxTopic.BLACKLIST,
+                destinationTopic: KafkaTopic.BLACKLIST,
                 aggregateType: AggregateType.SESSION,
                 eventType: EventType.SESSION_REVOKED,
             },
