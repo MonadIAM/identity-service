@@ -2,10 +2,10 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nes
 import { I18nContext, I18nService } from "nestjs-i18n";
 import { plainToInstance } from "class-transformer";
 import { Observable, from, switchMap } from "rxjs";
-import { isString } from "class-validator";
+import { isString, isArray, isNumber } from "class-validator";
 import { Reflector } from "@nestjs/core";
 
-import { FORMAT_RESPONSE_DTO } from "~common/decorators";
+import { SKIP_INTERCEPTORS_KEY, FORMAT_RESPONSE_DTO } from "~common/decorators";
 
 @Injectable()
 export class FormatResponseInterceptor implements NestInterceptor {
@@ -15,6 +15,15 @@ export class FormatResponseInterceptor implements NestInterceptor {
     ) {}
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+        const skip = this.reflector.getAllAndOverride<boolean>(SKIP_INTERCEPTORS_KEY, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
+
+        if (skip) {
+            return next.handle();
+        }
+
         const DTO = this.reflector.get(FORMAT_RESPONSE_DTO, context.getHandler());
 
         if (DTO) {
@@ -29,7 +38,7 @@ export class FormatResponseInterceptor implements NestInterceptor {
     }
 
     private async formatResponse<T>({ pagination, lang, data, DTO }: FormatResponse<T>): Promise<T> {
-        const isTuple = Array.isArray(data) && typeof data[1] === "number";
+        const isTuple = isArray(data) && isNumber(data[1]);
         const resultData = isTuple ? data[0] : data;
         const count = isTuple ? data[1] : 0;
 

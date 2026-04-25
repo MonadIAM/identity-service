@@ -189,6 +189,9 @@ export class EnvironmentVariablesDTO {
     @Validator.Min(0)
     declare public KAFKA_CONNECT_PORT: number;
 
+    @Validator.IsInt()
+    declare public KAFKAJS_NO_PARTITIONER_WARNING: number;
+
     // ---------------------------------------------------------------------------
     // Debezium
     // ---------------------------------------------------------------------------
