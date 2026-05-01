@@ -97,7 +97,7 @@ export type AggregateType = EntityType;
 export enum KafkaTopic {
     /* eslint-disable prettier/prettier */
     BLACKLIST = "blacklist",
-    ASSIGN    = "assign",
+    ACCOUNT   = "account",
     /* eslint-enable prettier/prettier */
 }
 
@@ -105,6 +105,7 @@ export enum EventType {
     /* eslint-disable prettier/prettier */
     ACCOUNT_REGISTERED = "ACCOUNT_REGISTERED",
     SESSION_REVOKED    = "SESSION_REVOKED",
+    ACCOUNT_PURGED     = "ACCOUNT_PURGED",
     /* eslint-enable prettier/prettier */
 }
 

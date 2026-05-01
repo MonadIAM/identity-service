@@ -60,12 +60,6 @@ export class AccountCommands implements Commands.Account.Contract {
                 entityType: EntityType.ACCOUNT,
                 ...props,
             },
-            outbox: {
-                payloadMapper: ({ id }) => ({ accountId: id }),
-                eventType: EventType.ACCOUNT_REGISTERED,
-                aggregateType: AggregateType.ACCOUNT,
-                destinationTopic: KafkaTopic.ASSIGN,
-            },
             execute: (transaction) => {
                 return this.accountService.create({
                     transaction,
@@ -119,12 +113,21 @@ export class AccountCommands implements Commands.Account.Contract {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        const session = await this.transactionalService.run({
+        const { tokens } = await this.transactionalService.run<{
+            tokens: Services.Session.Create.Result;
+            account: Account;
+        }>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.VERIFY_ACCOUNT,
                 entityType: EntityType.ACCOUNT,
                 ...props,
+            },
+            outbox: {
+                eventType: EventType.ACCOUNT_REGISTERED,
+                aggregateType: AggregateType.ACCOUNT,
+                destinationTopic: KafkaTopic.ACCOUNT,
+                payloadMapper: (result) => ({ accountId: result.account.id }),
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
@@ -139,7 +142,7 @@ export class AccountCommands implements Commands.Account.Contract {
                     input: { account, hashes: hashedCodes },
                 });
 
-                return this.sessionService.create({
+                const tokens = await this.sessionService.create({
                     transaction,
                     input: {
                         userAgent: props.context.userAgent,
@@ -147,12 +150,14 @@ export class AccountCommands implements Commands.Account.Contract {
                         account,
                     },
                 });
+
+                return { account, tokens };
             },
         });
 
         return {
             message: `${this.dictionaryPath}.VERIFIED`,
-            ...session,
+            ...tokens,
             codes,
         };
     }
