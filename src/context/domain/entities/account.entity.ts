@@ -21,6 +21,7 @@ export class Account {
     public id: string;
     public createdAt: Date;
     public updatedAt?: Date;
+    public lastActiveAt?: Date;
     public version = 1;
 
     public is2FAEnforced: boolean;
@@ -45,6 +46,10 @@ export class Account {
 
         this.subject = props.subject;
         this.status = props.status;
+    }
+
+    public touch(): void {
+        this.lastActiveAt = new Date();
     }
 
     public assignRelations(props: Entities.Account.AssignRelations): void {
@@ -94,12 +99,6 @@ export class Account {
             this.updatedAt = new Date();
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_SUSPENDED`);
-        }
-    }
-
-    public canPurge(): void {
-        if (this.status !== AccountStatus.DEACTIVATED) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_ACTIVE`);
         }
     }
 }

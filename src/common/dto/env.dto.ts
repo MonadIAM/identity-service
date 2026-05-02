@@ -307,12 +307,12 @@ export class EnvironmentVariablesDTO {
     // BullMQ - cleanup
     // ---------------------------------------------------------------------------
 
+    @Validator.IsString()
+    declare public INACTIVE_ACCOUNT_TTL: string;
+
+    @Validator.IsString()
+    declare public PENDING_ACCOUNT_TTL: string;
+
     @Validator.IsPositiveInt()
     declare public CLEANUP_BATCH_SIZE: number;
-
-    @Validator.IsPositiveInt()
-    declare public PENDING_ACCOUNT_TTL_HOURS: number;
-
-    @Validator.IsPositiveInt()
-    declare public NOTIFICATION_TTL_DAYS: number;
 }

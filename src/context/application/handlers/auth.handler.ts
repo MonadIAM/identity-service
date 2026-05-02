@@ -176,6 +176,8 @@ export class AuthHandler implements Handlers.Auth.Contract {
                     this.accountService.restore({ input: { account: props.account } });
                 }
 
+                props.account.touch();
+
                 return this.sessionService.create({
                     transaction,
                     input: {

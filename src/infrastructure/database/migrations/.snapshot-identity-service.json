@@ -54,6 +54,16 @@
           "nullable": false,
           "mappedType": "boolean"
         },
+        "last_active_at": {
+          "name": "last_active_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamptz(3)",

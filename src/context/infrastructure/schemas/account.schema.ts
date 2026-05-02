@@ -75,6 +75,7 @@ export const AccountSchema = new EntitySchema<Account>({
             mappedBy: "account",
         },
 
+        lastActiveAt: { type: "timestamptz", length: 3, nullable: true },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int" },

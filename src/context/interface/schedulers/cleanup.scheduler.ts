@@ -2,35 +2,40 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { ConfigService } from "@nestjs/config";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable } from "@nestjs/common";
+import ms, { StringValue } from "ms";
 import { Queue } from "bullmq";
+
+import { CleanupJob } from "~context/enums";
 
 @Injectable()
 export class CleanupScheduler {
+    private readonly inactiveAccountTTL: StringValue;
+    private readonly pendingAccountTTL: StringValue;
+    private readonly batchSize: number;
+
     public constructor(
-        @InjectQueue("cleanup") private readonly cleanupQueue: Queue,
+        @InjectQueue("cleanup")
+        private readonly cleanupQueue: Queue,
         private readonly configService: ConfigService,
-    ) {}
+    ) {
+        this.inactiveAccountTTL = this.configService.getOrThrow<StringValue>("INACTIVE_ACCOUNT_TTL");
+        this.pendingAccountTTL = this.configService.getOrThrow<StringValue>("PENDING_ACCOUNT_TTL");
+        this.batchSize = this.configService.getOrThrow<number>("CLEANUP_BATCH_SIZE");
+    }
 
     @Cron(CronExpression.EVERY_HOUR)
     public async schedulePendingAccountsCleanup(): Promise<void> {
-        await this.cleanupQueue.add("cleanup-pending-accounts", {
-            olderThanHours: this.configService.getOrThrow<number>("PENDING_ACCOUNT_TTL_HOURS"),
-            batchSize: this.configService.getOrThrow<number>("CLEANUP_BATCH_SIZE"),
+        await this.cleanupQueue.add(CleanupJob.PENDING_ACCOUNTS, {
+            olderThanMs: ms(this.pendingAccountTTL),
+            batchSize: this.batchSize,
         });
     }
 
-    @Cron(CronExpression.EVERY_HOUR)
-    public async scheduleExpiredSessionsCleanup(): Promise<void> {
-        await this.cleanupQueue.add("cleanup-expired-sessions", {
-            batchSize: this.configService.getOrThrow<number>("CLEANUP_BATCH_SIZE"),
-        });
-    }
-
-    @Cron(CronExpression.EVERY_DAY_AT_3AM)
-    public async scheduleExpiredNotificationsCleanup(): Promise<void> {
-        await this.cleanupQueue.add("cleanup-expired-notifications", {
-            olderThanDays: this.configService.getOrThrow<number>("NOTIFICATION_TTL_DAYS"),
-            batchSize: this.configService.getOrThrow<number>("CLEANUP_BATCH_SIZE"),
+    @Cron(CronExpression.EVERY_DAY_AT_1AM)
+    public async scheduleInactiveAccountsCleanup(): Promise<void> {
+        await this.cleanupQueue.add(CleanupJob.INACTIVE_ACCOUNTS, {
+            olderThanMs: ms(this.inactiveAccountTTL),
+            batchSize: this.batchSize,
         });
     }
 }

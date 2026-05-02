@@ -1,44 +1,45 @@
 import { InjectQueue, Processor, WorkerHost } from "@nestjs/bullmq";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
-import { Injectable, Logger } from "@nestjs/common";
 import { Job, Queue } from "bullmq";
+
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { AggregateType, EventType, CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
+import { Account } from "~context/domain/entities";
 
 @Injectable()
 @Processor("cleanup")
 export class CleanupProcessor extends WorkerHost {
     private readonly logger = new Logger(CleanupProcessor.name);
+    private readonly resource = "Account";
     private readonly schema = "identity";
 
     public constructor(
-        @InjectQueue("cleanup")
-        private readonly cleanupQueue: Queue,
+        @Inject(TRANSACTIONAL_SERVICE)
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @InjectEntityManager("write")
         private readonly writeManager: EntityManager,
+        @InjectQueue("cleanup")
+        private readonly cleanupQueue: Queue,
     ) {
         super();
     }
 
+    private readonly handlers: Record<CleanupJob, Processors.Cleanup.Handler> = {
+        [CleanupJob.INACTIVE_ACCOUNTS]: (job: Job) => this.cleanupInactiveAccounts(job),
+        [CleanupJob.PENDING_ACCOUNTS]: (job: Job) => this.cleanupPendingAccounts(job),
+    };
+
     public process(job: Job): Promise<Processors.Cleanup.Result> {
-        switch (job.name) {
-            case "cleanup-pending-accounts":
-                return this.cleanupPendingAccounts(job);
-            case "cleanup-expired-sessions":
-                return this.cleanupExpiredSessions(job);
-            case "cleanup-expired-notifications":
-                return this.cleanupExpiredNotifications(job);
-            default:
-                throw new Error(`Unknown cleanup job: ${job.name}`);
-        }
+        return this.handlers[job.name as CleanupJob]?.(job);
     }
 
     private async cleanupPendingAccounts(job: Job): Promise<Processors.Cleanup.Result> {
-        const { olderThanHours, batchSize } = job.data;
+        const { olderThanMs, batchSize } = job.data;
 
         const builder = this.writeManager.getKnex();
-        const expirationDate = new Date();
-
-        expirationDate.setHours(expirationDate.getHours() - olderThanHours);
+        const expirationDate = new Date(Date.now() - olderThanMs);
 
         this.logger.log(`Cleaning up pending accounts older than ${expirationDate.toISOString()}`);
 
@@ -67,71 +68,56 @@ export class CleanupProcessor extends WorkerHost {
         }
     }
 
-    private async cleanupExpiredSessions(job: Job): Promise<Processors.Cleanup.Result> {
-        const { batchSize } = job.data;
+    private async cleanupInactiveAccounts(job: Job): Promise<Processors.Cleanup.Result> {
+        const { olderThanMs, batchSize } = job.data;
 
-        const builder = this.writeManager.getKnex();
-        const now = new Date();
+        const expirationDate = new Date(Date.now() - olderThanMs);
 
-        this.logger.log(`Cleaning up sessions expired before ${now.toISOString()}`);
-
-        try {
-            const ids = await builder(`${this.schema}.session`).select("id").where("expires_at", "<", now).limit(batchSize);
-
-            if (ids.length) {
-                const deletedCount = await builder(`${this.schema}.session`)
-                    .whereIn(
-                        "id",
-                        ids.map(({ id }) => id),
-                    )
-                    .delete();
-
-                this.logger.log(`Deleted ${deletedCount} expired sessions.`);
-
-                return this.scheduleNextBatch(job, ids.length === batchSize);
-            } else {
-                this.logger.log("No expired sessions to clean up.");
-                return { deleted: 0, nextBatch: false };
-            }
-        } catch (error) {
-            this.logger.error("Failed to clean up expired sessions", error);
-            throw error;
-        }
-    }
-
-    private async cleanupExpiredNotifications(job: Job): Promise<Processors.Cleanup.Result> {
-        const { olderThanDays, batchSize } = job.data;
-
-        const builder = this.writeManager.getKnex();
-        const expirationDate = new Date();
-
-        expirationDate.setDate(expirationDate.getDate() - olderThanDays);
-
-        this.logger.log(`Cleaning up notifications older than ${expirationDate.toISOString()}`);
+        this.logger.log(`Cleaning up inactive accounts older than ${expirationDate.toISOString()}`);
 
         try {
-            const ids = await builder(`${this.schema}.notification`)
-                .select("id")
-                .where("created_at", "<", expirationDate)
+            const rows = await this.writeManager
+                .getKnex()(`${this.schema}.account`)
+                .select("*")
+                .where("status", "active")
+                .andWhereRaw("COALESCE(last_active_at, updated_at, created_at) < ?", [expirationDate])
                 .limit(batchSize);
 
-            if (ids.length) {
-                const deletedCount = await builder(`${this.schema}.notification`)
-                    .whereIn(
-                        "id",
-                        ids.map(({ id }) => id),
-                    )
-                    .delete();
-
-                this.logger.log(`Deleted ${deletedCount} expired notifications.`);
-
-                return this.scheduleNextBatch(job, ids.length === batchSize);
-            } else {
-                this.logger.log("No expired notifications to clean up.");
+            if (!rows.length) {
+                this.logger.log("No inactive accounts to clean up.");
                 return { deleted: 0, nextBatch: false };
             }
+
+            const accounts = rows.map((row) => this.writeManager.map(Account, row));
+
+            const result = await this.transactionalService.run<Account[]>({
+                resource: this.resource,
+                outbox: {
+                    aggregateType: AggregateType.ACCOUNT,
+                    destinationTopic: KafkaTopic.ACCOUNT,
+                    eventType: EventType.ACCOUNT_PURGED,
+                    payloadMapper: (accounts) => accounts.map(({ id }) => ({ accountId: id })),
+                },
+                execute: (transaction) => {
+                    accounts.map((account) => transaction.merge(Account, account));
+                    const result: Account[] = [];
+
+                    for (const account of accounts) {
+                        if (account.status !== AccountStatus.SUSPENDED) {
+                            transaction.remove(account);
+                            result.push(account);
+                        }
+                    }
+
+                    return result;
+                },
+            });
+
+            this.logger.log(`Deleted ${result.length} inactive accounts.`);
+
+            return this.scheduleNextBatch(job, rows.length === batchSize);
         } catch (error) {
-            this.logger.error("Failed to clean up expired notifications", error);
+            this.logger.error("Failed to clean up inactive accounts", error);
             throw error;
         }
     }

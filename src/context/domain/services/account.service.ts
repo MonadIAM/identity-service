@@ -74,7 +74,6 @@ export class AccountService implements Services.Account.Contract {
     }
 
     public purge({ transaction, input }: Services.Account.Purge): void {
-        input.account.canPurge();
         transaction.remove(input.account);
     }
 
