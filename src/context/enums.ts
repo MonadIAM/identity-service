@@ -1,3 +1,5 @@
+export * from "@liam/contracts";
+
 export enum ResponseViewType {
     /* eslint-disable prettier/prettier */
     DETAILED = "DETAILED",
@@ -93,14 +95,6 @@ export enum EntityType {
 
 export const AggregateType = EntityType;
 export type AggregateType = EntityType;
-
-export enum KafkaTopic {
-    /* eslint-disable prettier/prettier */
-    ACCOUNT_DLQ   = "account-dlq",
-    BLACKLIST     = "blacklist",
-    ACCOUNT       = "account",
-    /* eslint-enable prettier/prettier */
-}
 
 export enum EventType {
     /* eslint-disable prettier/prettier */
