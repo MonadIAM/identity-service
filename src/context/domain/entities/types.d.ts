@@ -1,9 +1,14 @@
 import { SecondFactorType, AccountSubject, IdentifierType, AccountStatus } from "~context/enums";
 
+import { PasswordHistory as PasswordHistoryEntity } from "./password-history.entity";
+import { RecoveryCode as RecoveryCodeEntity } from "./recovery-code.entity";
+import { SecondFactor as SecondFactorEntity } from "./second-factor.entity";
+import { MasterCode as MasterCodeEntity } from "./master-code.entity";
 import { Identifier as IdentifierEntity } from "./identifier.entity";
 import { Password as PasswordEntity } from "./password.entity";
 import { Account as AccountEntity } from "./account.entity";
 import { Profile as ProfileEntity } from "./profile.entity";
+import { Session as SessionEntity } from "./session.entity";
 
 declare global {
     namespace Entities {
@@ -20,6 +25,8 @@ declare global {
             };
         }
 
+        type Account = AccountEntity;
+
         namespace Identifier {
             type ConstructorProps = {
                 account: AccountEntity;
@@ -31,12 +38,16 @@ declare global {
             };
         }
 
+        type Identifier = IdentifierEntity;
+
         namespace MasterCode {
             type ConstructorProps = {
                 account: AccountEntity;
                 hash: string;
             };
         }
+
+        type MasterCode = MasterCodeEntity;
 
         namespace PasswordHistory {
             type ConstructorProps = {
@@ -45,6 +56,8 @@ declare global {
                 hash: string;
             };
         }
+
+        type PasswordHistory = PasswordHistoryEntity;
 
         namespace Password {
             type ConstructorProps = {
@@ -57,6 +70,8 @@ declare global {
                 hash: string;
             };
         }
+
+        type Password = PasswordEntity;
 
         namespace Profile {
             type ConstructorProps = {
@@ -75,12 +90,16 @@ declare global {
             };
         }
 
+        type Profile = ProfileEntity;
+
         namespace RecoveryCode {
             type ConstructorProps = {
                 account: AccountEntity;
                 hash: string;
             };
         }
+
+        type RecoveryCode = RecoveryCodeEntity;
 
         namespace SecondFactor {
             type ConstructorProps = {
@@ -91,6 +110,8 @@ declare global {
             };
         }
 
+        type SecondFactor = SecondFactorEntity;
+
         namespace Session {
             type ConstructorProps = {
                 account: AccountEntity;
@@ -99,5 +120,7 @@ declare global {
                 ip: string;
             };
         }
+
+        type Session = SessionEntity;
     }
 }

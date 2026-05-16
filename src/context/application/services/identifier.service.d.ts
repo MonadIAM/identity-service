@@ -1,7 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Identifier as IdentifierEntity, Account as AccountEntity } from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace Identifier {
@@ -18,17 +16,17 @@ declare global {
                     transaction: EntityManager;
                     input: {
                         identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
-                        account: AccountEntity;
+                        account: Entities.Account;
                     };
                 };
 
-                type Result = IdentifierEntity;
+                type Result = Entities.Identifier;
             }
 
             type Purge = {
                 transaction: EntityManager;
                 input: {
-                    identifier: IdentifierEntity;
+                    identifier: Entities.Identifier;
                     account: string;
                     reason?: string;
                 };
@@ -37,19 +35,19 @@ declare global {
             type Verify = {
                 transaction: EntityManager;
                 input: {
-                    identifier: IdentifierEntity;
+                    identifier: Entities.Identifier;
                 };
             };
 
             type ToggleNotifications = {
                 input: {
-                    identifier: IdentifierEntity;
+                    identifier: Entities.Identifier;
                 };
             };
 
             type TogglePublicContact = {
                 input: {
-                    identifier: IdentifierEntity;
+                    identifier: Entities.Identifier;
                 };
             };
         }

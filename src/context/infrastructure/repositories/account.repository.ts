@@ -9,7 +9,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRepository
-    extends BaseRepository<Account, Adapters.Account.Types>({
+    extends BaseRepository<Entities.Account, Adapters.Account.Types>({
         Adapter: AccountAdapter,
         Entity: Account,
     })
@@ -22,7 +22,10 @@ export class AccountRepository
         super();
     }
 
-    public async getLookupList({ pagination, term }: Repositories.Account.GetLookupList): Promise<[Account[], number]> {
+    public async getLookupList({
+        pagination,
+        term,
+    }: Repositories.Account.GetLookupList): Promise<[Entities.Account[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Account, "a");

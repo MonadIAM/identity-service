@@ -1,7 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { PasswordHistory as PasswordHistoryEntity, Password as PasswordEntity } from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace Password {
@@ -13,7 +11,7 @@ declare global {
             type Rotate = {
                 transaction: EntityManager;
                 input: {
-                    password: PasswordEntity;
+                    password: Entities.Password;
                     newHash: string;
                 };
             };
@@ -21,7 +19,7 @@ declare global {
             type Purge = {
                 transaction: EntityManager;
                 input: {
-                    entries: PasswordHistoryEntity[];
+                    entries: Entities.PasswordHistory[];
                 };
             };
         }

@@ -1,6 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Session as SessionEntity, Account as AccountEntity } from "~context/domain/entities";
 import { AccountStatus, AccountSubject } from "~context/enums";
 
 declare global {
@@ -28,49 +27,49 @@ declare global {
                     };
                 };
 
-                type Result = AccountEntity;
+                type Result = Entities.Account;
             }
 
             type Deactivate = {
                 transaction: EntityManager;
                 input: {
-                    sessions: SessionEntity[];
-                    account: AccountEntity;
+                    sessions: Entities.Session[];
+                    account: Entities.Account;
                 };
             };
 
             type Suspend = {
                 transaction: EntityManager;
                 input: {
-                    sessions: SessionEntity[];
-                    account: AccountEntity;
+                    sessions: Entities.Session[];
+                    account: Entities.Account;
                 };
             };
 
             type Purge = {
                 transaction: EntityManager;
                 input: {
-                    account: AccountEntity;
+                    account: Entities.Account;
                     reason?: string;
                 };
             };
 
             type Verify = {
                 input: {
-                    account: AccountEntity;
+                    account: Entities.Account;
                 };
             };
 
             type Unsuspend = {
                 input: {
-                    account: AccountEntity;
+                    account: Entities.Account;
                     reason?: string;
                 };
             };
 
             type Restore = {
                 input: {
-                    account: AccountEntity;
+                    account: Entities.Account;
                 };
             };
         }

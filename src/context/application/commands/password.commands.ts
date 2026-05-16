@@ -4,10 +4,9 @@ import { ConfigService } from "@nestjs/config";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
-import { PASSWORD_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { PASSWORD_SERVICE } from "~context/domain/services";
 import { CommandException } from "~common/exceptions";
-import { RecoveryCode } from "~context/domain/entities";
 import {
     PASSWORD_HISTORY_REPOSITORY,
     IDENTIFIER_REPOSITORY,
@@ -218,7 +217,10 @@ export class PasswordCommands implements Commands.Password.Contract {
         }
     }
 
-    private async findMatchingRecoveryCode(codes: RecoveryCode[], plaintext: string): Promise<Nullable<RecoveryCode>> {
+    private async findMatchingRecoveryCode(
+        codes: Entities.RecoveryCode[],
+        plaintext: string,
+    ): Promise<Nullable<Entities.RecoveryCode>> {
         const results = await Promise.all(
             codes.map(async (entry) => ({
                 isValid: await this.hashingService.verify({

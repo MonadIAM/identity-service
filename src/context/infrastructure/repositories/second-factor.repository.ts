@@ -8,7 +8,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorRepository
-    extends BaseRepository<SecondFactor, Adapters.SecondFactor.Types>({
+    extends BaseRepository<Entities.SecondFactor, Adapters.SecondFactor.Types>({
         Adapter: SecondFactorAdapter,
         Entity: SecondFactor,
     })

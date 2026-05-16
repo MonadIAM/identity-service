@@ -90,7 +90,7 @@ export class CleanupProcessor extends WorkerHost {
 
             const accounts = rows.map((row) => this.writeManager.map(Account, row));
 
-            const result = await this.transactionalService.run<Account[]>({
+            const result = await this.transactionalService.run<Entities.Account[]>({
                 resource: this.resource,
                 outbox: {
                     aggregateType: AggregateType.ACCOUNT,
@@ -100,7 +100,7 @@ export class CleanupProcessor extends WorkerHost {
                 },
                 execute: (transaction) => {
                     accounts.map((account) => transaction.merge(Account, account));
-                    const result: Account[] = [];
+                    const result: Entities.Account[] = [];
 
                     for (const account of accounts) {
                         if (account.status !== AccountStatus.SUSPENDED) {

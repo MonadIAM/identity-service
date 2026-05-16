@@ -1,7 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Session as SessionEntity, Account as AccountEntity } from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace Session {
@@ -14,7 +12,7 @@ declare global {
                 type Props = {
                     transaction: EntityManager;
                     input: {
-                        account: AccountEntity;
+                        account: Entities.Account;
                         userAgent: string;
                         ip: string;
                     };
@@ -29,7 +27,7 @@ declare global {
             type Purge = {
                 transaction: EntityManager;
                 input: {
-                    sessions: SessionEntity[];
+                    sessions: Entities.Session[];
                 };
             };
         }

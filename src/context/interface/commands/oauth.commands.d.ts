@@ -1,4 +1,3 @@
-import { Identifier as IdentifierEntity, Account as AccountEntity } from "~context/domain/entities";
 import { IdentifierType } from "~context/enums";
 
 declare global {
@@ -38,7 +37,7 @@ declare global {
                 type Props = {
                     context: Extract.Meta;
                     input: {
-                        account: AccountEntity;
+                        account: Entities.Account;
                     };
                 };
 
@@ -46,7 +45,7 @@ declare global {
             }
 
             type Link = Signup.Props & {
-                identifier: IdentifierEntity;
+                identifier: Entities.Identifier;
             };
         }
     }

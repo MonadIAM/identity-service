@@ -8,7 +8,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionRepository
-    extends BaseRepository<Session, Adapters.Session.Types>({
+    extends BaseRepository<Entities.Session, Adapters.Session.Types>({
         Adapter: SessionAdapter,
         Entity: Session,
     })

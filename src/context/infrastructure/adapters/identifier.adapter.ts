@@ -1,15 +1,14 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { Identifier } from "~context/domain/entities";
 import { IdentifierType } from "~context/enums";
 
 export class IdentifierAdapter {
     public buildWhereORM(
         filters: Adapters.Identifier.Filters,
-        basic: ObjectQuery<Identifier> = {},
-    ): ObjectQuery<Identifier> {
-        const where: ObjectQuery<Identifier> = basic;
+        basic: ObjectQuery<Entities.Identifier> = {},
+    ): ObjectQuery<Entities.Identifier> {
+        const where: ObjectQuery<Entities.Identifier> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -57,11 +56,11 @@ export class IdentifierAdapter {
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Identifier.Sort,
         pagination: Pagination,
-        basic: FindOptions<Identifier, P, F> = {},
-    ): FindOptions<Identifier, P, F> {
+        basic: FindOptions<Entities.Identifier, P, F> = {},
+    ): FindOptions<Entities.Identifier, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Identifier>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.Identifier>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

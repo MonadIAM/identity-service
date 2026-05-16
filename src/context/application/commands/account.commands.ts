@@ -7,7 +7,6 @@ import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~co
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
-import { Account } from "~context/domain/entities";
 import {
     IdentityActionType,
     AccountSubject,
@@ -53,7 +52,7 @@ export class AccountCommands implements Commands.Account.Contract {
         const hashedPassword = await this.hashingService.hash({ value: props.input.password });
         const type = isEmail(props.input.identifier) ? IdentifierType.EMAIL : IdentifierType.PHONE;
 
-        const account = await this.transactionalService.run<Account>({
+        const account = await this.transactionalService.run<Entities.Account>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.SIGN_UP_ACCOUNT,
@@ -115,7 +114,7 @@ export class AccountCommands implements Commands.Account.Contract {
 
         const { tokens } = await this.transactionalService.run<{
             tokens: Services.Session.Create.Result;
-            account: Account;
+            account: Entities.Account;
         }>({
             resource: this.resource,
             audit: {

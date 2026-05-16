@@ -8,7 +8,6 @@ import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~co
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HandlerException } from "~common/exceptions";
-import { Account } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthHandler implements Handlers.Auth.Contract {
@@ -190,7 +189,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
         });
     }
 
-    private assertCanAuth(account: Account): void {
+    private assertCanAuth(account: Entities.Account): void {
         if (account.status === AccountStatus.SUSPENDED) {
             throw HandlerException.forbidden(`${this.dictionaryPath}.ACCOUNT_SUSPENDED`);
         }

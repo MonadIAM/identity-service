@@ -8,7 +8,7 @@ import { MasterCode } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class MasterCodeRepository
-    extends BaseRepository<MasterCode, Adapters.MasterCode.Types>({
+    extends BaseRepository<Entities.MasterCode, Adapters.MasterCode.Types>({
         Adapter: MasterCodeAdapter,
         Entity: MasterCode,
     })

@@ -8,7 +8,6 @@ import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
-import { Session } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionCommands implements Commands.Session.Contract {
@@ -83,7 +82,7 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async revoke(props: Commands.Session.Revoke.Props): Promise<Commands.Session.Revoke.Result> {
-        await this.transactionalService.run<Session[]>({
+        await this.transactionalService.run<Entities.Session[]>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.REVOKE_SESSIONS,
@@ -118,7 +117,7 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async revokeAll(props: Commands.Session.RevokeAll.Props): Promise<Commands.Session.RevokeAll.Result> {
-        await this.transactionalService.run<Session[]>({
+        await this.transactionalService.run<Entities.Session[]>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.REVOKE_ALL_SESSIONS,

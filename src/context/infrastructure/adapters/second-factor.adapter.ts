@@ -1,14 +1,13 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { SecondFactor } from "~context/domain/entities";
 
-export class SecondFactorAdapter implements Adapters.Contract<SecondFactor, Adapters.SecondFactor.Types> {
+export class SecondFactorAdapter implements Adapters.Contract<Entities.SecondFactor, Adapters.SecondFactor.Types> {
     public buildWhereORM(
         _filters: Adapters.SecondFactor.Filters,
-        basic: ObjectQuery<SecondFactor> = {},
-    ): ObjectQuery<SecondFactor> {
-        const where: ObjectQuery<SecondFactor> = basic;
+        basic: ObjectQuery<Entities.SecondFactor> = {},
+    ): ObjectQuery<Entities.SecondFactor> {
+        const where: ObjectQuery<Entities.SecondFactor> = basic;
 
         return where;
     }
@@ -16,11 +15,11 @@ export class SecondFactorAdapter implements Adapters.Contract<SecondFactor, Adap
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.SecondFactor.Sort,
         pagination: Pagination,
-        basic: FindOptions<SecondFactor, P, F> = {},
-    ): FindOptions<SecondFactor, P, F> {
+        basic: FindOptions<Entities.SecondFactor, P, F> = {},
+    ): FindOptions<Entities.SecondFactor, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<SecondFactor>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.SecondFactor>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

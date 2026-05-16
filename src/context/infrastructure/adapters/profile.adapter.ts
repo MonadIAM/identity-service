@@ -1,11 +1,13 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { Profile } from "~context/domain/entities";
 
-export class ProfileAdapter implements Adapters.Contract<Profile, Adapters.Profile.Types> {
-    public buildWhereORM(_filters: Adapters.Profile.Filters, basic: ObjectQuery<Profile> = {}): ObjectQuery<Profile> {
-        const where: ObjectQuery<Profile> = basic;
+export class ProfileAdapter implements Adapters.Contract<Entities.Profile, Adapters.Profile.Types> {
+    public buildWhereORM(
+        _filters: Adapters.Profile.Filters,
+        basic: ObjectQuery<Entities.Profile> = {},
+    ): ObjectQuery<Entities.Profile> {
+        const where: ObjectQuery<Entities.Profile> = basic;
 
         return where;
     }
@@ -13,11 +15,11 @@ export class ProfileAdapter implements Adapters.Contract<Profile, Adapters.Profi
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Profile.Sort,
         pagination: Pagination,
-        basic: FindOptions<Profile, P, F> = {},
-    ): FindOptions<Profile, P, F> {
+        basic: FindOptions<Entities.Profile, P, F> = {},
+    ): FindOptions<Entities.Profile, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Profile>(sort, { updatedAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.Profile>(sort, { updatedAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

@@ -1,6 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { SecondFactor as SecondFactorEntity, Account as AccountEntity } from "~context/domain/entities";
 import { SecondFactorType } from "~context/enums";
 
 declare global {
@@ -17,20 +16,20 @@ declare global {
                 type Props = {
                     transaction: EntityManager;
                     input: {
-                        account: AccountEntity;
+                        account: Entities.Account;
                         type: SecondFactorType;
                         secret: string;
                         name: string;
                     };
                 };
 
-                type Result = SecondFactorEntity;
+                type Result = Entities.SecondFactor;
             }
 
             type Verify = {
                 transaction: EntityManager;
                 input: {
-                    factor: SecondFactorEntity;
+                    factor: Entities.SecondFactor;
                     masterCodeHash: string;
                 };
             };
@@ -38,14 +37,14 @@ declare global {
             type Purge = {
                 transaction: EntityManager;
                 input: {
-                    factor: SecondFactorEntity;
+                    factor: Entities.SecondFactor;
                 };
             };
 
             type Reset = {
                 transaction: EntityManager;
                 input: {
-                    account: AccountEntity;
+                    account: Entities.Account;
                 };
             };
         }

@@ -8,7 +8,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PasswordHistoryRepository
-    extends BaseRepository<PasswordHistory, Adapters.PasswordHistory.Types>({
+    extends BaseRepository<Entities.PasswordHistory, Adapters.PasswordHistory.Types>({
         Adapter: PasswordHistoryAdapter,
         Entity: PasswordHistory,
     })

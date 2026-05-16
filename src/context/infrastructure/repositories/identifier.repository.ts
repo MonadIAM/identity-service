@@ -9,7 +9,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierRepository
-    extends BaseRepository<Identifier, Adapters.Identifier.Types>({
+    extends BaseRepository<Entities.Identifier, Adapters.Identifier.Types>({
         Adapter: IdentifierAdapter,
         Entity: Identifier,
     })
@@ -26,7 +26,7 @@ export class IdentifierRepository
         pagination,
         account,
         term,
-    }: Repositories.Identifier.GetLookupList): Promise<[Identifier[], number]> {
+    }: Repositories.Identifier.GetLookupList): Promise<[Entities.Identifier[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Identifier, "i");

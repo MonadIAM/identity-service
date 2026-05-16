@@ -9,7 +9,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeRepository
-    extends BaseRepository<RecoveryCode, Adapters.RecoveryCode.Types>({
+    extends BaseRepository<Entities.RecoveryCode, Adapters.RecoveryCode.Types>({
         Adapter: RecoveryCodeAdapter,
         Entity: RecoveryCode,
     })

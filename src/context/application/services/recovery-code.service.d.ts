@@ -1,7 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Account as AccountEntity } from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace RecoveryCode {
@@ -13,7 +11,7 @@ declare global {
             type Regenerate = {
                 transaction: EntityManager;
                 input: {
-                    account: AccountEntity;
+                    account: Entities.Account;
                     hashes: string[];
                 };
             };
@@ -21,7 +19,7 @@ declare global {
             type Generate = {
                 transaction: EntityManager;
                 input: {
-                    account: AccountEntity;
+                    account: Entities.Account;
                     hashes: string[];
                 };
             };

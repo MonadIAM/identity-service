@@ -8,7 +8,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ProfileRepository
-    extends BaseRepository<Profile, Adapters.Profile.Types>({
+    extends BaseRepository<Entities.Profile, Adapters.Profile.Types>({
         Adapter: ProfileAdapter,
         Entity: Profile,
     })
