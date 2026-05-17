@@ -9,13 +9,13 @@ export class SessionQueries implements Queries.Session.Contract {
         private readonly sessionRepository: Repositories.Session.Contract,
     ) {}
 
-    public getCurrent(props: Queries.Session.GetCurrent.Props): Promise<Queries.Session.GetCurrent.Result> {
+    public getCurrent(props: Queries.Session.GetCurrent.Props): Queries.Session.GetCurrent.Result {
         return this.sessionRepository.findUniqueOrThrow({
             where: { id: props.session, account: props.account },
         });
     }
 
-    public findMany(props: Queries.Session.FindMany.Props): Promise<Queries.Session.FindMany.Result> {
+    public findMany(props: Queries.Session.FindMany.Props): Queries.Session.FindMany.Result {
         return this.sessionRepository.findMany({
             where: { account: props.account },
         });

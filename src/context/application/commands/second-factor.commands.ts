@@ -3,9 +3,9 @@ import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { IdentityActionType, EntityType, SecondFactorType } from "~context/enums";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -30,7 +30,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         private readonly cryptoService: CommonServices.Crypto.Contract,
     ) {}
 
-    public async create(props: Commands.SecondFactor.Create.Props): Promise<Commands.SecondFactor.Create.Result> {
+    public async create(props: Commands.SecondFactor.Create.Props): Commands.SecondFactor.Create.Result {
         const secret = new Secret({ size: 20 });
 
         await this.transactionalService.run({
@@ -67,7 +67,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         return { uri: totp.toString() };
     }
 
-    public async verify(props: Commands.SecondFactor.Verify.Props): Promise<Commands.SecondFactor.Verify.Result> {
+    public async verify(props: Commands.SecondFactor.Verify.Props): Commands.SecondFactor.Verify.Result {
         const factor = await this.secondFactorRepository.findUniqueOrThrow({
             options: { populate: ["account.masterCode"] },
             where: {
@@ -109,7 +109,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         };
     }
 
-    public async purge(props: Commands.SecondFactor.Purge.Props): Promise<Commands.SecondFactor.Purge.Result> {
+    public async purge(props: Commands.SecondFactor.Purge.Props): Commands.SecondFactor.Purge.Result {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -137,7 +137,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         return { message: `${this.dictionaryPath}.PURGED` };
     }
 
-    public async reset(props: Commands.SecondFactor.Reset.Props): Promise<Commands.SecondFactor.Reset.Result> {
+    public async reset(props: Commands.SecondFactor.Reset.Props): Commands.SecondFactor.Reset.Result {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.masterCode", "account.secondFactors"] },
             where: { value: props.input.identifier },

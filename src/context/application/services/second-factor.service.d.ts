@@ -7,9 +7,9 @@ declare global {
         namespace SecondFactor {
             interface Contract {
                 create: (props: Create.Props) => Create.Result;
-                verify: (props: Verify) => void;
-                purge: (props: Purge) => void;
-                reset: (props: Reset) => void;
+                verify: (props: Verify.Props) => Verify.Result;
+                purge: (props: Purge.Props) => Purge.Result;
+                reset: (props: Reset.Props) => Reset.Result;
             }
 
             namespace Create {
@@ -26,27 +26,39 @@ declare global {
                 type Result = Entities.SecondFactor;
             }
 
-            type Verify = {
-                transaction: EntityManager;
-                input: {
-                    factor: Entities.SecondFactor;
-                    masterCodeHash: string;
+            namespace Verify {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        factor: Entities.SecondFactor;
+                        masterCodeHash: string;
+                    };
                 };
-            };
 
-            type Purge = {
-                transaction: EntityManager;
-                input: {
-                    factor: Entities.SecondFactor;
-                };
-            };
+                type Result = void;
+            }
 
-            type Reset = {
-                transaction: EntityManager;
-                input: {
-                    account: Entities.Account;
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        factor: Entities.SecondFactor;
+                    };
                 };
-            };
+
+                type Result = void;
+            }
+
+            namespace Reset {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        account: Entities.Account;
+                    };
+                };
+
+                type Result = void;
+            }
         }
     }
 }

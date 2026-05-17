@@ -48,7 +48,7 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async signup(props: Commands.Account.Signup.Props): Promise<Commands.Account.Signup.Result> {
+    public async signup(props: Commands.Account.Signup.Props): Commands.Account.Signup.Result {
         const hashedPassword = await this.hashingService.hash({ value: props.input.password });
         const type = isEmail(props.input.identifier) ? IdentifierType.EMAIL : IdentifierType.PHONE;
 
@@ -82,7 +82,7 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.SIGNED_UP` };
     }
 
-    public async resend(props: Commands.Account.Resend.Props): Promise<Commands.Account.Resend.Result> {
+    public async resend(props: Commands.Account.Resend.Props): Commands.Account.Resend.Result {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             where: { value: props.input.identifier },
         });
@@ -100,7 +100,7 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.CODE_RESENT` };
     }
 
-    public async verify(props: Commands.Account.Verify.Props): Promise<Commands.Account.Verify.Result> {
+    public async verify(props: Commands.Account.Verify.Props): Commands.Account.Verify.Result {
         const cachedAccount = await this.otpCacheService.getVerification({ code: props.input.code });
 
         if (!cachedAccount) {
@@ -113,7 +113,7 @@ export class AccountCommands implements Commands.Account.Contract {
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
         const { tokens } = await this.transactionalService.run<{
-            tokens: Services.Session.Create.Result;
+            tokens: Awaited<Services.Session.Create.Result>;
             account: Entities.Account;
         }>({
             resource: this.resource,
@@ -161,7 +161,7 @@ export class AccountCommands implements Commands.Account.Contract {
         };
     }
 
-    public async deactivate(props: Commands.Account.Deactivate.Props): Promise<Commands.Account.Deactivate.Result> {
+    public async deactivate(props: Commands.Account.Deactivate.Props): Commands.Account.Deactivate.Result {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -185,7 +185,7 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.DEACTIVATED` };
     }
 
-    public async suspend(props: Commands.Account.Suspend.Props): Promise<Commands.Account.Suspend.Result> {
+    public async suspend(props: Commands.Account.Suspend.Props): Commands.Account.Suspend.Result {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -209,7 +209,7 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.SUSPENDED` };
     }
 
-    public async restore(props: Commands.Account.Restore.Props): Promise<Commands.Account.Restore.Result> {
+    public async restore(props: Commands.Account.Restore.Props): Commands.Account.Restore.Result {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -230,7 +230,7 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.RESTORED` };
     }
 
-    private async sendOTP(props: Commands.Account.SendOTP): Promise<void> {
+    public async sendOTP(props: Commands.Account.SendOTP.Props): Commands.Account.SendOTP.Result {
         const otp = this.cryptoService.generateOTP();
         await this.otpCacheService.setVerification({
             account: props.account,

@@ -1,11 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { GOOGLE_OAUTH_SERVICE, GITHUB_OAUTH_SERVICE, CRYPTO_SERVICE } from "~common/services";
-import { IdentifierType } from "~context/enums";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { OAUTH_COMMANDS } from "~context/application/commands";
 import { HandlerException } from "~common/exceptions";
+import { IdentifierType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthHandler implements Handlers.OAuth.Contract {
@@ -26,13 +26,14 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
         private readonly cryptoService: CommonServices.Crypto.Contract,
     ) {}
 
-    public async authorize({ input }: Handlers.OAuth.Authorize.Props): Promise<Handlers.OAuth.Authorize.Result> {
+    public async authorize(props: Handlers.OAuth.Authorize.Props): Handlers.OAuth.Authorize.Result {
+        const { input } = props;
         const state = this.cryptoService.generateToken();
         await this.oauthStateCacheService.set({ state, metadata: { provider: input.provider } });
-        return { url: this.resolveProvider(input.provider).getAuthorizationUrl(state) };
+        return { url: this.resolveProvider({ provider: input.provider }).getAuthorizationUrl(state) };
     }
 
-    public async callback(props: Handlers.OAuth.Callback.Props): Promise<Handlers.OAuth.Callback.Result> {
+    public async callback(props: Handlers.OAuth.Callback.Props): Handlers.OAuth.Callback.Result {
         const cached = await this.oauthStateCacheService.get({ state: props.input.state });
 
         if (cached?.provider !== props.input.provider) {
@@ -41,7 +42,7 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
 
         await this.oauthStateCacheService.delete({ state: props.input.state });
 
-        const oauthService = this.resolveProvider(props.input.provider);
+        const oauthService = this.resolveProvider({ provider: props.input.provider });
         const { access_token } = await oauthService.exchangeCode(props.input.code);
         const profile = await oauthService.fetchProfile(access_token);
 
@@ -79,8 +80,8 @@ export class OAuthHandler implements Handlers.OAuth.Contract {
         });
     }
 
-    private resolveProvider(provider: string): OAuth.ResolveProvider {
-        switch (provider) {
+    public resolveProvider(props: Handlers.OAuth.ResolveProvider.Props): Handlers.OAuth.ResolveProvider.Result {
+        switch (props.provider) {
             case "google":
                 return this.googleOAuthService;
             case "github":

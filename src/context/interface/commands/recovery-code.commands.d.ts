@@ -1,8 +1,10 @@
 declare namespace Commands {
     namespace RecoveryCode {
-        interface Contract {
-            regenerate: (props: Regenerate.Props) => Promise<Regenerate.Result>;
+        interface ControllerContract {
+            regenerate: (props: Regenerate.Props) => Regenerate.Result;
         }
+
+        interface Contract extends ControllerContract {}
 
         namespace Regenerate {
             type Props = {
@@ -10,9 +12,11 @@ declare namespace Commands {
                 actor: string;
             };
 
-            type Result = MessageResult & {
-                codes: string[];
-            };
+            type Result = Promise<
+                MessageResult & {
+                    codes: string[];
+                }
+            >;
         }
     }
 }

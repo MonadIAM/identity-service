@@ -22,10 +22,9 @@ export class RecoveryCodeRepository
         super();
     }
 
-    public async getStatus({
-        account,
-    }: Repositories.RecoveryCode.GetStatus.Props): Promise<Repositories.RecoveryCode.GetStatus.Result> {
+    public async getStatus(props: Repositories.RecoveryCode.GetStatus.Props): Repositories.RecoveryCode.GetStatus.Result {
         try {
+            const { account } = props;
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 

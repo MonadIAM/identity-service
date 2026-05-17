@@ -45,7 +45,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         this.historyCheckDays = this.configService.getOrThrow<number>("PASSWORD_HISTORY_CHECK_DAYS");
     }
 
-    public async change(props: Commands.Password.Change.Props): Promise<Commands.Password.Change.Result> {
+    public async change(props: Commands.Password.Change.Props): Commands.Password.Change.Result {
         return await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -73,7 +73,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                     throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
                 }
 
-                await this.checkPasswordHistory(props.actor, props.input.newPassword);
+                await this.checkPasswordHistory({ account: props.actor, password: props.input.newPassword });
 
                 const newHash = await this.hashingService.hash({ value: props.input.newPassword });
 
@@ -87,7 +87,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         });
     }
 
-    public async requestOTP(props: Commands.Password.RequestOTP.Props): Promise<Commands.Password.RequestOTP.Result> {
+    public async requestOTP(props: Commands.Password.RequestOTP.Props): Commands.Password.RequestOTP.Result {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account"] },
             where: { value: props.input.identifier },
@@ -114,7 +114,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         return { message: `${this.dictionaryPath}.RESET_CODE_SENT` };
     }
 
-    public async resetByOTP(props: Commands.Password.ResetByOTP.Props): Promise<Commands.Password.ResetByOTP.Result> {
+    public async resetByOTP(props: Commands.Password.ResetByOTP.Props): Commands.Password.ResetByOTP.Result {
         const cachedAccount = await this.otpCacheService.getReset({ code: props.input.code });
 
         if (!cachedAccount) {
@@ -131,7 +131,7 @@ export class PasswordCommands implements Commands.Password.Contract {
             execute: async (transaction) => {
                 await this.otpCacheService.deleteReset({ code: props.input.code });
 
-                await this.checkPasswordHistory(cachedAccount, props.input.password);
+                await this.checkPasswordHistory({ account: cachedAccount, password: props.input.password });
 
                 const account = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["password"] },
@@ -157,7 +157,7 @@ export class PasswordCommands implements Commands.Password.Contract {
 
     public async resetByRecoveryCode(
         props: Commands.Password.ResetByRecoveryCode.Props,
-    ): Promise<Commands.Password.ResetByRecoveryCode.Result> {
+    ): Commands.Password.ResetByRecoveryCode.Result {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             options: { populate: ["account.password", "account.recoveryCodes"] },
             where: { value: props.input.identifier },
@@ -165,7 +165,7 @@ export class PasswordCommands implements Commands.Password.Contract {
 
         const recoveryCodes = identifier.account.recoveryCodes.getItems().filter(({ usedAt }) => !usedAt);
 
-        const matched = await this.findMatchingRecoveryCode(recoveryCodes, props.input.code);
+        const matched = await this.findMatchingRecoveryCode({ plaintext: props.input.code, codes: recoveryCodes });
 
         if (!matched) {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_RECOVERY_CODE`);
@@ -179,7 +179,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                 ...props,
             },
             execute: async (transaction) => {
-                await this.checkPasswordHistory(identifier.account.id, props.input.password);
+                await this.checkPasswordHistory({ account: identifier.account.id, password: props.input.password });
 
                 const newHash = await this.hashingService.hash({ value: props.input.password });
 
@@ -200,7 +200,10 @@ export class PasswordCommands implements Commands.Password.Contract {
         });
     }
 
-    private async checkPasswordHistory(account: string, password: string): Promise<void> {
+    public async checkPasswordHistory(
+        props: Commands.Password.CheckPasswordHistory.Props,
+    ): Commands.Password.CheckPasswordHistory.Result {
+        const { password, account } = props;
         const since = new Date();
         since.setDate(since.getDate() - this.historyCheckDays);
 
@@ -217,10 +220,10 @@ export class PasswordCommands implements Commands.Password.Contract {
         }
     }
 
-    private async findMatchingRecoveryCode(
-        codes: Entities.RecoveryCode[],
-        plaintext: string,
-    ): Promise<Nullable<Entities.RecoveryCode>> {
+    public async findMatchingRecoveryCode(
+        props: Commands.Password.FindMatchingRecoveryCode.Props,
+    ): Commands.Password.FindMatchingRecoveryCode.Result {
+        const { plaintext, codes } = props;
         const results = await Promise.all(
             codes.map(async (entry) => ({
                 isValid: await this.hashingService.verify({

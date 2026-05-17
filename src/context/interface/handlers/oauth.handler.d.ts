@@ -1,9 +1,15 @@
 declare namespace Handlers {
     namespace OAuth {
-        interface Contract {
-            authorize: (props: Authorize.Props) => Promise<Authorize.Result>;
-            callback: (props: Callback.Props) => Promise<Callback.Result>;
+        interface PrivateContract {
+            resolveProvider: (props: ResolveProvider.Props) => ResolveProvider.Result;
         }
+
+        interface ControllerContract {
+            authorize: (props: Authorize.Props) => Authorize.Result;
+            callback: (props: Callback.Props) => Callback.Result;
+        }
+
+        interface Contract extends PrivateContract, ControllerContract {}
 
         namespace Authorize {
             type Props = {
@@ -12,9 +18,9 @@ declare namespace Handlers {
                 };
             };
 
-            type Result = {
+            type Result = Promise<{
                 url: string;
-            };
+            }>;
         }
 
         namespace Callback {
@@ -27,7 +33,15 @@ declare namespace Handlers {
                 };
             };
 
-            type Result = Commands.OAuth.Signup.Result | Commands.OAuth.Signin.Result;
+            type Result = Promise<Commands.OAuth.Signup.Result | Commands.OAuth.Signin.Result>;
+        }
+
+        namespace ResolveProvider {
+            type Props = {
+                provider: string;
+            };
+
+            type Result = globalThis.OAuth.ResolveProvider;
         }
     }
 }

@@ -22,12 +22,11 @@ export class IdentifierRepository
         super();
     }
 
-    public async getLookupList({
-        pagination,
-        account,
-        term,
-    }: Repositories.Identifier.GetLookupList): Promise<[Entities.Identifier[], number]> {
+    public async getLookupList(
+        props: Repositories.Identifier.GetLookupList.Props,
+    ): Repositories.Identifier.GetLookupList.Result {
         try {
+            const { pagination, account, term } = props;
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Identifier, "i");
 
@@ -53,12 +52,11 @@ export class IdentifierRepository
         }
     }
 
-    public async isLastVerifiedIdentifier({
-        transaction,
-        identifier,
-        account,
-    }: Repositories.Identifier.IsLastVerifiedIdentifier): Promise<boolean> {
+    public async isLastVerifiedIdentifier(
+        props: Repositories.Identifier.IsLastVerifiedIdentifier.Props,
+    ): Repositories.Identifier.IsLastVerifiedIdentifier.Result {
         try {
+            const { transaction, identifier, account } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

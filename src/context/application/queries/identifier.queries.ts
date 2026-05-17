@@ -9,13 +9,13 @@ export class IdentifierQueries implements Queries.Identifier.Contract {
         private readonly identifierRepository: Repositories.Identifier.Contract,
     ) {}
 
-    public findUnique(props: Queries.Identifier.FindUnique.Props): Promise<Queries.Identifier.FindUnique.Result> {
+    public findUnique(props: Queries.Identifier.FindUnique.Props): Queries.Identifier.FindUnique.Result {
         return this.identifierRepository.findUniqueOrThrow({
             where: { id: props.identifier },
         });
     }
 
-    public findMany(props: Queries.Identifier.FindMany.Props): Promise<Queries.Identifier.FindMany.Result> {
+    public findMany(props: Queries.Identifier.FindMany.Props): Queries.Identifier.FindMany.Result {
         return this.identifierRepository.findMany({
             pagination: props.pagination,
             filters: props.filters,
@@ -23,7 +23,7 @@ export class IdentifierQueries implements Queries.Identifier.Contract {
         });
     }
 
-    public getLookupList(props: Queries.Identifier.GetLookupList.Props): Promise<Queries.Identifier.GetLookupList.Result> {
+    public getLookupList(props: Queries.Identifier.GetLookupList.Props): Queries.Identifier.GetLookupList.Result {
         return this.identifierRepository.getLookupList({
             pagination: props.pagination,
             account: props.account,

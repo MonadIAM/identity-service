@@ -1,11 +1,5 @@
-import { Password as PasswordEntity } from "../entities";
-
-declare global {
-    namespace Repositories {
-        namespace Password {
-            type Entity = PasswordEntity;
-
-            interface Contract extends Repositories.Base.Contract<Entity, Adapters.Password.Types> {}
-        }
+declare namespace Repositories {
+    namespace Password {
+        interface Contract extends Repositories.Base.Contract<Entities.Password, Adapters.Password.Types> {}
     }
 }

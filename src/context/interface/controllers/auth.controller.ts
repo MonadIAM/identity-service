@@ -22,7 +22,7 @@ const { OK } = HttpStatus;
 export class AuthController {
     public constructor(
         @Inject(AUTH_HANDLER)
-        private readonly authHandler: Handlers.Auth.Contract,
+        private readonly authHandler: Handlers.Auth.ControllerContract,
     ) {}
 
     @Public()
@@ -30,10 +30,7 @@ export class AuthController {
     @Post("signin")
     @FormatResponse(SigninResultDTO)
     @ApiOperation({ summary: "Signin by password" })
-    public signin(
-        @Body() input: SigninBodyDTO,
-        @Extract.Meta() context: Extract.Meta,
-    ): Promise<Handlers.Auth.Signin.Result> {
+    public signin(@Body() input: SigninBodyDTO, @Extract.Meta() context: Extract.Meta): Handlers.Auth.Signin.Result {
         return this.authHandler.signin({ context, input });
     }
 
@@ -42,7 +39,7 @@ export class AuthController {
     @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Request passwordless OTP" })
-    public requestOTP(@Body() input: RequestOTPBodyDTO): Promise<MessageResult> {
+    public requestOTP(@Body() input: RequestOTPBodyDTO): Handlers.Auth.RequestOTP.Result {
         return this.authHandler.requestOTP({ input });
     }
 
@@ -54,7 +51,7 @@ export class AuthController {
     public verifyOTP(
         @Body() input: VerifyOTPBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<Handlers.Auth.VerifyOTP.Result> {
+    ): Handlers.Auth.VerifyOTP.Result {
         return this.authHandler.verifyOTP({ context, input });
     }
 
@@ -67,7 +64,7 @@ export class AuthController {
         @Body() input: VerifySecondFactorBodyDTO,
         @Extract.Meta() context: Extract.Meta,
         @Tokens.Pending() token?: string,
-    ): Promise<Handlers.Auth.VerifySecondFactor.Result> {
+    ): Handlers.Auth.VerifySecondFactor.Result {
         return this.authHandler.verifySecondFactor({ token, context, input });
     }
 }

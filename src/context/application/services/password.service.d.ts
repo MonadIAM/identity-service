@@ -4,24 +4,32 @@ declare global {
     namespace Services {
         namespace Password {
             interface Contract {
-                rotate: (props: Rotate) => void;
-                purge: (props: Purge) => void;
+                rotate: (props: Rotate.Props) => Rotate.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
-            type Rotate = {
-                transaction: EntityManager;
-                input: {
-                    password: Entities.Password;
-                    newHash: string;
+            namespace Rotate {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        password: Entities.Password;
+                        newHash: string;
+                    };
                 };
-            };
 
-            type Purge = {
-                transaction: EntityManager;
-                input: {
-                    entries: Entities.PasswordHistory[];
+                type Result = void;
+            }
+
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        entries: Entities.PasswordHistory[];
+                    };
                 };
-            };
+
+                type Result = void;
+            }
         }
     }
 }

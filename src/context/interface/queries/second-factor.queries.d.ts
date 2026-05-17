@@ -1,17 +1,17 @@
 declare namespace Queries {
     namespace SecondFactor {
-        type Entity = Repositories.SecondFactor.Entity;
-
-        interface Contract {
-            findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
+        interface ControllerContract {
+            findMany: (props: FindMany.Props) => FindMany.Result;
         }
+
+        interface Contract extends ControllerContract {}
 
         namespace FindMany {
             type Props = {
                 account: string;
             };
 
-            type Result = [Entity[], number];
+            type Result = Promise<[Entities.SecondFactor[], number]>;
         }
     }
 }

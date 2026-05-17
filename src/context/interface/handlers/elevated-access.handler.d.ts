@@ -1,24 +1,34 @@
 declare namespace Handlers {
     namespace ElevatedAccess {
-        interface Contract {
-            bySecondFactor: (props: BySecondFactor) => Promise<MessageResult>;
-            byPassword: (props: ByPassword) => Promise<MessageResult>;
+        interface ControllerContract {
+            bySecondFactor: (props: BySecondFactor.Props) => BySecondFactor.Result;
+            byPassword: (props: ByPassword.Props) => ByPassword.Result;
         }
 
-        type ByPassword = {
-            context: Extract.Meta;
-            actor: string;
-            input: {
-                password: string;
-            };
-        };
+        interface Contract extends ControllerContract {}
 
-        type BySecondFactor = {
-            context: Extract.Meta;
-            actor: string;
-            input: {
-                code: string;
+        namespace ByPassword {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    password: string;
+                };
             };
-        };
+
+            type Result = Promise<MessageResult>;
+        }
+
+        namespace BySecondFactor {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    code: string;
+                };
+            };
+
+            type Result = Promise<MessageResult>;
+        }
     }
 }

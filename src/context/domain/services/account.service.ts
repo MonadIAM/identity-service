@@ -4,7 +4,8 @@ import { Account, Identifier, Password, Profile } from "~context/domain/entities
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountService implements Services.Account.Contract {
-    public create({ transaction, input }: Services.Account.Create.Props): Services.Account.Create.Result {
+    public create(props: Services.Account.Create.Props): Services.Account.Create.Result {
+        const { transaction, input } = props;
         const account = new Account({
             status: input.status,
             subject: input.subject,
@@ -57,7 +58,8 @@ export class AccountService implements Services.Account.Contract {
         return account;
     }
 
-    public deactivate({ transaction, input }: Services.Account.Deactivate): void {
+    public deactivate(props: Services.Account.Deactivate.Props): Services.Account.Deactivate.Result {
+        const { transaction, input } = props;
         for (const session of input.sessions) {
             transaction.remove(session);
         }
@@ -65,7 +67,8 @@ export class AccountService implements Services.Account.Contract {
         input.account.deactivate();
     }
 
-    public suspend({ transaction, input }: Services.Account.Suspend): void {
+    public suspend(props: Services.Account.Suspend.Props): Services.Account.Suspend.Result {
+        const { transaction, input } = props;
         for (const session of input.sessions) {
             transaction.remove(session);
         }
@@ -73,19 +76,23 @@ export class AccountService implements Services.Account.Contract {
         input.account.suspend();
     }
 
-    public purge({ transaction, input }: Services.Account.Purge): void {
+    public purge(props: Services.Account.Purge.Props): Services.Account.Purge.Result {
+        const { transaction, input } = props;
         transaction.remove(input.account);
     }
 
-    public verify({ input }: Services.Account.Verify): void {
+    public verify(props: Services.Account.Verify.Props): Services.Account.Verify.Result {
+        const { input } = props;
         input.account.activate();
     }
 
-    public unsuspend({ input }: Services.Account.Unsuspend): void {
+    public unsuspend(props: Services.Account.Unsuspend.Props): Services.Account.Unsuspend.Result {
+        const { input } = props;
         input.account.unsuspend();
     }
 
-    public restore({ input }: Services.Account.Restore): void {
+    public restore(props: Services.Account.Restore.Props): Services.Account.Restore.Result {
+        const { input } = props;
         input.account.restore();
     }
 }

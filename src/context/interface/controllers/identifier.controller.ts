@@ -43,16 +43,16 @@ const { CREATED, OK } = HttpStatus;
 export class IdentifierController {
     public constructor(
         @Inject(IDENTIFIER_COMMANDS)
-        private readonly identifierCommands: Commands.Identifier.Contract,
+        private readonly identifierCommands: Commands.Identifier.ControllerContract,
         @Inject(IDENTIFIER_QUERIES)
-        private readonly identifierQueries: Queries.Identifier.Contract,
+        private readonly identifierQueries: Queries.Identifier.ControllerContract,
     ) {}
 
     @Get()
     @HttpCode(OK)
     @FormatResponse(IdentifierDTO)
     @ApiOperation({ summary: "Get identifier by ID" })
-    public getById(@Query() { identifier, view }: GetByIdQueryDTO): Promise<Queries.Identifier.Entity> {
+    public getById(@Query() { identifier, view }: GetByIdQueryDTO): Queries.Identifier.FindUnique.Result {
         return this.identifierQueries.findUnique({ identifier, view });
     }
 
@@ -63,7 +63,7 @@ export class IdentifierController {
     public getList(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { view }: BaseReadQueryDTO,
-    ): Promise<[Queries.Identifier.Entity[], number]> {
+    ): Queries.Identifier.FindMany.Result {
         return this.identifierQueries.findMany({ pagination, filters, sort, view });
     }
 
@@ -75,7 +75,7 @@ export class IdentifierController {
         @Body() { pagination }: GetLookupListBodyDTO,
         @Query() { term }: GetLookupListQueryDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
-    ): Promise<[Queries.Identifier.Entity[], number]> {
+    ): Queries.Identifier.GetLookupList.Result {
         return this.identifierQueries.getLookupList({ pagination, account, term });
     }
 
@@ -87,7 +87,7 @@ export class IdentifierController {
         @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Identifier.Create.Result {
         return this.identifierCommands.create({ context, actor, input });
     }
 
@@ -98,7 +98,7 @@ export class IdentifierController {
     public resend(
         @Body() input: ResendBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-    ): Promise<MessageResult> {
+    ): Commands.Identifier.Resend.Pesult {
         return this.identifierCommands.resend({ actor, input });
     }
 
@@ -110,7 +110,7 @@ export class IdentifierController {
         @Body() input: VerifyBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Identifier.Verify.Result {
         return this.identifierCommands.verify({ context, actor, input });
     }
 
@@ -122,7 +122,7 @@ export class IdentifierController {
         @Body() input: ToggleNotificationsBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Identifier.ToggleNotifications.Result {
         return this.identifierCommands.toggleNotifications({ context, actor, input });
     }
 
@@ -134,7 +134,7 @@ export class IdentifierController {
         @Body() input: TogglePublicContactBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Identifier.TogglePublicContact.Result {
         return this.identifierCommands.togglePublicContact({ context, actor, input });
     }
 
@@ -147,7 +147,7 @@ export class IdentifierController {
         @Query() input: PurgeQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Identifier.Purge.Result {
         return this.identifierCommands.purge({ context, actor, input });
     }
 }

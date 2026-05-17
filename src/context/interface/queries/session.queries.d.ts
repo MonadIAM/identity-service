@@ -1,11 +1,11 @@
 declare namespace Queries {
     namespace Session {
-        type Entity = Repositories.Session.Entity;
-
-        interface Contract {
-            getCurrent: (props: GetCurrent.Props) => Promise<GetCurrent.Result>;
-            findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
+        interface ControllerContract {
+            getCurrent: (props: GetCurrent.Props) => GetCurrent.Result;
+            findMany: (props: FindMany.Props) => FindMany.Result;
         }
+
+        interface Contract extends ControllerContract {}
 
         namespace GetCurrent {
             type Props = {
@@ -13,7 +13,7 @@ declare namespace Queries {
                 session: string;
             };
 
-            type Result = Entity;
+            type Result = Promise<Entities.Session>;
         }
 
         namespace FindMany {
@@ -21,7 +21,7 @@ declare namespace Queries {
                 account: string;
             };
 
-            type Result = [Entity[], number];
+            type Result = Promise<[Entities.Session[], number]>;
         }
     }
 }

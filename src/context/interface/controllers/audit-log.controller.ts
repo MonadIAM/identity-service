@@ -15,7 +15,7 @@ const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NO
 export class AuditLogController {
     public constructor(
         @Inject(AUDIT_LOG_QUERIES)
-        private readonly auditLogQueries: Queries.AuditLog.Contract,
+        private readonly auditLogQueries: Queries.AuditLog.ControllerContract,
     ) {}
 
     @Get()
@@ -24,7 +24,7 @@ export class AuditLogController {
     @ApiResponse({ status: OK, type: AuditLogDTO })
     @ApiOperation({ summary: "Returns a audit log by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
-    public getById(@Query() { log }: GetByIdQueryDTO): Promise<Queries.AuditLog.Entity> {
+    public getById(@Query() { log }: GetByIdQueryDTO): Queries.AuditLog.FindUnique.Result {
         return this.auditLogQueries.findUnique({ log });
     }
 
@@ -34,7 +34,7 @@ export class AuditLogController {
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({ summary: "Returns a paginated list of audit logs" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
-    public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Promise<[Queries.AuditLog.Entity[], number]> {
+    public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Queries.AuditLog.FindMany.Result {
         return this.auditLogQueries.findMany({ pagination, filters, sort });
     }
 }

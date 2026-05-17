@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
-import { AccountStatus, IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE, PENDING_AUTH_CACHE_SERVICE } from "~context/infrastructure/services";
+import { AccountStatus, IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -39,7 +39,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async signin(props: Handlers.Auth.Signin.Props): Promise<Handlers.Auth.Signin.Result> {
+    public async signin(props: Handlers.Auth.Signin.Props): Handlers.Auth.Signin.Result {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.secondFactors", "account.password"] },
             where: { value: props.input.identifier },
@@ -76,7 +76,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
         }
     }
 
-    public async requestOTP(props: Handlers.Auth.RequestOTP): Promise<MessageResult> {
+    public async requestOTP(props: Handlers.Auth.RequestOTP.Props): Handlers.Auth.RequestOTP.Result {
         const identifier = await this.identifierRepository.findUnique({
             where: { value: props.input.identifier },
         });
@@ -104,7 +104,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
         return { message: `${this.dictionaryPath}.OTP_SENT` };
     }
 
-    public async verifyOTP(props: Handlers.Auth.VerifyOTP.Props): Promise<Handlers.Auth.VerifyOTP.Result> {
+    public async verifyOTP(props: Handlers.Auth.VerifyOTP.Props): Handlers.Auth.VerifyOTP.Result {
         const cachedIdentifier = await this.otpCacheService.getLogin({ code: props.input.code });
 
         if (!cachedIdentifier) {
@@ -126,7 +126,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
 
     public async verifySecondFactor(
         props: Handlers.Auth.VerifySecondFactor.Props,
-    ): Promise<Handlers.Auth.VerifySecondFactor.Result> {
+    ): Handlers.Auth.VerifySecondFactor.Result {
         if (!props.token) {
             throw HandlerException.unauthorized(`${this.dictionaryPath}.PENDING_TOKEN_MISSING`);
         }
@@ -162,7 +162,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
         return { message: `${this.dictionaryPath}.VERIFIED`, ...session };
     }
 
-    private async createSession(props: Handlers.Auth.CreateSession): Promise<Services.Session.Create.Result> {
+    public async createSession(props: Handlers.Auth.CreateSession.Props): Handlers.Auth.CreateSession.Result {
         return await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -189,12 +189,12 @@ export class AuthHandler implements Handlers.Auth.Contract {
         });
     }
 
-    private assertCanAuth(account: Entities.Account): void {
-        if (account.status === AccountStatus.SUSPENDED) {
+    public assertCanAuth(props: Handlers.Auth.AssertCanAuth.Props): Handlers.Auth.AssertCanAuth.Result {
+        if (props.status === AccountStatus.SUSPENDED) {
             throw HandlerException.forbidden(`${this.dictionaryPath}.ACCOUNT_SUSPENDED`);
         }
 
-        if (account.status === AccountStatus.PENDING) {
+        if (props.status === AccountStatus.PENDING) {
             throw HandlerException.forbidden(`${this.dictionaryPath}.ACCOUNT_NOT_VERIFIED`);
         }
     }

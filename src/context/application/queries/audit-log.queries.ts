@@ -9,13 +9,13 @@ export class AuditLogQueries implements Queries.AuditLog.Contract {
         private readonly auditLogRepository: Repositories.AuditLog.Contract,
     ) {}
 
-    public findUnique(props: Queries.AuditLog.FindUnique.Props): Promise<Queries.AuditLog.FindUnique.Result> {
+    public findUnique(props: Queries.AuditLog.FindUnique.Props): Queries.AuditLog.FindUnique.Result {
         return this.auditLogRepository.findUniqueOrThrow({
             where: { id: props.log },
         });
     }
 
-    public findMany(props: Queries.AuditLog.FindMany.Props): Promise<Queries.AuditLog.FindMany.Result> {
+    public findMany(props: Queries.AuditLog.FindMany.Props): Queries.AuditLog.FindMany.Result {
         return this.auditLogRepository.findMany({
             pagination: props.pagination,
             filters: props.filters,

@@ -13,7 +13,8 @@ export class IdentifierService implements Services.Identifier.Contract {
         private readonly identifierRepository: Repositories.Identifier.Contract,
     ) {}
 
-    public create({ transaction, input }: Services.Identifier.Create.Props): Services.Identifier.Create.Result {
+    public create(props: Services.Identifier.Create.Props): Services.Identifier.Create.Result {
+        const { transaction, input } = props;
         const identifierEntity = new Identifier({
             providerUserId: input.identifier.providerUserId,
             provider: input.identifier.provider,
@@ -27,19 +28,27 @@ export class IdentifierService implements Services.Identifier.Contract {
         return identifierEntity;
     }
 
-    public verify({ input }: Services.Identifier.Verify): void {
+    public verify(props: Services.Identifier.Verify.Props): Services.Identifier.Verify.Result {
+        const { input } = props;
         input.identifier.verify();
     }
 
-    public toggleNotifications({ input }: Services.Identifier.ToggleNotifications): void {
+    public toggleNotifications(
+        props: Services.Identifier.ToggleNotifications.Props,
+    ): Services.Identifier.ToggleNotifications.Result {
+        const { input } = props;
         input.identifier.toggleNotifications();
     }
 
-    public togglePublicContact({ input }: Services.Identifier.TogglePublicContact): void {
+    public togglePublicContact(
+        props: Services.Identifier.TogglePublicContact.Props,
+    ): Services.Identifier.TogglePublicContact.Result {
+        const { input } = props;
         input.identifier.togglePublicContact();
     }
 
-    public async purge({ transaction, input }: Services.Identifier.Purge): Promise<void> {
+    public async purge(props: Services.Identifier.Purge.Props): Services.Identifier.Purge.Result {
+        const { transaction, input } = props;
         const isLastVerifiedIdentifier = await this.identifierRepository.isLastVerifiedIdentifier({
             identifier: input.identifier.id,
             account: input.account,

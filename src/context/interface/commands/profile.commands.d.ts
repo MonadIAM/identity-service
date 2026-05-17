@@ -1,8 +1,10 @@
 declare namespace Commands {
     namespace Profile {
-        interface Contract {
-            update: (props: Update.Props) => Promise<Update.Result>;
+        interface ControllerContract {
+            update: (props: Update.Props) => Update.Result;
         }
+
+        interface Contract extends ControllerContract {}
 
         namespace Update {
             type Props = {
@@ -11,7 +13,7 @@ declare namespace Commands {
                 input: Entities.Profile.ChangeDataProps;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
     }
 }

@@ -1,11 +1,18 @@
 declare namespace Handlers {
     namespace Auth {
-        interface Contract {
-            verifySecondFactor: (props: VerifySecondFactor.Props) => Promise<VerifySecondFactor.Result>;
-            verifyOTP: (props: VerifyOTP.Props) => Promise<VerifyOTP.Result>;
-            requestOTP: (props: RequestOTP) => Promise<MessageResult>;
-            signin: (props: Signin.Props) => Promise<Signin.Result>;
+        interface PrivateContract {
+            createSession: (props: CreateSession.Props) => CreateSession.Result;
+            assertCanAuth: (props: AssertCanAuth.Props) => AssertCanAuth.Result;
         }
+
+        interface ControllerContract {
+            verifySecondFactor: (props: VerifySecondFactor.Props) => VerifySecondFactor.Result;
+            requestOTP: (props: RequestOTP.Props) => RequestOTP.Result;
+            verifyOTP: (props: VerifyOTP.Props) => VerifyOTP.Result;
+            signin: (props: Signin.Props) => Signin.Result;
+        }
+
+        interface Contract extends PrivateContract, ControllerContract {}
 
         namespace Signin {
             type Props = {
@@ -16,14 +23,20 @@ declare namespace Handlers {
                 };
             };
 
-            type Result = MessageResult & (Services.Session.Create.Result | { pendingToken: string; requires2FA: true });
+            type Result = Promise<
+                MessageResult & (Awaited<Services.Session.Create.Result> | { pendingToken: string; requires2FA: true })
+            >;
         }
 
-        type RequestOTP = {
-            input: {
-                identifier: string;
+        namespace RequestOTP {
+            type Props = {
+                input: {
+                    identifier: string;
+                };
             };
-        };
+
+            type Result = Promise<MessageResult>;
+        }
 
         namespace VerifyOTP {
             type Props = {
@@ -33,7 +46,7 @@ declare namespace Handlers {
                 };
             };
 
-            type Result = MessageResult & Services.Session.Create.Result;
+            type Result = Promise<MessageResult & Awaited<Services.Session.Create.Result>>;
         }
 
         namespace VerifySecondFactor {
@@ -45,12 +58,21 @@ declare namespace Handlers {
                 };
             };
 
-            type Result = MessageResult & Services.Session.Create.Result;
+            type Result = Promise<MessageResult & Awaited<Services.Session.Create.Result>>;
         }
 
-        type CreateSession = {
-            account: Entities.Account;
-            context: Extract.Meta;
-        };
+        namespace CreateSession {
+            type Props = {
+                account: Entities.Account;
+                context: Extract.Meta;
+            };
+
+            type Result = Services.Session.Create.Result;
+        }
+
+        namespace AssertCanAuth {
+            type Props = Entities.Account;
+            type Result = void;
+        }
     }
 }

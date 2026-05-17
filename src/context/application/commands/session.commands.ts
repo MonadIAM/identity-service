@@ -2,11 +2,11 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { IdentityActionType, EntityType, KafkaTopic, AggregateType, EventType } from "~context/enums";
+import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { SESSION_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -33,7 +33,7 @@ export class SessionCommands implements Commands.Session.Contract {
         this.sessionTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
     }
 
-    public async refresh(props: Commands.Session.Refresh.Props): Promise<Commands.Session.Refresh.Result> {
+    public async refresh(props: Commands.Session.Refresh.Props): Commands.Session.Refresh.Result {
         if (!props.input.refreshToken || !props.input.session) {
             throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_REFRESH_TOKEN`);
         }
@@ -81,7 +81,7 @@ export class SessionCommands implements Commands.Session.Contract {
         return { message: `${this.dictionaryPath}.REFRESHED`, accessToken, refreshToken };
     }
 
-    public async revoke(props: Commands.Session.Revoke.Props): Promise<Commands.Session.Revoke.Result> {
+    public async revoke(props: Commands.Session.Revoke.Props): Commands.Session.Revoke.Result {
         await this.transactionalService.run<Entities.Session[]>({
             resource: this.resource,
             audit: {
@@ -116,7 +116,7 @@ export class SessionCommands implements Commands.Session.Contract {
         return { message: `${this.dictionaryPath}.REVOKED` };
     }
 
-    public async revokeAll(props: Commands.Session.RevokeAll.Props): Promise<Commands.Session.RevokeAll.Result> {
+    public async revokeAll(props: Commands.Session.RevokeAll.Props): Commands.Session.RevokeAll.Result {
         await this.transactionalService.run<Entities.Session[]>({
             resource: this.resource,
             audit: {

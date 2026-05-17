@@ -18,7 +18,8 @@ export class SessionService implements Services.Session.Contract {
         this.sessionExpiryDays = this.configService.getOrThrow<number>("SESSION_EXPIRY_DAYS");
     }
 
-    public async create({ transaction, input }: Services.Session.Create.Props): Promise<Services.Session.Create.Result> {
+    public async create(props: Services.Session.Create.Props): Services.Session.Create.Result {
+        const { transaction, input } = props;
         const session = new Session({
             expiresAt: this.resolveExpiry(),
             userAgent: input.userAgent,
@@ -43,7 +44,8 @@ export class SessionService implements Services.Session.Contract {
         return { accessToken, refreshToken };
     }
 
-    public purge({ transaction, input }: Services.Session.Purge): void {
+    public purge(props: Services.Session.Purge.Props): Services.Session.Purge.Result {
+        const { transaction, input } = props;
         for (const session of input.sessions) {
             transaction.remove(session);
         }

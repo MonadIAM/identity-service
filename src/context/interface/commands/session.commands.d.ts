@@ -1,10 +1,12 @@
 declare namespace Commands {
     namespace Session {
-        interface Contract {
-            revokeAll: (props: RevokeAll.Props) => Promise<RevokeAll.Result>;
-            refresh: (props: Refresh.Props) => Promise<Refresh.Result>;
-            revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
+        interface ControllerContract {
+            revokeAll: (props: RevokeAll.Props) => RevokeAll.Result;
+            refresh: (props: Refresh.Props) => Refresh.Result;
+            revoke: (props: Revoke.Props) => Revoke.Result;
         }
+
+        interface Contract extends ControllerContract {}
 
         namespace Refresh {
             type Props = {
@@ -15,7 +17,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult & Services.Session.Create.Result;
+            type Result = Promise<MessageResult & Awaited<Services.Session.Create.Result>>;
         }
 
         namespace Revoke {
@@ -27,7 +29,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace RevokeAll {
@@ -36,7 +38,7 @@ declare namespace Commands {
                 actor: string;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
     }
 }

@@ -25,16 +25,16 @@ const { CREATED, OK } = HttpStatus;
 export class SecondFactorController {
     public constructor(
         @Inject(SECOND_FACTOR_COMMANDS)
-        private readonly secondFactorCommands: Commands.SecondFactor.Contract,
+        private readonly secondFactorCommands: Commands.SecondFactor.ControllerContract,
         @Inject(SECOND_FACTOR_QUERIES)
-        private readonly secondFactorQueries: Queries.SecondFactor.Contract,
+        private readonly secondFactorQueries: Queries.SecondFactor.ControllerContract,
     ) {}
 
     @Get("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiOperation({ summary: "Get list of second factors" })
-    public getList(@Extract.Session() { account }: Extract.Session.Auth): Promise<[Queries.SecondFactor.Entity[], number]> {
+    public getList(@Extract.Session() { account }: Extract.Session.Auth): Queries.SecondFactor.FindMany.Result {
         return this.secondFactorQueries.findMany({ account });
     }
 
@@ -46,7 +46,7 @@ export class SecondFactorController {
         @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<Commands.SecondFactor.Create.Result> {
+    ): Commands.SecondFactor.Create.Result {
         return this.secondFactorCommands.create({ context, actor, input });
     }
 
@@ -58,7 +58,7 @@ export class SecondFactorController {
         @Body() input: VerifyBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<Commands.SecondFactor.Verify.Result> {
+    ): Commands.SecondFactor.Verify.Result {
         return this.secondFactorCommands.verify({ context, actor, input });
     }
 
@@ -71,7 +71,7 @@ export class SecondFactorController {
         @Query() input: PurgeQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.SecondFactor.Purge.Result {
         return this.secondFactorCommands.purge({ context, actor, input });
     }
 
@@ -80,7 +80,7 @@ export class SecondFactorController {
     @Post("reset")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset all factors by master code" })
-    public reset(@Body() input: ResetBodyDTO, @Extract.Meta() context: Extract.Meta): Promise<MessageResult> {
+    public reset(@Body() input: ResetBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.SecondFactor.Reset.Result {
         return this.secondFactorCommands.reset({ context, input });
     }
 }

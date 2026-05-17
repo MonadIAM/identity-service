@@ -17,16 +17,16 @@ const { OK } = HttpStatus;
 export class SessionController {
     public constructor(
         @Inject(SESSION_COMMANDS)
-        private readonly sessionCommands: Commands.Session.Contract,
+        private readonly sessionCommands: Commands.Session.ControllerContract,
         @Inject(SESSION_QUERIES)
-        private readonly sessionQueries: Queries.Session.Contract,
+        private readonly sessionQueries: Queries.Session.ControllerContract,
     ) {}
 
     @Get()
     @HttpCode(OK)
     @FormatResponse(SessionDTO)
     @ApiOperation({ summary: "Get current session" })
-    public getCurrent(@Extract.Session() { session, account }: Extract.Session.Auth): Promise<Queries.Session.Entity> {
+    public getCurrent(@Extract.Session() { session, account }: Extract.Session.Auth): Queries.Session.GetCurrent.Result {
         return this.sessionQueries.getCurrent({ session, account });
     }
 
@@ -34,7 +34,7 @@ export class SessionController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiOperation({ summary: "Get list of sessions" })
-    public getList(@Extract.Session() { account }: Extract.Session.Auth): Promise<[Queries.Session.Entity[], number]> {
+    public getList(@Extract.Session() { account }: Extract.Session.Auth): Queries.Session.FindMany.Result {
         return this.sessionQueries.findMany({ account });
     }
 
@@ -47,7 +47,7 @@ export class SessionController {
         @Extract.Session() { session }: Extract.Session.Public,
         @Extract.Meta() context: Extract.Meta,
         @Tokens.Refresh() refreshToken?: string,
-    ): Promise<Commands.Session.Refresh.Result> {
+    ): Commands.Session.Refresh.Result {
         return this.sessionCommands.refresh({ context, input: { refreshToken, session } });
     }
 
@@ -58,7 +58,7 @@ export class SessionController {
     public logout(
         @Extract.Session() { account: actor, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Session.Revoke.Result {
         return this.sessionCommands.revoke({ context, actor, input: { sessions: [session] } });
     }
 
@@ -70,7 +70,7 @@ export class SessionController {
         @Body() input: RevokeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Session.Revoke.Result {
         return this.sessionCommands.revoke({ context, actor, input });
     }
 
@@ -81,7 +81,7 @@ export class SessionController {
     public revokeAll(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Session.RevokeAll.Result {
         return this.sessionCommands.revokeAll({ context, actor });
     }
 }

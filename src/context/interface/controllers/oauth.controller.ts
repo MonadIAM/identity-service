@@ -15,14 +15,14 @@ const { OK } = HttpStatus;
 export class OAuthController {
     public constructor(
         @Inject(OAUTH_HANDLER)
-        private readonly oauthHandler: Handlers.OAuth.Contract,
+        private readonly oauthHandler: Handlers.OAuth.ControllerContract,
     ) {}
 
     @Public()
     @HttpCode(OK)
     @Get("authorize")
     @ApiOperation({ summary: "Get OAuth authorization URL" })
-    public authorize(@Query() input: AuthorizeBodyDTO): Promise<Handlers.OAuth.Authorize.Result> {
+    public authorize(@Query() input: AuthorizeBodyDTO): Handlers.OAuth.Authorize.Result {
         return this.oauthHandler.authorize({ input });
     }
 
@@ -33,7 +33,7 @@ export class OAuthController {
     public callback(
         @Query() input: CallbackBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<Handlers.OAuth.Callback.Result> {
+    ): Handlers.OAuth.Callback.Result {
         return this.oauthHandler.callback({ context, input });
     }
 }

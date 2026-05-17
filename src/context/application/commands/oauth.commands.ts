@@ -3,8 +3,8 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { AccountSubject, AccountStatus, IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
-import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthCommands implements Commands.OAuth.Contract {
@@ -30,7 +30,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         private readonly cryptoService: CommonServices.Crypto.Contract,
     ) {}
 
-    public async signup(props: Commands.OAuth.Signup.Props): Promise<Commands.OAuth.Signup.Result> {
+    public async signup(props: Commands.OAuth.Signup.Props): Commands.OAuth.Signup.Result {
         const identifier = props.input.email
             ? await this.identifierRepository.findUnique({
                   options: { populate: ["account"] },
@@ -45,7 +45,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         }
     }
 
-    public async signin(props: Commands.OAuth.Signin.Props): Promise<Commands.OAuth.Signin.Result> {
+    public async signin(props: Commands.OAuth.Signin.Props): Commands.OAuth.Signin.Result {
         const session = await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -71,7 +71,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         };
     }
 
-    private async createNew(props: Commands.OAuth.Signup.Props): Promise<Commands.OAuth.Signup.Result> {
+    public async createNew(props: Commands.OAuth.Create.Props): Commands.OAuth.Create.Result {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
@@ -125,7 +125,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         };
     }
 
-    private async linkToExisting(props: Commands.OAuth.Link): Promise<Commands.OAuth.Signup.Result> {
+    public async linkToExisting(props: Commands.OAuth.Link.Props): Commands.OAuth.Link.Result {
         const session = await this.transactionalService.run({
             resource: this.resource,
             audit: {

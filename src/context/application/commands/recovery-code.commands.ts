@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, EntityType } from "~context/enums";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, HASHING_SERVICE } from "~common/services";
 import { RECOVERY_CODE_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { IdentityActionType, EntityType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
@@ -24,9 +24,7 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
         private readonly cryptoService: CommonServices.Crypto.Contract,
     ) {}
 
-    public async regenerate(
-        props: Commands.RecoveryCode.Regenerate.Props,
-    ): Promise<Commands.RecoveryCode.Regenerate.Result> {
+    public async regenerate(props: Commands.RecoveryCode.Regenerate.Props): Commands.RecoveryCode.Regenerate.Result {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 

@@ -32,7 +32,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async create(props: Commands.Identifier.Create.Props): Promise<Commands.Identifier.Create.Result> {
+    public async create(props: Commands.Identifier.Create.Props): Commands.Identifier.Create.Result {
         const identifier = await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -68,7 +68,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async resend(props: Commands.Identifier.Resend.Props): Promise<Commands.Identifier.Resend.Pesult> {
+    public async resend(props: Commands.Identifier.Resend.Props): Commands.Identifier.Resend.Pesult {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             where: {
                 value: props.input.identifier,
@@ -89,7 +89,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         return { message: `${this.dictionaryPath}.CODE_RESENT` };
     }
 
-    public async verify(props: Commands.Identifier.Verify.Props): Promise<Commands.Identifier.Verify.Result> {
+    public async verify(props: Commands.Identifier.Verify.Props): Commands.Identifier.Verify.Result {
         const cachedIdentifier = await this.otpCacheService.getIdentifier({ code: props.input.code });
 
         if (!cachedIdentifier) {
@@ -124,7 +124,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
 
     public async toggleNotifications(
         props: Commands.Identifier.ToggleNotifications.Props,
-    ): Promise<Commands.Identifier.ToggleNotifications.Result> {
+    ): Commands.Identifier.ToggleNotifications.Result {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -150,7 +150,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
 
     public async togglePublicContact(
         props: Commands.Identifier.TogglePublicContact.Props,
-    ): Promise<Commands.Identifier.TogglePublicContact.Result> {
+    ): Commands.Identifier.TogglePublicContact.Result {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -174,7 +174,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         return { message: `${this.dictionaryPath}.PUBLIC_CONTACT_TOGGLED` };
     }
 
-    public async purge(props: Commands.Identifier.Purge.Props): Promise<Commands.Identifier.Purge.Result> {
+    public async purge(props: Commands.Identifier.Purge.Props): Commands.Identifier.Purge.Result {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -202,7 +202,8 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         return { message: `${this.dictionaryPath}.PURGED` };
     }
 
-    private async sendOTP({ identifier, value, type }: Commands.Identifier.SendOTP): Promise<void> {
+    public async sendOTP(props: Commands.Identifier.SendOTP.Props): Commands.Identifier.SendOTP.Result {
+        const { identifier, value, type } = props;
         const otp = this.cryptoService.generateOTP();
         await this.otpCacheService.setIdentifier({ code: otp, identifier });
 

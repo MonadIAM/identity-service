@@ -1,8 +1,10 @@
 declare namespace Queries {
     namespace RecoveryCode {
-        interface Contract {
-            getStatus: (props: GetStatus.Props) => Promise<GetStatus.Result>;
+        interface ControllerContract {
+            getStatus: (props: GetStatus.Props) => GetStatus.Result;
         }
+
+        interface Contract extends ControllerContract {}
 
         namespace GetStatus {
             type Result = Repositories.RecoveryCode.GetStatus.Result;

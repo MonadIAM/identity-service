@@ -21,7 +21,7 @@ export class ElevatedAccessHandler implements Handlers.ElevatedAccess.Contract {
         private readonly hashingService: CommonServices.Hashing.Contract,
     ) {}
 
-    public async byPassword(props: Handlers.ElevatedAccess.ByPassword): Promise<MessageResult> {
+    public async byPassword(props: Handlers.ElevatedAccess.ByPassword.Props): Handlers.ElevatedAccess.ByPassword.Result {
         const account = await this.accountRepository.findUniqueOrThrow({
             options: { populate: ["password"] },
             where: { id: props.actor },
@@ -44,7 +44,9 @@ export class ElevatedAccessHandler implements Handlers.ElevatedAccess.Contract {
         return { message: `${this.dictionaryPath}.ELEVATED` };
     }
 
-    public async bySecondFactor(props: Handlers.ElevatedAccess.BySecondFactor): Promise<MessageResult> {
+    public async bySecondFactor(
+        props: Handlers.ElevatedAccess.BySecondFactor.Props,
+    ): Handlers.ElevatedAccess.BySecondFactor.Result {
         const factor = await this.secondFactorRepository.findUnique({
             where: {
                 confirmedAt: { $ne: null },

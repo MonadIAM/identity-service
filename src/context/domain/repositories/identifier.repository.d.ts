@@ -1,28 +1,32 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Identifier as IdentifierEntity } from "../entities";
-
 declare global {
     namespace Repositories {
         namespace Identifier {
-            type Entity = IdentifierEntity;
-
-            interface Contract extends Repositories.Base.Contract<Entity, Adapters.Identifier.Types> {
-                isLastVerifiedIdentifier: (props: IsLastVerifiedIdentifier) => Promise<boolean>;
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
+            interface Contract extends Repositories.Base.Contract<Entities.Identifier, Adapters.Identifier.Types> {
+                isLastVerifiedIdentifier: (props: IsLastVerifiedIdentifier.Props) => IsLastVerifiedIdentifier.Result;
+                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
             }
 
-            type GetLookupList = {
-                pagination: Pagination;
-                account: string;
-                term: string;
-            };
+            namespace GetLookupList {
+                type Props = {
+                    pagination: Pagination;
+                    account: string;
+                    term: string;
+                };
 
-            type IsLastVerifiedIdentifier = {
-                transaction?: EntityManager;
-                identifier: string;
-                account: string;
-            };
+                type Result = Promise<[Entities.Identifier[], number]>;
+            }
+
+            namespace IsLastVerifiedIdentifier {
+                type Props = {
+                    transaction?: EntityManager;
+                    identifier: string;
+                    account: string;
+                };
+
+                type Result = Promise<boolean>;
+            }
         }
     }
 }

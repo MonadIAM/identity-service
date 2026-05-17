@@ -3,14 +3,20 @@ import { IdentifierType } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Identifier {
-            interface Contract {
-                toggleNotifications: (props: ToggleNotifications.Props) => Promise<ToggleNotifications.Result>;
-                togglePublicContact: (props: TogglePublicContact.Props) => Promise<ToggleNotifications.Result>;
-                verify: (props: Verify.Props) => Promise<MessageResult>;
-                create: (props: Create.Props) => Promise<Create.Result>;
-                resend: (props: Resend.Props) => Promise<Resend.Pesult>;
-                purge: (props: Purge.Props) => Promise<Purge.Result>;
+            interface PrivateContract {
+                sendOTP: (props: SendOTP.Props) => SendOTP.Result;
             }
+
+            interface ControllerContract {
+                toggleNotifications: (props: ToggleNotifications.Props) => ToggleNotifications.Result;
+                togglePublicContact: (props: TogglePublicContact.Props) => ToggleNotifications.Result;
+                verify: (props: Verify.Props) => Verify.Result;
+                create: (props: Create.Props) => Create.Result;
+                resend: (props: Resend.Props) => Resend.Pesult;
+                purge: (props: Purge.Props) => Purge.Result;
+            }
+
+            interface Contract extends PrivateContract, ControllerContract {}
 
             namespace Create {
                 type Props = {
@@ -22,7 +28,7 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Resend {
@@ -33,7 +39,7 @@ declare global {
                     };
                 };
 
-                type Pesult = MessageResult;
+                type Pesult = Promise<MessageResult>;
             }
 
             namespace Verify {
@@ -45,7 +51,7 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Purge {
@@ -57,7 +63,7 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace ToggleNotifications {
@@ -69,7 +75,7 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace TogglePublicContact {
@@ -81,14 +87,18 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
-            type SendOTP = {
-                identifier: string;
-                type: IdentifierType;
-                value: string;
-            };
+            namespace SendOTP {
+                type Props = {
+                    identifier: string;
+                    type: IdentifierType;
+                    value: string;
+                };
+
+                type Result = Promise<void>;
+            }
         }
     }
 }

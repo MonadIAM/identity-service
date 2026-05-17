@@ -1,11 +1,13 @@
 declare namespace Commands {
     namespace SecondFactor {
-        interface Contract {
-            create: (props: Create.Props) => Promise<Create.Result>;
-            verify: (props: Verify.Props) => Promise<Verify.Result>;
-            purge: (props: Purge.Props) => Promise<Purge.Result>;
-            reset: (props: Reset.Props) => Promise<Reset.Result>;
+        interface ControllerContract {
+            create: (props: Create.Props) => Create.Result;
+            verify: (props: Verify.Props) => Verify.Result;
+            purge: (props: Purge.Props) => Purge.Result;
+            reset: (props: Reset.Props) => Reset.Result;
         }
+
+        interface Contract extends ControllerContract {}
 
         namespace Create {
             type Props = {
@@ -16,9 +18,9 @@ declare namespace Commands {
                 };
             };
 
-            type Result = {
+            type Result = Promise<{
                 uri: string;
-            };
+            }>;
         }
 
         namespace Verify {
@@ -31,9 +33,11 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult & {
-                code?: string;
-            };
+            type Result = Promise<
+                MessageResult & {
+                    code?: string;
+                }
+            >;
         }
 
         namespace Purge {
@@ -45,7 +49,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace Reset {
@@ -57,7 +61,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
     }
 }

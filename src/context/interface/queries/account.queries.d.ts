@@ -3,12 +3,12 @@ import { ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace Account {
-            type Entity = Repositories.Account.Entity;
-
-            interface Contract {
-                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
-                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
+            interface ControllerContract {
+                findUnique: (props: FindUnique.Props) => FindUnique.Result;
+                findMany: (props: FindMany.Props) => FindMany.Result;
             }
+
+            interface Contract extends ControllerContract {}
 
             namespace FindUnique {
                 type Props = {
@@ -16,7 +16,7 @@ declare global {
                     account: string;
                 };
 
-                type Result = Entity;
+                type Result = Promise<Entities.Account>;
             }
 
             namespace FindMany {
@@ -27,7 +27,7 @@ declare global {
                     view: ResponseViewType;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Account[], number]>;
             }
         }
     }

@@ -1,18 +1,16 @@
-import { Account as AccountEntity } from "../entities";
+declare namespace Repositories {
+    namespace Account {
+        interface Contract extends Repositories.Base.Contract<Entities.Account, Adapters.Account.Types> {
+            getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
+        }
 
-declare global {
-    namespace Repositories {
-        namespace Account {
-            type Entity = AccountEntity;
-
-            interface Contract extends Repositories.Base.Contract<Entity, Adapters.Account.Types> {
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
-            }
-
-            type GetLookupList = {
+        namespace GetLookupList {
+            type Props = {
                 pagination: Pagination;
                 term: string;
             };
+
+            type Result = Promise<[Entities.Account[], number]>;
         }
     }
 }

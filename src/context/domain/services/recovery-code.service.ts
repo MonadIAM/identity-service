@@ -4,13 +4,15 @@ import { RecoveryCode } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeService implements Services.RecoveryCode.Contract {
-    public generate({ transaction, input }: Services.RecoveryCode.Generate): void {
+    public generate(props: Services.RecoveryCode.Generate.Props): Services.RecoveryCode.Generate.Result {
+        const { transaction, input } = props;
         for (const hash of input.hashes) {
             transaction.persist(new RecoveryCode({ account: input.account, hash }));
         }
     }
 
-    public regenerate({ transaction, input }: Services.RecoveryCode.Regenerate): void {
+    public regenerate(props: Services.RecoveryCode.Regenerate.Props): Services.RecoveryCode.Regenerate.Result {
+        const { transaction, input } = props;
         for (const code of input.account.recoveryCodes) {
             transaction.remove(code);
         }

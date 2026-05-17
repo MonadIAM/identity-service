@@ -1,11 +1,18 @@
 declare namespace Commands {
     namespace Password {
-        interface Contract {
-            resetByRecoveryCode: (props: ResetByRecoveryCode.Props) => Promise<ResetByRecoveryCode.Result>;
-            requestOTP: (props: RequestOTP.Props) => Promise<RequestOTP.Result>;
-            resetByOTP: (props: ResetByOTP.Props) => Promise<ResetByOTP.Result>;
-            change: (props: Change.Props) => Promise<Change.Result>;
+        interface PrivateContract {
+            findMatchingRecoveryCode: (props: FindMatchingRecoveryCode.Props) => FindMatchingRecoveryCode.Result;
+            checkPasswordHistory: (props: CheckPasswordHistory.Props) => CheckPasswordHistory.Result;
         }
+
+        interface ControllerContract {
+            resetByRecoveryCode: (props: ResetByRecoveryCode.Props) => ResetByRecoveryCode.Result;
+            requestOTP: (props: RequestOTP.Props) => RequestOTP.Result;
+            resetByOTP: (props: ResetByOTP.Props) => ResetByOTP.Result;
+            change: (props: Change.Props) => Change.Result;
+        }
+
+        interface Contract extends PrivateContract, ControllerContract {}
 
         namespace ResetByRecoveryCode {
             type Props = {
@@ -17,7 +24,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace RequestOTP {
@@ -27,7 +34,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace ResetByOTP {
@@ -39,7 +46,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace Change {
@@ -52,7 +59,25 @@ declare namespace Commands {
                 };
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
+        }
+
+        namespace CheckPasswordHistory {
+            type Props = {
+                password: string;
+                account: string;
+            };
+
+            type Result = Promise<void>;
+        }
+
+        namespace FindMatchingRecoveryCode {
+            type Props = {
+                codes: Entities.RecoveryCode[];
+                plaintext: string;
+            };
+
+            type Result = Promise<Nullable<Entities.RecoveryCode>>;
         }
     }
 }

@@ -22,11 +22,9 @@ export class AccountRepository
         super();
     }
 
-    public async getLookupList({
-        pagination,
-        term,
-    }: Repositories.Account.GetLookupList): Promise<[Entities.Account[], number]> {
+    public async getLookupList(props: Repositories.Account.GetLookupList.Props): Repositories.Account.GetLookupList.Result {
         try {
+            const { pagination, term } = props;
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Account, "a");
 

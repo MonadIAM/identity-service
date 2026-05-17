@@ -1,14 +1,10 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { RecoveryCode as RecoveryCodeEntity } from "../entities";
-
 declare global {
     namespace Repositories {
         namespace RecoveryCode {
-            type Entity = RecoveryCodeEntity;
-
-            interface Contract extends Repositories.Base.Contract<Entity, Adapters.RecoveryCode.Types> {
-                getStatus: (props: GetStatus.Props) => Promise<GetStatus.Result>;
+            interface Contract extends Repositories.Base.Contract<Entities.RecoveryCode, Adapters.RecoveryCode.Types> {
+                getStatus: (props: GetStatus.Props) => GetStatus.Result;
             }
 
             namespace GetStatus {
@@ -17,11 +13,11 @@ declare global {
                     account: string;
                 };
 
-                type Result = {
+                type Result = Promise<{
                     remaining: number;
                     total: number;
                     used: number;
-                };
+                }>;
             }
         }
     }

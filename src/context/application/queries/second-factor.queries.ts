@@ -9,7 +9,7 @@ export class SecondFactorQueries implements Queries.SecondFactor.Contract {
         private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
     ) {}
 
-    public findMany(props: Queries.SecondFactor.FindMany.Props): Promise<Queries.SecondFactor.FindMany.Result> {
+    public findMany(props: Queries.SecondFactor.FindMany.Props): Queries.SecondFactor.FindMany.Result {
         return this.secondFactorRepository.findMany({
             where: { account: props.account },
         });

@@ -6,12 +6,13 @@ declare global {
     namespace Services {
         namespace Account {
             interface Contract {
+                deactivate: (props: Deactivate.Props) => Deactivate.Result;
+                unsuspend: (props: Unsuspend.Props) => Unsuspend.Result;
+                suspend: (props: Suspend.Props) => Suspend.Result;
+                restore: (props: Restore.Props) => Restore.Result;
                 create: (props: Create.Props) => Create.Result;
-                deactivate: (props: Deactivate) => void;
-                unsuspend: (props: Unsuspend) => void;
-                suspend: (props: Suspend) => void;
-                restore: (props: Restore) => void;
-                verify: (props: Verify) => void;
+                verify: (props: Verify.Props) => Verify.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
             namespace Create {
@@ -30,48 +31,72 @@ declare global {
                 type Result = Entities.Account;
             }
 
-            type Deactivate = {
-                transaction: EntityManager;
-                input: {
-                    sessions: Entities.Session[];
-                    account: Entities.Account;
+            namespace Deactivate {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        sessions: Entities.Session[];
+                        account: Entities.Account;
+                    };
                 };
-            };
 
-            type Suspend = {
-                transaction: EntityManager;
-                input: {
-                    sessions: Entities.Session[];
-                    account: Entities.Account;
-                };
-            };
+                type Result = void;
+            }
 
-            type Purge = {
-                transaction: EntityManager;
-                input: {
-                    account: Entities.Account;
-                    reason?: string;
+            namespace Suspend {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        sessions: Entities.Session[];
+                        account: Entities.Account;
+                    };
                 };
-            };
 
-            type Verify = {
-                input: {
-                    account: Entities.Account;
-                };
-            };
+                type Result = void;
+            }
 
-            type Unsuspend = {
-                input: {
-                    account: Entities.Account;
-                    reason?: string;
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        account: Entities.Account;
+                        reason?: string;
+                    };
                 };
-            };
 
-            type Restore = {
-                input: {
-                    account: Entities.Account;
+                type Result = void;
+            }
+
+            namespace Verify {
+                type Props = {
+                    input: {
+                        account: Entities.Account;
+                    };
                 };
-            };
+
+                type Result = void;
+            }
+
+            namespace Unsuspend {
+                type Props = {
+                    input: {
+                        account: Entities.Account;
+                        reason?: string;
+                    };
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    input: {
+                        account: Entities.Account;
+                    };
+                };
+
+                type Result = void;
+            }
         }
     }
 }

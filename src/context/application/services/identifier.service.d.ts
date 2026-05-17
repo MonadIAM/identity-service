@@ -4,11 +4,11 @@ declare global {
     namespace Services {
         namespace Identifier {
             interface Contract {
-                toggleNotifications: (props: ToggleNotifications) => void;
-                togglePublicContact: (props: TogglePublicContact) => void;
+                toggleNotifications: (props: ToggleNotifications.Props) => ToggleNotifications.Result;
+                togglePublicContact: (props: TogglePublicContact.Props) => TogglePublicContact.Result;
                 create: (props: Create.Props) => Create.Result;
-                purge: (props: Purge) => Promise<void>;
-                verify: (props: Verify) => void;
+                verify: (props: Verify.Props) => Verify.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
             namespace Create {
@@ -23,33 +23,49 @@ declare global {
                 type Result = Entities.Identifier;
             }
 
-            type Purge = {
-                transaction: EntityManager;
-                input: {
-                    identifier: Entities.Identifier;
-                    account: string;
-                    reason?: string;
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        identifier: Entities.Identifier;
+                        account: string;
+                        reason?: string;
+                    };
                 };
-            };
 
-            type Verify = {
-                transaction: EntityManager;
-                input: {
-                    identifier: Entities.Identifier;
-                };
-            };
+                type Result = Promise<void>;
+            }
 
-            type ToggleNotifications = {
-                input: {
-                    identifier: Entities.Identifier;
+            namespace Verify {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        identifier: Entities.Identifier;
+                    };
                 };
-            };
 
-            type TogglePublicContact = {
-                input: {
-                    identifier: Entities.Identifier;
+                type Result = void;
+            }
+
+            namespace ToggleNotifications {
+                type Props = {
+                    input: {
+                        identifier: Entities.Identifier;
+                    };
                 };
-            };
+
+                type Result = void;
+            }
+
+            namespace TogglePublicContact {
+                type Props = {
+                    input: {
+                        identifier: Entities.Identifier;
+                    };
+                };
+
+                type Result = void;
+            }
         }
     }
 }

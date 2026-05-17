@@ -4,8 +4,8 @@ declare global {
     namespace Services {
         namespace Session {
             interface Contract {
-                create: (props: Create.Props) => Promise<Create.Result>;
-                purge: (props: Purge) => void;
+                create: (props: Create.Props) => Create.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
             namespace Create {
@@ -18,18 +18,22 @@ declare global {
                     };
                 };
 
-                type Result = {
-                    accessToken: string;
+                type Result = Promise<{
                     refreshToken: string;
-                };
+                    accessToken: string;
+                }>;
             }
 
-            type Purge = {
-                transaction: EntityManager;
-                input: {
-                    sessions: Entities.Session[];
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        sessions: Entities.Session[];
+                    };
                 };
-            };
+
+                type Result = void;
+            }
         }
     }
 }

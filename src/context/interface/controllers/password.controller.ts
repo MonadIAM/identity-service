@@ -16,7 +16,7 @@ const { OK } = HttpStatus;
 export class PasswordController {
     public constructor(
         @Inject(PASSWORD_COMMANDS)
-        private readonly passwordCommands: Commands.Password.Contract,
+        private readonly passwordCommands: Commands.Password.ControllerContract,
     ) {}
 
     @HttpCode(OK)
@@ -27,7 +27,7 @@ export class PasswordController {
         @Body() input: ChangeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Password.Change.Result {
         return this.passwordCommands.change({ context, actor, input });
     }
 
@@ -36,7 +36,7 @@ export class PasswordController {
     @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Request password reset OTP" })
-    public requestOTP(@Body() input: RequestOTPBodyDTO): Promise<MessageResult> {
+    public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Password.RequestOTP.Result {
         return this.passwordCommands.requestOTP({ input });
     }
 
@@ -45,7 +45,10 @@ export class PasswordController {
     @Post("reset/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by OTP" })
-    public resetByOTP(@Body() input: ResetByOTPBodyDTO, @Extract.Meta() context: Extract.Meta): Promise<MessageResult> {
+    public resetByOTP(
+        @Body() input: ResetByOTPBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Password.ResetByOTP.Result {
         return this.passwordCommands.resetByOTP({ context, input });
     }
 
@@ -57,7 +60,7 @@ export class PasswordController {
     public resetByRecoveryCode(
         @Body() input: ResetByRecoveryCodeBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Password.ResetByRecoveryCode.Result {
         return this.passwordCommands.resetByRecoveryCode({ context, input });
     }
 }

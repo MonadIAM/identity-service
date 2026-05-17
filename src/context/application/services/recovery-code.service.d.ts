@@ -4,25 +4,33 @@ declare global {
     namespace Services {
         namespace RecoveryCode {
             interface Contract {
-                regenerate: (props: Regenerate) => void;
-                generate: (props: Generate) => void;
+                regenerate: (props: Regenerate.Props) => Regenerate.Result;
+                generate: (props: Generate.Props) => Generate.Result;
             }
 
-            type Regenerate = {
-                transaction: EntityManager;
-                input: {
-                    account: Entities.Account;
-                    hashes: string[];
+            namespace Regenerate {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        account: Entities.Account;
+                        hashes: string[];
+                    };
                 };
-            };
 
-            type Generate = {
-                transaction: EntityManager;
-                input: {
-                    account: Entities.Account;
-                    hashes: string[];
+                type Result = void;
+            }
+
+            namespace Generate {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        account: Entities.Account;
+                        hashes: string[];
+                    };
                 };
-            };
+
+                type Result = void;
+            }
         }
     }
 }

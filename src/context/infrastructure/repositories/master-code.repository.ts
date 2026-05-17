@@ -3,8 +3,8 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 
 import { MasterCodeAdapter } from "~context/infrastructure/adapters";
-import { BaseRepository } from "~common/mixins";
 import { MasterCode } from "~context/domain/entities";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class MasterCodeRepository

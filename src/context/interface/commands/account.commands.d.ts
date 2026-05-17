@@ -3,14 +3,20 @@ import { IdentifierType } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Account {
-            interface Contract {
-                deactivate: (props: Deactivate.Props) => Promise<Deactivate.Result>;
-                suspend: (props: Suspend.Props) => Promise<Suspend.Result>;
-                restore: (props: Restore.Props) => Promise<Restore.Result>;
-                signup: (props: Signup.Props) => Promise<Signup.Result>;
-                verify: (props: Verify.Props) => Promise<Verify.Result>;
-                resend: (props: Resend.Props) => Promise<Resend.Result>;
+            interface PrivateContract {
+                sendOTP: (props: SendOTP.Props) => SendOTP.Result;
             }
+
+            interface ControllerContract {
+                deactivate: (props: Deactivate.Props) => Deactivate.Result;
+                suspend: (props: Suspend.Props) => Suspend.Result;
+                restore: (props: Restore.Props) => Restore.Result;
+                signup: (props: Signup.Props) => Signup.Result;
+                verify: (props: Verify.Props) => Verify.Result;
+                resend: (props: Resend.Props) => Resend.Result;
+            }
+
+            interface Contract extends PrivateContract, ControllerContract {}
 
             namespace Deactivate {
                 type Props = {
@@ -18,7 +24,7 @@ declare global {
                     actor: string;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Suspend {
@@ -31,7 +37,7 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Restore {
@@ -44,7 +50,7 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Signup {
@@ -57,7 +63,7 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Verify {
@@ -68,10 +74,12 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult &
-                    Services.Session.Create.Result & {
-                        codes: string[];
-                    };
+                type Result = Promise<
+                    MessageResult &
+                        Awaited<Services.Session.Create.Result> & {
+                            codes: string[];
+                        }
+                >;
             }
 
             namespace Resend {
@@ -81,14 +89,18 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
-            type SendOTP = {
-                type: IdentifierType;
-                account: string;
-                value: string;
-            };
+            namespace SendOTP {
+                type Props = {
+                    type: IdentifierType;
+                    account: string;
+                    value: string;
+                };
+
+                type Result = Promise<void>;
+            }
         }
     }
 }

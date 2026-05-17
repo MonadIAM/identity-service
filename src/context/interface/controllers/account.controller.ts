@@ -29,9 +29,9 @@ const { CREATED, OK } = HttpStatus;
 export class AccountController {
     public constructor(
         @Inject(ACCOUNT_COMMANDS)
-        private readonly accountCommands: Commands.Account.Contract,
+        private readonly accountCommands: Commands.Account.ControllerContract,
         @Inject(ACCOUNT_QUERIES)
-        private readonly accountQueries: Queries.Account.Contract,
+        private readonly accountQueries: Queries.Account.ControllerContract,
     ) {}
 
     @Get("me")
@@ -39,7 +39,7 @@ export class AccountController {
     @FormatResponse(AccountDTO)
     @ApiResponse({ status: OK, type: AccountDTO })
     @ApiOperation({ summary: "Get current account" })
-    public getMe(@Extract.Session() { account }: Extract.Session.Auth): Promise<Queries.Account.Entity> {
+    public getMe(@Extract.Session() { account }: Extract.Session.Auth): Queries.Account.FindUnique.Result {
         return this.accountQueries.findUnique({ account, view: ResponseViewType.DETAILED });
     }
 
@@ -48,7 +48,7 @@ export class AccountController {
     @FormatResponse(AccountDTO)
     @ApiResponse({ status: OK, type: AccountDTO })
     @ApiOperation({ summary: "Get account by ID" })
-    public getById(@Query() { account, view }: GetByIdQueryDTO): Promise<Queries.Account.Entity> {
+    public getById(@Query() { account, view }: GetByIdQueryDTO): Queries.Account.FindUnique.Result {
         return this.accountQueries.findUnique({ account, view });
     }
 
@@ -60,7 +60,7 @@ export class AccountController {
     public getList(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { view }: BaseReadQueryDTO,
-    ): Promise<[Queries.Account.Entity[], number]> {
+    ): Queries.Account.FindMany.Result {
         return this.accountQueries.findMany({ pagination, filters, sort, view });
     }
 
@@ -69,7 +69,7 @@ export class AccountController {
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Register a new account" })
-    public signup(@Body() input: SignupBodyDTO, @Extract.Meta() context: Extract.Meta): Promise<MessageResult> {
+    public signup(@Body() input: SignupBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Account.Signup.Result {
         return this.accountCommands.signup({ context, input });
     }
 
@@ -78,7 +78,7 @@ export class AccountController {
     @Post("resend")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Resend verification code" })
-    public resend(@Body() input: ResendBodyDTO): Promise<MessageResult> {
+    public resend(@Body() input: ResendBodyDTO): Commands.Account.Resend.Result {
         return this.accountCommands.resend({ input });
     }
 
@@ -87,10 +87,7 @@ export class AccountController {
     @Post("verify")
     @FormatResponse(VerifyResultDTO)
     @ApiOperation({ summary: "Verify account with OTP" })
-    public verify(
-        @Body() input: VerifyBodyDTO,
-        @Extract.Meta() context: Extract.Meta,
-    ): Promise<Commands.Account.Verify.Result> {
+    public verify(@Body() input: VerifyBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Account.Verify.Result {
         return this.accountCommands.verify({ context, input });
     }
 
@@ -102,7 +99,7 @@ export class AccountController {
         @Body() input: SuspendBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Account.Suspend.Result {
         return this.accountCommands.suspend({ context, actor, input });
     }
 
@@ -114,7 +111,7 @@ export class AccountController {
         @Body() input: RestoreBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Account.Restore.Result {
         return this.accountCommands.restore({ context, actor, input });
     }
 }

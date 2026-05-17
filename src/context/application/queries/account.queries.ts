@@ -14,14 +14,14 @@ export class AccountQueries implements Queries.Account.Contract {
         private readonly accountRepository: Repositories.Account.Contract,
     ) {}
 
-    public findUnique(props: Queries.Account.FindUnique.Props): Promise<Queries.Account.FindUnique.Result> {
+    public findUnique(props: Queries.Account.FindUnique.Props): Queries.Account.FindUnique.Result {
         return this.accountRepository.findUniqueOrThrow({
             options: { populate: this.populate[props.view] },
             where: { id: props.account },
         });
     }
 
-    public findMany(props: Queries.Account.FindMany.Props): Promise<Queries.Account.FindMany.Result> {
+    public findMany(props: Queries.Account.FindMany.Props): Queries.Account.FindMany.Result {
         return this.accountRepository.findMany({
             options: { populate: this.populate[props.view] },
             pagination: props.pagination,

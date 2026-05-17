@@ -3,10 +3,17 @@ import { IdentifierType } from "~context/enums";
 declare global {
     namespace Commands {
         namespace OAuth {
-            interface Contract {
-                signup: (props: Signup.Props) => Promise<Signup.Result>;
-                signin: (props: Signin.Props) => Promise<Signin.Result>;
+            interface PrivateContract {
+                linkToExisting: (props: Link.Props) => Link.Result;
+                createNew: (props: Create.Props) => Create.Result;
             }
+
+            interface ControllerContract {
+                signup: (props: Signup.Props) => Signup.Result;
+                signin: (props: Signin.Props) => Signin.Result;
+            }
+
+            interface Contract extends PrivateContract, ControllerContract {}
 
             namespace Signup {
                 type Props = {
@@ -27,10 +34,12 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult &
-                    Services.Session.Create.Result & {
-                        recoveryCodes?: string[];
-                    };
+                type Result = Promise<
+                    MessageResult &
+                        Awaited<Services.Session.Create.Result> & {
+                            recoveryCodes?: string[];
+                        }
+                >;
             }
 
             namespace Signin {
@@ -41,12 +50,21 @@ declare global {
                     };
                 };
 
-                type Result = MessageResult & Services.Session.Create.Result;
+                type Result = Promise<MessageResult & Awaited<Services.Session.Create.Result>>;
             }
 
-            type Link = Signup.Props & {
-                identifier: Entities.Identifier;
-            };
+            namespace Link {
+                type Props = Signup.Props & {
+                    identifier: Entities.Identifier;
+                };
+
+                type Result = OAuth.Signup.Result;
+            }
+
+            namespace Create {
+                type Result = OAuth.Signup.Result;
+                type Props = OAuth.Signup.Props;
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ const { OK } = HttpStatus;
 export class ProfileController {
     public constructor(
         @Inject(PROFILE_COMMANDS)
-        private readonly profileCommands: Commands.Profile.Contract,
+        private readonly profileCommands: Commands.Profile.ControllerContract,
     ) {}
 
     @HttpCode(OK)
@@ -27,7 +27,7 @@ export class ProfileController {
         @Body() input: UpdateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Commands.Profile.Update.Result {
         return this.profileCommands.update({ context, actor, input });
     }
 }

@@ -16,7 +16,7 @@ const { OK } = HttpStatus;
 export class ElevatedAccessController {
     public constructor(
         @Inject(ELEVATED_ACCESS_HANDLER)
-        private readonly elevatedAccessHandler: Handlers.ElevatedAccess.Contract,
+        private readonly elevatedAccessHandler: Handlers.ElevatedAccess.ControllerContract,
     ) {}
 
     @HttpCode(OK)
@@ -27,7 +27,7 @@ export class ElevatedAccessController {
         @Body() input: ByPasswordBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Handlers.ElevatedAccess.ByPassword.Result {
         return this.elevatedAccessHandler.byPassword({ context, actor, input });
     }
 
@@ -39,7 +39,7 @@ export class ElevatedAccessController {
         @Body() input: BySecondFactorBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
+    ): Handlers.ElevatedAccess.BySecondFactor.Result {
         return this.elevatedAccessHandler.bySecondFactor({ context, actor, input });
     }
 }

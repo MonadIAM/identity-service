@@ -16,16 +16,16 @@ const { OK } = HttpStatus;
 export class RecoveryCodeController {
     public constructor(
         @Inject(RECOVERY_CODE_COMMANDS)
-        private readonly recoveryCodeCommands: Commands.RecoveryCode.Contract,
+        private readonly recoveryCodeCommands: Commands.RecoveryCode.ControllerContract,
         @Inject(RECOVERY_CODE_QUERIES)
-        private readonly recoveryCodeQueries: Queries.RecoveryCode.Contract,
+        private readonly recoveryCodeQueries: Queries.RecoveryCode.ControllerContract,
     ) {}
 
     @HttpCode(OK)
     @Get("status")
     @FormatResponse(StatusResultDTO)
     @ApiOperation({ summary: "Get recovery codes status" })
-    public getStatus(@Extract.Session() { account }: Extract.Session.Auth): Promise<Queries.RecoveryCode.GetStatus.Result> {
+    public getStatus(@Extract.Session() { account }: Extract.Session.Auth): Queries.RecoveryCode.GetStatus.Result {
         return this.recoveryCodeQueries.getStatus({ account });
     }
 
@@ -37,7 +37,7 @@ export class RecoveryCodeController {
     public regenerate(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Promise<Commands.RecoveryCode.Regenerate.Result> {
+    ): Commands.RecoveryCode.Regenerate.Result {
         return this.recoveryCodeCommands.regenerate({ context, actor });
     }
 }
