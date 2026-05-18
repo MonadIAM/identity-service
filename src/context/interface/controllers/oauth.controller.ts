@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { OAUTH_HANDLER } from "~context/application/handlers";
+import { OAUTH_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { Extract, Public } from "~common/decorators";
 
@@ -14,16 +14,16 @@ const { OK } = HttpStatus;
 @UseInterceptors(MonitoringInterceptor)
 export class OAuthController {
     public constructor(
-        @Inject(OAUTH_HANDLER)
-        private readonly oauthHandler: Handlers.OAuth.ControllerContract,
+        @Inject(OAUTH_COMMANDS)
+        private readonly oauthCommands: Commands.OAuth.ControllerContract,
     ) {}
 
     @Public()
     @HttpCode(OK)
     @Get("authorize")
     @ApiOperation({ summary: "Get OAuth authorization URL" })
-    public authorize(@Query() input: AuthorizeBodyDTO): Handlers.OAuth.Authorize.Result {
-        return this.oauthHandler.authorize({ input });
+    public authorize(@Query() input: AuthorizeBodyDTO): Commands.OAuth.Authorize.Result {
+        return this.oauthCommands.authorize({ input });
     }
 
     @Public()
@@ -33,7 +33,7 @@ export class OAuthController {
     public callback(
         @Query() input: CallbackBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-    ): Handlers.OAuth.Callback.Result {
-        return this.oauthHandler.callback({ context, input });
+    ): Commands.OAuth.Callback.Result {
+        return this.oauthCommands.callback({ context, input });
     }
 }

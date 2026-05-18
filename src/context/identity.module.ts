@@ -12,7 +12,6 @@ import { PROCESSORS } from "./infrastructure/processors";
 import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
 import { SCHEDULERS } from "./interface/schedulers";
-import { HANDLERS } from "./application/handlers";
 import { COMMANDS } from "./application/commands";
 import { QUERIES } from "./application/queries";
 
@@ -24,7 +23,6 @@ import { QUERIES } from "./application/queries";
         ...REPOSITORIES,
         ...SCHEDULERS,
         ...PROCESSORS,
-        ...HANDLERS,
         ...COMMANDS,
         ...QUERIES,
         ElevatedAccessGuard,

@@ -2,8 +2,8 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post }
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, Tokens, Public } from "~common/decorators";
+import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { AUTH_HANDLER } from "~context/application/handlers";
 import { SuccessMessageDTO } from "~common/dto";
 
 import {
@@ -21,8 +21,8 @@ const { OK } = HttpStatus;
 @UseInterceptors(MonitoringInterceptor)
 export class AuthController {
     public constructor(
-        @Inject(AUTH_HANDLER)
-        private readonly authHandler: Handlers.Auth.ControllerContract,
+        @Inject(ACCOUNT_COMMANDS)
+        private readonly authCommands: Commands.Auth.ControllerContract,
     ) {}
 
     @Public()
@@ -30,8 +30,8 @@ export class AuthController {
     @Post("signin")
     @FormatResponse(SigninResultDTO)
     @ApiOperation({ summary: "Signin by password" })
-    public signin(@Body() input: SigninBodyDTO, @Extract.Meta() context: Extract.Meta): Handlers.Auth.Signin.Result {
-        return this.authHandler.signin({ context, input });
+    public signin(@Body() input: SigninBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Auth.Signin.Result {
+        return this.authCommands.signin({ context, input });
     }
 
     @Public()
@@ -39,8 +39,8 @@ export class AuthController {
     @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Request passwordless OTP" })
-    public requestOTP(@Body() input: RequestOTPBodyDTO): Handlers.Auth.RequestOTP.Result {
-        return this.authHandler.requestOTP({ input });
+    public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Auth.RequestOTP.Result {
+        return this.authCommands.requestOTP({ input });
     }
 
     @Public()
@@ -51,8 +51,8 @@ export class AuthController {
     public verifyOTP(
         @Body() input: VerifyOTPBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-    ): Handlers.Auth.VerifyOTP.Result {
-        return this.authHandler.verifyOTP({ context, input });
+    ): Commands.Auth.VerifyOTP.Result {
+        return this.authCommands.verifyOTP({ context, input });
     }
 
     @Public()
@@ -64,7 +64,7 @@ export class AuthController {
         @Body() input: VerifySecondFactorBodyDTO,
         @Extract.Meta() context: Extract.Meta,
         @Tokens.Pending() token?: string,
-    ): Handlers.Auth.VerifySecondFactor.Result {
-        return this.authHandler.verifySecondFactor({ token, context, input });
+    ): Commands.Auth.VerifySecondFactor.Result {
+        return this.authCommands.verifySecondFactor({ token, context, input });
     }
 }

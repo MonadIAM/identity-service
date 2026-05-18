@@ -1,7 +1,7 @@
 import { Controller, HttpStatus, HttpCode, Inject, Body, Post, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { ELEVATED_ACCESS_HANDLER } from "~context/application/handlers";
+import { ELEVATED_ACCESS_COMMANDS } from "~context/application/commands";
 import { Extract, FormatResponse } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -15,8 +15,8 @@ const { OK } = HttpStatus;
 @UseInterceptors(MonitoringInterceptor)
 export class ElevatedAccessController {
     public constructor(
-        @Inject(ELEVATED_ACCESS_HANDLER)
-        private readonly elevatedAccessHandler: Handlers.ElevatedAccess.ControllerContract,
+        @Inject(ELEVATED_ACCESS_COMMANDS)
+        private readonly elevatedAccessCommands: Commands.ElevatedAccess.ControllerContract,
     ) {}
 
     @HttpCode(OK)
@@ -27,8 +27,8 @@ export class ElevatedAccessController {
         @Body() input: ByPasswordBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Handlers.ElevatedAccess.ByPassword.Result {
-        return this.elevatedAccessHandler.byPassword({ context, actor, input });
+    ): Commands.ElevatedAccess.ByPassword.Result {
+        return this.elevatedAccessCommands.byPassword({ context, actor, input });
     }
 
     @HttpCode(OK)
@@ -39,7 +39,7 @@ export class ElevatedAccessController {
         @Body() input: BySecondFactorBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-    ): Handlers.ElevatedAccess.BySecondFactor.Result {
-        return this.elevatedAccessHandler.bySecondFactor({ context, actor, input });
+    ): Commands.ElevatedAccess.BySecondFactor.Result {
+        return this.elevatedAccessCommands.bySecondFactor({ context, actor, input });
     }
 }

@@ -1,4 +1,4 @@
-declare namespace Handlers {
+declare namespace Commands {
     namespace Auth {
         interface PrivateContract {
             createSession: (props: CreateSession.Props) => CreateSession.Result;

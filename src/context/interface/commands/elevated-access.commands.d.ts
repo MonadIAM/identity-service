@@ -1,4 +1,4 @@
-declare namespace Handlers {
+declare namespace Commands {
     namespace ElevatedAccess {
         interface ControllerContract {
             bySecondFactor: (props: BySecondFactor.Props) => BySecondFactor.Result;

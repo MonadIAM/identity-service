@@ -7,11 +7,11 @@ import { AccountStatus, IdentifierType, IdentityActionType, EntityType } from "~
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { HandlerException } from "~common/exceptions";
+import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class AuthHandler implements Handlers.Auth.Contract {
-    private readonly dictionaryPath = "handlers.auth";
+export class AuthCommands implements Commands.Auth.Contract {
+    private readonly dictionaryPath = "commands.auth";
     private readonly resource = "Auth";
 
     public constructor(
@@ -39,14 +39,14 @@ export class AuthHandler implements Handlers.Auth.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async signin(props: Handlers.Auth.Signin.Props): Handlers.Auth.Signin.Result {
+    public async signin(props: Commands.Auth.Signin.Props): Commands.Auth.Signin.Result {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.secondFactors", "account.password"] },
             where: { value: props.input.identifier },
         });
 
         if (!identifier?.account?.password) {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
+            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
         }
 
         const isValid = await this.hashingService.verify({
@@ -55,7 +55,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
         });
 
         if (!isValid) {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
+            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
         }
 
         this.assertCanAuth(identifier.account);
@@ -76,13 +76,13 @@ export class AuthHandler implements Handlers.Auth.Contract {
         }
     }
 
-    public async requestOTP(props: Handlers.Auth.RequestOTP.Props): Handlers.Auth.RequestOTP.Result {
+    public async requestOTP(props: Commands.Auth.RequestOTP.Props): Commands.Auth.RequestOTP.Result {
         const identifier = await this.identifierRepository.findUnique({
             where: { value: props.input.identifier },
         });
 
         if (!identifier?.isVerified) {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.PASSWORDLESS_NOT_AVAILABLE`);
+            throw CommandException.unauthorized(`${this.dictionaryPath}.PASSWORDLESS_NOT_AVAILABLE`);
         }
 
         const otp = this.cryptoService.generateOTP();
@@ -104,11 +104,11 @@ export class AuthHandler implements Handlers.Auth.Contract {
         return { message: `${this.dictionaryPath}.OTP_SENT` };
     }
 
-    public async verifyOTP(props: Handlers.Auth.VerifyOTP.Props): Handlers.Auth.VerifyOTP.Result {
+    public async verifyOTP(props: Commands.Auth.VerifyOTP.Props): Commands.Auth.VerifyOTP.Result {
         const cachedIdentifier = await this.otpCacheService.getLogin({ code: props.input.code });
 
         if (!cachedIdentifier) {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
 
         await this.otpCacheService.deleteLogin({ code: props.input.code });
@@ -125,16 +125,16 @@ export class AuthHandler implements Handlers.Auth.Contract {
     }
 
     public async verifySecondFactor(
-        props: Handlers.Auth.VerifySecondFactor.Props,
-    ): Handlers.Auth.VerifySecondFactor.Result {
+        props: Commands.Auth.VerifySecondFactor.Props,
+    ): Commands.Auth.VerifySecondFactor.Result {
         if (!props.token) {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.PENDING_TOKEN_MISSING`);
+            throw CommandException.unauthorized(`${this.dictionaryPath}.PENDING_TOKEN_MISSING`);
         }
 
         const cachedAccount = await this.pendingAuthCacheService.get({ token: props.token });
 
         if (!cachedAccount) {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.EXPIRED_PENDING_AUTH`);
+            throw CommandException.unauthorized(`${this.dictionaryPath}.EXPIRED_PENDING_AUTH`);
         }
 
         const factor = await this.secondFactorRepository.findUnique({
@@ -146,14 +146,14 @@ export class AuthHandler implements Handlers.Auth.Contract {
         });
 
         if (!factor) {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
+            throw CommandException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
         }
 
         const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
         const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
 
         if (!isValid) {
-            throw HandlerException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
         }
 
         await this.pendingAuthCacheService.delete({ token: props.token });
@@ -162,7 +162,7 @@ export class AuthHandler implements Handlers.Auth.Contract {
         return { message: `${this.dictionaryPath}.VERIFIED`, ...session };
     }
 
-    public async createSession(props: Handlers.Auth.CreateSession.Props): Handlers.Auth.CreateSession.Result {
+    public async createSession(props: Commands.Auth.CreateSession.Props): Commands.Auth.CreateSession.Result {
         return await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -189,13 +189,13 @@ export class AuthHandler implements Handlers.Auth.Contract {
         });
     }
 
-    public assertCanAuth(props: Handlers.Auth.AssertCanAuth.Props): Handlers.Auth.AssertCanAuth.Result {
+    public assertCanAuth(props: Commands.Auth.AssertCanAuth.Props): Commands.Auth.AssertCanAuth.Result {
         if (props.status === AccountStatus.SUSPENDED) {
-            throw HandlerException.forbidden(`${this.dictionaryPath}.ACCOUNT_SUSPENDED`);
+            throw CommandException.forbidden(`${this.dictionaryPath}.ACCOUNT_SUSPENDED`);
         }
 
         if (props.status === AccountStatus.PENDING) {
-            throw HandlerException.forbidden(`${this.dictionaryPath}.ACCOUNT_NOT_VERIFIED`);
+            throw CommandException.forbidden(`${this.dictionaryPath}.ACCOUNT_NOT_VERIFIED`);
         }
     }
 }
