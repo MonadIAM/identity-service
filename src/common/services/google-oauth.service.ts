@@ -60,11 +60,13 @@ export class GoogleOAuthService implements CommonServices.GoogleOAuth.Contract {
 
         if (response.ok) {
             const data = await response.json();
+
             return {
+                emailVerified: Boolean(data.email_verified),
                 displayName: data.name ?? data.email,
-                pictureUrl: data.picture ?? null,
-                email: data.email ?? null,
                 providerUserId: data.sub,
+                pictureUrl: data.picture,
+                email: data.email,
             };
         } else {
             throw ServiceException.externalServiceFailed(`${this.dictionaryPath}.SERVICE_UNAVAILABLE`);

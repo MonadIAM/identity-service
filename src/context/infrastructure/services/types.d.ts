@@ -1,28 +1,31 @@
 declare namespace InfrastructureServices {
     namespace OAuthStateCache {
         interface Contract {
-            set: (props: Set) => Promise<void>;
-            get: (props: Get) => Promise<Nullable<Metadata>>;
-            delete: (props: Delete) => Promise<void>;
+            consume: (props: Consume.Props) => Consume.Result;
+            set: (props: Set.Props) => Set.Result;
         }
-
-        type Set = {
-            metadata: Metadata;
-            state: string;
-        };
-
-        type Get = {
-            state: string;
-        };
-
-        type Delete = {
-            state: string;
-        };
 
         type Metadata = {
             redirectUri?: string;
             provider: string;
         };
+
+        namespace Set {
+            type Props = {
+                metadata: Metadata;
+                state: string;
+            };
+
+            type Result = Promise<void>;
+        }
+
+        namespace Consume {
+            type Props = {
+                state: string;
+            };
+
+            type Result = Promise<Nullable<Metadata>>;
+        }
     }
 
     namespace OTPCache {

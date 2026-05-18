@@ -106,6 +106,7 @@ declare global {
             type Profile = {
                 providerUserId: string;
                 displayName: string;
+                emailVerified: boolean;
                 pictureUrl?: string;
                 email?: string;
             };
@@ -142,6 +143,7 @@ declare global {
             type Profile = {
                 providerUserId: string;
                 displayName: string;
+                emailVerified: boolean;
                 pictureUrl?: string;
                 email?: string;
             };

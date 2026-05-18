@@ -17,22 +17,23 @@ export class OAuthStateCacheService implements InfrastructureServices.OAuthState
         this.ttl = this.configService.getOrThrow<number>("OAUTH_STATE_TTL");
     }
 
-    public async set({ state, metadata }: InfrastructureServices.OAuthStateCache.Set): Promise<void> {
+    public async set(
+        props: InfrastructureServices.OAuthStateCache.Set.Props,
+    ): InfrastructureServices.OAuthStateCache.Set.Result {
+        const { state, metadata } = props;
         await this.redis.set(`${this.namespace}:${state}`, JSON.stringify(metadata), "EX", this.ttl);
     }
 
-    public async get({
-        state,
-    }: InfrastructureServices.OAuthStateCache.Get): Promise<Nullable<InfrastructureServices.OAuthStateCache.Metadata>> {
-        const raw = await this.redis.get(`${this.namespace}:${state}`);
+    public async consume(
+        props: InfrastructureServices.OAuthStateCache.Consume.Props,
+    ): InfrastructureServices.OAuthStateCache.Consume.Result {
+        const { state } = props;
+        const raw = await this.redis.getdel(`${this.namespace}:${state}`);
+
         if (raw) {
             return JSON.parse(raw);
         } else {
             return null;
         }
-    }
-
-    public async delete({ state }: InfrastructureServices.OAuthStateCache.Delete): Promise<void> {
-        await this.redis.unlink(`${this.namespace}:${state}`);
     }
 }

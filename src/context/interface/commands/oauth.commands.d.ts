@@ -1,106 +1,99 @@
-import { IdentifierType } from "~context/enums";
+declare namespace Commands {
+    namespace OAuth {
+        type Identity = {
+            provider: string;
+            providerUserId: string;
+            email?: string;
+            emailVerified: boolean;
+            profile: {
+                displayName: string;
+                pictureUrl?: string;
+                timeZone?: string;
+                locale?: string;
+            };
+        };
 
-declare global {
-    namespace Commands {
-        namespace OAuth {
-            interface PrivateContract {
-                resolveProvider: (props: ResolveProvider.Props) => ResolveProvider.Result;
-                linkToExisting: (props: Link.Props) => Link.Result;
-                createNew: (props: Create.Props) => Create.Result;
-            }
+        type AuthResult = MessageResult &
+            Awaited<Services.Session.Create.Result> & {
+                recoveryCodes?: string[];
+            };
 
-            interface ControllerContract {
-                authorize: (props: Authorize.Props) => Authorize.Result;
-                callback: (props: Callback.Props) => Callback.Result;
-                signup: (props: Signup.Props) => Signup.Result;
-                signin: (props: Signin.Props) => Signin.Result;
-            }
+        interface PrivateContract {
+            resolveProvider: (props: ResolveProvider.Props) => ResolveProvider.Result;
+            authenticateExisting: (props: AuthenticateExisting.Props) => AuthenticateExisting.Result;
+            attachToExisting: (props: AttachToExisting.Props) => AttachToExisting.Result;
+            provision: (props: Provision.Props) => Provision.Result;
+        }
 
-            interface Contract extends PrivateContract, ControllerContract {}
+        interface ControllerContract {
+            authorize: (props: Authorize.Props) => Authorize.Result;
+            callback: (props: Callback.Props) => Callback.Result;
+        }
 
-            namespace Signup {
-                type Props = {
-                    context: Extract.Meta;
-                    input: {
-                        oauth: {
-                            providerUserId: string;
-                            provider: string;
-                            value: string;
-                            type: IdentifierType;
-                        };
-                        profile: {
-                            displayName: string;
-                            timeZone?: string;
-                            locale?: string;
-                        };
-                        email?: string;
-                    };
-                };
+        interface Contract extends PrivateContract, ControllerContract {}
 
-                type Result = Promise<
-                    MessageResult &
-                        Awaited<Services.Session.Create.Result> & {
-                            recoveryCodes?: string[];
-                        }
-                >;
-            }
-
-            namespace Signin {
-                type Props = {
-                    context: Extract.Meta;
-                    input: {
-                        account: Entities.Account;
-                    };
-                };
-
-                type Result = Promise<MessageResult & Awaited<Services.Session.Create.Result>>;
-            }
-
-            namespace Authorize {
-                type Props = {
-                    input: {
-                        provider: string;
-                    };
-                };
-
-                type Result = Promise<{
-                    url: string;
-                }>;
-            }
-
-            namespace Callback {
-                type Props = {
-                    context: Extract.Meta;
-                    input: {
-                        provider: string;
-                        state: string;
-                        code: string;
-                    };
-                };
-
-                type Result = Promise<Commands.OAuth.Signup.Result | Commands.OAuth.Signin.Result>;
-            }
-
-            namespace ResolveProvider {
-                type Props = {
+        namespace Authorize {
+            type Props = {
+                input: {
                     provider: string;
                 };
+            };
 
-                type Result = globalThis.OAuth.ResolveProvider;
-            }
+            type Result = Promise<{
+                url: string;
+            }>;
+        }
 
-            namespace Link {
-                type Props = Signup.Props & {
-                    identifier: Entities.Identifier;
+        namespace Callback {
+            type Props = {
+                context: Extract.Meta;
+                input: {
+                    provider: string;
+                    state: string;
+                    code: string;
                 };
+            };
 
-                type Result = OAuth.Signup.Result;
-            }
+            type Result = Promise<AuthResult>;
+        }
 
-            namespace Create {
-                type Result = OAuth.Signup.Result;
-                type Props = OAuth.Signup.Props;
-            }
+        namespace AuthenticateExisting {
+            type Props = {
+                context: Extract.Meta;
+                input: {
+                    account: Entities.Account;
+                };
+            };
+
+            type Result = Promise<AuthResult>;
+        }
+
+        namespace AttachToExisting {
+            type Props = {
+                context: Extract.Meta;
+                input: Identity & {
+                    account: Entities.Account;
+                };
+            };
+
+            type Result = Promise<AuthResult>;
+        }
+
+        namespace Provision {
+            type Props = {
+                context: Extract.Meta;
+                input: Identity;
+            };
+
+            type Result = Promise<AuthResult>;
+        }
+
+        namespace ResolveProvider {
+            type Props = {
+                provider: string;
+            };
+
+            type Result = globalThis.OAuth.ResolveProvider;
         }
     }
 }

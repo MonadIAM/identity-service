@@ -67,6 +67,7 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
         return {
             displayName: user.name ?? user.login,
             providerUserId: String(user.id),
+            emailVerified: Boolean(email),
             pictureUrl: user.avatar_url,
             email,
         };
