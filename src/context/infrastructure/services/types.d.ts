@@ -30,87 +30,30 @@ declare namespace InfrastructureServices {
 
     namespace OTPCache {
         interface Contract {
-            setVerification: (props: SetVerification) => Promise<void>;
-            getVerification: (props: GetVerification) => Promise<Nullable<string>>;
-            deleteVerification: (props: DeleteVerification) => Promise<void>;
-            setLogin: (props: SetLogin) => Promise<void>;
-            getLogin: (props: GetLogin) => Promise<Nullable<string>>;
-            deleteLogin: (props: DeleteLogin) => Promise<void>;
-            setReset: (props: SetReset) => Promise<void>;
-            getReset: (props: GetReset) => Promise<Nullable<string>>;
-            deleteReset: (props: DeleteReset) => Promise<void>;
-            setIdentifier: (props: SetIdentifier) => Promise<void>;
-            getIdentifier: (props: GetIdentifier) => Promise<Nullable<string>>;
-            deleteIdentifier: (props: DeleteIdentifier) => Promise<void>;
-            setSetup2FA: (props: SetSetup2FA) => Promise<void>;
-            getSetup2FA: (props: GetSetup2FA) => Promise<Nullable<string>>;
-            deleteSetup2FA: (props: DeleteSetup2FA) => Promise<void>;
+            consume: (props: Consume.Props) => Consume.Result;
+            set: (props: Set.Props) => Set.Result;
         }
 
-        type SetVerification = {
-            account: string;
-            code: string;
-        };
+        type Purpose = "verification" | "identifier" | "login" | "reset" | "setup2FA";
 
-        type GetVerification = {
-            code: string;
-        };
+        namespace Consume {
+            type Props = {
+                purpose: Purpose;
+                key: string;
+            };
 
-        type DeleteVerification = {
-            code: string;
-        };
+            type Result = Promise<Nullable<string>>;
+        }
 
-        type SetLogin = {
-            identifier: string;
-            code: string;
-        };
+        namespace Set {
+            type Props = {
+                purpose: Purpose;
+                key: string;
+                value: string;
+            };
 
-        type GetLogin = {
-            code: string;
-        };
-
-        type DeleteLogin = {
-            code: string;
-        };
-
-        type SetReset = {
-            account: string;
-            code: string;
-        };
-
-        type GetReset = {
-            code: string;
-        };
-
-        type DeleteReset = {
-            code: string;
-        };
-
-        type SetIdentifier = {
-            identifier: string;
-            code: string;
-        };
-
-        type GetIdentifier = {
-            code: string;
-        };
-
-        type DeleteIdentifier = {
-            code: string;
-        };
-
-        type SetSetup2FA = {
-            account: string;
-            secret: string;
-        };
-
-        type GetSetup2FA = {
-            account: string;
-        };
-
-        type DeleteSetup2FA = {
-            account: string;
-        };
+            type Result = Promise<void>;
+        }
     }
 
     namespace PendingAuthCache {

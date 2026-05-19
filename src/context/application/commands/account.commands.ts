@@ -101,13 +101,14 @@ export class AccountCommands implements Commands.Account.Contract {
     }
 
     public async verify(props: Commands.Account.Verify.Props): Commands.Account.Verify.Result {
-        const cachedAccount = await this.otpCacheService.getVerification({ code: props.input.code });
+        const cachedAccount = await this.otpCacheService.consume({
+            purpose: "verification",
+            key: props.input.code,
+        });
 
         if (!cachedAccount) {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
-
-        await this.otpCacheService.deleteVerification({ code: props.input.code });
 
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
@@ -232,9 +233,10 @@ export class AccountCommands implements Commands.Account.Contract {
 
     public async sendOTP(props: Commands.Account.SendOTP.Props): Commands.Account.SendOTP.Result {
         const otp = this.cryptoService.generateOTP();
-        await this.otpCacheService.setVerification({
-            account: props.account,
-            code: otp,
+        await this.otpCacheService.set({
+            purpose: "verification",
+            value: props.account,
+            key: otp,
         });
 
         if (props.type === IdentifierType.EMAIL) {

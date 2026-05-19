@@ -8,79 +8,31 @@ import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/redis.tokens";
 export class OTPCacheService implements InfrastructureServices.OTPCache.Contract {
     private readonly namespace = "otp";
 
-    private readonly verificationTTL: number;
-    private readonly pending2FATTL: number;
-    private readonly loginTTL: number;
-    private readonly resetTTL: number;
+    private readonly ttl: Record<InfrastructureServices.OTPCache.Purpose, number>;
 
     public constructor(
         @Inject(REDIS_CACHE_CLIENT)
         private readonly redis: Redis,
         private readonly configService: ConfigService,
     ) {
-        this.verificationTTL = this.configService.getOrThrow<number>("OTP_VERIFICATION_TTL");
-        this.pending2FATTL = this.configService.getOrThrow<number>("PENDING_2FA_TTL");
-        this.loginTTL = this.configService.getOrThrow<number>("OTP_LOGIN_TTL");
-        this.resetTTL = this.configService.getOrThrow<number>("OTP_RESET_TTL");
+        this.ttl = {
+            verification: this.configService.getOrThrow<number>("OTP_VERIFICATION_TTL"),
+            identifier: this.configService.getOrThrow<number>("OTP_VERIFICATION_TTL"),
+            setup2FA: this.configService.getOrThrow<number>("PENDING_2FA_TTL"),
+            login: this.configService.getOrThrow<number>("OTP_LOGIN_TTL"),
+            reset: this.configService.getOrThrow<number>("OTP_RESET_TTL"),
+        };
     }
 
-    public async setVerification({ code, account }: InfrastructureServices.OTPCache.SetVerification): Promise<void> {
-        await this.redis.set(`${this.namespace}:verification:${code}`, account, "EX", this.verificationTTL);
+    public async set(props: InfrastructureServices.OTPCache.Set.Props): InfrastructureServices.OTPCache.Set.Result {
+        const { purpose, value, key } = props;
+        await this.redis.set(`${this.namespace}:${purpose}:${key}`, value, "EX", this.ttl[purpose]);
     }
 
-    public async getVerification({ code }: InfrastructureServices.OTPCache.GetVerification): Promise<Nullable<string>> {
-        return await this.redis.get(`${this.namespace}:verification:${code}`);
-    }
-
-    public async deleteVerification({ code }: InfrastructureServices.OTPCache.DeleteVerification): Promise<void> {
-        await this.redis.unlink(`${this.namespace}:verification:${code}`);
-    }
-
-    public async setLogin({ code, identifier }: InfrastructureServices.OTPCache.SetLogin): Promise<void> {
-        await this.redis.set(`${this.namespace}:login:${code}`, identifier, "EX", this.loginTTL);
-    }
-
-    public async getLogin({ code }: InfrastructureServices.OTPCache.GetLogin): Promise<Nullable<string>> {
-        return await this.redis.get(`${this.namespace}:login:${code}`);
-    }
-
-    public async deleteLogin({ code }: InfrastructureServices.OTPCache.DeleteLogin): Promise<void> {
-        await this.redis.unlink(`${this.namespace}:login:${code}`);
-    }
-
-    public async setReset({ code, account }: InfrastructureServices.OTPCache.SetReset): Promise<void> {
-        await this.redis.set(`${this.namespace}:reset:${code}`, account, "EX", this.resetTTL);
-    }
-
-    public async getReset({ code }: InfrastructureServices.OTPCache.GetReset): Promise<Nullable<string>> {
-        return await this.redis.get(`${this.namespace}:reset:${code}`);
-    }
-
-    public async deleteReset({ code }: InfrastructureServices.OTPCache.DeleteReset): Promise<void> {
-        await this.redis.unlink(`${this.namespace}:reset:${code}`);
-    }
-
-    public async setSetup2FA({ account, secret }: InfrastructureServices.OTPCache.SetSetup2FA): Promise<void> {
-        await this.redis.set(`${this.namespace}:2fa-setup:${account}`, secret, "EX", this.pending2FATTL);
-    }
-
-    public async getSetup2FA({ account }: InfrastructureServices.OTPCache.GetSetup2FA): Promise<Nullable<string>> {
-        return await this.redis.get(`${this.namespace}:2fa-setup:${account}`);
-    }
-
-    public async deleteSetup2FA({ account }: InfrastructureServices.OTPCache.DeleteSetup2FA): Promise<void> {
-        await this.redis.unlink(`${this.namespace}:2fa-setup:${account}`);
-    }
-
-    public async setIdentifier({ code, identifier }: InfrastructureServices.OTPCache.SetIdentifier): Promise<void> {
-        await this.redis.set(`${this.namespace}:identifier:${code}`, identifier, "EX", this.verificationTTL);
-    }
-
-    public async getIdentifier({ code }: InfrastructureServices.OTPCache.GetIdentifier): Promise<Nullable<string>> {
-        return await this.redis.get(`${this.namespace}:identifier:${code}`);
-    }
-
-    public async deleteIdentifier({ code }: InfrastructureServices.OTPCache.DeleteIdentifier): Promise<void> {
-        await this.redis.unlink(`${this.namespace}:identifier:${code}`);
+    public async consume(
+        props: InfrastructureServices.OTPCache.Consume.Props,
+    ): InfrastructureServices.OTPCache.Consume.Result {
+        const { purpose, key } = props;
+        return await this.redis.getdel(`${this.namespace}:${purpose}:${key}`);
     }
 }

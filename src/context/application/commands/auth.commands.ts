@@ -86,7 +86,12 @@ export class AuthCommands implements Commands.Auth.Contract {
         }
 
         const otp = this.cryptoService.generateOTP();
-        await this.otpCacheService.setLogin({ code: otp, identifier: identifier.id });
+
+        await this.otpCacheService.set({
+            value: identifier.id,
+            purpose: "login",
+            key: otp,
+        });
 
         if (identifier.type === IdentifierType.EMAIL) {
             await this.emailService.send({
@@ -105,13 +110,14 @@ export class AuthCommands implements Commands.Auth.Contract {
     }
 
     public async verifyOTP(props: Commands.Auth.VerifyOTP.Props): Commands.Auth.VerifyOTP.Result {
-        const cachedIdentifier = await this.otpCacheService.getLogin({ code: props.input.code });
+        const cachedIdentifier = await this.otpCacheService.consume({
+            key: props.input.code,
+            purpose: "login",
+        });
 
         if (!cachedIdentifier) {
             throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
-
-        await this.otpCacheService.deleteLogin({ code: props.input.code });
 
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             options: { populate: ["account"] },

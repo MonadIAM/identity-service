@@ -90,13 +90,14 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     }
 
     public async verify(props: Commands.Identifier.Verify.Props): Commands.Identifier.Verify.Result {
-        const cachedIdentifier = await this.otpCacheService.getIdentifier({ code: props.input.code });
+        const cachedIdentifier = await this.otpCacheService.consume({
+            purpose: "identifier",
+            key: props.input.code,
+        });
 
         if (!cachedIdentifier) {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
         }
-
-        await this.otpCacheService.deleteIdentifier({ code: props.input.code });
 
         await this.transactionalService.run({
             resource: this.resource,
@@ -205,7 +206,12 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     public async sendOTP(props: Commands.Identifier.SendOTP.Props): Commands.Identifier.SendOTP.Result {
         const { identifier, value, type } = props;
         const otp = this.cryptoService.generateOTP();
-        await this.otpCacheService.setIdentifier({ code: otp, identifier });
+
+        await this.otpCacheService.set({
+            purpose: "identifier",
+            value: identifier,
+            key: otp,
+        });
 
         if (type === IdentifierType.EMAIL) {
             await this.emailService.send({

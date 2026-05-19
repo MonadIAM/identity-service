@@ -89,13 +89,18 @@ export class PasswordCommands implements Commands.Password.Contract {
 
     public async requestOTP(props: Commands.Password.RequestOTP.Props): Commands.Password.RequestOTP.Result {
         const identifier = await this.identifierRepository.findUnique({
-            options: { populate: ["account"] },
             where: { value: props.input.identifier },
+            options: { populate: ["account"] },
         });
 
         if (identifier?.isVerified) {
             const otp = this.cryptoService.generateOTP();
-            await this.otpCacheService.setReset({ code: otp, account: identifier.account.id });
+
+            await this.otpCacheService.set({
+                purpose: "reset",
+                key: otp,
+                value: identifier.account.id,
+            });
 
             if (identifier.type === IdentifierType.EMAIL) {
                 await this.emailService.send({
@@ -115,7 +120,10 @@ export class PasswordCommands implements Commands.Password.Contract {
     }
 
     public async resetByOTP(props: Commands.Password.ResetByOTP.Props): Commands.Password.ResetByOTP.Result {
-        const cachedAccount = await this.otpCacheService.getReset({ code: props.input.code });
+        const cachedAccount = await this.otpCacheService.consume({
+            key: props.input.code,
+            purpose: "reset",
+        });
 
         if (!cachedAccount) {
             throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
@@ -129,8 +137,6 @@ export class PasswordCommands implements Commands.Password.Contract {
                 ...props,
             },
             execute: async (transaction) => {
-                await this.otpCacheService.deleteReset({ code: props.input.code });
-
                 await this.checkPasswordHistory({ account: cachedAccount, password: props.input.password });
 
                 const account = await this.accountRepository.findUniqueOrThrow({
