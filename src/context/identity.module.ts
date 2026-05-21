@@ -5,13 +5,14 @@ import { Module } from "@nestjs/common";
 import { FormatResponseInterceptor, PendingTokenInterceptor, AuthTokenInterceptor } from "~common/interceptors";
 import { TransactionManagerModule } from "~common/transaction-manager";
 
-import { ElevatedAccessGuard, AuthGuard } from "./infrastructure/guards";
+import { ElevatedAccessGuard, PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { PROCESSORS } from "./infrastructure/processors";
 import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
 import { SCHEDULERS } from "./interface/schedulers";
+import { CONSUMERS } from "./interface/consumers";
 import { COMMANDS } from "./application/commands";
 import { QUERIES } from "./application/queries";
 
@@ -26,6 +27,7 @@ import { QUERIES } from "./application/queries";
         ...COMMANDS,
         ...QUERIES,
         ElevatedAccessGuard,
+        PermissionGuard,
         AuthGuard,
         {
             provide: APP_INTERCEPTOR,
@@ -45,9 +47,13 @@ import { QUERIES } from "./application/queries";
         },
         {
             provide: APP_GUARD,
+            useExisting: PermissionGuard,
+        },
+        {
+            provide: APP_GUARD,
             useExisting: ElevatedAccessGuard,
         },
     ],
-    controllers: [...CONTROLLERS],
+    controllers: [...CONTROLLERS, ...CONSUMERS],
 })
 export class IdentityModule {}

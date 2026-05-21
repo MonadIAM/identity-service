@@ -272,6 +272,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public PENDING_2FA_TTL: number;
 
+    @Validator.IsPositiveInt()
+    declare public ACCESS_CACHE_TTL: number;
+
     // ---------------------------------------------------------------------------
     // OAuth Providers
     // ---------------------------------------------------------------------------

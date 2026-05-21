@@ -128,6 +128,7 @@ declare global {
             OTP_RESET_TTL: `${number}`;
             OAUTH_STATE_TTL: `${number}`;
             PENDING_2FA_TTL: `${number}`;
+            ACCESS_CACHE_TTL: `${number}`;
 
             // ---------------------------------------------------------------------------
             // OAuth Providers
