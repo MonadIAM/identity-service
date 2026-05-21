@@ -1,1 +1,1 @@
-export const GRPC_MICROSERVICE_CONFIG = Symbol("ACCESS_CONTROL_GRPC_CLIENT");
+export const GRPC_CONFIG = Symbol("GRPC.Config");

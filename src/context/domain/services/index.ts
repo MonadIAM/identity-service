@@ -7,14 +7,15 @@ import { PasswordService } from "./password.service";
 import { AccountService } from "./account.service";
 import { SessionService } from "./session.service";
 import { ProfileService } from "./profile.service";
-
-export const RECOVERY_CODE_SERVICE = Symbol("Services.RecoveryCode.Contract");
-export const SECOND_FACTOR_SERVICE = Symbol("Services.SecondFactor.Contract");
-export const IDENTIFIER_SERVICE = Symbol("Services.Identifier.Contract");
-export const PASSWORD_SERVICE = Symbol("Services.Password.Contract");
-export const ACCOUNT_SERVICE = Symbol("Services.Account.Contract");
-export const SESSION_SERVICE = Symbol("Services.Session.Contract");
-export const PROFILE_SERVICE = Symbol("Services.Profile.Contract");
+import {
+    RECOVERY_CODE_SERVICE,
+    SECOND_FACTOR_SERVICE,
+    IDENTIFIER_SERVICE,
+    PASSWORD_SERVICE,
+    ACCOUNT_SERVICE,
+    SESSION_SERVICE,
+    PROFILE_SERVICE,
+} from "./tokens";
 
 export const DOMAIN_SERVICES: Provider[] = [
     {
@@ -46,3 +47,13 @@ export const DOMAIN_SERVICES: Provider[] = [
         useClass: ProfileService,
     },
 ];
+
+export {
+    RECOVERY_CODE_SERVICE,
+    SECOND_FACTOR_SERVICE,
+    IDENTIFIER_SERVICE,
+    PASSWORD_SERVICE,
+    ACCOUNT_SERVICE,
+    SESSION_SERVICE,
+    PROFILE_SERVICE,
+};

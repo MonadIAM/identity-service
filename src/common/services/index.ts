@@ -7,14 +7,15 @@ import { CryptoService } from "./crypto.service";
 import { EmailService } from "./email.service";
 import { SMSService } from "./sms.service";
 import { JWTService } from "./jwt.service";
-
-export const GOOGLE_OAUTH_SERVICE = Symbol("Services.GoogleOAuth.Contract");
-export const GITHUB_OAUTH_SERVICE = Symbol("Services.GitHubOAuth.Contract");
-export const HASHING_SERVICE = Symbol("Services.Hashing.Contract");
-export const CRYPTO_SERVICE = Symbol("Services.Crypto.Contract");
-export const EMAIL_SERVICE = Symbol("Services.Email.Contract");
-export const SMS_SERVICE = Symbol("Services.SMS.Contract");
-export const JWT_SERVICE = Symbol("Services.JWT.Contract");
+import {
+    GOOGLE_OAUTH_SERVICE,
+    GITHUB_OAUTH_SERVICE,
+    HASHING_SERVICE,
+    CRYPTO_SERVICE,
+    EMAIL_SERVICE,
+    SMS_SERVICE,
+    JWT_SERVICE,
+} from "./tokens";
 
 export const COMMON_SERVICES: Provider[] = [
     {
@@ -46,3 +47,13 @@ export const COMMON_SERVICES: Provider[] = [
         useClass: JWTService,
     },
 ];
+
+export {
+    GOOGLE_OAUTH_SERVICE,
+    GITHUB_OAUTH_SERVICE,
+    HASHING_SERVICE,
+    CRYPTO_SERVICE,
+    EMAIL_SERVICE,
+    SMS_SERVICE,
+    JWT_SERVICE,
+};

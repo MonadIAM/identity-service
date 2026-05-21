@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/commo
 import { Reflector } from "@nestjs/core";
 
 import { ELEVATED_ACCESS_CACHE_SERVICE } from "~context/infrastructure/services";
-import { ELEVATED_ACCESS_KEY } from "~common/decorators";
+import { ELEVATED_ACCESS } from "~common/decorators";
 import { GuardException } from "~common/exceptions";
 
 @Injectable()
@@ -16,7 +16,7 @@ export class ElevatedAccessGuard implements CanActivate {
     ) {}
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
-        const requiresElevatedAccess = this.reflector.getAllAndOverride<boolean>(ELEVATED_ACCESS_KEY, [
+        const requiresElevatedAccess = this.reflector.getAllAndOverride<boolean>(ELEVATED_ACCESS, [
             context.getHandler(),
             context.getClass(),
         ]);

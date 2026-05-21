@@ -5,10 +5,10 @@ import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
 import cookie from "@fastify/cookie";
 
-import { KAFKA_MICROSERVICE_CONFIG } from "~infrastructure/kafka";
 import { BootstrapSecurity } from "~bootstrap/security.bootstrap";
 import { BootstrapSwagger } from "~bootstrap/swagger.bootstrap";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
+import { KAFKA_CONFIG } from "~infrastructure/kafka";
 
 import { MainModule } from "./main.module";
 import "./extensions";
@@ -35,7 +35,7 @@ async function bootstrap(): Promise<void> {
     BootstrapSwagger.registerSwagger(application);
     await BootstrapSecurity.registerSecurityPlugins(application);
 
-    const kafkaConfig = application.get<MicroserviceOptions>(KAFKA_MICROSERVICE_CONFIG);
+    const kafkaConfig = application.get<MicroserviceOptions>(KAFKA_CONFIG);
 
     application.connectMicroservice(kafkaConfig);
 

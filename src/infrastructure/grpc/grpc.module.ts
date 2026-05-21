@@ -4,14 +4,14 @@ import { Global, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { AccessControlClient } from "./access-control.client";
-import { GRPC_MICROSERVICE_CONFIG } from "./tokens";
+import { GRPC_CONFIG } from "./tokens";
 
 @Global()
 @Module({
     imports: [
         ClientsModule.registerAsync([
             {
-                name: GRPC_MICROSERVICE_CONFIG,
+                name: GRPC_CONFIG,
                 inject: [ConfigService],
                 useFactory: (config: ConfigService) => ({
                     transport: Transport.GRPC,

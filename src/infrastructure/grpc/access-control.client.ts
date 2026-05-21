@@ -2,14 +2,14 @@ import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { ClientGrpc as ClientGRPC } from "@nestjs/microservices";
 import { firstValueFrom } from "rxjs";
 
-import { GRPC_MICROSERVICE_CONFIG } from "./tokens";
+import { GRPC_CONFIG } from "./tokens";
 
 @Injectable()
 export class AccessControlClient implements GRPC.AccessControl.Contract, OnModuleInit {
     declare private service: GRPC.AccessControl.Service;
 
     public constructor(
-        @Inject(GRPC_MICROSERVICE_CONFIG)
+        @Inject(GRPC_CONFIG)
         private readonly client: ClientGRPC,
     ) {}
 

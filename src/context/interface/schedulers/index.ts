@@ -1,8 +1,7 @@
 import { Provider } from "@nestjs/common";
 
 import { CleanupScheduler } from "./cleanup.scheduler";
-
-export const CLEANUP_SCHEDULER = Symbol("Schedulers.Cleanup");
+import { CLEANUP_SCHEDULER } from "./tokens";
 
 export const SCHEDULERS: Provider[] = [
     {
@@ -10,3 +9,5 @@ export const SCHEDULERS: Provider[] = [
         useClass: CleanupScheduler,
     },
 ];
+
+export { CLEANUP_SCHEDULER };

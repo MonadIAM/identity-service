@@ -2,7 +2,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 
-import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/redis.tokens";
+import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
 
 @Injectable()
 export class ElevatedAccessCacheService implements InfrastructureServices.ElevatedAccessCache.Contract {

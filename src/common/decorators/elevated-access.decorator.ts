@@ -1,7 +1,7 @@
 import { SetMetadata } from "@nestjs/common";
 
-export const ELEVATED_ACCESS_KEY = Symbol("elevated-access");
+import { ELEVATED_ACCESS } from "./tokens";
 
 export function ElevatedAccess(): MethodDecorator {
-    return SetMetadata(ELEVATED_ACCESS_KEY, true);
+    return SetMetadata(ELEVATED_ACCESS, true);
 }

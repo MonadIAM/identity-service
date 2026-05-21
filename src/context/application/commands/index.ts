@@ -10,17 +10,18 @@ import { ProfileCommands } from "./profile.commands";
 import { SessionCommands } from "./session.commands";
 import { OAuthCommands } from "./oauth.commands";
 import { AuthCommands } from "./auth.commands";
-
-export const ELEVATED_ACCESS_COMMANDS = Symbol("Commands.ElevatedAccess.Contract");
-export const RECOVERY_CODE_COMMANDS = Symbol("Commands.RecoveryCode.Contract");
-export const SECOND_FACTOR_COMMANDS = Symbol("Commands.SecondFactor.Contract");
-export const IDENTIFIER_COMMANDS = Symbol("Commands.Identifier.Contract");
-export const PASSWORD_COMMANDS = Symbol("Commands.Password.Contract");
-export const ACCOUNT_COMMANDS = Symbol("Commands.Account.Contract");
-export const PROFILE_COMMANDS = Symbol("Commands.Profile.Contract");
-export const SESSION_COMMANDS = Symbol("Commands.Session.Contract");
-export const OAUTH_COMMANDS = Symbol("Commands.OAuth.Contract");
-export const AUTH_COMMANDS = Symbol("Commands.Auth.Contract");
+import {
+    ELEVATED_ACCESS_COMMANDS,
+    RECOVERY_CODE_COMMANDS,
+    SECOND_FACTOR_COMMANDS,
+    IDENTIFIER_COMMANDS,
+    PASSWORD_COMMANDS,
+    ACCOUNT_COMMANDS,
+    PROFILE_COMMANDS,
+    SESSION_COMMANDS,
+    OAUTH_COMMANDS,
+    AUTH_COMMANDS,
+} from "./tokens";
 
 export const COMMANDS: Provider[] = [
     {
@@ -64,3 +65,16 @@ export const COMMANDS: Provider[] = [
         useClass: AuthCommands,
     },
 ];
+
+export {
+    ELEVATED_ACCESS_COMMANDS,
+    RECOVERY_CODE_COMMANDS,
+    SECOND_FACTOR_COMMANDS,
+    IDENTIFIER_COMMANDS,
+    PASSWORD_COMMANDS,
+    ACCOUNT_COMMANDS,
+    PROFILE_COMMANDS,
+    SESSION_COMMANDS,
+    OAUTH_COMMANDS,
+    AUTH_COMMANDS,
+};

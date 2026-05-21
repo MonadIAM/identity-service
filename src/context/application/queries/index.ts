@@ -7,14 +7,15 @@ import { ChangeLogQueries } from "./change-log.queries";
 import { AuditLogQueries } from "./audit-log.queries";
 import { AccountQueries } from "./account.queries";
 import { SessionQueries } from "./session.queries";
-
-export const RECOVERY_CODE_QUERIES = Symbol("Queries.RecoveryCode.Contract");
-export const SECOND_FACTOR_QUERIES = Symbol("Queries.SecondFactor.Contract");
-export const IDENTIFIER_QUERIES = Symbol("Queries.Identifier.Contract");
-export const CHANGE_LOG_QUERIES = Symbol("Queries.ChangeLog.Contract");
-export const AUDIT_LOG_QUERIES = Symbol("Queries.AuditLog.Contract");
-export const ACCOUNT_QUERIES = Symbol("Queries.Account.Contract");
-export const SESSION_QUERIES = Symbol("Queries.Session.Contract");
+import {
+    RECOVERY_CODE_QUERIES,
+    SECOND_FACTOR_QUERIES,
+    IDENTIFIER_QUERIES,
+    CHANGE_LOG_QUERIES,
+    AUDIT_LOG_QUERIES,
+    ACCOUNT_QUERIES,
+    SESSION_QUERIES,
+} from "./tokens";
 
 export const QUERIES: Provider[] = [
     {
@@ -46,3 +47,13 @@ export const QUERIES: Provider[] = [
         useClass: SessionQueries,
     },
 ];
+
+export {
+    RECOVERY_CODE_QUERIES,
+    SECOND_FACTOR_QUERIES,
+    IDENTIFIER_QUERIES,
+    CHANGE_LOG_QUERIES,
+    AUDIT_LOG_QUERIES,
+    ACCOUNT_QUERIES,
+    SESSION_QUERIES,
+};

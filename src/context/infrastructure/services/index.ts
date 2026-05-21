@@ -5,12 +5,13 @@ import { PendingAuthCacheService } from "./pending-auth-cache.service";
 import { OAuthStateCacheService } from "./oauth-state-cache.service";
 import { BlacklistCacheService } from "./blacklist-cache.service";
 import { OTPCacheService } from "./otp-cache.service";
-
-export const ELEVATED_ACCESS_CACHE_SERVICE = Symbol("InfrastructureServices.ElevatedAccessCache.Contract");
-export const PENDING_AUTH_CACHE_SERVICE = Symbol("InfrastructureServices.PendingAuthCache.Contract");
-export const OAUTH_STATE_CACHE_SERVICE = Symbol("InfrastructureServices.OAuthStateCache.Contract");
-export const BLACKLIST_CACHE_SERVICE = Symbol("InfrastructureServices.BlacklistCache.Contract");
-export const OTP_CACHE_SERVICE = Symbol("InfrastructureServices.OTPCache.Contract");
+import {
+    ELEVATED_ACCESS_CACHE_SERVICE,
+    PENDING_AUTH_CACHE_SERVICE,
+    OAUTH_STATE_CACHE_SERVICE,
+    BLACKLIST_CACHE_SERVICE,
+    OTP_CACHE_SERVICE,
+} from "./tokens";
 
 export const INFRASTRUCTURE_SERVICES: Provider[] = [
     {
@@ -34,3 +35,11 @@ export const INFRASTRUCTURE_SERVICES: Provider[] = [
         useClass: OTPCacheService,
     },
 ];
+
+export {
+    ELEVATED_ACCESS_CACHE_SERVICE,
+    PENDING_AUTH_CACHE_SERVICE,
+    OAUTH_STATE_CACHE_SERVICE,
+    BLACKLIST_CACHE_SERVICE,
+    OTP_CACHE_SERVICE,
+};

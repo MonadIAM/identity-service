@@ -6,7 +6,7 @@ import { FastifyReply } from "fastify";
 import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
 
-import { SKIP_INTERCEPTORS_KEY } from "~common/decorators";
+import { SKIP_INTERCEPTORS } from "~common/decorators";
 
 @Injectable()
 export class AuthTokenInterceptor implements NestInterceptor {
@@ -21,7 +21,7 @@ export class AuthTokenInterceptor implements NestInterceptor {
     }
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-        const skip = this.reflector.getAllAndOverride<boolean>(SKIP_INTERCEPTORS_KEY, [
+        const skip = this.reflector.getAllAndOverride<boolean>(SKIP_INTERCEPTORS, [
             context.getHandler(),
             context.getClass(),
         ]);

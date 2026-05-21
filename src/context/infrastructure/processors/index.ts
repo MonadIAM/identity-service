@@ -1,8 +1,7 @@
 import { Provider } from "@nestjs/common";
 
 import { CleanupProcessor } from "./cleanup.processor";
-
-export const CLEANUP_PROCESSOR = Symbol("Processors.Cleanup");
+import { CLEANUP_PROCESSOR } from "./tokens";
 
 export const PROCESSORS: Provider[] = [
     {
@@ -10,3 +9,5 @@ export const PROCESSORS: Provider[] = [
         useClass: CleanupProcessor,
     },
 ];
+
+export { CLEANUP_PROCESSOR };
