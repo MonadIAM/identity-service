@@ -7,6 +7,7 @@ import { GuardException } from "~common/exceptions";
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
+    private readonly systemRealm = "00000001-0000-4000-8000-100000000001";
     private readonly dictionaryPath = "guard.permission";
 
     public constructor(
@@ -32,7 +33,7 @@ export class PermissionGuard implements CanActivate {
         }
 
         const request = context.switchToHttp().getRequest<Req<{ Querystring: { realm?: string } }>>();
-        const realm = request.query?.realm;
+        const realm = request.query?.realm ?? this.systemRealm;
         const account = request.session?.account;
 
         if (!account) {

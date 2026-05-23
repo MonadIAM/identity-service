@@ -1,13 +1,15 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
+import { Swagger, FormatResponse, RequirePermission } from "~common/decorators";
 import { AUDIT_LOG_QUERIES } from "~context/application/queries";
-import { Swagger, FormatResponse } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { PermissionCode } from "~context/enums";
 
 import { GetListBodyDTO, GetByIdQueryDTO, AuditLogDTO, ListDTO } from "../dto/audit-log";
 
 const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
+const { AUDIT_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("AuditLog")
 @Controller("/audit-log")
@@ -21,6 +23,7 @@ export class AuditLogController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(AuditLogDTO)
+    @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: AuditLogDTO })
     @ApiOperation({ summary: "Returns a audit log by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
@@ -32,6 +35,7 @@ export class AuditLogController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
     @ApiOperation({ summary: "Returns a paginated list of audit logs" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Queries.AuditLog.FindMany.Result {

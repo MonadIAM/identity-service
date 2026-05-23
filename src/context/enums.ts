@@ -110,5 +110,3 @@ export enum CleanupJob {
     PENDING_ACCOUNTS  = "cleanup-pending-accounts",
     /* eslint-enable prettier/prettier */
 }
-
-export enum PermissionCode {}

@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { Extract, FormatResponse, Tokens, Public } from "~common/decorators";
+import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decorators";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -14,7 +14,7 @@ import {
     SigninBodyDTO,
 } from "../dto/auth";
 
-const { OK } = HttpStatus;
+const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
 
 @ApiTags("Auth")
 @Controller("/auth")
@@ -30,6 +30,7 @@ export class AuthController {
     @Post("signin")
     @FormatResponse(SigninResultDTO)
     @ApiOperation({ summary: "Signin by password" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
     public signin(@Body() input: SigninBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Auth.Signin.Result {
         return this.authCommands.signin({ context, input });
     }
@@ -39,6 +40,7 @@ export class AuthController {
     @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Request passwordless OTP" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND)
     public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Auth.RequestOTP.Result {
         return this.authCommands.requestOTP({ input });
     }
@@ -48,6 +50,7 @@ export class AuthController {
     @Post("verify/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Verify passwordless OTP" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
     public verifyOTP(
         @Body() input: VerifyOTPBodyDTO,
         @Extract.Meta() context: Extract.Meta,
@@ -60,6 +63,7 @@ export class AuthController {
     @Post("verify/second-factor")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Verify second-factor TOTP" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED)
     public verifySecondFactor(
         @Body() input: VerifySecondFactorBodyDTO,
         @Extract.Meta() context: Extract.Meta,

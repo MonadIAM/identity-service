@@ -1,10 +1,10 @@
 import { Controller, HttpStatus, HttpCode, Inject, Get, Header } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+import { Public, Swagger } from "~common/decorators";
 import { JWT_SERVICE } from "~common/services";
-import { Public } from "~common/decorators";
 
-const { OK } = HttpStatus;
+const { INTERNAL_SERVER_ERROR, OK } = HttpStatus;
 
 @ApiTags("JWKS")
 @Controller(".well-known")
@@ -17,6 +17,7 @@ export class JWKSController {
     @Public()
     @HttpCode(OK)
     @Get("jwks.json")
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR)
     @ApiOperation({ summary: "Get JSON Web Key Set" })
     @Header("Content-Type", "application/jwk-set+json")
     @Header("Cache-Control", "public, max-age=300, must-revalidate")

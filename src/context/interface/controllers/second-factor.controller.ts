@@ -1,11 +1,12 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { Extract, Public, ElevatedAccess, FormatResponse } from "~common/decorators";
+import { Extract, Public, ElevatedAccess, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
 import { SECOND_FACTOR_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import {
     VerifyResultDTO,
@@ -17,7 +18,14 @@ import {
     ListDTO,
 } from "../dto/second-factor";
 
-const { CREATED, OK } = HttpStatus;
+const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN, CREATED, OK } = HttpStatus;
+const {
+    SECOND_FACTOR_READ_PERSONAL,
+    SECOND_FACTOR_READ_ABSOLUTE,
+    SECOND_FACTOR_CREATE,
+    SECOND_FACTOR_VERIFY,
+    SECOND_FACTOR_PURGE,
+} = PermissionCode;
 
 @ApiTags("SecondFactor")
 @Controller("/second-factor")
@@ -33,7 +41,9 @@ export class SecondFactorController {
     @Get("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
+    @RequirePermission(SECOND_FACTOR_READ_PERSONAL, SECOND_FACTOR_READ_ABSOLUTE)
     @ApiOperation({ summary: "Get list of second factors" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getList(@Extract.Session() { account }: Extract.Session.Auth): Queries.SecondFactor.FindMany.Result {
         return this.secondFactorQueries.findMany({ account });
     }
@@ -41,7 +51,9 @@ export class SecondFactorController {
     @Post("create")
     @HttpCode(CREATED)
     @FormatResponse(CreateResultDTO)
+    @RequirePermission(SECOND_FACTOR_CREATE)
     @ApiOperation({ summary: "Create TOTP factor" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public create(
         @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -53,7 +65,9 @@ export class SecondFactorController {
     @HttpCode(OK)
     @Post("verify")
     @FormatResponse(VerifyResultDTO)
+    @RequirePermission(SECOND_FACTOR_VERIFY)
     @ApiOperation({ summary: "Verify TOTP factor" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public verify(
         @Body() input: VerifyBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -66,7 +80,9 @@ export class SecondFactorController {
     @Delete("purge")
     @ElevatedAccess()
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(SECOND_FACTOR_PURGE)
     @ApiOperation({ summary: "Purge non-active factor" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public purge(
         @Query() input: PurgeQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -80,6 +96,7 @@ export class SecondFactorController {
     @Post("reset")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset all factors by master code" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public reset(@Body() input: ResetBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.SecondFactor.Reset.Result {
         return this.secondFactorCommands.reset({ context, input });
     }

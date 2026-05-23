@@ -1,14 +1,16 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Patch } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { Extract, FormatResponse } from "~common/decorators";
+import { Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { PROFILE_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import { UpdateBodyDTO } from "../dto/profile";
 
-const { OK } = HttpStatus;
+const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN, OK } = HttpStatus;
+const { PROFILE_UPDATE } = PermissionCode;
 
 @ApiTags("Profile")
 @Controller("/profile")
@@ -22,7 +24,9 @@ export class ProfileController {
     @HttpCode(OK)
     @Patch("update")
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(PROFILE_UPDATE)
     @ApiOperation({ summary: "Update profile" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public update(
         @Body() input: UpdateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,

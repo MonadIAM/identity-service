@@ -1,15 +1,17 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { Extract, Tokens, Public, FormatResponse } from "~common/decorators";
+import { Extract, Tokens, Public, FormatResponse, Swagger, RequirePermission } from "~common/decorators";
 import { SESSION_COMMANDS } from "~context/application/commands";
 import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
 
-const { OK } = HttpStatus;
+const { SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE, SESSION_LOGOUT, SESSION_REVOKE } = PermissionCode;
+const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN, OK } = HttpStatus;
 
 @ApiTags("Session")
 @Controller("/session")
@@ -25,7 +27,9 @@ export class SessionController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(SessionDTO)
+    @RequirePermission(SESSION_READ_PERSONAL)
     @ApiOperation({ summary: "Get current session" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getCurrent(@Extract.Session() { session, account }: Extract.Session.Auth): Queries.Session.GetCurrent.Result {
         return this.sessionQueries.getCurrent({ session, account });
     }
@@ -34,6 +38,8 @@ export class SessionController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiOperation({ summary: "Get list of sessions" })
+    @RequirePermission(SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getList(@Extract.Session() { account }: Extract.Session.Auth): Queries.Session.FindMany.Result {
         return this.sessionQueries.findMany({ account });
     }
@@ -43,6 +49,7 @@ export class SessionController {
     @Post("refresh")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Refresh session tokens" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public refresh(
         @Extract.Session() { session }: Extract.Session.Public,
         @Extract.Meta() context: Extract.Meta,
@@ -54,7 +61,9 @@ export class SessionController {
     @HttpCode(OK)
     @Delete("logout")
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(SESSION_LOGOUT)
     @ApiOperation({ summary: "Revoke current session" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public logout(
         @Extract.Session() { account: actor, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
@@ -65,7 +74,9 @@ export class SessionController {
     @HttpCode(OK)
     @Delete("revoke")
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(SESSION_REVOKE)
     @ApiOperation({ summary: "Revoke specific sessions" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public revoke(
         @Body() input: RevokeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -77,7 +88,9 @@ export class SessionController {
     @HttpCode(OK)
     @Delete("revoke-all")
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(SESSION_REVOKE)
     @ApiOperation({ summary: "Revoke all sessions" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public revokeAll(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,

@@ -1,14 +1,16 @@
 import { Controller, HttpStatus, HttpCode, Inject, Body, Post, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+import { Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { ELEVATED_ACCESS_COMMANDS } from "~context/application/commands";
-import { Extract, FormatResponse } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import { BySecondFactorBodyDTO, ByPasswordBodyDTO } from "../dto/elevated-access";
 
-const { OK } = HttpStatus;
+const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
+const { ELEVATED_ACCESS_CONFIRM_SECOND_FACTOR, ELEVATED_ACCESS_CONFIRM_PASSWORD } = PermissionCode;
 
 @ApiTags("ElevatedAccess")
 @Controller("/elevated-access")
@@ -22,7 +24,9 @@ export class ElevatedAccessController {
     @HttpCode(OK)
     @Post("password")
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(ELEVATED_ACCESS_CONFIRM_PASSWORD)
     @ApiOperation({ summary: "Confirm identity by password" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
     public byPassword(
         @Body() input: ByPasswordBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -35,6 +39,8 @@ export class ElevatedAccessController {
     @Post("second-factor")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Confirm identity by TOTP" })
+    @RequirePermission(ELEVATED_ACCESS_CONFIRM_SECOND_FACTOR)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
     public bySecondFactor(
         @Body() input: BySecondFactorBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,

@@ -13,11 +13,12 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { Extract, ElevatedAccess, FormatResponse } from "~common/decorators";
+import { Extract, ElevatedAccess, FormatResponse, Swagger, RequirePermission } from "~common/decorators";
 import { IDENTIFIER_COMMANDS } from "~context/application/commands";
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { IDENTIFIER_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { PermissionCode } from "~context/enums";
 
 import {
     ToggleNotificationsBodyDTO,
@@ -35,7 +36,17 @@ import {
     ListDTO,
 } from "../dto/identifier";
 
-const { CREATED, OK } = HttpStatus;
+const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CREATED, OK } = HttpStatus;
+const {
+    IDENTIFIER_TOGGLE_PUBLIC_CONTACT,
+    IDENTIFIER_TOGGLE_NOTIFICATIONS,
+    IDENTIFIER_READ_ABSOLUTE,
+    IDENTIFIER_READ_PERSONAL,
+    IDENTIFIER_CREATE,
+    IDENTIFIER_RESEND,
+    IDENTIFIER_VERIFY,
+    IDENTIFIER_PURGE,
+} = PermissionCode;
 
 @ApiTags("Identifier")
 @Controller("/identifier")
@@ -52,6 +63,8 @@ export class IdentifierController {
     @HttpCode(OK)
     @FormatResponse(IdentifierDTO)
     @ApiOperation({ summary: "Get identifier by ID" })
+    @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getById(@Query() { identifier, view }: GetByIdQueryDTO): Queries.Identifier.FindUnique.Result {
         return this.identifierQueries.findUnique({ identifier, view });
     }
@@ -60,6 +73,8 @@ export class IdentifierController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiOperation({ summary: "Get paginated list of identifiers" })
+    @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getList(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { view }: BaseReadQueryDTO,
@@ -70,7 +85,10 @@ export class IdentifierController {
     @HttpCode(OK)
     @Post("list/lookup")
     @FormatResponse(LookupListDTO)
+    @RequirePermission(IDENTIFIER_READ_ABSOLUTE)
     @ApiOperation({ summary: "Returns a lookup list of identifiers" })
+    @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getLookupList(
         @Body() { pagination }: GetLookupListBodyDTO,
         @Query() { term }: GetLookupListQueryDTO,
@@ -82,7 +100,9 @@ export class IdentifierController {
     @Post("create")
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(IDENTIFIER_CREATE)
     @ApiOperation({ summary: "Add identifier" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public create(
         @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -94,7 +114,9 @@ export class IdentifierController {
     @HttpCode(OK)
     @Post("resend")
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(IDENTIFIER_RESEND)
     @ApiOperation({ summary: "Resend identifier verification" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public resend(
         @Body() input: ResendBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -105,7 +127,9 @@ export class IdentifierController {
     @HttpCode(OK)
     @Post("verify")
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(IDENTIFIER_VERIFY)
     @ApiOperation({ summary: "Verify identifier with OTP" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public verify(
         @Body() input: VerifyBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -118,6 +142,8 @@ export class IdentifierController {
     @Patch("toggle/notifications")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Toggle notifications" })
+    @RequirePermission(IDENTIFIER_TOGGLE_NOTIFICATIONS)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public toggleNotifications(
         @Body() input: ToggleNotificationsBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -130,6 +156,8 @@ export class IdentifierController {
     @Patch("toggle/public-contact")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Toggle public contact" })
+    @RequirePermission(IDENTIFIER_TOGGLE_PUBLIC_CONTACT)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public togglePublicContact(
         @Body() input: TogglePublicContactBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -142,7 +170,9 @@ export class IdentifierController {
     @Delete("purge")
     @ElevatedAccess()
     @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(IDENTIFIER_PURGE)
     @ApiOperation({ summary: "Remove identifier" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public purge(
         @Query() input: PurgeQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
