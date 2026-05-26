@@ -9,8 +9,19 @@ import { PermissionCode } from "~context/enums";
 
 import { UpdateBodyDTO } from "../dto/profile";
 
-const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN, OK } = HttpStatus;
 const { PROFILE_UPDATE } = PermissionCode;
+const {
+    INTERNAL_SERVER_ERROR,
+    UNPROCESSABLE_ENTITY,
+    SERVICE_UNAVAILABLE,
+    REQUEST_TIMEOUT,
+    UNAUTHORIZED,
+    BAD_REQUEST,
+    NOT_FOUND,
+    FORBIDDEN,
+    CONFLICT,
+    OK,
+} = HttpStatus;
 
 @ApiTags("Profile")
 @Controller("/profile")
@@ -26,7 +37,17 @@ export class ProfileController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PROFILE_UPDATE)
     @ApiOperation({ summary: "Update profile" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
     public update(
         @Body() input: UpdateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,

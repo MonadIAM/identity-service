@@ -9,8 +9,18 @@ import { PermissionCode } from "~context/enums";
 
 import { BySecondFactorBodyDTO, ByPasswordBodyDTO } from "../dto/elevated-access";
 
-const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
 const { ELEVATED_ACCESS_CONFIRM_SECOND_FACTOR, ELEVATED_ACCESS_CONFIRM_PASSWORD } = PermissionCode;
+const {
+    INTERNAL_SERVER_ERROR,
+    UNPROCESSABLE_ENTITY,
+    SERVICE_UNAVAILABLE,
+    REQUEST_TIMEOUT,
+    UNAUTHORIZED,
+    BAD_REQUEST,
+    FORBIDDEN,
+    NOT_FOUND,
+    OK,
+} = HttpStatus;
 
 @ApiTags("ElevatedAccess")
 @Controller("/elevated-access")
@@ -26,7 +36,16 @@ export class ElevatedAccessController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ELEVATED_ACCESS_CONFIRM_PASSWORD)
     @ApiOperation({ summary: "Confirm identity by password" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        FORBIDDEN,
+        NOT_FOUND,
+    )
     public byPassword(
         @Body() input: ByPasswordBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -40,7 +59,15 @@ export class ElevatedAccessController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Confirm identity by TOTP" })
     @RequirePermission(ELEVATED_ACCESS_CONFIRM_SECOND_FACTOR)
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        FORBIDDEN,
+    )
     public bySecondFactor(
         @Body() input: BySecondFactorBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,

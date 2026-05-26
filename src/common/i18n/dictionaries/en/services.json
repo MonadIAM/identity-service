@@ -1,0 +1,15 @@
+{
+  "identifier": {
+    "CANNOT_REMOVE_LAST_VERIFIED": "The last verified identifier cannot be removed."
+  },
+  "oauth": {
+    "google": {
+      "CODE_EXCHANGE_FAILED": "Google OAuth code exchange failed.",
+      "SERVICE_UNAVAILABLE": "Google OAuth service is unavailable."
+    },
+    "github": {
+      "CODE_EXCHANGE_FAILED": "GitHub OAuth code exchange failed.",
+      "PROFILE_FETCH_FAILED": "GitHub OAuth profile fetch failed."
+    }
+  }
+}

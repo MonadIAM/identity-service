@@ -8,7 +8,7 @@ export class ServiceException extends BaseException {
         kind: Exception.ServiceErrorKind,
         statusCode: number,
         messageKey: string,
-        params?: Record<string, unknown>,
+        params?: UnknownObject,
         details?: Exception.ValidationDetail[],
     ) {
         super(kind, statusCode, messageKey, params, details);
@@ -25,21 +25,21 @@ export class ServiceException extends BaseException {
     }
 
     public static invariantViolation(
-        messageKey = "service.invariant_violation",
-        params?: Record<string, unknown>,
+        messageKey = "fallback.service.INVARIANT_VIOLATION",
+        params?: UnknownObject,
     ): ServiceException {
         return new ServiceException(ServiceErrorKind.InvariantViolation, HttpStatus.BAD_REQUEST, messageKey, params);
     }
 
     public static externalServiceFailed(
-        messageKey = "service.EXTERNAL_SERVICE_FAILED",
+        messageKey = "fallback.service.EXTERNAL_SERVICE_FAILED",
         params?: Record<string, unknown>,
     ): ServiceException {
         return new ServiceException(ServiceErrorKind.ExternalServiceFailed, HttpStatus.BAD_GATEWAY, messageKey, params);
     }
 
     public static externalAuthFailed(
-        messageKey = "service.EXTERNAL_AUTH_FAILED",
+        messageKey = "fallback.service.EXTERNAL_AUTH_FAILED",
         params?: Record<string, unknown>,
     ): ServiceException {
         return new ServiceException(ServiceErrorKind.ExternalAuthFailed, HttpStatus.UNAUTHORIZED, messageKey, params);

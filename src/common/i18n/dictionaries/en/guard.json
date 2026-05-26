@@ -1,9 +1,16 @@
 {
   "permission": {
+    "ACCOUNT_REQUIRED": "An authenticated account is required.",
+    "REALM_REQUIRED": "A realm is required to check permissions.",
     "INSUFFICIENT_PERMISSIONS": "Insufficient permissions to perform this operation."
   },
   "auth": {
+    "SESSION_REVOKED": "The session has been revoked.",
     "INVALID_TOKEN": "The authentication token is invalid or expired.",
     "TOKEN_MISSING": "An authentication token is required."
+  },
+  "elevated-access": {
+    "ELEVATED_ACCESS_REQUIRED": "Elevated access is required to perform this operation.",
+    "NOT_AUTHENTICATED": "Authentication is required to confirm elevated access."
   }
 }

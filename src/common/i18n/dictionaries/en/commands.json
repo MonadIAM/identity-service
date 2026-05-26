@@ -1,0 +1,80 @@
+{
+  "account": {
+    "SIGNED_UP": "Account successfully registered.",
+    "ALREADY_VERIFIED": "The account is already verified.",
+    "CODE_RESENT": "Verification code successfully resent.",
+    "INVALID_OR_EXPIRED_CODE": "The verification code is invalid or expired.",
+    "VERIFIED": "Account successfully verified.",
+    "DEACTIVATED": "Account successfully deactivated.",
+    "SUSPENDED": "Account successfully suspended.",
+    "RESTORED": "Account successfully restored."
+  },
+  "auth": {
+    "INVALID_CREDENTIALS": "Invalid identifier or password.",
+    "SIGNED_IN": "Signed in successfully.",
+    "PASSWORDLESS_NOT_AVAILABLE": "Passwordless sign-in is not available for this identifier.",
+    "OTP_SENT": "One-time password successfully sent.",
+    "INVALID_OR_EXPIRED_CODE": "The one-time password is invalid or expired.",
+    "VERIFIED": "Authentication successfully verified.",
+    "PENDING_TOKEN_MISSING": "A pending authentication token is required.",
+    "EXPIRED_PENDING_AUTH": "The pending authentication session is expired.",
+    "NO_ACTIVE_2FA": "No active second factor is available for this account.",
+    "INVALID_TOTP_CODE": "The second-factor code is invalid.",
+    "ACCOUNT_SUSPENDED": "The account is suspended.",
+    "ACCOUNT_NOT_VERIFIED": "The account is not verified."
+  },
+  "elevated-access": {
+    "NO_PASSWORD_SET": "No password is set for this account.",
+    "INVALID_PASSWORD": "The password is invalid.",
+    "ELEVATED": "Elevated access successfully granted.",
+    "NO_ACTIVE_2FA": "No active second factor is available for this account.",
+    "INVALID_TOTP_CODE": "The second-factor code is invalid."
+  },
+  "identifier": {
+    "CREATED": "Identifier successfully created.",
+    "ALREADY_VERIFIED": "The identifier is already verified.",
+    "CODE_RESENT": "Verification code successfully resent.",
+    "INVALID_OR_EXPIRED_CODE": "The verification code is invalid or expired.",
+    "VERIFIED": "Identifier successfully verified.",
+    "NOTIFICATIONS_TOGGLED": "Identifier notifications successfully toggled.",
+    "PUBLIC_CONTACT_TOGGLED": "Identifier public contact visibility successfully toggled.",
+    "PURGED": "Identifier successfully deleted."
+  },
+  "oauth": {
+    "INVALID_STATE": "The OAuth state is invalid or expired.",
+    "SIGNED_IN": "Signed in successfully.",
+    "LINKED_AND_SIGNED_IN": "OAuth account successfully linked and signed in.",
+    "SIGNED_UP": "Account successfully registered with OAuth.",
+    "UNSUPPORTED_PROVIDER": "The OAuth provider is not supported."
+  },
+  "password": {
+    "NO_PASSWORD_SET": "No password is set for this account.",
+    "INVALID_CURRENT_PASSWORD": "The current password is invalid.",
+    "CHANGED": "Password successfully changed.",
+    "RESET_CODE_SENT": "Password reset code successfully sent.",
+    "INVALID_OR_EXPIRED_CODE": "The password reset code is invalid or expired.",
+    "RESET": "Password successfully reset.",
+    "INVALID_RECOVERY_CODE": "The recovery code is invalid.",
+    "RECENTLY_USED": "This password was used recently."
+  },
+  "profile": {
+    "UPDATED": "Profile successfully updated."
+  },
+  "recovery-code": {
+    "REGENERATED": "Recovery codes successfully regenerated."
+  },
+  "second-factor": {
+    "INVALID_TOTP_CODE": "The second-factor code is invalid.",
+    "VERIFIED": "Second factor successfully verified.",
+    "PURGED": "Second factor successfully deleted.",
+    "INVALID_CODE": "The master code is invalid.",
+    "RESET": "Second factors successfully reset."
+  },
+  "session": {
+    "INVALID_REFRESH_TOKEN": "The refresh token is invalid.",
+    "SESSION_NOT_FOUND": "The session was not found.",
+    "REFRESHED": "Session successfully refreshed.",
+    "REVOKED": "Session successfully revoked.",
+    "ALL_REVOKED": "All sessions successfully revoked."
+  }
+}

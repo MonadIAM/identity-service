@@ -1,0 +1,25 @@
+{
+  "account": {
+    "ALREADY_ACTIVATED": "The account is already active.",
+    "DEACTIVATION_NOT_ALLOWED": "The account cannot be deactivated in its current state.",
+    "RESTORE_NOT_ALLOWED": "The account cannot be restored in its current state.",
+    "ALREADY_SUSPENDED": "The account is already suspended.",
+    "NOT_SUSPENDED": "The account is not suspended."
+  },
+  "identifier": {
+    "NOTIFICATIONS_EMAIL_ONLY": "Notifications can only be toggled for email identifiers.",
+    "PUBLIC_CONTACT_NOT_APPLICABLE": "Public contact visibility is not applicable to this identifier.",
+    "PUBLIC_CONTACT_REQUIRES_VERIFICATION": "Public contact visibility requires a verified identifier.",
+    "ALREADY_VERIFIED": "The identifier is already verified."
+  },
+  "profile": {
+    "NO_CHANGES_DETECTED": "The profile already matches the provided changes.",
+    "EMPTY_UPDATE_PATCH": "The profile update payload is empty."
+  },
+  "second-factor": {
+    "CONFIRM_NOT_ALLOWED": "Second-factor confirmation is not allowed in the current state."
+  },
+  "session": {
+    "EXPIRED": "The session is expired."
+  }
+}

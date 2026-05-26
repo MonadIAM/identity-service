@@ -3,7 +3,6 @@ import {
     DatabaseErrorKind,
     ServiceErrorKind,
     CommandErrorKind,
-    HandlerErrorKind,
     CommonErrorKind,
     EntityErrorKind,
     GuardErrorKind,
@@ -14,7 +13,6 @@ declare global {
         type RepositoryErrorKind = keyof typeof RepositoryErrorKind;
         type DatabaseErrorKind = keyof typeof DatabaseErrorKind;
         type CommandErrorKind = keyof typeof CommandErrorKind;
-        type HandlerErrorKind = keyof typeof HandlerErrorKind;
         type ServiceErrorKind = keyof typeof ServiceErrorKind;
         type CommonErrorKind = keyof typeof CommonErrorKind;
         type EntityErrorKind = keyof typeof EntityErrorKind;

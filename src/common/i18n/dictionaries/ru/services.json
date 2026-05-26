@@ -1,0 +1,15 @@
+{
+  "identifier": {
+    "CANNOT_REMOVE_LAST_VERIFIED": "Нельзя удалить последний подтвержденный идентификатор."
+  },
+  "oauth": {
+    "google": {
+      "CODE_EXCHANGE_FAILED": "Не удалось обменять код Google OAuth.",
+      "SERVICE_UNAVAILABLE": "Сервис Google OAuth недоступен."
+    },
+    "github": {
+      "CODE_EXCHANGE_FAILED": "Не удалось обменять код GitHub OAuth.",
+      "PROFILE_FETCH_FAILED": "Не удалось получить профиль GitHub OAuth."
+    }
+  }
+}

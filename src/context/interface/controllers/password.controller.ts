@@ -9,8 +9,19 @@ import { PermissionCode } from "~context/enums";
 
 import { ResetByRecoveryCodeBodyDTO, ResetByOTPBodyDTO, RequestOTPBodyDTO, ChangeBodyDTO } from "../dto/password";
 
-const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN, OK } = HttpStatus;
 const { PASSWORD_CHANGE } = PermissionCode;
+const {
+    INTERNAL_SERVER_ERROR,
+    UNPROCESSABLE_ENTITY,
+    SERVICE_UNAVAILABLE,
+    REQUEST_TIMEOUT,
+    UNAUTHORIZED,
+    BAD_REQUEST,
+    FORBIDDEN,
+    NOT_FOUND,
+    CONFLICT,
+    OK,
+} = HttpStatus;
 
 @ApiTags("Password")
 @Controller("/password")
@@ -26,7 +37,17 @@ export class PasswordController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PASSWORD_CHANGE)
     @ApiOperation({ summary: "Change password" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        CONFLICT,
+        FORBIDDEN,
+    )
     public change(
         @Body() input: ChangeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -40,7 +61,7 @@ export class PasswordController {
     @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Request password reset OTP" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT)
     public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Password.RequestOTP.Result {
         return this.passwordCommands.requestOTP({ input });
     }
@@ -50,7 +71,15 @@ export class PasswordController {
     @Post("reset/otp")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by OTP" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        BAD_REQUEST,
+        NOT_FOUND,
+        CONFLICT,
+    )
     public resetByOTP(
         @Body() input: ResetByOTPBodyDTO,
         @Extract.Meta() context: Extract.Meta,
@@ -63,7 +92,15 @@ export class PasswordController {
     @Post("reset/code")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Reset password by recovery code" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        BAD_REQUEST,
+        NOT_FOUND,
+        CONFLICT,
+    )
     public resetByRecoveryCode(
         @Body() input: ResetByRecoveryCodeBodyDTO,
         @Extract.Meta() context: Extract.Meta,

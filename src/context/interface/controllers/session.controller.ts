@@ -11,7 +11,18 @@ import { PermissionCode } from "~context/enums";
 import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
 
 const { SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE, SESSION_LOGOUT, SESSION_REVOKE } = PermissionCode;
-const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN, OK } = HttpStatus;
+const {
+    INTERNAL_SERVER_ERROR,
+    UNPROCESSABLE_ENTITY,
+    SERVICE_UNAVAILABLE,
+    REQUEST_TIMEOUT,
+    UNAUTHORIZED,
+    BAD_REQUEST,
+    NOT_FOUND,
+    FORBIDDEN,
+    CONFLICT,
+    OK,
+} = HttpStatus;
 
 @ApiTags("Session")
 @Controller("/session")
@@ -29,7 +40,7 @@ export class SessionController {
     @FormatResponse(SessionDTO)
     @RequirePermission(SESSION_READ_PERSONAL)
     @ApiOperation({ summary: "Get current session" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getCurrent(@Extract.Session() { session, account }: Extract.Session.Auth): Queries.Session.GetCurrent.Result {
         return this.sessionQueries.getCurrent({ session, account });
     }
@@ -39,7 +50,7 @@ export class SessionController {
     @FormatResponse(ListDTO)
     @ApiOperation({ summary: "Get list of sessions" })
     @RequirePermission(SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE)
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
     public getList(@Extract.Session() { account }: Extract.Session.Auth): Queries.Session.FindMany.Result {
         return this.sessionQueries.findMany({ account });
     }
@@ -49,7 +60,7 @@ export class SessionController {
     @Post("refresh")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Refresh session tokens" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, BAD_REQUEST, CONFLICT)
     public refresh(
         @Extract.Session() { session }: Extract.Session.Public,
         @Extract.Meta() context: Extract.Meta,
@@ -63,7 +74,7 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SESSION_LOGOUT)
     @ApiOperation({ summary: "Revoke current session" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, CONFLICT, FORBIDDEN)
     public logout(
         @Extract.Session() { account: actor, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
@@ -76,7 +87,15 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SESSION_REVOKE)
     @ApiOperation({ summary: "Revoke specific sessions" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+        CONFLICT,
+    )
     public revoke(
         @Body() input: RevokeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
@@ -90,7 +109,15 @@ export class SessionController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SESSION_REVOKE)
     @ApiOperation({ summary: "Revoke all sessions" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
     public revokeAll(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,

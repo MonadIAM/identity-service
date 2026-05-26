@@ -42,7 +42,7 @@ export class Session {
 
     public isExpired(): void {
         if (this.expiresAt < new Date()) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.EXPIRED`);
         }
     }
 }

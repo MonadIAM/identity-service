@@ -37,15 +37,6 @@ export const CommandErrorKind = {
     ...DatabaseErrorKind,
 } as const;
 
-export const HandlerErrorKind = {
-    Unprocessable: "Unprocessable",
-    Unauthorized: "Unauthorized",
-    BadRequest: "BadRequest",
-    Forbidden: "Forbidden",
-    Conflict: "Conflict",
-    ...DatabaseErrorKind,
-} as const;
-
 export const GuardErrorKind = {
     Unauthorized: "Unauthorized",
     Forbidden: "Forbidden",
