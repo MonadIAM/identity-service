@@ -249,6 +249,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public SESSION_EXPIRY_DAYS: number;
 
+    @Validator.IsPositiveInt()
+    declare public SESSION_MAX_ACTIVE_COUNT: number;
+
     // Password
     @Validator.IsPositiveInt()
     declare public PASSWORD_HISTORY_CHECK_DAYS: number;

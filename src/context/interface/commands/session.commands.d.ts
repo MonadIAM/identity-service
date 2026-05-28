@@ -6,6 +6,10 @@ declare namespace Commands {
             revoke: (props: Revoke.Props) => Revoke.Result;
         }
 
+        interface PrivateContract {
+            outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+        }
+
         interface Contract extends ControllerContract {}
 
         namespace Refresh {
@@ -17,7 +21,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<MessageResult & Awaited<Services.Session.Create.Result>>;
+            type Result = Promise<MessageResult & Services.Session.Create.Tokens>;
         }
 
         namespace Revoke {
@@ -39,6 +43,12 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+        }
+
+        namespace OutboxPayloadMapper {
+            type Props = Entities.Session[];
+
+            type Result = Services.Session.Create.RevokedSession[];
         }
     }
 }

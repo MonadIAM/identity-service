@@ -14,14 +14,14 @@ declare namespace Commands {
         };
 
         type AuthResult = MessageResult &
-            Awaited<Services.Session.Create.Result> & {
+            Services.Session.Create.Tokens & {
                 recoveryCodes?: string[];
             };
 
         interface PrivateContract {
-            resolveProvider: (props: ResolveProvider.Props) => ResolveProvider.Result;
             authenticateExisting: (props: AuthenticateExisting.Props) => AuthenticateExisting.Result;
             attachToExisting: (props: AttachToExisting.Props) => AttachToExisting.Result;
+            resolveProvider: (props: ResolveProvider.Props) => ResolveProvider.Result;
             provision: (props: Provision.Props) => Provision.Result;
         }
 

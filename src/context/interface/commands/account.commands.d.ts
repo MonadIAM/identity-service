@@ -76,7 +76,7 @@ declare global {
 
                 type Result = Promise<
                     MessageResult &
-                        Awaited<Services.Session.Create.Result> & {
+                        Services.Session.Create.Tokens & {
                             codes: string[];
                         }
                 >;

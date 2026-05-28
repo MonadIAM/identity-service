@@ -20,4 +20,23 @@ export class SessionRepository
     ) {
         super();
     }
+
+    public async lockByAccount(props: Repositories.Session.LockByAccount.Props): Promise<Entities.Session[]> {
+        const { transaction, account } = props;
+        const rows = await transaction
+            .getKnex()
+            .with("locked_account", (builder) => {
+                builder.select("id").from("identity.account").where("id", account).forUpdate();
+            })
+            .select("session.*")
+            .from("identity.session as session")
+            .join("locked_account", "session.account_id", "locked_account.id")
+            .orderBy([
+                { column: "session.last_refreshed_at", order: "asc" },
+                { column: "session.created_at", order: "asc" },
+                { column: "session.id", order: "asc" },
+            ]);
+
+        return rows.map((row) => transaction.map(Session, row));
+    }
 }

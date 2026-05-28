@@ -115,6 +115,7 @@ declare global {
 
             // Session
             SESSION_EXPIRY_DAYS: `${number}`;
+            SESSION_MAX_ACTIVE_COUNT: `${number}`;
 
             // Password
             PASSWORD_HISTORY_CHECK_DAYS: `${number}`;

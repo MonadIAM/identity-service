@@ -90,7 +90,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id, ttl: this.sessionTTL })),
+                payloadMapper: this.outboxPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 aggregateType: AggregateType.SESSION,
                 eventType: EventType.SESSION_REVOKED,
@@ -125,7 +125,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (sessions) => sessions.map(({ id }) => ({ sessionId: id, ttl: this.sessionTTL })),
+                payloadMapper: this.outboxPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 aggregateType: AggregateType.SESSION,
                 eventType: EventType.SESSION_REVOKED,
@@ -149,5 +149,14 @@ export class SessionCommands implements Commands.Session.Contract {
         });
 
         return { message: `${this.dictionaryPath}.ALL_REVOKED` };
+    }
+
+    public outboxPayloadMapper(
+        sessions: Commands.Session.OutboxPayloadMapper.Props,
+    ): Commands.Session.OutboxPayloadMapper.Result {
+        return sessions.map(({ id, lastRefreshedAt }) => ({
+            ttl: Math.max(1, Math.ceil(this.sessionTTL - (Date.now() - lastRefreshedAt.getTime()) / 1e3)),
+            session: id,
+        }));
     }
 }

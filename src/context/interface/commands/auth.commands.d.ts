@@ -24,7 +24,7 @@ declare namespace Commands {
             };
 
             type Result = Promise<
-                MessageResult & (Awaited<Services.Session.Create.Result> | { pendingToken: string; requires2FA: true })
+                MessageResult & (Services.Session.Create.Tokens | { pendingToken: string; requires2FA: true })
             >;
         }
 
@@ -46,7 +46,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<MessageResult & Awaited<Services.Session.Create.Result>>;
+            type Result = Promise<MessageResult & Services.Session.Create.Tokens>;
         }
 
         namespace VerifySecondFactor {
@@ -58,7 +58,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<MessageResult & Awaited<Services.Session.Create.Result>>;
+            type Result = Promise<MessageResult & Services.Session.Create.Tokens>;
         }
 
         namespace CreateSession {
@@ -67,7 +67,7 @@ declare namespace Commands {
                 context: Extract.Meta;
             };
 
-            type Result = Services.Session.Create.Result;
+            type Result = Promise<Services.Session.Create.Tokens>;
         }
 
         namespace AssertCanAuth {

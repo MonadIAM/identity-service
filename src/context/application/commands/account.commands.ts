@@ -157,7 +157,8 @@ export class AccountCommands implements Commands.Account.Contract {
 
         return {
             message: `${this.dictionaryPath}.VERIFIED`,
-            ...tokens,
+            refreshToken: tokens.refreshToken,
+            accessToken: tokens.accessToken,
             codes,
         };
     }

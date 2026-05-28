@@ -3,11 +3,19 @@ import { TOTP, Secret } from "otpauth";
 
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE, PENDING_AUTH_CACHE_SERVICE } from "~context/infrastructure/services";
-import { AccountStatus, IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
+import {
+    IdentityActionType,
+    IdentifierType,
+    AggregateType,
+    AccountStatus,
+    EntityType,
+    KafkaTopic,
+    EventType,
+} from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthCommands implements Commands.Auth.Contract {
@@ -169,12 +177,18 @@ export class AuthCommands implements Commands.Auth.Contract {
     }
 
     public async createSession(props: Commands.Auth.CreateSession.Props): Commands.Auth.CreateSession.Result {
-        return await this.transactionalService.run({
+        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.SIGN_IN_ACCOUNT,
                 entityType: EntityType.ACCOUNT,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: ({ revokedSessions }) => revokedSessions,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                aggregateType: AggregateType.SESSION,
+                eventType: EventType.SESSION_REVOKED,
             },
             execute: (transaction) => {
                 if (props.account.status === AccountStatus.DEACTIVATED) {
@@ -193,6 +207,11 @@ export class AuthCommands implements Commands.Auth.Contract {
                 });
             },
         });
+
+        return {
+            refreshToken: session.refreshToken,
+            accessToken: session.accessToken,
+        };
     }
 
     public assertCanAuth(props: Commands.Auth.AssertCanAuth.Props): Commands.Auth.AssertCanAuth.Result {

@@ -36,7 +36,7 @@ export class AuthGuard implements CanActivate {
 
                 if (isPublic || (payload.exp ?? 0) > Math.floor(Date.now() / 1e3)) {
                     const isBlacklisted = await this.blacklistCacheService.exists({
-                        sessionId: payload.sid as string,
+                        session: payload.sid as string,
                     });
 
                     if (isBlacklisted) {

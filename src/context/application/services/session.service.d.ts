@@ -9,6 +9,16 @@ declare global {
             }
 
             namespace Create {
+                type Tokens = {
+                    refreshToken: string;
+                    accessToken: string;
+                };
+
+                type RevokedSession = {
+                    session: string;
+                    ttl: number;
+                };
+
                 type Props = {
                     transaction: EntityManager;
                     input: {
@@ -18,10 +28,7 @@ declare global {
                     };
                 };
 
-                type Result = Promise<{
-                    refreshToken: string;
-                    accessToken: string;
-                }>;
+                type Result = Promise<Tokens & { revokedSessions: RevokedSession[] }>;
             }
 
             namespace Purge {

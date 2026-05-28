@@ -1,12 +1,21 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
-import { AccountSubject, AccountStatus, IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SERVICE } from "~common/services";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
+import {
+    IdentityActionType,
+    AccountSubject,
+    IdentifierType,
+    AggregateType,
+    AccountStatus,
+    EntityType,
+    KafkaTopic,
+    EventType,
+} from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthCommands implements Commands.OAuth.Contract {
@@ -105,19 +114,25 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     public async authenticateExisting(
         props: Commands.OAuth.AuthenticateExisting.Props,
     ): Commands.OAuth.AuthenticateExisting.Result {
-        const session = await this.transactionalService.run({
+        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.SIGN_IN_ACCOUNT,
                 entityType: EntityType.ACCOUNT,
                 ...props,
             },
+            outbox: {
+                payloadMapper: ({ revokedSessions }) => revokedSessions,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                aggregateType: AggregateType.SESSION,
+                eventType: EventType.SESSION_REVOKED,
+            },
             execute: (transaction) => {
                 return this.sessionService.create({
                     transaction,
                     input: {
-                        account: props.input.account,
                         userAgent: props.context.userAgent,
+                        account: props.input.account,
                         ip: props.context.ip,
                     },
                 });
@@ -126,17 +141,24 @@ export class OAuthCommands implements Commands.OAuth.Contract {
 
         return {
             message: `${this.dictionaryPath}.SIGNED_IN`,
-            ...session,
+            refreshToken: session.refreshToken,
+            accessToken: session.accessToken,
         };
     }
 
     public async attachToExisting(props: Commands.OAuth.AttachToExisting.Props): Commands.OAuth.AttachToExisting.Result {
-        const session = await this.transactionalService.run({
+        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.LINK_OAUTH_IDENTIFIER,
                 entityType: EntityType.ACCOUNT,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: ({ revokedSessions }) => revokedSessions,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                aggregateType: AggregateType.SESSION,
+                eventType: EventType.SESSION_REVOKED,
             },
             execute: (transaction) => {
                 this.identifierService.create({
@@ -166,7 +188,8 @@ export class OAuthCommands implements Commands.OAuth.Contract {
 
         return {
             message: `${this.dictionaryPath}.LINKED_AND_SIGNED_IN`,
-            ...session,
+            refreshToken: session.refreshToken,
+            accessToken: session.accessToken,
         };
     }
 
@@ -174,7 +197,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        const session = await this.transactionalService.run({
+        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.SIGN_UP_ACCOUNT,
@@ -224,8 +247,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
 
         return {
             message: `${this.dictionaryPath}.SIGNED_UP`,
+            refreshToken: session.refreshToken,
+            accessToken: session.accessToken,
             recoveryCodes: codes,
-            ...session,
         };
     }
 

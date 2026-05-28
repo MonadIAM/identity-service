@@ -34,9 +34,9 @@ export class SecondFactor {
 
     public confirm(): void {
         if (this.confirmedAt) {
-            this.confirmedAt = new Date();
-        } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.CONFIRM_NOT_ALLOWED`);
+        } else {
+            this.confirmedAt = new Date();
         }
     }
 }

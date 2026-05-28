@@ -16,7 +16,7 @@ export class TransactionalService {
         private readonly operationContext: OperationContext,
     ) {}
 
-    public async run<T extends AnyEntity>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
+    public run<T extends AnyEntity>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
         try {
             const writeManager = this.writeManager.fork();
 
@@ -25,8 +25,8 @@ export class TransactionalService {
                     const result = await params.execute(transaction);
 
                     if (params.outbox && result) {
-                        const mapper = params.outbox.payloadMapper;
-                        const payloads = mapper ? [mapper(result)].flat() : [result].flat();
+                        const mapped = params.outbox.payloadMapper(result);
+                        const payloads = Array.isArray(mapped) ? mapped : [mapped];
                         for (const payload of payloads) {
                             transaction.persist(new Outbox({ ...params.outbox, payload }));
                         }
@@ -40,7 +40,7 @@ export class TransactionalService {
 
             const auditEntry = new AuditLog(params.audit);
 
-            return await this.operationContext.run(
+            return this.operationContext.run(
                 {
                     changeLogEnabled: params.changeLog ?? false,
                     auditEntry: auditEntry.id,
@@ -52,8 +52,8 @@ export class TransactionalService {
                         const result = await params.execute(transaction);
 
                         if (params.outbox && result) {
-                            const mapper = params.outbox.payloadMapper;
-                            const payloads = mapper ? [mapper(result)].flat() : [result].flat();
+                            const mapped = params.outbox.payloadMapper(result);
+                            const payloads = Array.isArray(mapped) ? mapped : [mapped];
                             for (const payload of payloads) {
                                 transaction.persist(new Outbox({ ...params.outbox, payload }));
                             }
