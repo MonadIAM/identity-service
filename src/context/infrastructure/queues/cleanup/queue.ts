@@ -2,7 +2,7 @@ import { ConfigService } from "@nestjs/config";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable } from "@nestjs/common";
 import { Queue } from "bullmq";
-import ms from "ms";
+import ms, { StringValue } from "ms";
 
 import { CleanupJob } from "~context/enums";
 
@@ -19,9 +19,9 @@ export class CleanupQueue implements Queues.Cleanup.Contract {
         private readonly queue: Queue<Queues.Cleanup.JobData>,
         private readonly configService: ConfigService,
     ) {
-        this.batchBackoffDelay = Number(ms(this.configService.getOrThrow("CLEANUP_BATCH_BACKOFF_DELAY")));
+        this.batchBackoffDelay = ms(this.configService.getOrThrow<StringValue>("CLEANUP_BATCH_BACKOFF_DELAY"));
+        this.batchDelay = ms(this.configService.getOrThrow<StringValue>("CLEANUP_BATCH_DELAY"));
         this.batchAttempts = this.configService.getOrThrow<number>("CLEANUP_BATCH_ATTEMPTS");
-        this.batchDelay = Number(ms(this.configService.getOrThrow("CLEANUP_BATCH_DELAY")));
     }
 
     public async schedule(job: CleanupJob, data: Queues.Cleanup.JobData): Promise<void> {

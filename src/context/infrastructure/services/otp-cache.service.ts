@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
+import ms, { StringValue } from "ms";
 
 import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
 
@@ -16,11 +17,11 @@ export class OTPCacheService implements InfrastructureServices.OTPCache.Contract
         private readonly configService: ConfigService,
     ) {
         this.ttl = {
-            verification: this.configService.getOrThrow<number>("OTP_VERIFICATION_TTL"),
-            identifier: this.configService.getOrThrow<number>("OTP_VERIFICATION_TTL"),
-            setup2FA: this.configService.getOrThrow<number>("PENDING_2FA_TTL"),
-            login: this.configService.getOrThrow<number>("OTP_LOGIN_TTL"),
-            reset: this.configService.getOrThrow<number>("OTP_RESET_TTL"),
+            verification: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")),
+            identifier: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")),
+            setup2FA: ms(this.configService.getOrThrow<StringValue>("PENDING_2FA_TTL")),
+            login: ms(this.configService.getOrThrow<StringValue>("OTP_LOGIN_TTL")),
+            reset: ms(this.configService.getOrThrow<StringValue>("OTP_RESET_TTL")),
         };
     }
 

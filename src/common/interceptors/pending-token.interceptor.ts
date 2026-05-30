@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { isString } from "class-validator";
 import { Reflector } from "@nestjs/core";
 import { FastifyReply } from "fastify";
+import ms, { StringValue } from "ms";
 import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
 
@@ -16,8 +17,7 @@ export class PendingTokenInterceptor implements NestInterceptor {
         private readonly configService: ConfigService,
         private readonly reflector: Reflector,
     ) {
-        const expiryMinutes = this.configService.getOrThrow<number>("PENDING_TOKEN_EXPIRY_MINUTES");
-        this.pendingAuthMaxAge = expiryMinutes * 60;
+        this.pendingAuthMaxAge = ms(this.configService.getOrThrow<StringValue>("PENDING_TOKEN_EXPIRY_MINUTES")) / 1e3;
     }
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {

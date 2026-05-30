@@ -21,9 +21,9 @@ export class SessionService implements Services.Session.Contract {
         @Inject(SESSION_REPOSITORY)
         private readonly sessionRepository: Repositories.Session.Contract,
     ) {
-        this.maxActiveSessions = this.configService.getOrThrow<number>("SESSION_MAX_ACTIVE_COUNT");
+        this.sessionExpiryDays = ms(this.configService.getOrThrow<StringValue>("SESSION_EXPIRY_DAYS")) / 1e3;
         this.accessTokenMaxTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
-        this.sessionExpiryDays = this.configService.getOrThrow<number>("SESSION_EXPIRY_DAYS");
+        this.maxActiveSessions = this.configService.getOrThrow<number>("SESSION_MAX_ACTIVE_COUNT");
     }
 
     public async create(props: Services.Session.Create.Props): Services.Session.Create.Result {
@@ -85,8 +85,7 @@ export class SessionService implements Services.Session.Contract {
     }
 
     private resolveExpiry(): Date {
-        const expiry = new Date();
-        expiry.setDate(expiry.getDate() + this.sessionExpiryDays);
+        const expiry = new Date(Number(new Date()) + this.sessionExpiryDays);
         return expiry;
     }
 }

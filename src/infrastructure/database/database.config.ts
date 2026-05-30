@@ -1,6 +1,7 @@
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { type Options } from "@mikro-orm/core";
 import { ConfigService } from "@nestjs/config";
+import ms, { StringValue } from "ms";
 import path from "path";
 
 export abstract class MikroOrmConfig {
@@ -11,18 +12,21 @@ export abstract class MikroOrmConfig {
         const rejectUnauthorized = config.getOrThrow<string>("POSTGRES_SSL_REJECT_UNAUTHORIZED") === "true";
 
         const host = this.resolveHost({ config, kind, cqrsEnabled });
-        const port = this.resolvePort({ config, kind, cqrsEnabled });
-        const pool = this.resolvePool({ config, kind, cqrsEnabled });
+
+        const pool = {
+            idleTimeoutMillis: ms(config.getOrThrow<StringValue>("POSTGRES_POOL_IDLE_MS")),
+            max: Number(config.getOrThrow<number>("POSTGRES_POOL_MAX")),
+        };
 
         const options: Options<PostgreSqlDriver> = {
             driver: PostgreSqlDriver,
 
             host: host,
-            port: port,
+            port: Number(config.getOrThrow<number>("POSTGRES_PORT")),
             user: config.getOrThrow<string>("POSTGRES_USER"),
             dbName: config.getOrThrow<string>("POSTGRES_DB"),
             password: config.getOrThrow<string>("POSTGRES_PASSWORD"),
-            debug: config.getOrThrow<string>("POSTGRES_LOGGING") === "true",
+            debug: ["query", "query-params"],
 
             entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
             entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
@@ -52,43 +56,6 @@ export abstract class MikroOrmConfig {
             }
         } else {
             return config.getOrThrow<string>("POSTGRES_HOST");
-        }
-    }
-
-    private static resolvePort({ cqrsEnabled, config, kind }: MikroORM.Config.ResolvePort.Props): number {
-        if (cqrsEnabled) {
-            if (kind === "read") {
-                return Number(config.getOrThrow<number>("POSTGRES_READ_PORT"));
-            } else {
-                return Number(config.getOrThrow<number>("POSTGRES_WRITE_PORT"));
-            }
-        } else {
-            return Number(config.getOrThrow<number>("POSTGRES_CONTAINER_PORT"));
-        }
-    }
-
-    private static resolvePool({
-        cqrsEnabled,
-        config,
-        kind,
-    }: MikroORM.Config.ResolvePool.Props): MikroORM.Config.ResolvePool.Result {
-        if (cqrsEnabled) {
-            if (kind === "read") {
-                return {
-                    max: Number(config.getOrThrow<number>("POSTGRES_READ_POOL_MAX")),
-                    idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRES_READ_POOL_IDLE_MS")),
-                };
-            } else {
-                return {
-                    max: Number(config.getOrThrow<number>("POSTGRES_WRITE_POOL_MAX")),
-                    idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRES_WRITE_POOL_IDLE_MS")),
-                };
-            }
-        } else {
-            return {
-                max: Number(config.getOrThrow<number>("POSTGRES_POOL_MAX")),
-                idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRES_POOL_IDLE_MS")),
-            };
         }
     }
 }

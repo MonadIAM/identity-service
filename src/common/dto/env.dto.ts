@@ -1,3 +1,5 @@
+import { StringValue } from "ms";
+
 import { Validator } from "~common/validator";
 import { NodeEnv } from "~common/enums";
 
@@ -32,14 +34,20 @@ export class EnvironmentVariablesDTO {
     @Validator.Max(65535)
     declare public GRPC_PORT: number;
 
-    @Validator.IsString()
-    declare public ACCESS_CONTROL_GRPC_URL: string;
-
     @Validator.IsPositiveInt()
     declare public THROTTLE_LIMIT: number;
 
+    @Validator.IsMsString()
+    declare public THROTTLE_TTL: StringValue;
+
+    @Validator.IsMsString()
+    declare public HSTS_MAX_AGE: StringValue;
+
     @Validator.IsPositiveInt()
-    declare public THROTTLE_TTL: number;
+    declare public BODY_LIMIT_BYTES: number;
+
+    @Validator.IsString()
+    declare public ACCESS_CONTROL_GRPC_URL: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - common
@@ -48,17 +56,8 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public POSTGRES_IMAGE: string;
 
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public POSTGRES_PORT: number;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public POSTGRES_REPLICA_PORT: number;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public POSTGRES_CONTAINER_PORT: number;
+    @Validator.IsString()
+    declare public POSTGRES_DB: string;
 
     @Validator.IsString()
     declare public POSTGRES_USER: string;
@@ -67,7 +66,19 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_PASSWORD: string;
 
     @Validator.IsString()
-    declare public POSTGRES_DB: string;
+    declare public POSTGRES_HOST: string;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public POSTGRES_PORT: number;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public POSTGRES_PRIMARY_PUBLISHED_PORT: number;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public POSTGRES_REPLICA_PUBLISHED_PORT: number;
 
     @Validator.IsBoolean()
     declare public POSTGRES_SSL: boolean;
@@ -75,12 +86,11 @@ export class EnvironmentVariablesDTO {
     @Validator.IsBoolean()
     declare public POSTGRES_SSL_REJECT_UNAUTHORIZED: boolean;
 
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public POSTGRES_POOL_IDLE_MS: number;
-
     @Validator.IsPositiveInt()
     declare public POSTGRES_POOL_MAX: number;
+
+    @Validator.IsMsString()
+    declare public POSTGRES_POOL_IDLE_MS: StringValue;
 
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
@@ -93,44 +103,26 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    @Validator.IsOptional()
-    declare public POSTGRES_HOST?: string;
-
-    @Validator.IsString()
-    @Validator.IsOptional()
-    declare public POSTGRES_WRITE_HOST?: string;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    @Validator.IsOptional()
-    declare public POSTGRES_WRITE_PORT?: number;
+    declare public POSTGRES_WRITE_HOST: string;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_WRITE_POOL_MAX: number;
 
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public POSTGRES_WRITE_POOL_IDLE_MS: number;
+    @Validator.IsMsString()
+    declare public POSTGRES_WRITE_POOL_IDLE_MS: StringValue;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - read-side
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    @Validator.IsOptional()
-    declare public POSTGRES_READ_HOST?: string;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    @Validator.IsOptional()
-    declare public POSTGRES_READ_PORT?: number;
+    declare public POSTGRES_READ_HOST: string;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_READ_POOL_MAX: number;
 
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public POSTGRES_READ_POOL_IDLE_MS: number;
+    @Validator.IsMsString()
+    declare public POSTGRES_READ_POOL_IDLE_MS: StringValue;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - replication
@@ -153,12 +145,15 @@ export class EnvironmentVariablesDTO {
     declare public REDIS_IMAGE: string;
 
     @Validator.IsString()
-    @Validator.IsOptional()
-    declare public REDIS_HOST?: string;
+    declare public REDIS_HOST: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public REDIS_PORT: number;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public REDIS_PUBLISHED_PORT: number;
 
     @Validator.IsString()
     declare public REDIS_PASSWORD: string;
@@ -175,10 +170,6 @@ export class EnvironmentVariablesDTO {
     @Validator.Min(0)
     declare public REDIS_DB_QUEUE: number;
 
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public REDIS_CONTAINER_PORT: number;
-
     // ---------------------------------------------------------------------------
     // Kafka
     // ---------------------------------------------------------------------------
@@ -189,9 +180,8 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public KAFKA_RETRY_ATTEMPTS: number;
 
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public KAFKA_RETRY_INITIAL_TIME: number;
+    @Validator.IsMsString()
+    declare public KAFKA_RETRY_INITIAL_TIME: StringValue;
 
     @Validator.IsString()
     declare public DOCKER_NETWORK_NAME: string;
@@ -209,14 +199,11 @@ export class EnvironmentVariablesDTO {
     @Validator.IsInt()
     declare public KAFKA_DLQ_MAX_RETRIES: number;
 
-    @Validator.IsInt()
-    declare public KAFKA_DLQ_RETRY_BASE_DELAY: number;
+    @Validator.IsMsString()
+    declare public KAFKA_DLQ_RETRY_BASE_DELAY: StringValue;
 
-    @Validator.IsInt()
-    declare public KAFKA_DLQ_RETRY_MAX_DELAY: number;
-
-    @Validator.IsInt()
-    declare public KAFKA_DLQ_RETRY_JITTER: number;
+    @Validator.IsMsString()
+    declare public KAFKA_DLQ_RETRY_JITTER: StringValue;
 
     // ---------------------------------------------------------------------------
     // Debezium
@@ -226,82 +213,29 @@ export class EnvironmentVariablesDTO {
     declare public DEBEZIUM_INIT_IMAGE: string;
 
     // ---------------------------------------------------------------------------
-    // Auth & Security
-    // ---------------------------------------------------------------------------
-
-    // Hashing (Argon2)
-    @Validator.IsString()
-    declare public ARGON2_TYPE: string;
-
-    @Validator.IsPositiveInt()
-    declare public ARGON2_MEMORY_COST_KIB: number;
-
-    @Validator.IsPositiveInt()
-    declare public ARGON2_HASH_LENGTH: number;
-
-    @Validator.IsPositiveInt()
-    declare public ARGON2_PARALLELISM: number;
-
-    @Validator.IsPositiveInt()
-    declare public ARGON2_TIME_COST: number;
-
-    @Validator.IsPositiveInt()
-    declare public ARGON2_VERSION: number;
-
-    // JWT (ES256)
-    @Validator.IsString()
-    declare public JWT_ISSUER: string;
-
-    @Validator.IsString()
-    declare public JWT_ACCESS_TTL: string;
-
-    @Validator.IsString()
-    declare public JWT_REFRESH_TTL: string;
-
-    @Validator.IsString()
-    declare public JWT_PRIVATE_KEY: string;
-
-    @Validator.IsString()
-    declare public JWT_PUBLIC_KEY: string;
-
-    // Session
-    @Validator.IsPositiveInt()
-    declare public SESSION_EXPIRY_DAYS: number;
-
-    @Validator.IsPositiveInt()
-    declare public PENDING_TOKEN_EXPIRY_MINUTES: number;
-
-    @Validator.IsPositiveInt()
-    declare public SESSION_MAX_ACTIVE_COUNT: number;
-
-    // Password
-    @Validator.IsPositiveInt()
-    declare public PASSWORD_HISTORY_CHECK_DAYS: number;
-
-    // ---------------------------------------------------------------------------
     // Cache TTLs
     // ---------------------------------------------------------------------------
 
-    @Validator.IsPositiveInt()
-    declare public OTP_VERIFICATION_TTL: number;
+    @Validator.IsMsString()
+    declare public OTP_VERIFICATION_TTL: StringValue;
 
-    @Validator.IsPositiveInt()
-    declare public OTP_LOGIN_TTL: number;
+    @Validator.IsMsString()
+    declare public OTP_LOGIN_TTL: StringValue;
 
-    @Validator.IsPositiveInt()
-    declare public OTP_RESET_TTL: number;
+    @Validator.IsMsString()
+    declare public OTP_RESET_TTL: StringValue;
 
-    @Validator.IsPositiveInt()
-    declare public OAUTH_STATE_TTL: number;
+    @Validator.IsMsString()
+    declare public OAUTH_STATE_TTL: StringValue;
 
-    @Validator.IsPositiveInt()
-    declare public PENDING_2FA_TTL: number;
+    @Validator.IsMsString()
+    declare public PENDING_2FA_TTL: StringValue;
 
-    @Validator.IsPositiveInt()
-    declare public ACCESS_CACHE_TTL: number;
+    @Validator.IsMsString()
+    declare public ACCESS_CACHE_TTL: StringValue;
 
-    @Validator.IsPositiveInt()
-    declare public ELEVATED_ACCESS_TTL: number;
+    @Validator.IsMsString()
+    declare public ELEVATED_ACCESS_TTL: StringValue;
 
     // ---------------------------------------------------------------------------
     // OAuth Providers
@@ -345,21 +279,74 @@ export class EnvironmentVariablesDTO {
     // BullMQ - cleanup
     // ---------------------------------------------------------------------------
 
-    @Validator.IsString()
-    declare public INACTIVE_ACCOUNT_TTL: string;
+    @Validator.IsMsString()
+    declare public INACTIVE_ACCOUNT_TTL: StringValue;
 
-    @Validator.IsString()
-    declare public PENDING_ACCOUNT_TTL: string;
+    @Validator.IsMsString()
+    declare public PENDING_ACCOUNT_TTL: StringValue;
 
     @Validator.IsPositiveInt()
     declare public CLEANUP_BATCH_SIZE: number;
 
-    @Validator.IsString()
-    declare public CLEANUP_BATCH_DELAY: string;
+    @Validator.IsMsString()
+    declare public CLEANUP_BATCH_DELAY: StringValue;
 
-    @Validator.IsString()
-    declare public CLEANUP_BATCH_BACKOFF_DELAY: string;
+    @Validator.IsMsString()
+    declare public CLEANUP_BATCH_BACKOFF_DELAY: StringValue;
 
     @Validator.IsPositiveInt()
     declare public CLEANUP_BATCH_ATTEMPTS: number;
+
+    // ---------------------------------------------------------------------------
+    // Auth & Security
+    // ---------------------------------------------------------------------------
+
+    // Hashing (Argon2)
+    @Validator.IsString()
+    declare public ARGON2_TYPE: string;
+
+    @Validator.IsPositiveInt()
+    declare public ARGON2_MEMORY_COST_KIB: number;
+
+    @Validator.IsPositiveInt()
+    declare public ARGON2_HASH_LENGTH: number;
+
+    @Validator.IsPositiveInt()
+    declare public ARGON2_PARALLELISM: number;
+
+    @Validator.IsPositiveInt()
+    declare public ARGON2_TIME_COST: number;
+
+    @Validator.IsPositiveInt()
+    declare public ARGON2_VERSION: number;
+
+    // JWT (ES256)
+    @Validator.IsString()
+    declare public JWT_ISSUER: string;
+
+    @Validator.IsMsString()
+    declare public JWT_ACCESS_TTL: StringValue;
+
+    @Validator.IsMsString()
+    declare public JWT_REFRESH_TTL: StringValue;
+
+    @Validator.IsString()
+    declare public JWT_PRIVATE_KEY: string;
+
+    @Validator.IsString()
+    declare public JWT_PUBLIC_KEY: string;
+
+    // Session
+    @Validator.IsMsString()
+    declare public SESSION_EXPIRY_DAYS: StringValue;
+
+    @Validator.IsMsString()
+    declare public PENDING_TOKEN_EXPIRY_MINUTES: StringValue;
+
+    @Validator.IsPositiveInt()
+    declare public SESSION_MAX_ACTIVE_COUNT: number;
+
+    // Password
+    @Validator.IsMsString()
+    declare public PASSWORD_HISTORY_CHECK_DAYS: StringValue;
 }

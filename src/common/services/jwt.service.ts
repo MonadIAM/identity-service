@@ -2,20 +2,21 @@ import { SignJWT, jwtVerify, importPKCS8, importSPKI, exportJWK, JWTPayload, cal
 import { Injectable, OnModuleInit, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { randomUUID } from "node:crypto";
+import ms, { StringValue } from "ms";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
     declare private signingKey: CommonServices.JWT.SigningKey;
 
-    private readonly refreshTTL: string;
-    private readonly accessTTL: string;
+    private readonly refreshTTL: number;
+    private readonly accessTTL: number;
     private readonly issuer: string;
 
     private readonly algorithm = "ES256";
 
     public constructor(private readonly config: ConfigService) {
-        this.refreshTTL = this.config.getOrThrow<string>("JWT_REFRESH_TTL");
-        this.accessTTL = this.config.getOrThrow<string>("JWT_ACCESS_TTL");
+        this.refreshTTL = ms(this.config.getOrThrow<StringValue>("JWT_REFRESH_TTL"));
+        this.accessTTL = ms(this.config.getOrThrow<StringValue>("JWT_ACCESS_TTL"));
         this.issuer = this.config.getOrThrow<string>("JWT_ISSUER");
     }
 

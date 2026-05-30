@@ -12,7 +12,7 @@ import { BullModule } from "@nestjs/bullmq";
                     host: config.getOrThrow<string>("REDIS_HOST"),
                     password: config.getOrThrow<string>("REDIS_PASSWORD"),
                     db: Number(config.getOrThrow<string>("REDIS_DB_QUEUE")),
-                    port: Number(config.getOrThrow<string>("REDIS_CONTAINER_PORT")),
+                    port: Number(config.getOrThrow<string>("REDIS_PORT")),
                 },
             }),
         }),

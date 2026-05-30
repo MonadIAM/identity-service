@@ -6,7 +6,7 @@ export class RedisConfig {
 
     private static getBaseOptions(config: ConfigService): RedisOptions {
         return {
-            port: +config.getOrThrow<number>("REDIS_CONTAINER_PORT"),
+            port: +config.getOrThrow<number>("REDIS_PORT"),
             host: config.getOrThrow<string>("REDIS_HOST"),
             password: config.getOrThrow<string>("REDIS_PASSWORD"),
             lazyConnect: true,

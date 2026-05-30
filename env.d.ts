@@ -16,25 +16,28 @@ declare global {
             APP_PORT: `${number}`;
             GRPC_HOST: string;
             GRPC_PORT: `${number}`;
-            ACCESS_CONTROL_GRPC_URL: string;
             THROTTLE_LIMIT: `${number}`;
-            THROTTLE_TTL: `${number}`;
+            THROTTLE_TTL: StringValue;
+            HSTS_MAX_AGE: StringValue;
+            BODY_LIMIT_BYTES: `${number}`;
+            ACCESS_CONTROL_GRPC_URL: string;
 
             // ---------------------------------------------------------------------------
             // PostgreSQL
             // ---------------------------------------------------------------------------
 
             POSTGRES_IMAGE: string;
-            POSTGRES_PORT: `${number}`;
-            POSTGRES_REPLICA_PORT: `${number}`;
-            POSTGRES_CONTAINER_PORT: `${number}`;
-            POSTGRES_USER: string;
             POSTGRES_DB: string;
+            POSTGRES_USER: string;
             POSTGRES_PASSWORD: string;
+            POSTGRES_HOST: string;
+            POSTGRES_PORT: `${number}`;
+            POSTGRES_PRIMARY_PUBLISHED_PORT: `${number}`;
+            POSTGRES_REPLICA_PUBLISHED_PORT: `${number}`;
             POSTGRES_SSL: "true" | "false";
             POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
-            POSTGRES_POOL_IDLE_MS: `${number}`;
             POSTGRES_POOL_MAX: `${number}`;
+            POSTGRES_POOL_IDLE_MS: StringValue;
             POSTGRES_LOGGING: "true" | "false";
             POSTGRES_CQRS_ENABLED: "true" | "false";
 
@@ -42,20 +45,17 @@ declare global {
             // PostgreSQL - write
             // ---------------------------------------------------------------------------
 
-            POSTGRES_HOST?: string;
-            POSTGRES_WRITE_HOST?: string;
-            POSTGRES_WRITE_PORT?: `${number}`;
             POSTGRES_WRITE_POOL_MAX: `${number}`;
-            POSTGRES_WRITE_POOL_IDLE_MS: `${number}`;
+            POSTGRES_WRITE_POOL_IDLE_MS: StringValue;
+            POSTGRES_WRITE_HOST: string;
 
             // ---------------------------------------------------------------------------
             // PostgreSQL - read
             // ---------------------------------------------------------------------------
 
-            POSTGRES_READ_HOST?: string;
-            POSTGRES_READ_PORT?: `${number}`;
             POSTGRES_READ_POOL_MAX: `${number}`;
-            POSTGRES_READ_POOL_IDLE_MS: `${number}`;
+            POSTGRES_READ_POOL_IDLE_MS: StringValue;
+            POSTGRES_READ_HOST: string;
 
             // ---------------------------------------------------------------------------
             // PostgreSQL - replication
@@ -70,13 +70,13 @@ declare global {
             // ---------------------------------------------------------------------------
 
             REDIS_IMAGE: string;
-            REDIS_HOST?: string;
+            REDIS_HOST: string;
             REDIS_PORT: `${number}`;
+            REDIS_PUBLISHED_PORT: `${number}`;
             REDIS_PASSWORD: string;
             REDIS_DB_CACHE: `${number}`;
             REDIS_DB_LIMITER: `${number}`;
             REDIS_DB_QUEUE: `${number}`;
-            REDIS_CONTAINER_PORT: `${number}`;
 
             // ---------------------------------------------------------------------------
             // Kafka
@@ -84,15 +84,14 @@ declare global {
 
             KAFKA_BROKER: string;
             KAFKA_RETRY_ATTEMPTS: `${number}`;
-            KAFKA_RETRY_INITIAL_TIME: `${number}`;
+            KAFKA_RETRY_INITIAL_TIME: StringValue;
             DOCKER_NETWORK_NAME: string;
             KAFKA_CONNECT_IMAGE: string;
             KAFKA_CONNECT_PORT: `${number}`;
             KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
             KAFKA_DLQ_MAX_RETRIES: `${number}`;
-            KAFKA_DLQ_RETRY_BASE_DELAY: `${number}`;
-            KAFKA_DLQ_RETRY_MAX_DELAY: `${number}`;
-            KAFKA_DLQ_RETRY_JITTER: `${number}`;
+            KAFKA_DLQ_RETRY_BASE_DELAY: StringValue;
+            KAFKA_DLQ_RETRY_JITTER: StringValue;
 
             // ---------------------------------------------------------------------------
             // Debezium
@@ -101,43 +100,16 @@ declare global {
             DEBEZIUM_INIT_IMAGE: string;
 
             // ---------------------------------------------------------------------------
-            // Auth & Security
-            // ---------------------------------------------------------------------------
-
-            // Hashing (Argon2)
-            ARGON2_TYPE: "argon2id" | "argon2i" | "argon2d";
-            ARGON2_MEMORY_COST_KIB: `${number}`;
-            ARGON2_PARALLELISM: `${number}`;
-            ARGON2_HASH_LENGTH: `${number}`;
-            ARGON2_TIME_COST: `${number}`;
-            ARGON2_VERSION: `${number}`;
-
-            // JWT (ES256)
-            JWT_ISSUER: string;
-            JWT_ACCESS_TTL: `${number}m`;
-            JWT_REFRESH_TTL: `${number}d`;
-            JWT_PRIVATE_KEY: string;
-            JWT_PUBLIC_KEY: string;
-
-            // Session
-            SESSION_EXPIRY_DAYS: `${number}`;
-            PENDING_TOKEN_EXPIRY_MINUTES: `${number}`;
-            SESSION_MAX_ACTIVE_COUNT: `${number}`;
-
-            // Password
-            PASSWORD_HISTORY_CHECK_DAYS: `${number}`;
-
-            // ---------------------------------------------------------------------------
             // Cache TTLs
             // ---------------------------------------------------------------------------
 
-            OTP_VERIFICATION_TTL: `${number}`;
-            OTP_LOGIN_TTL: `${number}`;
-            OTP_RESET_TTL: `${number}`;
-            OAUTH_STATE_TTL: `${number}`;
-            PENDING_2FA_TTL: `${number}`;
-            ACCESS_CACHE_TTL: `${number}`;
-            ELEVATED_ACCESS_TTL: `${number}`;
+            OTP_VERIFICATION_TTL: StringValue;
+            OTP_LOGIN_TTL: StringValue;
+            OTP_RESET_TTL: StringValue;
+            OAUTH_STATE_TTL: StringValue;
+            PENDING_2FA_TTL: StringValue;
+            ACCESS_CACHE_TTL: StringValue;
+            ELEVATED_ACCESS_TTL: StringValue;
 
             // ---------------------------------------------------------------------------
             // OAuth Providers
@@ -170,6 +142,33 @@ declare global {
             CLEANUP_BATCH_DELAY: StringValue;
             CLEANUP_BATCH_BACKOFF_DELAY: StringValue;
             CLEANUP_BATCH_ATTEMPTS: `${number}`;
+
+            // ---------------------------------------------------------------------------
+            // Auth & Security
+            // ---------------------------------------------------------------------------
+
+            // Hashing (Argon2)
+            ARGON2_TYPE: "argon2id" | "argon2i" | "argon2d";
+            ARGON2_MEMORY_COST_KIB: `${number}`;
+            ARGON2_PARALLELISM: `${number}`;
+            ARGON2_HASH_LENGTH: `${number}`;
+            ARGON2_TIME_COST: `${number}`;
+            ARGON2_VERSION: `${number}`;
+
+            // JWT (ES256)
+            JWT_ISSUER: string;
+            JWT_ACCESS_TTL: StringValue;
+            JWT_REFRESH_TTL: StringValue;
+            JWT_PRIVATE_KEY: string;
+            JWT_PUBLIC_KEY: string;
+
+            // Session
+            SESSION_EXPIRY_DAYS: StringValue;
+            PENDING_TOKEN_EXPIRY_MINUTES: StringValue;
+            SESSION_MAX_ACTIVE_COUNT: `${number}`;
+
+            // Password
+            PASSWORD_HISTORY_CHECK_DAYS: StringValue;
         }
     }
 }

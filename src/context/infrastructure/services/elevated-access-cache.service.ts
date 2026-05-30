@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import ms, { StringValue } from "ms";
 import Redis from "ioredis";
 
 import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
@@ -13,7 +14,7 @@ export class ElevatedAccessCacheService implements InfrastructureServices.Elevat
         @Inject(REDIS_CACHE_CLIENT) private readonly redis: Redis,
         private readonly configService: ConfigService,
     ) {
-        this.ttl = this.configService.getOrThrow<number>("ELEVATED_ACCESS_TTL");
+        this.ttl = ms(this.configService.getOrThrow<StringValue>("ELEVATED_ACCESS_TTL"));
     }
 
     public async set({ account }: InfrastructureServices.ElevatedAccessCache.Set): Promise<void> {

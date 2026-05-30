@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import ms, { StringValue } from "ms";
 import Redis from "ioredis";
 
 import { AccessControlClient } from "~infrastructure/grpc";
@@ -16,7 +17,7 @@ export class AccessCacheService implements InfrastructureServices.AccessCache.Co
         private readonly configService: ConfigService,
         private readonly accessControlClient: AccessControlClient,
     ) {
-        this.ttl = this.configService.getOrThrow<number>("ACCESS_CACHE_TTL");
+        this.ttl = ms(this.configService.getOrThrow<StringValue>("ACCESS_CACHE_TTL"));
     }
 
     public async exists(
