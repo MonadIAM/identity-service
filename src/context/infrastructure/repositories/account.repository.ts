@@ -18,6 +18,8 @@ export class AccountRepository
     public constructor(
         @InjectEntityManager("read")
         protected readonly readManager: EntityManager,
+        @InjectEntityManager("write")
+        private readonly writeManager: EntityManager,
     ) {
         super();
     }
@@ -45,6 +47,46 @@ export class AccountRepository
             }
 
             return await builder.getResultAndCount();
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
+        }
+    }
+
+    public async findExpiredPending(
+        props: Repositories.Account.FindExpiredPending.Props,
+    ): Repositories.Account.FindExpiredPending.Result {
+        try {
+            const { expirationDate, batchSize, transaction } = props;
+            const entityManager = transaction ?? this.writeManager;
+
+            const rows = await entityManager
+                .getKnex()("identity.account")
+                .select("*")
+                .where("status", "pending")
+                .andWhere("created_at", "<", expirationDate)
+                .limit(batchSize);
+
+            return rows.map((row) => entityManager.map(Account, row));
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
+        }
+    }
+
+    public async findExpiredInactive(
+        props: Repositories.Account.FindExpiredInactive.Props,
+    ): Repositories.Account.FindExpiredInactive.Result {
+        try {
+            const { expirationDate, batchSize, transaction } = props;
+            const entityManager = transaction ?? this.writeManager;
+
+            const rows = await entityManager
+                .getKnex()("identity.account")
+                .select("*")
+                .where("status", "active")
+                .andWhereRaw("COALESCE(last_active_at, updated_at, created_at) < ?", [expirationDate])
+                .limit(batchSize);
+
+            return rows.map((row) => entityManager.map(Account, row));
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.constructor.name);
         }

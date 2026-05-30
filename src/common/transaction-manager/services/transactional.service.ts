@@ -16,7 +16,7 @@ export class TransactionalService {
         private readonly operationContext: OperationContext,
     ) {}
 
-    public run<T extends AnyEntity>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
+    public async run<T extends AnyEntity>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
         try {
             const writeManager = this.writeManager.fork();
 
@@ -40,7 +40,7 @@ export class TransactionalService {
 
             const auditEntry = new AuditLog(params.audit);
 
-            return this.operationContext.run(
+            return await this.operationContext.run(
                 {
                     changeLogEnabled: params.changeLog ?? false,
                     auditEntry: auditEntry.id,

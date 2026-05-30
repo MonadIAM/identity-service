@@ -32,6 +32,9 @@ export class EnvironmentVariablesDTO {
     @Validator.Max(65535)
     declare public GRPC_PORT: number;
 
+    @Validator.IsString()
+    declare public ACCESS_CONTROL_GRPC_URL: string;
+
     @Validator.IsPositiveInt()
     declare public THROTTLE_LIMIT: number;
 
@@ -172,6 +175,10 @@ export class EnvironmentVariablesDTO {
     @Validator.Min(0)
     declare public REDIS_DB_QUEUE: number;
 
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public REDIS_CONTAINER_PORT: number;
+
     // ---------------------------------------------------------------------------
     // Kafka
     // ---------------------------------------------------------------------------
@@ -198,6 +205,18 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsInt()
     declare public KAFKAJS_NO_PARTITIONER_WARNING: number;
+
+    @Validator.IsInt()
+    declare public KAFKA_DLQ_MAX_RETRIES: number;
+
+    @Validator.IsInt()
+    declare public KAFKA_DLQ_RETRY_BASE_DELAY: number;
+
+    @Validator.IsInt()
+    declare public KAFKA_DLQ_RETRY_MAX_DELAY: number;
+
+    @Validator.IsInt()
+    declare public KAFKA_DLQ_RETRY_JITTER: number;
 
     // ---------------------------------------------------------------------------
     // Debezium
@@ -250,6 +269,9 @@ export class EnvironmentVariablesDTO {
     declare public SESSION_EXPIRY_DAYS: number;
 
     @Validator.IsPositiveInt()
+    declare public PENDING_TOKEN_EXPIRY_MINUTES: number;
+
+    @Validator.IsPositiveInt()
     declare public SESSION_MAX_ACTIVE_COUNT: number;
 
     // Password
@@ -277,6 +299,9 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     declare public ACCESS_CACHE_TTL: number;
+
+    @Validator.IsPositiveInt()
+    declare public ELEVATED_ACCESS_TTL: number;
 
     // ---------------------------------------------------------------------------
     // OAuth Providers
@@ -328,4 +353,13 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     declare public CLEANUP_BATCH_SIZE: number;
+
+    @Validator.IsString()
+    declare public CLEANUP_BATCH_DELAY: string;
+
+    @Validator.IsString()
+    declare public CLEANUP_BATCH_BACKOFF_DELAY: string;
+
+    @Validator.IsPositiveInt()
+    declare public CLEANUP_BATCH_ATTEMPTS: number;
 }

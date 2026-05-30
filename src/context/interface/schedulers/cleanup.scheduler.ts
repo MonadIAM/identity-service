@@ -1,11 +1,10 @@
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { ConfigService } from "@nestjs/config";
-import { InjectQueue } from "@nestjs/bullmq";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import ms, { StringValue } from "ms";
-import { Queue } from "bullmq";
 
 import { CleanupJob } from "~context/enums";
+import { CLEANUP_QUEUE } from "~context/infrastructure/queues";
 
 @Injectable()
 export class CleanupScheduler {
@@ -14,8 +13,8 @@ export class CleanupScheduler {
     private readonly batchSize: number;
 
     public constructor(
-        @InjectQueue("cleanup")
-        private readonly cleanupQueue: Queue,
+        @Inject(CLEANUP_QUEUE)
+        private readonly cleanupQueue: Queues.Cleanup.Contract,
         private readonly configService: ConfigService,
     ) {
         this.inactiveAccountTTL = this.configService.getOrThrow<StringValue>("INACTIVE_ACCOUNT_TTL");
@@ -25,7 +24,7 @@ export class CleanupScheduler {
 
     @Cron(CronExpression.EVERY_HOUR)
     public async schedulePendingAccountsCleanup(): Promise<void> {
-        await this.cleanupQueue.add(CleanupJob.PENDING_ACCOUNTS, {
+        await this.cleanupQueue.schedule(CleanupJob.PENDING_ACCOUNTS, {
             olderThanMs: ms(this.pendingAccountTTL),
             batchSize: this.batchSize,
         });
@@ -33,7 +32,7 @@ export class CleanupScheduler {
 
     @Cron(CronExpression.EVERY_DAY_AT_1AM)
     public async scheduleInactiveAccountsCleanup(): Promise<void> {
-        await this.cleanupQueue.add(CleanupJob.INACTIVE_ACCOUNTS, {
+        await this.cleanupQueue.schedule(CleanupJob.INACTIVE_ACCOUNTS, {
             olderThanMs: ms(this.inactiveAccountTTL),
             batchSize: this.batchSize,
         });

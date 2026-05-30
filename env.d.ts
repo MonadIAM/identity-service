@@ -16,6 +16,7 @@ declare global {
             APP_PORT: `${number}`;
             GRPC_HOST: string;
             GRPC_PORT: `${number}`;
+            ACCESS_CONTROL_GRPC_URL: string;
             THROTTLE_LIMIT: `${number}`;
             THROTTLE_TTL: `${number}`;
 
@@ -75,6 +76,7 @@ declare global {
             REDIS_DB_CACHE: `${number}`;
             REDIS_DB_LIMITER: `${number}`;
             REDIS_DB_QUEUE: `${number}`;
+            REDIS_CONTAINER_PORT: `${number}`;
 
             // ---------------------------------------------------------------------------
             // Kafka
@@ -87,6 +89,10 @@ declare global {
             KAFKA_CONNECT_IMAGE: string;
             KAFKA_CONNECT_PORT: `${number}`;
             KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
+            KAFKA_DLQ_MAX_RETRIES: `${number}`;
+            KAFKA_DLQ_RETRY_BASE_DELAY: `${number}`;
+            KAFKA_DLQ_RETRY_MAX_DELAY: `${number}`;
+            KAFKA_DLQ_RETRY_JITTER: `${number}`;
 
             // ---------------------------------------------------------------------------
             // Debezium
@@ -115,6 +121,7 @@ declare global {
 
             // Session
             SESSION_EXPIRY_DAYS: `${number}`;
+            PENDING_TOKEN_EXPIRY_MINUTES: `${number}`;
             SESSION_MAX_ACTIVE_COUNT: `${number}`;
 
             // Password
@@ -130,6 +137,7 @@ declare global {
             OAUTH_STATE_TTL: `${number}`;
             PENDING_2FA_TTL: `${number}`;
             ACCESS_CACHE_TTL: `${number}`;
+            ELEVATED_ACCESS_TTL: `${number}`;
 
             // ---------------------------------------------------------------------------
             // OAuth Providers
@@ -159,6 +167,9 @@ declare global {
             INACTIVE_ACCOUNT_TTL: StringValue;
             PENDING_ACCOUNT_TTL: StringValue;
             CLEANUP_BATCH_SIZE: `${number}`;
+            CLEANUP_BATCH_DELAY: StringValue;
+            CLEANUP_BATCH_BACKOFF_DELAY: StringValue;
+            CLEANUP_BATCH_ATTEMPTS: `${number}`;
         }
     }
 }

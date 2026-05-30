@@ -8,24 +8,27 @@ import { TransactionManagerModule } from "~common/transaction-manager";
 import { ElevatedAccessGuard, PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { REPOSITORIES } from "./infrastructure/repositories";
-import { PROCESSORS } from "./infrastructure/processors";
 import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
 import { SCHEDULERS } from "./interface/schedulers";
 import { CONSUMERS } from "./interface/consumers";
 import { COMMANDS } from "./application/commands";
 import { QUERIES } from "./application/queries";
+import { QUEUES, BullQueue } from "./infrastructure/queues";
 
 @Module({
-    imports: [TransactionManagerModule, BullModule.registerQueue({ name: "cleanup" })],
+    imports: [
+        TransactionManagerModule,
+        BullModule.registerQueue({ name: BullQueue.CLEANUP }, { name: BullQueue.KAFKA_RETRY }),
+    ],
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,
         ...REPOSITORIES,
         ...SCHEDULERS,
-        ...PROCESSORS,
         ...COMMANDS,
         ...QUERIES,
+        ...QUEUES,
         ElevatedAccessGuard,
         PermissionGuard,
         AuthGuard,

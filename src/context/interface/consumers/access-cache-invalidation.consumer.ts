@@ -1,12 +1,16 @@
-import { EventPattern, Payload, ClientKafka } from "@nestjs/microservices";
-import { Controller, Inject, OnModuleInit } from "@nestjs/common";
+import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
+import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { InvalidationScope, KafkaTopic } from "@liam/contracts";
+import { lastValueFrom } from "rxjs";
 
 import { ACCESS_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
-import { KAFKA_SERVICE } from "~infrastructure/kafka";
+import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { RetryableException } from "~common/exceptions";
 
 @Controller()
 export class AccessCacheInvalidationConsumer implements Consumers.AccessCacheInvalidation.Contract, OnModuleInit {
+    private readonly logger = new Logger(AccessCacheInvalidationConsumer.name);
+
     public constructor(
         @Inject(ACCESS_CACHE_SERVICE)
         private readonly accessCacheService: InfrastructureServices.AccessCache.Contract,
@@ -20,8 +24,9 @@ export class AccessCacheInvalidationConsumer implements Consumers.AccessCacheInv
 
     @EventPattern(KafkaTopic.ACCESS_CACHE_INVALIDATION)
     public async handle(
-        @Payload() payload: Consumers.AccessCacheInvalidation.Handle.Props,
-    ): Consumers.AccessCacheInvalidation.Handle.Result {
+        @Payload() payload: Consumers.AccessCacheInvalidation.Payload,
+        @Ctx() context: KafkaContext,
+    ): Promise<void> {
         try {
             for await (const item of payload.items) {
                 switch (item.scope) {
@@ -40,13 +45,31 @@ export class AccessCacheInvalidationConsumer implements Consumers.AccessCacheInv
                 }
             }
         } catch (error) {
-            this.kafkaClient.emit(KafkaTopic.ACCESS_CACHE_INVALIDATION_DLQ, {
-                timestamp: new Date().toISOString(),
-                originalTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                error: String(error),
-                retryCount: 0,
-                payload,
-            });
+            if (RetryableException.is(error)) {
+                await lastValueFrom(
+                    this.kafkaClient.emit(KafkaTopic.ACCESS_CACHE_INVALIDATION_RETRY, {
+                        headers: {
+                            "x-retry-count": String(KafkaUtils.extractRetryCount(context)),
+                        },
+                        value: {
+                            originalTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                            error: String(error),
+                            payload,
+                        },
+                    }),
+                );
+            } else {
+                this.logger.warn(`Non-retryable error in access cache invalidation consumer: ${String(error)}`);
+                await lastValueFrom(
+                    this.kafkaClient.emit(KafkaTopic.ACCESS_CACHE_INVALIDATION_DEAD, {
+                        value: {
+                            originalTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                            error: String(error),
+                            payload,
+                        },
+                    }),
+                );
+            }
         }
     }
 }
