@@ -1,0 +1,5 @@
+{
+  "second-factor": {
+    "QR_UNAVAILABLE": "The QR code is unavailable. The factor does not exist or is already confirmed."
+  }
+}

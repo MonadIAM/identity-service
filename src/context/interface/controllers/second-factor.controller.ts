@@ -9,6 +9,8 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
+    GetQRCodeResultDTO,
+    GetQRCodeQueryDTO,
     VerifyResultDTO,
     CreateResultDTO,
     VerifyBodyDTO,
@@ -58,6 +60,19 @@ export class SecondFactorController {
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
     public getList(@Extract.Session() { account }: Extract.Session.Auth): Queries.SecondFactor.FindMany.Result {
         return this.secondFactorQueries.findMany({ account });
+    }
+
+    @Get("qr")
+    @HttpCode(OK)
+    @FormatResponse(GetQRCodeResultDTO)
+    @RequirePermission(SECOND_FACTOR_READ_PERSONAL)
+    @ApiOperation({ summary: "Get QR code URI for unconfirmed TOTP factor" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    public getQRCode(
+        @Query() { id }: GetQRCodeQueryDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+    ): Queries.SecondFactor.GetQRCode.Result {
+        return this.secondFactorQueries.getQRCode({ id, actor });
     }
 
     @Post("create")
