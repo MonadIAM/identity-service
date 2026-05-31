@@ -64,6 +64,7 @@
     "REGENERATED": "Recovery codes successfully regenerated."
   },
   "second-factor": {
+    "TOTP_FACTOR_EXISTS": "A TOTP factor already exists for this account.",
     "INVALID_TOTP_CODE": "The second-factor code is invalid.",
     "VERIFIED": "Second factor successfully verified.",
     "PURGED": "Second factor successfully deleted.",

@@ -20,6 +20,7 @@ declare namespace Commands {
 
             type Result = Promise<{
                 uri: string;
+                id: string;
             }>;
         }
 

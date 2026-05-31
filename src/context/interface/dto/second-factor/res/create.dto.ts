@@ -7,6 +7,11 @@ import { Validator } from "~common/validator";
 @ApiSchema({ name: "SecondFactorCreateResult" })
 export class CreateResultDTO extends SuccessMessageDTO {
     @Expose()
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    declare public id: string;
+
+    @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public uri: string;

@@ -32,8 +32,9 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
 
     public async create(props: Commands.SecondFactor.Create.Props): Commands.SecondFactor.Create.Result {
         const secret = new Secret({ size: 20 });
+        const type = SecondFactorType.TOTP;
 
-        await this.transactionalService.run({
+        const factor = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: IdentityActionType.INITIATE_SECOND_FACTOR_SETUP,
@@ -41,18 +42,28 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 ...props,
             },
             execute: async (transaction) => {
-                const account = await this.accountRepository.findUniqueOrThrow({
-                    where: { id: props.actor },
-                    transaction,
-                });
+                const [account, existingFactor] = await Promise.all([
+                    this.accountRepository.findUniqueOrThrow({
+                        where: { id: props.actor },
+                        transaction,
+                    }),
+                    this.secondFactorRepository.findUnique({
+                        where: { account: props.actor, type },
+                        transaction,
+                    }),
+                ]);
 
-                this.secondFactorService.create({
+                if (existingFactor) {
+                    throw CommandException.conflict(`${this.dictionaryPath}.TOTP_FACTOR_EXISTS`);
+                }
+
+                return this.secondFactorService.create({
                     transaction,
                     input: {
-                        account,
-                        type: SecondFactorType.TOTP,
                         name: props.input.name,
                         secret: secret.base32,
+                        account,
+                        type,
                     },
                 });
             },
@@ -64,7 +75,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             secret,
         });
 
-        return { uri: totp.toString() };
+        return { id: factor.id, uri: totp.toString() };
     }
 
     public async verify(props: Commands.SecondFactor.Verify.Props): Commands.SecondFactor.Verify.Result {
