@@ -34,12 +34,12 @@ export class PendingTokenInterceptor implements NestInterceptor {
 
         return next.handle().pipe(
             map((data) => {
-                if (isString(data?.accessToken) && isString(data?.refreshToken)) {
+                if (isString(data?.pendingToken)) {
                     const { pendingToken, ...rest } = data;
 
                     reply.setCookie("pending_token", pendingToken, {
                         maxAge: this.pendingAuthMaxAge,
-                        path: "/auth/2fa/confirm",
+                        path: "/auth/verify/second-factor",
                         sameSite: "strict",
                         httpOnly: true,
                         secure: true,
