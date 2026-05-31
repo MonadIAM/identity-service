@@ -29,11 +29,6 @@ export class SecondFactorDTO {
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })
-    declare public lastUsedAt?: Date;
-
-    @Expose()
-    @Validator.IsDate()
-    @ApiProperty({ required: false, type: Date })
     declare public confirmedAt?: Date;
 
     @Expose()

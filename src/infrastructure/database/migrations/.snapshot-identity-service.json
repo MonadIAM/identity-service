@@ -1121,16 +1121,6 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "last_used_at": {
-          "name": "last_used_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1146,13 +1136,15 @@
       "schema": "identity",
       "indexes": [
         {
-          "keyName": "second_factor_account_type_active_unique",
-          "columnNames": [],
-          "composite": false,
-          "constraint": false,
+          "keyName": "second_factor_account_type_unique",
+          "columnNames": [
+            "account_id",
+            "type"
+          ],
+          "composite": true,
+          "constraint": true,
           "primary": false,
-          "unique": false,
-          "expression": "CREATE UNIQUE INDEX \"second_factor_account_type_active_unique\" ON \"identity\".\"second_factor\" (\"account_id\", \"type\") WHERE \"status\" != 'REVOKED'"
+          "unique": true
         },
         {
           "keyName": "second_factor_pkey",

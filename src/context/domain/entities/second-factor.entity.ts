@@ -13,7 +13,6 @@ export class SecondFactor {
     public id: string;
     public createdAt: Date;
     public confirmedAt?: Date;
-    public lastUsedAt?: Date;
 
     public type: SecondFactorType;
     public secret: string;

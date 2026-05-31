@@ -8,11 +8,10 @@ export const SecondFactorSchema = new EntitySchema<SecondFactor>({
     tableName: "second_factor",
     schema: "identity",
 
-    indexes: [
+    uniques: [
         {
-            name: "second_factor_account_type_active_unique",
-            expression:
-                'CREATE UNIQUE INDEX "second_factor_account_type_active_unique" ON "identity"."second_factor" ("account_id", "type") WHERE "status" != \'REVOKED\'',
+            name: "second_factor_account_type_unique",
+            properties: ["account", "type"],
         },
     ],
 
@@ -31,7 +30,6 @@ export const SecondFactorSchema = new EntitySchema<SecondFactor>({
         name: { type: "string", length: 128, nullable: true },
 
         confirmedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastUsedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
     },
 });
