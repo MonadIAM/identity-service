@@ -8,6 +8,7 @@ import { Validator } from "~common/validator";
 export class VerifyResultDTO extends SuccessMessageDTO {
     @Expose()
     @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    declare public code: string;
+    @Validator.IsOptional()
+    @ApiProperty({ required: false, type: String })
+    declare public code?: string;
 }

@@ -42,7 +42,8 @@ declare global {
                 type Props = {
                     transaction: EntityManager;
                     input: {
-                        factor: Entities.SecondFactor;
+                        factors: Entities.SecondFactor[];
+                        target: string;
                     };
                 };
 

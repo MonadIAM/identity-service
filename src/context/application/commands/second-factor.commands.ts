@@ -129,17 +129,14 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 ...props,
             },
             execute: async (transaction) => {
-                const factor = await this.secondFactorRepository.findUniqueOrThrow({
+                const factors = await this.secondFactorRepository.find({
                     options: { populate: ["account.masterCode"] },
-                    where: {
-                        id: props.input.factor,
-                        account: props.actor,
-                    },
+                    where: { account: props.actor },
                     transaction,
                 });
 
                 this.secondFactorService.purge({
-                    input: { factor },
+                    input: { target: props.input.factor, factors },
                     transaction,
                 });
             },

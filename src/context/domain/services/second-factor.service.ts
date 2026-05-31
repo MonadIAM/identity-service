@@ -34,10 +34,21 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
 
     public purge(props: Services.SecondFactor.Purge.Props): Services.SecondFactor.Purge.Result {
         const { transaction, input } = props;
-        transaction.remove(input.factor);
 
-        if (input.factor.account.masterCode) {
-            transaction.remove(input.factor.account.masterCode);
+        let masterCode: Optional<Entities.MasterCode>;
+        let remaining = 0;
+
+        for (const factor of input.factors) {
+            if (factor.id === input.target) {
+                ({ masterCode } = factor.account);
+                transaction.remove(factor);
+            } else if (factor.confirmedAt) {
+                ++remaining;
+            }
+        }
+
+        if (!remaining && masterCode) {
+            transaction.remove(masterCode);
         }
     }
 

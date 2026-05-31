@@ -156,6 +156,7 @@ export class AuthCommands implements Commands.Auth.Contract {
             where: {
                 confirmedAt: { $ne: null },
                 account: cachedAccount,
+                id: props.input.id,
             },
         });
 
