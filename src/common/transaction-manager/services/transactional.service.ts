@@ -16,6 +16,31 @@ export class TransactionalService {
         private readonly operationContext: OperationContext,
     ) {}
 
+    public async emit(params: TransactionManager.Service.Emit): Promise<void> {
+        try {
+            const writeManager = this.writeManager.fork();
+            const outbox = new Outbox(params);
+
+            if (params.audit) {
+                const auditEntry = new AuditLog(params.audit);
+                return await this.operationContext.run({ changeLogEnabled: false, auditEntry: auditEntry.id }, () =>
+                    writeManager.transactional(async (transaction) => {
+                        transaction.persist(auditEntry);
+                        transaction.persist(outbox);
+                        await transaction.flush();
+                    }),
+                );
+            } else {
+                return writeManager.transactional(async (transaction) => {
+                    transaction.persist(outbox);
+                    await transaction.flush();
+                });
+            }
+        } catch (error) {
+            throw ServiceException.fromOrmError(error, params.resource);
+        }
+    }
+
     public async run<T extends AnyEntity>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
         try {
             const writeManager = this.writeManager.fork();

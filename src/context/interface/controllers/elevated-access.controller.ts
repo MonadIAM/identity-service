@@ -48,10 +48,10 @@ export class ElevatedAccessController {
     )
     public byPassword(
         @Body() input: ByPasswordBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Session() { account, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.ElevatedAccess.ByPassword.Result {
-        return this.elevatedAccessCommands.byPassword({ context, actor, input });
+        return this.elevatedAccessCommands.byPassword({ actor: account, context, session, input });
     }
 
     @HttpCode(OK)
@@ -70,9 +70,9 @@ export class ElevatedAccessController {
     )
     public bySecondFactor(
         @Body() input: BySecondFactorBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Session() { account, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.ElevatedAccess.BySecondFactor.Result {
-        return this.elevatedAccessCommands.bySecondFactor({ context, actor, input });
+        return this.elevatedAccessCommands.bySecondFactor({ actor: account, context, session, input });
     }
 }

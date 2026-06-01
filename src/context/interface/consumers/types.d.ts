@@ -28,7 +28,23 @@ declare global {
             type Payload = {
                 eventType: Event;
                 payload: {
-                    sessionId: string;
+                    session: string;
+                    ttl: number;
+                };
+            };
+        }
+
+        namespace ElevatedAccess {
+            interface Contract {
+                handle: (props: Payload) => Promise<void>;
+            }
+
+            type Event = "ELEVATED_ACCESS_GRANTED";
+
+            type Payload = {
+                eventType: Event;
+                payload: {
+                    session: string;
                     ttl: number;
                 };
             };

@@ -1,31 +1,23 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import ms, { StringValue } from "ms";
 import Redis from "ioredis";
 
 import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
 
 @Injectable()
 export class ElevatedAccessCacheService implements InfrastructureServices.ElevatedAccessCache.Contract {
-    private readonly ttl: number;
     private readonly namespace = "elevated-access";
 
-    public constructor(
-        @Inject(REDIS_CACHE_CLIENT) private readonly redis: Redis,
-        private readonly configService: ConfigService,
-    ) {
-        this.ttl = ms(this.configService.getOrThrow<StringValue>("ELEVATED_ACCESS_TTL"));
+    public constructor(@Inject(REDIS_CACHE_CLIENT) private readonly redis: Redis) {}
+
+    public async set({ session, ttl }: InfrastructureServices.ElevatedAccessCache.Set): Promise<void> {
+        await this.redis.set(`${this.namespace}:${session}`, "1", "EX", ttl);
     }
 
-    public async set({ account }: InfrastructureServices.ElevatedAccessCache.Set): Promise<void> {
-        await this.redis.set(`${this.namespace}:${account}`, "1", "EX", this.ttl);
+    public async exists({ session }: InfrastructureServices.ElevatedAccessCache.Exists): Promise<boolean> {
+        return (await this.redis.exists(`${this.namespace}:${session}`)) === 1;
     }
 
-    public async exists({ account }: InfrastructureServices.ElevatedAccessCache.Exists): Promise<boolean> {
-        return (await this.redis.exists(`${this.namespace}:${account}`)) === 1;
-    }
-
-    public async delete({ account }: InfrastructureServices.ElevatedAccessCache.Delete): Promise<void> {
-        await this.redis.unlink(`${this.namespace}:${account}`);
+    public async delete({ session }: InfrastructureServices.ElevatedAccessCache.Delete): Promise<void> {
+        await this.redis.unlink(`${this.namespace}:${session}`);
     }
 }

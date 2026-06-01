@@ -69,6 +69,9 @@ export enum IdentityActionType {
     /* Recovery Codes */
     REGENERATE_RECOVERY_CODES = "REGENERATE_RECOVERY_CODES",
 
+    /* Elevated Access */
+    GRANT_ELEVATED_ACCESS = "GRANT_ELEVATED_ACCESS",
+
     /* Session */
     REVOKE_ALL_SESSIONS = "REVOKE_ALL_SESSIONS",
     REVOKE_SESSIONS     = "REVOKE_SESSIONS",
@@ -82,14 +85,15 @@ export enum IdentityActionType {
 
 export enum EntityType {
     /* eslint-disable prettier/prettier */
-    RECOVERY_CODE = "RECOVERY_CODE",
-    SECOND_FACTOR = "SECOND_FACTOR",
-    MASTER_CODE   = "MASTER_CODE",
-    IDENTIFIER    = "IDENTIFIER",
-    PASSWORD      = "PASSWORD",
-    PROFILE       = "PROFILE",
-    SESSION       = "SESSION",
-    ACCOUNT       = "ACCOUNT",
+    ELEVATED_ACCESS = "ELEVATED_ACCESS",
+    RECOVERY_CODE   = "RECOVERY_CODE",
+    SECOND_FACTOR   = "SECOND_FACTOR",
+    MASTER_CODE     = "MASTER_CODE",
+    IDENTIFIER      = "IDENTIFIER",
+    PASSWORD        = "PASSWORD",
+    PROFILE         = "PROFILE",
+    SESSION         = "SESSION",
+    ACCOUNT         = "ACCOUNT",
     /* eslint-enable prettier/prettier */
 }
 
@@ -98,9 +102,10 @@ export type AggregateType = EntityType;
 
 export enum EventType {
     /* eslint-disable prettier/prettier */
-    ACCOUNT_REGISTERED = "ACCOUNT_REGISTERED",
-    SESSION_REVOKED    = "SESSION_REVOKED",
-    ACCOUNT_PURGED     = "ACCOUNT_PURGED",
+    ELEVATED_ACCESS_GRANTED = "ELEVATED_ACCESS_GRANTED",
+    ACCOUNT_REGISTERED      = "ACCOUNT_REGISTERED",
+    SESSION_REVOKED         = "SESSION_REVOKED",
+    ACCOUNT_PURGED          = "ACCOUNT_PURGED",
     /* eslint-enable prettier/prettier */
 }
 

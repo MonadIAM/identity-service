@@ -10,6 +10,7 @@ declare global {
                     <T extends AnyEntity>(props: RunWithResult<T>): Promise<T>;
                     (props: RunVoid): Promise<void>;
                 };
+                emit: (props: Emit) => Promise<void>;
             }
 
             type Outbox<T> = {
@@ -34,6 +35,16 @@ declare global {
                 changeLog?: never;
                 resource?: string;
                 outbox?: never;
+            };
+
+            type Emit = {
+                payload: UnknownObject;
+                audit?: Entities.AuditLog.ConstructorProps;
+                destinationTopic: KafkaTopic;
+                aggregateType: AggregateType;
+                metadata?: UnknownObject;
+                eventType: EventType;
+                resource?: string;
             };
 
             type Run<T extends AnyEntity> = RunWithResult<T> | RunVoid;

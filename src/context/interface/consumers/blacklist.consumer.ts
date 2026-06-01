@@ -23,7 +23,7 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
     public async handle(@Payload() message: Consumers.Blacklist.Payload): Promise<void> {
         try {
             await this.blacklistCacheService.set({
-                session: message.payload.sessionId,
+                session: message.payload.session,
                 ttl: message.payload.ttl,
             });
         } catch (error) {

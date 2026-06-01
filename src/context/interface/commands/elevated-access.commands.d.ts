@@ -10,6 +10,7 @@ declare namespace Commands {
         namespace ByPassword {
             type Props = {
                 context: Extract.Meta;
+                session: string;
                 actor: string;
                 input: {
                     password: string;
@@ -22,6 +23,7 @@ declare namespace Commands {
         namespace BySecondFactor {
             type Props = {
                 context: Extract.Meta;
+                session: string;
                 actor: string;
                 input: {
                     code: string;

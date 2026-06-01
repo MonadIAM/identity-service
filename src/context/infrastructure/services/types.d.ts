@@ -147,15 +147,16 @@ declare namespace InfrastructureServices {
         }
 
         type Set = {
-            account: string;
+            session: string;
+            ttl: number;
         };
 
         type Exists = {
-            account: string;
+            session: string;
         };
 
         type Delete = {
-            account: string;
+            session: string;
         };
     }
 
