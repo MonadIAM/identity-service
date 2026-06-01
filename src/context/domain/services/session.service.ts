@@ -45,7 +45,7 @@ export class SessionService implements Services.Session.Contract {
         }
 
         const revokedSessions = overflowedSessions.map(({ id, lastRefreshedAt }) => ({
-            ttl: Math.max(1, Math.ceil(this.accessTokenMaxTTL - (Date.now() - lastRefreshedAt.getTime()) / 1e3)),
+            expiresAt: Math.round(lastRefreshedAt.getTime() + this.accessTokenMaxTTL * 1e3),
             session: id,
         }));
 

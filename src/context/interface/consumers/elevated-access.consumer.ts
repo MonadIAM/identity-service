@@ -22,10 +22,10 @@ export class ElevatedAccessConsumer implements Consumers.ElevatedAccess.Contract
     @EventPattern(KafkaTopic.ELEVATED_ACCESS)
     public async handle(@Payload() message: Consumers.ElevatedAccess.Payload): Promise<void> {
         try {
-            await this.elevatedAccessCacheService.set({
-                session: message.payload.session,
-                ttl: message.payload.ttl,
-            });
+            const ttl = Math.floor((message.payload.expiresAt - Date.now()) / 1e3);
+            if (ttl > 0) {
+                await this.elevatedAccessCacheService.set({ session: message.payload.session, ttl });
+            }
         } catch (error) {
             await lastValueFrom(
                 this.kafkaClient.emit(KafkaTopic.ELEVATED_ACCESS_RETRY, {

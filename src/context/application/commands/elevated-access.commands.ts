@@ -58,7 +58,7 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
             destinationTopic: KafkaTopic.ELEVATED_ACCESS,
             aggregateType: AggregateType.ELEVATED_ACCESS,
             eventType: EventType.ELEVATED_ACCESS_GRANTED,
-            payload: { session: props.session, ttl: this.ttl },
+            payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
         });
 
         return { message: `${this.dictionaryPath}.ELEVATED` };
@@ -95,7 +95,7 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
             destinationTopic: KafkaTopic.ELEVATED_ACCESS,
             aggregateType: AggregateType.ELEVATED_ACCESS,
             eventType: EventType.ELEVATED_ACCESS_GRANTED,
-            payload: { session: props.session, ttl: this.ttl },
+            payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
         });
 
         return { message: `${this.dictionaryPath}.ELEVATED` };

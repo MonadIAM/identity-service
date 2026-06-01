@@ -155,7 +155,7 @@ export class SessionCommands implements Commands.Session.Contract {
         sessions: Commands.Session.OutboxPayloadMapper.Props,
     ): Commands.Session.OutboxPayloadMapper.Result {
         return sessions.map(({ id, lastRefreshedAt }) => ({
-            ttl: Math.max(1, Math.ceil(this.sessionTTL - (Date.now() - lastRefreshedAt.getTime()) / 1e3)),
+            expiresAt: Math.round(lastRefreshedAt.getTime() + this.sessionTTL * 1e3),
             session: id,
         }));
     }

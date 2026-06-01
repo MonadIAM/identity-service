@@ -15,8 +15,8 @@ declare global {
                 };
 
                 type RevokedSession = {
+                    expiresAt: number;
                     session: string;
-                    ttl: number;
                 };
 
                 type Props = {
