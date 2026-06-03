@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
-import { IdentifierType, IdentityActionType, EntityType } from "~context/enums";
+import { IdentifierType, ActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { PASSWORD_SERVICE } from "~context/domain/services";
@@ -49,8 +49,8 @@ export class PasswordCommands implements Commands.Password.Contract {
         return await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.CHANGE_PASSWORD,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.PASSWORD,
+                actionType: ActionType.UPDATE,
                 ...props,
             },
             execute: async (transaction) => {
@@ -132,8 +132,8 @@ export class PasswordCommands implements Commands.Password.Contract {
         return this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.RESET_PASSWORD_BY_OTP,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.PASSWORD,
+                actionType: ActionType.RESET,
                 ...props,
             },
             execute: async (transaction) => {
@@ -180,8 +180,8 @@ export class PasswordCommands implements Commands.Password.Contract {
         return this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.RESET_PASSWORD_BY_RECOVERY_CODE,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.PASSWORD,
+                actionType: ActionType.RESET,
                 ...props,
             },
             execute: async (transaction) => {

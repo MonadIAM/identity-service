@@ -1,9 +1,10 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
+import { AccountTopicAction } from "@liam/contracts";
 import { Job } from "bullmq";
 
-import { AggregateType, EventType, CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories/tokens";
+import { CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 
 import { CLEANUP_QUEUE } from "../tokens";
@@ -89,9 +90,8 @@ export class CleanupProcessor extends WorkerHost {
             >({
                 resource: this.resource,
                 outbox: {
-                    aggregateType: AggregateType.ACCOUNT,
                     destinationTopic: KafkaTopic.ACCOUNT,
-                    eventType: EventType.ACCOUNT_PURGED,
+                    actionType: AccountTopicAction.PURGE,
                     payloadMapper: ({ purged }) => purged.map(({ id }) => ({ account: id })),
                 },
                 execute: async (transaction) => {

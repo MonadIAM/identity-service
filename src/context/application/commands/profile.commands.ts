@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, EntityType } from "~context/enums";
+import { ActionType, EntityType } from "~context/enums";
 import { PROFILE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 
@@ -23,8 +23,8 @@ export class ProfileCommands implements Commands.Profile.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.UPDATE_PROFILE,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.PROFILE,
+                actionType: ActionType.UPDATE,
                 ...props,
             },
             execute: async (transaction) => {

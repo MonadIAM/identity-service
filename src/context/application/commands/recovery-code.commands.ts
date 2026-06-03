@@ -4,7 +4,7 @@ import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, HASHING_SERVICE } from "~common/services";
 import { RECOVERY_CODE_SERVICE } from "~context/domain/services";
-import { IdentityActionType, EntityType } from "~context/enums";
+import { ActionType, EntityType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
@@ -31,8 +31,8 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.REGENERATE_RECOVERY_CODES,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.RECOVERY_CODE,
+                actionType: ActionType.REGENERATE,
                 ...props,
             },
             execute: async (transaction) => {

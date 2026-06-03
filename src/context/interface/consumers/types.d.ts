@@ -2,52 +2,28 @@ import { KafkaContext } from "@nestjs/microservices";
 
 declare global {
     namespace Consumers {
-        namespace DLQ {
-            type Message = {
-                originalTopic: string;
-                payload: unknown;
-                error: string;
-            };
-        }
-
-        namespace AccessCacheInvalidation {
+        namespace AccessCache {
             interface Contract {
-                handle: (payload: Payload, ctx: KafkaContext) => Promise<void>;
+                handle: (message: Message, ctx: KafkaContext) => Promise<void>;
             }
 
-            type Payload = Events.AccessCache.Invalidation;
+            type Message = Topics.AccessCache.Message;
         }
 
         namespace Blacklist {
             interface Contract {
-                handle: (props: Payload) => Promise<void>;
+                handle: (message: Message) => Promise<void>;
             }
 
-            type Event = "SESSION_REVOKED";
-
-            type Payload = {
-                eventType: Event;
-                payload: {
-                    expiresAt: number;
-                    session: string;
-                };
-            };
+            type Message = Topics.Blacklist.Message;
         }
 
         namespace ElevatedAccess {
             interface Contract {
-                handle: (props: Payload) => Promise<void>;
+                handle: (message: Message) => Promise<void>;
             }
 
-            type Event = "ELEVATED_ACCESS_GRANTED";
-
-            type Payload = {
-                eventType: Event;
-                payload: {
-                    expiresAt: number;
-                    session: string;
-                };
-            };
+            type Message = Topics.ElevatedAccess.Message;
         }
     }
 }

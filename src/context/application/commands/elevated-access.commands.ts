@@ -1,10 +1,11 @@
+import { ElevatedAccessTopicAction } from "@liam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TOTP, Secret } from "otpauth";
 import ms, { StringValue } from "ms";
 
-import { IdentityActionType, EntityType, KafkaTopic, AggregateType, EventType } from "~context/enums";
 import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
+import { EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 import { HASHING_SERVICE } from "~common/services";
@@ -51,13 +52,12 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
         await this.transactionalService.emit({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.GRANT_ELEVATED_ACCESS,
                 entityType: EntityType.SESSION,
+                actionType: ActionType.GRANT,
                 ...props,
             },
             destinationTopic: KafkaTopic.ELEVATED_ACCESS,
-            aggregateType: AggregateType.ELEVATED_ACCESS,
-            eventType: EventType.ELEVATED_ACCESS_GRANTED,
+            actionType: ElevatedAccessTopicAction.GRANT,
             payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
         });
 
@@ -88,13 +88,12 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
         await this.transactionalService.emit({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.GRANT_ELEVATED_ACCESS,
                 entityType: EntityType.SESSION,
+                actionType: ActionType.GRANT,
                 ...props,
             },
             destinationTopic: KafkaTopic.ELEVATED_ACCESS,
-            aggregateType: AggregateType.ELEVATED_ACCESS,
-            eventType: EventType.ELEVATED_ACCESS_GRANTED,
+            actionType: ElevatedAccessTopicAction.GRANT,
             payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
         });
 

@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentifierType, IdentityActionType, EntityType } from "~context/enums";
 import { CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
+import { IdentifierType, ActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { IDENTIFIER_SERVICE } from "~context/domain/services";
@@ -36,8 +36,8 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         const identifier = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.ADD_IDENTIFIER,
                 entityType: EntityType.IDENTIFIER,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             execute: async (transaction) => {
@@ -102,8 +102,8 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.VERIFY_IDENTIFIER,
                 entityType: EntityType.IDENTIFIER,
+                actionType: ActionType.VERIFY,
                 ...props,
             },
             execute: async (transaction) => {
@@ -129,8 +129,8 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.TOGGLE_NOTIFICATIONS,
                 entityType: EntityType.IDENTIFIER,
+                actionType: ActionType.UPDATE,
                 ...props,
             },
             execute: async (transaction) => {
@@ -155,8 +155,8 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.TOGGLE_PUBLIC_CONTACT,
                 entityType: EntityType.IDENTIFIER,
+                actionType: ActionType.UPDATE,
                 ...props,
             },
             execute: async (transaction) => {
@@ -179,8 +179,8 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.PURGE_IDENTIFIER,
                 entityType: EntityType.IDENTIFIER,
+                actionType: ActionType.PURGE,
                 ...props,
             },
             execute: async (transaction) => {

@@ -1,7 +1,8 @@
 import { describe, it, expect } from "@jest/globals";
+import { AccountTopicAction } from "@liam/contracts";
 import { isUUID } from "class-validator";
 
-import { KafkaTopic, AggregateType, EventType } from "~context/enums";
+import { KafkaTopic } from "~context/enums";
 
 import { Outbox } from "./outbox.entity";
 
@@ -9,9 +10,8 @@ const BASE_PAYLOAD = { id: "00000000-0000-4000-8000-000000000001" };
 
 function createOutbox(overrides?: Partial<Entities.Outbox.ConstructorProps>): Outbox {
     return new Outbox({
-        eventType: EventType.ACCOUNT_REGISTERED,
+        actionType: AccountTopicAction.CREATE,
         destinationTopic: KafkaTopic.ACCOUNT,
-        aggregateType: AggregateType.ACCOUNT,
         payload: BASE_PAYLOAD,
         ...overrides,
     });
@@ -22,8 +22,7 @@ describe("Outbox Entity", () => {
         it("should assign required fields", () => {
             const outbox = createOutbox();
 
-            expect(outbox.eventType).toBe(EventType.ACCOUNT_REGISTERED);
-            expect(outbox.aggregateType).toBe(AggregateType.ACCOUNT);
+            expect(outbox.actionType).toBe(AccountTopicAction.CREATE);
             expect(outbox.destinationTopic).toBe(KafkaTopic.ACCOUNT);
             expect(outbox.payload).toBe(BASE_PAYLOAD);
         });

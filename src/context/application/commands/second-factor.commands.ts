@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentityActionType, EntityType, SecondFactorType } from "~context/enums";
+import { ActionType, EntityType, SecondFactorType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
@@ -37,8 +37,8 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         const factor = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.INITIATE_SECOND_FACTOR_SETUP,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.SECOND_FACTOR,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             execute: async (transaction) => {
@@ -101,8 +101,8 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.VERIFY_SECOND_FACTOR,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.SECOND_FACTOR,
+                actionType: ActionType.VERIFY,
                 ...props,
             },
             execute: (transaction) => {
@@ -124,8 +124,8 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.PURGE_SECOND_FACTOR,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.SECOND_FACTOR,
+                actionType: ActionType.PURGE,
                 ...props,
             },
             execute: async (transaction) => {
@@ -167,8 +167,8 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.RESET_SECOND_FACTORS,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.SECOND_FACTOR,
+                actionType: ActionType.RESET,
                 ...props,
             },
             execute: (transaction) => {

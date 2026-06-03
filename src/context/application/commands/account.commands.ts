@@ -1,22 +1,14 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccountTopicAction } from "@liam/contracts";
 import { isEmail } from "class-validator";
 
+import { AccountSubject, IdentifierType, AccountStatus, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
-import {
-    IdentityActionType,
-    AccountSubject,
-    IdentifierType,
-    AggregateType,
-    AccountStatus,
-    EntityType,
-    KafkaTopic,
-    EventType,
-} from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountCommands implements Commands.Account.Contract {
@@ -55,7 +47,7 @@ export class AccountCommands implements Commands.Account.Contract {
         const account = await this.transactionalService.run<Entities.Account>({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.SIGN_UP_ACCOUNT,
+                actionType: ActionType.SIGN_UP,
                 entityType: EntityType.ACCOUNT,
                 ...props,
             },
@@ -119,15 +111,14 @@ export class AccountCommands implements Commands.Account.Contract {
         }>({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.VERIFY_ACCOUNT,
                 entityType: EntityType.ACCOUNT,
+                actionType: ActionType.VERIFY,
                 ...props,
             },
             outbox: {
-                eventType: EventType.ACCOUNT_REGISTERED,
-                aggregateType: AggregateType.ACCOUNT,
+                payloadMapper: (result) => ({ account: result.account.id }),
+                actionType: AccountTopicAction.CREATE,
                 destinationTopic: KafkaTopic.ACCOUNT,
-                payloadMapper: (result) => ({ accountId: result.account.id }),
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
@@ -167,7 +158,7 @@ export class AccountCommands implements Commands.Account.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.DEACTIVATE_ACCOUNT,
+                actionType: ActionType.DEACTIVATE,
                 entityType: EntityType.ACCOUNT,
                 ...props,
             },
@@ -191,8 +182,8 @@ export class AccountCommands implements Commands.Account.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.SUSPEND_ACCOUNT,
                 entityType: EntityType.ACCOUNT,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             execute: async (transaction) => {
@@ -215,8 +206,8 @@ export class AccountCommands implements Commands.Account.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.RESTORE_ACCOUNT,
                 entityType: EntityType.ACCOUNT,
+                actionType: ActionType.RESTORE,
                 ...props,
             },
             execute: async (transaction) => {

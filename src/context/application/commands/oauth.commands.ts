@@ -1,21 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { BlacklistTopicAction } from "@liam/contracts";
 
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
+import { AccountSubject, IdentifierType, AccountStatus, EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SERVICE } from "~common/services";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
-import {
-    IdentityActionType,
-    AccountSubject,
-    IdentifierType,
-    AggregateType,
-    AccountStatus,
-    EntityType,
-    KafkaTopic,
-    EventType,
-} from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthCommands implements Commands.OAuth.Contract {
@@ -117,15 +109,14 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.SIGN_IN_ACCOUNT,
                 entityType: EntityType.ACCOUNT,
+                actionType: ActionType.SIGN_IN,
                 ...props,
             },
             outbox: {
                 payloadMapper: ({ revokedSessions }) => revokedSessions,
                 destinationTopic: KafkaTopic.BLACKLIST,
-                aggregateType: AggregateType.SESSION,
-                eventType: EventType.SESSION_REVOKED,
+                actionType: BlacklistTopicAction.ADD,
             },
             execute: (transaction) => {
                 return this.sessionService.create({
@@ -150,15 +141,14 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.LINK_OAUTH_IDENTIFIER,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.IDENTIFIER,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             outbox: {
                 payloadMapper: ({ revokedSessions }) => revokedSessions,
                 destinationTopic: KafkaTopic.BLACKLIST,
-                aggregateType: AggregateType.SESSION,
-                eventType: EventType.SESSION_REVOKED,
+                actionType: BlacklistTopicAction.ADD,
             },
             execute: (transaction) => {
                 this.identifierService.create({
@@ -200,8 +190,8 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.SIGN_UP_ACCOUNT,
                 entityType: EntityType.ACCOUNT,
+                actionType: ActionType.SIGN_UP,
                 ...props,
             },
             execute: (transaction) => {

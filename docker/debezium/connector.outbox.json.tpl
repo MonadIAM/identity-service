@@ -23,6 +23,6 @@
     "transforms.outbox.table.field.event.key": "id",
     "transforms.outbox.table.field.event.type": "event_type",
     "transforms.outbox.table.expand.json.payload": "true",
-    "transforms.outbox.table.fields.additional.placement": "event_type:envelope:eventType"
+    "transforms.outbox.table.fields.additional.placement": "event_type:envelope:actionType"
   }
 }

@@ -1,6 +1,6 @@
 import { ChangeSetType } from "@mikro-orm/postgresql";
 
-import { AggregateType, KafkaTopic, EventType } from "~context/enums";
+import { KafkaTopic } from "~context/enums";
 
 import { ChangeLog as ChangeLogEntity } from "./change-log.entity";
 import { AuditLog as AuditLogEntity } from "./audit-log.entity";
@@ -12,12 +12,12 @@ declare global {
     namespace Entities {
         namespace AuditLog {
             type ConstructorProps = {
+                input?: UnknownObject;
+                context: Extract.Meta;
                 actionType: string;
                 entityType: string;
                 actor?: string;
                 realm?: string;
-                input?: UnknownObject;
-                context: Extract.Meta;
             };
         }
 
@@ -38,10 +38,9 @@ declare global {
         namespace Outbox {
             type ConstructorProps = {
                 destinationTopic: KafkaTopic;
-                aggregateType: AggregateType;
-                eventType: EventType;
                 metadata?: UnknownObject;
                 payload: UnknownObject;
+                actionType: string;
             };
         }
 

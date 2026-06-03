@@ -20,7 +20,7 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
     }
 
     @EventPattern(KafkaTopic.BLACKLIST)
-    public async handle(@Payload() message: Consumers.Blacklist.Payload): Promise<void> {
+    public async handle(@Payload() message: Consumers.Blacklist.Message): Promise<void> {
         try {
             const ttl = Math.floor((message.payload.expiresAt - Date.now()) / 1e3);
             if (ttl > 0) {

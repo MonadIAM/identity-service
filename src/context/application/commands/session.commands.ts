@@ -1,9 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { BlacklistTopicAction } from "@liam/contracts";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { IdentityActionType, EntityType, KafkaTopic, AggregateType, EventType } from "~context/enums";
 import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { SESSION_SERVICE } from "~context/domain/services";
@@ -63,8 +64,8 @@ export class SessionCommands implements Commands.Session.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.REFRESH_SESSION,
-                entityType: EntityType.ACCOUNT,
+                entityType: EntityType.SESSION,
+                actionType: ActionType.REFRESH,
                 ...props,
             },
             execute: (transaction) => {
@@ -85,15 +86,14 @@ export class SessionCommands implements Commands.Session.Contract {
         await this.transactionalService.run<Entities.Session[]>({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.REVOKE_SESSIONS,
                 entityType: EntityType.SESSION,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             outbox: {
                 payloadMapper: this.outboxPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
-                aggregateType: AggregateType.SESSION,
-                eventType: EventType.SESSION_REVOKED,
+                actionType: BlacklistTopicAction.ADD,
             },
             execute: async (transaction) => {
                 const sessions = await this.sessionRepository.find({
@@ -120,15 +120,14 @@ export class SessionCommands implements Commands.Session.Contract {
         await this.transactionalService.run<Entities.Session[]>({
             resource: this.resource,
             audit: {
-                actionType: IdentityActionType.REVOKE_ALL_SESSIONS,
                 entityType: EntityType.SESSION,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             outbox: {
                 payloadMapper: this.outboxPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
-                aggregateType: AggregateType.SESSION,
-                eventType: EventType.SESSION_REVOKED,
+                actionType: BlacklistTopicAction.ADD,
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
