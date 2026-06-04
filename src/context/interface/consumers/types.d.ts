@@ -25,5 +25,13 @@ declare global {
 
             type Message = Topics.ElevatedAccess.Message;
         }
+
+        namespace Membership {
+            interface Contract {
+                handle: (message: Message, ctx: KafkaContext) => Promise<void>;
+            }
+
+            type Message = Topics.Membership.Message;
+        }
     }
 }

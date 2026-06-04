@@ -4,6 +4,7 @@ import { PasswordHistory as PasswordHistoryEntity } from "./password-history.ent
 import { RecoveryCode as RecoveryCodeEntity } from "./recovery-code.entity";
 import { SecondFactor as SecondFactorEntity } from "./second-factor.entity";
 import { MasterCode as MasterCodeEntity } from "./master-code.entity";
+import { Membership as MembershipEntity } from "./membership.entity";
 import { Identifier as IdentifierEntity } from "./identifier.entity";
 import { Password as PasswordEntity } from "./password.entity";
 import { Account as AccountEntity } from "./account.entity";
@@ -122,5 +123,16 @@ declare global {
         }
 
         type Session = SessionEntity;
+
+        namespace Membership {
+            type ConstructorProps = {
+                account: AccountEntity;
+                invitedBy: string;
+                joinedAt: Date;
+                realm: string;
+            };
+        }
+
+        type Membership = MembershipEntity;
     }
 }

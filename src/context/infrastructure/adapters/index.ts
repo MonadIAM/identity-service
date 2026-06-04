@@ -2,6 +2,7 @@ export { PasswordHistoryAdapter } from "./password-history.adapter";
 export { RecoveryCodeAdapter } from "./recovery-code.adapter";
 export { SecondFactorAdapter } from "./second-factor.adapter";
 export { MasterCodeAdapter } from "./master-code.adapter";
+export { MembershipAdapter } from "./membership.adapter";
 export { IdentifierAdapter } from "./identifier.adapter";
 export { ChangeLogAdapter } from "./change-log.adapter";
 export { AuditLogAdapter } from "./audit-log.adapter";

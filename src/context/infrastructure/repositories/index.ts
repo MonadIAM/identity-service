@@ -4,6 +4,7 @@ import { PasswordHistoryRepository } from "./password-history.repository";
 import { RecoveryCodeRepository } from "./recovery-code.repository";
 import { SecondFactorRepository } from "./second-factor.repository";
 import { MasterCodeRepository } from "./master-code.repository";
+import { MembershipRepository } from "./membership.repository";
 import { IdentifierRepository } from "./identifier.repository";
 import { ChangeLogRepository } from "./change-log.repository";
 import { AuditLogRepository } from "./audit-log.repository";
@@ -16,6 +17,7 @@ import {
     RECOVERY_CODE_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
     MASTER_CODE_REPOSITORY,
+    MEMBERSHIP_REPOSITORY,
     IDENTIFIER_REPOSITORY,
     CHANGE_LOG_REPOSITORY,
     AUDIT_LOG_REPOSITORY,
@@ -41,6 +43,10 @@ export const REPOSITORIES: Provider[] = [
     {
         provide: MASTER_CODE_REPOSITORY,
         useClass: MasterCodeRepository,
+    },
+    {
+        provide: MEMBERSHIP_REPOSITORY,
+        useClass: MembershipRepository,
     },
     {
         provide: IDENTIFIER_REPOSITORY,
@@ -77,6 +83,7 @@ export {
     RECOVERY_CODE_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
     MASTER_CODE_REPOSITORY,
+    MEMBERSHIP_REPOSITORY,
     IDENTIFIER_REPOSITORY,
     CHANGE_LOG_REPOSITORY,
     AUDIT_LOG_REPOSITORY,

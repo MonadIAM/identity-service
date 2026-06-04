@@ -3,6 +3,7 @@ import { Provider } from "@nestjs/common";
 import { ElevatedAccessCommands } from "./elevated-access.commands";
 import { RecoveryCodeCommands } from "./recovery-code.commands";
 import { SecondFactorCommands } from "./second-factor.commands";
+import { MembershipCommands } from "./membership.commands";
 import { IdentifierCommands } from "./identifier.commands";
 import { PasswordCommands } from "./password.commands";
 import { AccountCommands } from "./account.commands";
@@ -14,6 +15,7 @@ import {
     ELEVATED_ACCESS_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
+    MEMBERSHIP_COMMANDS,
     IDENTIFIER_COMMANDS,
     PASSWORD_COMMANDS,
     ACCOUNT_COMMANDS,
@@ -35,6 +37,10 @@ export const COMMANDS: Provider[] = [
     {
         provide: SECOND_FACTOR_COMMANDS,
         useClass: SecondFactorCommands,
+    },
+    {
+        provide: MEMBERSHIP_COMMANDS,
+        useClass: MembershipCommands,
     },
     {
         provide: IDENTIFIER_COMMANDS,
@@ -70,6 +76,7 @@ export {
     ELEVATED_ACCESS_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
+    MEMBERSHIP_COMMANDS,
     IDENTIFIER_COMMANDS,
     PASSWORD_COMMANDS,
     ACCOUNT_COMMANDS,

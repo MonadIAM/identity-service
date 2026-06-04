@@ -207,5 +207,18 @@ declare global {
                 Sort: Sort;
             }
         }
+
+        namespace Membership {
+            type Filters = {};
+
+            type Sort = {
+                createdAt?: QueryOrder;
+            };
+
+            interface Types {
+                Filters: Filters;
+                Sort: Sort;
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@ import { Provider } from "@nestjs/common";
 
 import { RecoveryCodeService } from "./recovery-code.service";
 import { SecondFactorService } from "./second-factor.service";
+import { MembershipService } from "./membership.service";
 import { IdentifierService } from "./identifier.service";
 import { PasswordService } from "./password.service";
 import { AccountService } from "./account.service";
@@ -10,6 +11,7 @@ import { ProfileService } from "./profile.service";
 import {
     RECOVERY_CODE_SERVICE,
     SECOND_FACTOR_SERVICE,
+    MEMBERSHIP_SERVICE,
     IDENTIFIER_SERVICE,
     PASSWORD_SERVICE,
     ACCOUNT_SERVICE,
@@ -25,6 +27,10 @@ export const DOMAIN_SERVICES: Provider[] = [
     {
         provide: SECOND_FACTOR_SERVICE,
         useClass: SecondFactorService,
+    },
+    {
+        provide: MEMBERSHIP_SERVICE,
+        useClass: MembershipService,
     },
     {
         provide: IDENTIFIER_SERVICE,
@@ -51,6 +57,7 @@ export const DOMAIN_SERVICES: Provider[] = [
 export {
     RECOVERY_CODE_SERVICE,
     SECOND_FACTOR_SERVICE,
+    MEMBERSHIP_SERVICE,
     IDENTIFIER_SERVICE,
     PASSWORD_SERVICE,
     ACCOUNT_SERVICE,
