@@ -8,7 +8,7 @@ import { OTP_CACHE_SERVICE, PENDING_AUTH_CACHE_SERVICE } from "~context/infrastr
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthCommands implements Commands.Auth.Contract {
@@ -47,7 +47,7 @@ export class AuthCommands implements Commands.Auth.Contract {
         });
 
         if (!identifier?.account?.password) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CREDENTIALS` });
         }
 
         const isValid = await this.hashingService.verify({
@@ -56,7 +56,7 @@ export class AuthCommands implements Commands.Auth.Contract {
         });
 
         if (!isValid) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CREDENTIALS`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CREDENTIALS` });
         }
 
         this.assertCanAuth(identifier.account);
@@ -83,7 +83,7 @@ export class AuthCommands implements Commands.Auth.Contract {
         });
 
         if (!identifier?.isVerified) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.PASSWORDLESS_NOT_AVAILABLE`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.PASSWORDLESS_NOT_AVAILABLE` });
         }
 
         const otp = this.cryptoService.generateOTP();
@@ -117,7 +117,7 @@ export class AuthCommands implements Commands.Auth.Contract {
         });
 
         if (!cachedIdentifier) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
         }
 
         const identifier = await this.identifierRepository.findUniqueOrThrow({
@@ -135,13 +135,13 @@ export class AuthCommands implements Commands.Auth.Contract {
         props: Commands.Auth.VerifySecondFactor.Props,
     ): Commands.Auth.VerifySecondFactor.Result {
         if (!props.token) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.PENDING_TOKEN_MISSING`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.PENDING_TOKEN_MISSING` });
         }
 
         const cachedAccount = await this.pendingAuthCacheService.get({ token: props.token });
 
         if (!cachedAccount) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.EXPIRED_PENDING_AUTH`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.EXPIRED_PENDING_AUTH` });
         }
 
         const factor = await this.secondFactorRepository.findUnique({
@@ -154,14 +154,14 @@ export class AuthCommands implements Commands.Auth.Contract {
         });
 
         if (!factor) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.NO_ACTIVE_2FA` });
         }
 
         const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
         const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
 
         if (!isValid) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
         }
 
         await this.pendingAuthCacheService.delete({ token: props.token });
@@ -209,11 +209,11 @@ export class AuthCommands implements Commands.Auth.Contract {
 
     public assertCanAuth(props: Commands.Auth.AssertCanAuth.Props): Commands.Auth.AssertCanAuth.Result {
         if (props.status === AccountStatus.SUSPENDED) {
-            throw CommandException.forbidden(`${this.dictionaryPath}.ACCOUNT_SUSPENDED`);
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_SUSPENDED` });
         }
 
         if (props.status === AccountStatus.PENDING) {
-            throw CommandException.forbidden(`${this.dictionaryPath}.ACCOUNT_NOT_VERIFIED`);
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_VERIFIED` });
         }
     }
 }

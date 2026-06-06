@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import { EntityException } from "~common/exceptions";
 import { IdentifierType } from "~context/enums";
+import { Exception } from "~common/exceptions";
 
 import { Account } from "./account.entity";
 
@@ -48,23 +48,25 @@ export class Identifier {
         if (this.type === IdentifierType.EMAIL) {
             this.receiveNotifications = !this.receiveNotifications;
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.NOTIFICATIONS_EMAIL_ONLY`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NOTIFICATIONS_EMAIL_ONLY` });
         }
     }
 
     public togglePublicContact(): void {
         if (this.type === IdentifierType.OAUTH) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.PUBLIC_CONTACT_NOT_APPLICABLE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.PUBLIC_CONTACT_NOT_APPLICABLE` });
         } else if (this.isVerified) {
             this.receiveNotifications = !this.receiveNotifications;
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.PUBLIC_CONTACT_REQUIRES_VERIFICATION`);
+            throw Exception.invariantViolation({
+                messageKey: `${this.dictionaryPath}.PUBLIC_CONTACT_REQUIRES_VERIFICATION`,
+            });
         }
     }
 
     public verify(): void {
         if (this.isVerified) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_VERIFIED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
         } else {
             this.verifiedAt = new Date();
             this.isVerified = true;

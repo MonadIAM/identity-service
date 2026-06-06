@@ -2,7 +2,7 @@ import { Collection } from "@mikro-orm/postgresql";
 import { randomUUID } from "node:crypto";
 
 import { AccountSubject, AccountStatus } from "~context/enums";
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 import { PasswordHistory } from "./password-history.entity";
 import { SecondFactor } from "./second-factor.entity";
@@ -62,7 +62,7 @@ export class Account {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVATED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVATED` });
         }
     }
 
@@ -71,7 +71,7 @@ export class Account {
             this.status = AccountStatus.DEACTIVATED;
             this.updatedAt = new Date();
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.DEACTIVATION_NOT_ALLOWED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.DEACTIVATION_NOT_ALLOWED` });
         }
     }
 
@@ -80,13 +80,13 @@ export class Account {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.RESTORE_NOT_ALLOWED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.RESTORE_NOT_ALLOWED` });
         }
     }
 
     public suspend(): void {
         if (this.status === AccountStatus.SUSPENDED) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_SUSPENDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_SUSPENDED` });
         } else {
             this.status = AccountStatus.SUSPENDED;
             this.updatedAt = new Date();
@@ -98,7 +98,7 @@ export class Account {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.NOT_SUSPENDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NOT_SUSPENDED` });
         }
     }
 }

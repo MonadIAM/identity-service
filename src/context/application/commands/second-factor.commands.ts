@@ -6,7 +6,7 @@ import { ActionType, EntityType, SecondFactorType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorCommands implements Commands.SecondFactor.Contract {
@@ -54,7 +54,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 ]);
 
                 if (existingFactor) {
-                    throw CommandException.conflict(`${this.dictionaryPath}.TOTP_FACTOR_EXISTS`);
+                    throw Exception.conflict({ messageKey: `${this.dictionaryPath}.TOTP_FACTOR_EXISTS` });
                 }
 
                 return this.secondFactorService.create({
@@ -92,7 +92,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
 
         if (!isValid) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
         }
 
         const masterCodePlaintext = this.cryptoService.generateRecoveryCode();
@@ -152,7 +152,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         });
 
         if (!identifier?.account?.masterCode) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CODE`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CODE` });
         }
 
         const isValid = await this.hashingService.verify({
@@ -161,7 +161,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         });
 
         if (!isValid) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_CODE`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CODE` });
         }
 
         await this.transactionalService.run({

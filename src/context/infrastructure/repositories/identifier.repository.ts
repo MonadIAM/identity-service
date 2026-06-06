@@ -3,8 +3,8 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
 import { IdentifierAdapter } from "~context/infrastructure/adapters";
-import { RepositoryException } from "~common/exceptions";
 import { Identifier } from "~context/domain/entities";
+import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -48,7 +48,7 @@ export class IdentifierRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -68,7 +68,7 @@ export class IdentifierRepository
 
             return Number(remaining) === 0;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }

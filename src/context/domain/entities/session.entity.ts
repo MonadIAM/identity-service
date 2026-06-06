@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 import { Account } from "./account.entity";
 
@@ -42,7 +42,7 @@ export class Session {
 
     public isExpired(): void {
         if (this.expiresAt < new Date()) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.EXPIRED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EXPIRED` });
         }
     }
 }

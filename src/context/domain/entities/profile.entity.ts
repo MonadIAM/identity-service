@@ -1,4 +1,4 @@
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 import { Account } from "./account.entity";
 
@@ -38,9 +38,9 @@ export class Profile {
         if (affected) {
             this.updatedAt = now;
         } else if (Object.keys(patch).length) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.NO_CHANGES_DETECTED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.EMPTY_UPDATE_PATCH`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 }

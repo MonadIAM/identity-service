@@ -8,7 +8,7 @@ import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructu
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountCommands implements Commands.Account.Contract {
@@ -80,7 +80,7 @@ export class AccountCommands implements Commands.Account.Contract {
         });
 
         if (identifier.isVerified) {
-            throw CommandException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
         }
 
         await this.sendOTP({
@@ -99,7 +99,7 @@ export class AccountCommands implements Commands.Account.Contract {
         });
 
         if (!cachedAccount) {
-            throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
         }
 
         const codes = this.cryptoService.generateRecoveryCodes();

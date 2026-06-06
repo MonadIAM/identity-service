@@ -3,8 +3,8 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 
 import { RecoveryCodeAdapter } from "~context/infrastructure/adapters";
-import { RepositoryException } from "~common/exceptions";
 import { RecoveryCode } from "~context/domain/entities";
+import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -41,7 +41,7 @@ export class RecoveryCodeRepository
                 used: Number(used),
             };
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }

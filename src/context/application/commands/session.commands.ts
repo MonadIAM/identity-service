@@ -8,7 +8,7 @@ import { EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { SESSION_SERVICE } from "~context/domain/services";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionCommands implements Commands.Session.Contract {
@@ -36,7 +36,7 @@ export class SessionCommands implements Commands.Session.Contract {
 
     public async refresh(props: Commands.Session.Refresh.Props): Commands.Session.Refresh.Result {
         if (!props.input.refreshToken || !props.input.session) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_REFRESH_TOKEN`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
         }
 
         const session = await this.sessionRepository.findUnique({
@@ -45,7 +45,7 @@ export class SessionCommands implements Commands.Session.Contract {
         });
 
         if (!session) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.SESSION_NOT_FOUND`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.SESSION_NOT_FOUND` });
         }
 
         session.isExpired();
@@ -53,7 +53,7 @@ export class SessionCommands implements Commands.Session.Contract {
         const tokenHash = this.cryptoService.hashToken(props.input.refreshToken);
 
         if (tokenHash !== session.refreshTokenHash) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_REFRESH_TOKEN`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
         }
 
         const refreshToken = await this.jwtService.signRefreshToken({

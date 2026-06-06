@@ -1,10 +1,10 @@
 import { APP_FILTER } from "@nestjs/core";
 import { Module } from "@nestjs/common";
 
-import { GlobalExceptionFilter } from "~common/exceptions";
 import { IdentityModule } from "~context/identity.module";
 import { InfrastructureModule } from "~infrastructure";
 import { ObservabilityModule } from "~observability";
+import { ExceptionFilter } from "~common/exceptions";
 import { SystemModule } from "~common/system.module";
 
 @Module({
@@ -12,7 +12,7 @@ import { SystemModule } from "~common/system.module";
     providers: [
         {
             provide: APP_FILTER,
-            useClass: GlobalExceptionFilter,
+            useClass: ExceptionFilter,
         },
     ],
 })

@@ -6,7 +6,7 @@ import { IdentifierType, ActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { IDENTIFIER_SERVICE } from "~context/domain/services";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierCommands implements Commands.Identifier.Contract {
@@ -77,7 +77,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         });
 
         if (identifier.isVerified) {
-            throw CommandException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
         }
 
         await this.sendOTP({
@@ -96,7 +96,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         });
 
         if (!cachedIdentifier) {
-            throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
         }
 
         await this.transactionalService.run({
@@ -113,7 +113,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                 });
 
                 if (identifier.isVerified) {
-                    throw CommandException.conflict(`${this.dictionaryPath}.ALREADY_VERIFIED`);
+                    throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
                 }
 
                 this.identifierService.verify({ transaction, input: { identifier } });

@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { Identifier } from "~context/domain/entities";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierService implements Services.Identifier.Contract {
@@ -56,7 +56,7 @@ export class IdentifierService implements Services.Identifier.Contract {
         });
 
         if (isLastVerifiedIdentifier) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.CANNOT_REMOVE_LAST_VERIFIED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_REMOVE_LAST_VERIFIED` });
         } else {
             transaction.remove(input.identifier);
         }

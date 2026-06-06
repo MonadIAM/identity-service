@@ -3,7 +3,7 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
 import { AccountAdapter } from "~context/infrastructure/adapters";
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 import { Account } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
@@ -48,7 +48,7 @@ export class AccountRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -68,7 +68,7 @@ export class AccountRepository
 
             return rows.map((row) => entityManager.map(Account, row));
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -88,7 +88,7 @@ export class AccountRepository
 
             return rows.map((row) => entityManager.map(Account, row));
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }

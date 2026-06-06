@@ -7,8 +7,8 @@ import ms, { StringValue } from "ms";
 import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { CommandException } from "~common/exceptions";
 import { HASHING_SERVICE } from "~common/services";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract {
@@ -37,7 +37,7 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
         });
 
         if (!account.password) {
-            throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_PASSWORD_SET` });
         }
 
         const isValid = await this.hashingService.verify({
@@ -46,7 +46,7 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
         });
 
         if (!isValid) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_PASSWORD`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_PASSWORD` });
         }
 
         await this.transactionalService.emit({
@@ -75,14 +75,14 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
         });
 
         if (!factor) {
-            throw CommandException.badRequest(`${this.dictionaryPath}.NO_ACTIVE_2FA`);
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_ACTIVE_2FA` });
         }
 
         const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
         const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
 
         if (!isValid) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_TOTP_CODE`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
         }
 
         await this.transactionalService.emit({

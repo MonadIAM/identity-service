@@ -1,7 +1,7 @@
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
@@ -52,12 +52,12 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
             const data = await response.json();
 
             if (data.error) {
-                throw ServiceException.externalAuthFailed(`${this.dictionaryPath}.CODE_EXCHANGE_FAILED`);
+                throw Exception.externalAuthFailed({ messageKey: `${this.dictionaryPath}.CODE_EXCHANGE_FAILED` });
             } else {
                 return data;
             }
         } else {
-            throw ServiceException.externalServiceFailed(`${this.dictionaryPath}.CODE_EXCHANGE_FAILED`);
+            throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.CODE_EXCHANGE_FAILED` });
         }
     }
 
@@ -84,7 +84,7 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
         if (response.ok) {
             return await response.json();
         } else {
-            throw ServiceException.externalServiceFailed(`${this.dictionaryPath}.PROFILE_FETCH_FAILED`);
+            throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.PROFILE_FETCH_FAILED` });
         }
     }
 

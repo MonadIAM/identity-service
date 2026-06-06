@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import { EntityException } from "~common/exceptions";
 import { SecondFactorType } from "~context/enums";
+import { Exception } from "~common/exceptions";
 
 import { Account } from "./account.entity";
 
@@ -33,7 +33,7 @@ export class SecondFactor {
 
     public confirm(): void {
         if (this.confirmedAt) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CONFIRM_NOT_ALLOWED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CONFIRM_NOT_ALLOWED` });
         } else {
             this.confirmedAt = new Date();
         }

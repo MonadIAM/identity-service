@@ -7,7 +7,7 @@ import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SER
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthCommands implements Commands.OAuth.Contract {
@@ -52,7 +52,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const cached = await this.oauthStateCacheService.consume({ state: input.state });
 
         if (cached?.provider !== input.provider) {
-            throw CommandException.unauthorized(`${this.dictionaryPath}.INVALID_STATE`);
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_STATE` });
         }
 
         const oauthService = this.resolveProvider({ provider: input.provider });
@@ -250,7 +250,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             case "github":
                 return this.githubOAuthService;
             default:
-                throw CommandException.badRequest(`${this.dictionaryPath}.UNSUPPORTED_PROVIDER`);
+                throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_PROVIDER` });
         }
     }
 }

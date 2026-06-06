@@ -5,7 +5,7 @@ import { lastValueFrom } from "rxjs";
 
 import { ACCESS_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
-import { RetryableException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Controller()
 export class AccessCacheConsumer implements Consumers.AccessCache.Contract, OnModuleInit {
@@ -42,7 +42,7 @@ export class AccessCacheConsumer implements Consumers.AccessCache.Contract, OnMo
                 }
             }
         } catch (error) {
-            if (RetryableException.is(error)) {
+            if (Exception.isRetryable(error)) {
                 await lastValueFrom(
                     this.kafkaClient.emit(KafkaTopic.ACCESS_CACHE_RETRY, {
                         headers: {

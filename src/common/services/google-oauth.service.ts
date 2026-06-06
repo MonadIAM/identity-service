@@ -1,7 +1,7 @@
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GoogleOAuthService implements CommonServices.GoogleOAuth.Contract {
@@ -49,7 +49,7 @@ export class GoogleOAuthService implements CommonServices.GoogleOAuth.Contract {
         if (response.ok) {
             return await response.json();
         } else {
-            throw ServiceException.externalAuthFailed(`${this.dictionaryPath}.CODE_EXCHANGE_FAILED`);
+            throw Exception.externalAuthFailed({ messageKey: `${this.dictionaryPath}.CODE_EXCHANGE_FAILED` });
         }
     }
 
@@ -69,7 +69,7 @@ export class GoogleOAuthService implements CommonServices.GoogleOAuth.Contract {
                 email: data.email,
             };
         } else {
-            throw ServiceException.externalServiceFailed(`${this.dictionaryPath}.SERVICE_UNAVAILABLE`);
+            throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.SERVICE_UNAVAILABLE` });
         }
     }
 }

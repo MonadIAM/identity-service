@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorQueries implements Queries.SecondFactor.Contract {
@@ -33,7 +33,7 @@ export class SecondFactorQueries implements Queries.SecondFactor.Contract {
 
             return { id: factor.id, uri: totp.toString() };
         } else {
-            throw CommandException.notFound(`${this.dictionaryPath}.QR_UNAVAILABLE`);
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.QR_UNAVAILABLE` });
         }
     }
 }

@@ -6,7 +6,7 @@ import { IdentifierType, ActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { PASSWORD_SERVICE } from "~context/domain/services";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import {
     PASSWORD_HISTORY_REPOSITORY,
     IDENTIFIER_REPOSITORY,
@@ -61,7 +61,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                 });
 
                 if (!account.password) {
-                    throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                    throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_PASSWORD_SET` });
                 }
 
                 const isValid = await this.hashingService.verify({
@@ -70,7 +70,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                 });
 
                 if (!isValid) {
-                    throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_CURRENT_PASSWORD`);
+                    throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_CURRENT_PASSWORD` });
                 }
 
                 await this.checkPasswordHistory({ account: props.actor, password: props.input.newPassword });
@@ -126,7 +126,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         });
 
         if (!cachedAccount) {
-            throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE`);
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
         }
 
         return this.transactionalService.run({
@@ -146,7 +146,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                 });
 
                 if (!account.password) {
-                    throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                    throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_PASSWORD_SET` });
                 }
 
                 const newHash = await this.hashingService.hash({ value: props.input.password });
@@ -174,7 +174,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         const matched = await this.findMatchingRecoveryCode({ plaintext: props.input.code, codes: recoveryCodes });
 
         if (!matched) {
-            throw CommandException.badRequest(`${this.dictionaryPath}.INVALID_RECOVERY_CODE`);
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_RECOVERY_CODE` });
         }
 
         return this.transactionalService.run({
@@ -190,7 +190,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                 const newHash = await this.hashingService.hash({ value: props.input.password });
 
                 if (!identifier.account.password) {
-                    throw CommandException.badRequest(`${this.dictionaryPath}.NO_PASSWORD_SET`);
+                    throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_PASSWORD_SET` });
                 }
 
                 transaction.merge(identifier.account);
@@ -222,7 +222,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         );
 
         if (results.some((isReused) => isReused)) {
-            throw CommandException.conflict(`${this.dictionaryPath}.RECENTLY_USED`);
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.RECENTLY_USED` });
         }
     }
 

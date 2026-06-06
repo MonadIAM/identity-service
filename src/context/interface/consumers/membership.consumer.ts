@@ -5,8 +5,8 @@ import { lastValueFrom } from "rxjs";
 
 import { MEMBERSHIP_COMMANDS } from "~context/application/commands";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
-import { RetryableException } from "~common/exceptions";
 
 @Controller()
 export class MembershipConsumer implements Consumers.Membership.Contract, OnModuleInit {
@@ -47,7 +47,7 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
                     this.logger.warn(`Unknown membership action type: ${String(actionType)}`);
             }
         } catch (error) {
-            if (RetryableException.is(error)) {
+            if (Exception.isRetryable(error)) {
                 await lastValueFrom(
                     this.kafkaClient.emit(KafkaTopic.MEMBERSHIP_RETRY, {
                         headers: {

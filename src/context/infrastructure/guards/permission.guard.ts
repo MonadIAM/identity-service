@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 
 import { ACCESS_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
-import { GuardException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -37,11 +37,11 @@ export class PermissionGuard implements CanActivate {
         const account = request.session?.account;
 
         if (!account) {
-            throw GuardException.forbidden(`${this.dictionaryPath}.ACCOUNT_REQUIRED`);
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_REQUIRED` });
         }
 
         if (!realm) {
-            throw GuardException.forbidden(`${this.dictionaryPath}.REALM_REQUIRED`);
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_REQUIRED` });
         }
 
         const allowed = await this.accessCacheService.exists({
@@ -51,7 +51,7 @@ export class PermissionGuard implements CanActivate {
         });
 
         if (!allowed) {
-            throw GuardException.forbidden(`${this.dictionaryPath}.INSUFFICIENT_PERMISSIONS`);
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.INSUFFICIENT_PERMISSIONS` });
         }
 
         request.metadata = {
