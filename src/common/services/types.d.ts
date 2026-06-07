@@ -46,10 +46,10 @@ declare global {
 
         namespace JWT {
             interface Contract {
-                verifyIgnoringExpiry: (token: string) => Promise<JWTPayload>;
+                verifyAccess: (token: string) => Promise<JWTPayload>;
                 signRefreshToken: (payload: JWTPayload) => Promise<string>;
                 signAccessToken: (payload: JWTPayload) => Promise<string>;
-                verify: (token: string) => Promise<JWTPayload>;
+                verifyRefresh: (token: string) => Promise<JWTPayload>;
                 getJWKS: () => Promise<GetJWKS>;
             }
 

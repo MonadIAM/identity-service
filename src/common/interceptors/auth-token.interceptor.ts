@@ -35,9 +35,7 @@ export class AuthTokenInterceptor implements NestInterceptor {
         return next.handle().pipe(
             map((data) => {
                 if (isString(data?.accessToken) && isString(data?.refreshToken)) {
-                    const { accessToken, refreshToken, ...rest } = data;
-
-                    reply.header("Authorization", `Bearer ${accessToken}`);
+                    const { refreshToken, ...rest } = data;
 
                     reply.setCookie("refresh_token", refreshToken, {
                         maxAge: this.refreshTokenMaxAge,

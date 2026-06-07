@@ -17,7 +17,6 @@ declare namespace Commands {
                 context: Extract.Meta;
                 input: {
                     refreshToken?: string;
-                    session?: string;
                 };
             };
 

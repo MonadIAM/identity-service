@@ -34,7 +34,10 @@ export class ElevatedAccessGuard implements CanActivate {
                     throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ELEVATED_ACCESS_REQUIRED` });
                 }
             } else {
-                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.NOT_AUTHENTICATED` });
+                throw Exception.unauthorized({
+                    messageKey: `${this.dictionaryPath}.NOT_AUTHENTICATED`,
+                    headers: { "WWW-Authenticate": 'Bearer realm="system"' },
+                });
             }
         }
 

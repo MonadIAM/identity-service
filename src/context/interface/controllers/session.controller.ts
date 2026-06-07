@@ -8,7 +8,7 @@ import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
-import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
+import { RevokeBodyDTO, SessionDTO, ListDTO, RefreshResultDTO } from "../dto/session";
 
 const { SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE, SESSION_LOGOUT, SESSION_REVOKE } = PermissionCode;
 const {
@@ -58,15 +58,14 @@ export class SessionController {
     @Public()
     @HttpCode(OK)
     @Post("refresh")
-    @FormatResponse(SuccessMessageDTO)
+    @FormatResponse(RefreshResultDTO)
     @ApiOperation({ summary: "Refresh session tokens" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, BAD_REQUEST, CONFLICT)
     public refresh(
-        @Extract.Session() { session }: Extract.Session.Public,
         @Extract.Meta() context: Extract.Meta,
         @Tokens.Refresh() refreshToken?: string,
     ): Commands.Session.Refresh.Result {
-        return this.sessionCommands.refresh({ context, input: { refreshToken, session } });
+        return this.sessionCommands.refresh({ context, input: { refreshToken } });
     }
 
     @HttpCode(OK)

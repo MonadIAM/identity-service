@@ -2,6 +2,10 @@
   "identifier": {
     "CANNOT_REMOVE_LAST_VERIFIED": "Нельзя удалить последний подтвержденный идентификатор."
   },
+  "jwt": {
+    "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",
+    "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен."
+  },
   "oauth": {
     "google": {
       "CODE_EXCHANGE_FAILED": "Не удалось обменять код Google OAuth.",

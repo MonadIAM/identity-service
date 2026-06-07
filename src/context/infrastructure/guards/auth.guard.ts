@@ -22,57 +22,54 @@ export class AuthGuard implements CanActivate {
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()]);
 
+        if (isPublic) {
+            return true;
+        }
+
         const request = context.switchToHttp().getRequest<Req>();
         const token = this.extractToken(request);
 
         if (token) {
-            try {
-                const payload = await this.jwtService.verifyIgnoringExpiry(token);
+            const payload = await this.jwtService.verifyAccess(token);
 
-                request.session = {
-                    session: payload.sid as string,
-                    account: payload.sub,
-                };
-
-                if (isPublic || (payload.exp ?? 0) > Math.floor(Date.now() / 1e3)) {
-                    const isBlacklisted = await this.blacklistCacheService.exists({
-                        session: payload.sid as string,
-                    });
-
-                    if (isBlacklisted) {
-                        throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.SESSION_REVOKED` });
-                    }
-
-                    return true;
-                } else {
-                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOKEN` });
-                }
-            } catch (error) {
-                if (isPublic) {
-                    return true;
-                } else if (error instanceof Exception) {
-                    throw error;
-                } else {
-                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOKEN` });
-                }
+            const isBlacklisted = await this.blacklistCacheService.exists({ session: payload.sid as string });
+            if (isBlacklisted) {
+                throw Exception.unauthorized({
+                    messageKey: `${this.dictionaryPath}.SESSION_REVOKED`,
+                    headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+                });
             }
+
+            request.session = {
+                session: payload.sid as string,
+                account: payload.sub as string,
+            };
+
+            return true;
         }
 
-        if (isPublic) {
-            return true;
-        } else {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.TOKEN_MISSING` });
-        }
+        throw Exception.unauthorized({
+            messageKey: `${this.dictionaryPath}.TOKEN_MISSING`,
+            headers: { "WWW-Authenticate": 'Bearer realm="system"' },
+        });
     }
 
     private extractToken(request: Req): Nullable<string> {
         const header = request.headers.authorization;
-
         if (header) {
-            const [scheme, token] = header.split(" ");
-            return scheme === "Bearer" && token ? token : null;
+            const match = /^Bearer +([A-Za-z0-9\-._~+/]+=*)$/i.exec(header);
+            if (match) {
+                return match[1];
+            } else {
+                throw Exception.badRequest({
+                    messageKey: `${this.dictionaryPath}.MALFORMED_AUTHORIZATION`,
+                    headers: {
+                        "WWW-Authenticate": 'Bearer error="invalid_request"',
+                    },
+                });
+            }
+        } else {
+            return null;
         }
-
-        return null;
     }
 }

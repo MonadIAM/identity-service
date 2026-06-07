@@ -35,13 +35,15 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async refresh(props: Commands.Session.Refresh.Props): Commands.Session.Refresh.Result {
-        if (!props.input.refreshToken || !props.input.session) {
+        if (!props.input.refreshToken) {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
         }
 
+        const payload = await this.jwtService.verifyRefresh(props.input.refreshToken);
+
         const session = await this.sessionRepository.findUnique({
+            where: { id: payload.sid as string },
             options: { populate: ["account"] },
-            where: { id: props.input.session },
         });
 
         if (!session) {
@@ -66,7 +68,8 @@ export class SessionCommands implements Commands.Session.Contract {
             audit: {
                 entityType: EntityType.SESSION,
                 actionType: ActionType.REFRESH,
-                ...props,
+                context: props.context,
+                input: { session: session.id },
             },
             execute: (transaction) => {
                 transaction.merge(session);

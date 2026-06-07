@@ -2,6 +2,10 @@
   "identifier": {
     "CANNOT_REMOVE_LAST_VERIFIED": "The last verified identifier cannot be removed."
   },
+  "jwt": {
+    "INVALID_ACCESS_TOKEN": "The access token is invalid or expired.",
+    "INVALID_REFRESH_TOKEN": "The refresh token is invalid."
+  },
   "oauth": {
     "google": {
       "CODE_EXCHANGE_FAILED": "Google OAuth code exchange failed.",

@@ -4,10 +4,16 @@ import { ConfigService } from "@nestjs/config";
 import { randomUUID } from "node:crypto";
 import ms, { StringValue } from "ms";
 
+import { Exception } from "~common/exceptions";
+
 @Injectable({ scope: Scope.DEFAULT })
 export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
+    private readonly dictionaryPath = "services.jwt";
+
     declare private signingKey: CommonServices.JWT.SigningKey;
 
+    private readonly refreshAudience: string;
+    private readonly accessAudience: string;
     private readonly refreshTTL: number;
     private readonly accessTTL: number;
     private readonly issuer: string;
@@ -18,6 +24,8 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
         this.refreshTTL = ms(this.config.getOrThrow<StringValue>("JWT_REFRESH_TTL"));
         this.accessTTL = ms(this.config.getOrThrow<StringValue>("JWT_ACCESS_TTL"));
         this.issuer = this.config.getOrThrow<string>("JWT_ISSUER");
+        this.refreshAudience = `${this.issuer}:authn`;
+        this.accessAudience = `${this.issuer}:api`;
     }
 
     public async onModuleInit(): Promise<void> {
@@ -38,7 +46,9 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
             .setProtectedHeader({
                 kid: this.signingKey.kid,
                 alg: this.algorithm,
+                typ: "at+jwt",
             })
+            .setAudience(this.accessAudience)
             .setIssuer(this.issuer)
             .setSubject(payload.sub!)
             .setJti(payload.jti ?? randomUUID())
@@ -47,12 +57,33 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
             .sign(this.signingKey.privateKey);
     }
 
+    public async verifyAccess(token: string): Promise<JWTPayload> {
+        try {
+            const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
+                requiredClaims: ["sub", "sid", "exp", "iat", "jti"],
+                audience: this.accessAudience,
+                algorithms: [this.algorithm],
+                issuer: this.issuer,
+                typ: "at+jwt",
+            });
+
+            return payload;
+        } catch {
+            throw Exception.unauthorized({
+                messageKey: `${this.dictionaryPath}.INVALID_ACCESS_TOKEN`,
+                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+            });
+        }
+    }
+
     public signRefreshToken(payload: JWTPayload): Promise<string> {
         return new SignJWT(payload)
             .setProtectedHeader({
                 kid: this.signingKey.kid,
                 alg: this.algorithm,
+                typ: "rt+jwt",
             })
+            .setAudience(this.refreshAudience)
             .setIssuer(this.issuer)
             .setSubject(payload.sub!)
             .setJti(payload.jti ?? randomUUID())
@@ -61,19 +92,20 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
             .sign(this.signingKey.privateKey);
     }
 
-    public async verify(token: string): Promise<JWTPayload> {
-        const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
-            issuer: this.issuer,
-        });
-        return payload;
-    }
+    public async verifyRefresh(token: string): Promise<JWTPayload> {
+        try {
+            const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
+                requiredClaims: ["sub", "sid", "exp", "iat", "jti"],
+                audience: this.refreshAudience,
+                algorithms: [this.algorithm],
+                issuer: this.issuer,
+                typ: "rt+jwt",
+            });
 
-    public async verifyIgnoringExpiry(token: string): Promise<JWTPayload> {
-        const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
-            clockTolerance: Number.MAX_SAFE_INTEGER,
-            issuer: this.issuer,
-        });
-        return payload;
+            return payload;
+        } catch {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
+        }
     }
 
     public async getJWKS(): Promise<CommonServices.JWT.GetJWKS> {
