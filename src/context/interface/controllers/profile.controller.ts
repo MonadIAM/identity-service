@@ -50,7 +50,7 @@ export class ProfileController {
     )
     public update(
         @Body() input: UpdateBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Profile.Update.Result {
         return this.profileCommands.update({ context, actor, input });

@@ -41,7 +41,9 @@ export class SessionController {
     @RequirePermission(SESSION_READ_PERSONAL)
     @ApiOperation({ summary: "Get current session" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public getCurrent(@Extract.Session() { session, account }: Extract.Session.Auth): Queries.Session.GetCurrent.Result {
+    public getCurrent(
+        @Extract.Session() { session, account }: Extract.Session.Authenticated,
+    ): Queries.Session.GetCurrent.Result {
         return this.sessionQueries.getCurrent({ session, account });
     }
 
@@ -51,7 +53,7 @@ export class SessionController {
     @ApiOperation({ summary: "Get list of sessions" })
     @RequirePermission(SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE)
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
-    public getList(@Extract.Session() { account }: Extract.Session.Auth): Queries.Session.FindMany.Result {
+    public getList(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.Session.FindMany.Result {
         return this.sessionQueries.findMany({ account });
     }
 
@@ -75,7 +77,7 @@ export class SessionController {
     @ApiOperation({ summary: "Revoke current session" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, CONFLICT, FORBIDDEN)
     public logout(
-        @Extract.Session() { account: actor, session }: Extract.Session.Auth,
+        @Extract.Session() { account: actor, session }: Extract.Session.Authenticated,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Session.Revoke.Result {
         return this.sessionCommands.revoke({ context, actor, input: { sessions: [session] } });
@@ -97,7 +99,7 @@ export class SessionController {
     )
     public revoke(
         @Body() input: RevokeBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Session.Revoke.Result {
         return this.sessionCommands.revoke({ context, actor, input });
@@ -118,7 +120,7 @@ export class SessionController {
         CONFLICT,
     )
     public revokeAll(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Session.RevokeAll.Result {
         return this.sessionCommands.revokeAll({ context, actor });

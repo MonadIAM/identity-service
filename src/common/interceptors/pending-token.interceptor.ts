@@ -11,13 +11,13 @@ import { SKIP_INTERCEPTORS } from "~common/decorators";
 
 @Injectable()
 export class PendingTokenInterceptor implements NestInterceptor {
-    private readonly pendingAuthMaxAge: number;
+    private readonly pending2FAMaxAge: number;
 
     public constructor(
         private readonly configService: ConfigService,
         private readonly reflector: Reflector,
     ) {
-        this.pendingAuthMaxAge = ms(this.configService.getOrThrow<StringValue>("PENDING_TOKEN_EXPIRY_MINUTES")) / 1e3;
+        this.pending2FAMaxAge = ms(this.configService.getOrThrow<StringValue>("PENDING_TOKEN_EXPIRY_MINUTES")) / 1e3;
     }
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -38,8 +38,8 @@ export class PendingTokenInterceptor implements NestInterceptor {
                     const { pendingToken, ...rest } = data;
 
                     reply.setCookie("pending_token", pendingToken, {
-                        maxAge: this.pendingAuthMaxAge,
-                        path: "/auth/verify/second-factor",
+                        maxAge: this.pending2FAMaxAge,
+                        path: "/authn/verify/second-factor",
                         sameSite: "strict",
                         httpOnly: true,
                         secure: true,

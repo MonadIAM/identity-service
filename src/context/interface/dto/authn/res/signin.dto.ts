@@ -4,7 +4,7 @@ import { Expose } from "class-transformer";
 import { SuccessMessageDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-@ApiSchema({ name: "AuthSigninResult" })
+@ApiSchema({ name: "AuthnSigninResult" })
 export class SigninResultDTO extends SuccessMessageDTO {
     @Expose()
     @Validator.IsString()

@@ -118,7 +118,7 @@ declare namespace InfrastructureServices {
         }
     }
 
-    namespace PendingAuthCache {
+    namespace Pending2FACache {
         interface Contract {
             set: (props: Set) => Promise<void>;
             get: (props: Get) => Promise<Nullable<string>>;

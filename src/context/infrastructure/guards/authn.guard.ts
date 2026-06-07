@@ -8,8 +8,8 @@ import { IS_PUBLIC } from "~common/decorators";
 import { BLACKLIST_CACHE_SERVICE } from "../services";
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-    private readonly dictionaryPath = "guard.auth";
+export class AuthnGuard implements CanActivate {
+    private readonly dictionaryPath = "guard.authn";
 
     public constructor(
         private readonly reflector: Reflector,

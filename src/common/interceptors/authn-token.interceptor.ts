@@ -10,7 +10,7 @@ import { Observable } from "rxjs";
 import { SKIP_INTERCEPTORS } from "~common/decorators";
 
 @Injectable()
-export class AuthTokenInterceptor implements NestInterceptor {
+export class AuthnTokenInterceptor implements NestInterceptor {
     private readonly refreshTokenMaxAge: number;
 
     public constructor(

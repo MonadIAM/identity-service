@@ -3,15 +3,15 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-@ApiSchema({ name: "AuthSigninBody" })
-export class SigninBodyDTO {
+@ApiSchema({ name: "AuthnVerifySecondFactorBody" })
+export class VerifySecondFactorBodyDTO {
     @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    declare public identifier: string;
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    declare public id: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    declare public password: string;
+    declare public code: string;
 }

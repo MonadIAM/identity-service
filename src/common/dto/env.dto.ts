@@ -298,7 +298,7 @@ export class EnvironmentVariablesDTO {
     declare public CLEANUP_BATCH_ATTEMPTS: number;
 
     // ---------------------------------------------------------------------------
-    // Auth & Security
+    // Authn & Security
     // ---------------------------------------------------------------------------
 
     // Hashing (Argon2)

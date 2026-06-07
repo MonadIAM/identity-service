@@ -3,7 +3,7 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-@ApiSchema({ name: "AuthRequestOTPBody" })
+@ApiSchema({ name: "AuthnRequestOTPBody" })
 export class RequestOTPBodyDTO {
     @Expose()
     @Validator.IsString()

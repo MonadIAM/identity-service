@@ -117,10 +117,10 @@ export class Exception extends Error {
         });
     }
 
-    public static externalAuthFailed(props: Exception.StatusProps): Exception {
+    public static externalAuthnFailed(props: Exception.StatusProps): Exception {
         return new Exception({
             statusCode: HttpStatus.UNAUTHORIZED,
-            kind: ErrorKind.ExternalAuthFailed,
+            kind: ErrorKind.ExternalAuthnFailed,
             ...props,
         });
     }

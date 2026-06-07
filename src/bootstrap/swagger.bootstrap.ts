@@ -7,7 +7,7 @@ import { name, version } from "../../package.json";
 
 const SWAGGER_TAGS: Record<string, string> = {
     /* eslint-disable prettier/prettier */
-    Auth: "Primary authentication flows, including passwordless, password-based, and second-factor verification scenarios.",
+    Authn: "Primary authentication flows, including passwordless, password-based, and second-factor verification scenarios.",
     Account: "Account lifecycle management, including registration, verification, suspension, restoration, and self-service access.",
     Session: "Session lifecycle and token rotation, including refresh, revocation, logout, and active session visibility.",
     Identifier: "Management of account identifiers such as email or phone, including verification and visibility preferences.",

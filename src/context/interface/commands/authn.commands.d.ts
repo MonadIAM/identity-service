@@ -1,8 +1,8 @@
 declare namespace Commands {
-    namespace Auth {
+    namespace Authn {
         interface PrivateContract {
+            assertCanAuthenticate: (props: AssertCanAuthenticate.Props) => AssertCanAuthenticate.Result;
             createSession: (props: CreateSession.Props) => CreateSession.Result;
-            assertCanAuth: (props: AssertCanAuth.Props) => AssertCanAuth.Result;
         }
 
         interface ControllerContract {
@@ -71,7 +71,7 @@ declare namespace Commands {
             type Result = Promise<Services.Session.Create.Tokens>;
         }
 
-        namespace AssertCanAuth {
+        namespace AssertCanAuthenticate {
             type Props = Entities.Account;
             type Result = void;
         }

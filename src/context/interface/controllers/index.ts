@@ -9,7 +9,7 @@ import { ProfileController } from "./profile.controller";
 import { SessionController } from "./session.controller";
 import { AccountController } from "./account.controller";
 import { OAuthController } from "./oauth.controller";
-import { AuthController } from "./auth.controller";
+import { AuthnController } from "./authn.controller";
 import { JWKSController } from "./jwks.controller";
 
 export const CONTROLLERS = [
@@ -24,7 +24,7 @@ export const CONTROLLERS = [
     SessionController,
     AccountController,
     OAuthController,
-    AuthController,
+    AuthnController,
     JWKSController,
 ];
 
@@ -40,6 +40,6 @@ export {
     SessionController,
     AccountController,
     OAuthController,
-    AuthController,
+    AuthnController,
     JWKSController,
 };

@@ -9,7 +9,7 @@ declare namespace Extract {
             account?: string;
             session?: string;
         };
-        type Auth = {
+        type Authenticated = {
             account: string;
             session: string;
         };

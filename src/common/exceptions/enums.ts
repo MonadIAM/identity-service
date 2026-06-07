@@ -8,7 +8,7 @@ export enum ErrorKind {
     NotFound = "NotFound",
     InvariantViolation = "InvariantViolation",
     ExternalServiceFailed = "ExternalServiceFailed",
-    ExternalAuthFailed = "ExternalAuthFailed",
+    ExternalAuthnFailed = "ExternalAuthnFailed",
     Unprocessable = "Unprocessable",
     Unauthorized = "Unauthorized",
     BadRequest = "BadRequest",

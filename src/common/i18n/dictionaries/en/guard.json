@@ -4,7 +4,7 @@
     "REALM_REQUIRED": "A realm is required to check permissions.",
     "INSUFFICIENT_PERMISSIONS": "Insufficient permissions to perform this operation."
   },
-  "auth": {
+  "authn": {
     "SESSION_REVOKED": "The session has been revoked.",
     "MALFORMED_AUTHORIZATION": "The Authorization header is malformed.",
     "INVALID_TOKEN": "The authentication token is invalid or expired.",

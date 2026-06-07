@@ -10,7 +10,7 @@ import { AccountCommands } from "./account.commands";
 import { ProfileCommands } from "./profile.commands";
 import { SessionCommands } from "./session.commands";
 import { OAuthCommands } from "./oauth.commands";
-import { AuthCommands } from "./auth.commands";
+import { AuthnCommands } from "./authn.commands";
 import {
     ELEVATED_ACCESS_COMMANDS,
     RECOVERY_CODE_COMMANDS,
@@ -22,7 +22,7 @@ import {
     PROFILE_COMMANDS,
     SESSION_COMMANDS,
     OAUTH_COMMANDS,
-    AUTH_COMMANDS,
+    AUTHN_COMMANDS,
 } from "./tokens";
 
 export const COMMANDS: Provider[] = [
@@ -67,8 +67,8 @@ export const COMMANDS: Provider[] = [
         useClass: OAuthCommands,
     },
     {
-        provide: AUTH_COMMANDS,
-        useClass: AuthCommands,
+        provide: AUTHN_COMMANDS,
+        useClass: AuthnCommands,
     },
 ];
 
@@ -83,5 +83,5 @@ export {
     PROFILE_COMMANDS,
     SESSION_COMMANDS,
     OAUTH_COMMANDS,
-    AUTH_COMMANDS,
+    AUTHN_COMMANDS,
 };

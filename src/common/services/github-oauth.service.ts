@@ -12,7 +12,7 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
     private readonly clientId: string;
 
     private readonly tokenUrl = "https://github.com/login/oauth/access_token";
-    private readonly authUrl = "https://github.com/login/oauth/authorize";
+    private readonly authnUrl = "https://github.com/login/oauth/authorize";
     private readonly emailsUrl = "https://api.github.com/user/emails";
     private readonly userUrl = "https://api.github.com/user";
 
@@ -30,7 +30,7 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
             state,
         });
 
-        return `${this.authUrl}?${params.toString()}`;
+        return `${this.authnUrl}?${params.toString()}`;
     }
 
     public async exchangeCode(code: string): Promise<CommonServices.GitHubOAuth.TokenResponse> {
@@ -52,7 +52,7 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
             const data = await response.json();
 
             if (data.error) {
-                throw Exception.externalAuthFailed({ messageKey: `${this.dictionaryPath}.CODE_EXCHANGE_FAILED` });
+                throw Exception.externalAuthnFailed({ messageKey: `${this.dictionaryPath}.CODE_EXCHANGE_FAILED` });
             } else {
                 return data;
             }

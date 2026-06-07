@@ -4,7 +4,7 @@
     "REALM_REQUIRED": "Для проверки прав требуется область доступа.",
     "INSUFFICIENT_PERMISSIONS": "Недостаточно прав для выполнения операции."
   },
-  "auth": {
+  "authn": {
     "SESSION_REVOKED": "Сессия была отозвана.",
     "MALFORMED_AUTHORIZATION": "Заголовок Authorization имеет неверный формат.",
     "INVALID_TOKEN": "Токен аутентификации недействителен или просрочен.",

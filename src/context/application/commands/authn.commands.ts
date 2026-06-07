@@ -4,16 +4,16 @@ import { TOTP, Secret } from "otpauth";
 
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { IdentifierType, AccountStatus, EntityType, KafkaTopic, ActionType } from "~context/enums";
-import { OTP_CACHE_SERVICE, PENDING_AUTH_CACHE_SERVICE } from "~context/infrastructure/services";
+import { OTP_CACHE_SERVICE, PENDING_2FA_CACHE_SERVICE } from "~context/infrastructure/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class AuthCommands implements Commands.Auth.Contract {
-    private readonly dictionaryPath = "commands.auth";
-    private readonly resource = "Auth";
+export class AuthnCommands implements Commands.Authn.Contract {
+    private readonly dictionaryPath = "commands.authn";
+    private readonly resource = "Authn";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -28,8 +28,8 @@ export class AuthCommands implements Commands.Auth.Contract {
         private readonly sessionService: Services.Session.Contract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
-        @Inject(PENDING_AUTH_CACHE_SERVICE)
-        private readonly pendingAuthCacheService: InfrastructureServices.PendingAuthCache.Contract,
+        @Inject(PENDING_2FA_CACHE_SERVICE)
+        private readonly pending2FACacheService: InfrastructureServices.Pending2FACache.Contract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
@@ -40,7 +40,7 @@ export class AuthCommands implements Commands.Auth.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
-    public async signin(props: Commands.Auth.Signin.Props): Commands.Auth.Signin.Result {
+    public async signin(props: Commands.Authn.Signin.Props): Commands.Authn.Signin.Result {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.secondFactors", "account.password"] },
             where: { value: props.input.identifier },
@@ -59,13 +59,13 @@ export class AuthCommands implements Commands.Auth.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CREDENTIALS` });
         }
 
-        this.assertCanAuth(identifier.account);
+        this.assertCanAuthenticate(identifier.account);
 
         const hasActive2FA = identifier.account.secondFactors.getItems().some(({ confirmedAt }) => confirmedAt);
 
         if (hasActive2FA) {
             const pendingToken = this.cryptoService.generateToken();
-            await this.pendingAuthCacheService.set({
+            await this.pending2FACacheService.set({
                 account: identifier.account.id,
                 token: pendingToken,
             });
@@ -77,7 +77,7 @@ export class AuthCommands implements Commands.Auth.Contract {
         }
     }
 
-    public async requestOTP(props: Commands.Auth.RequestOTP.Props): Commands.Auth.RequestOTP.Result {
+    public async requestOTP(props: Commands.Authn.RequestOTP.Props): Commands.Authn.RequestOTP.Result {
         const identifier = await this.identifierRepository.findUnique({
             where: { value: props.input.identifier },
         });
@@ -110,7 +110,7 @@ export class AuthCommands implements Commands.Auth.Contract {
         return { message: `${this.dictionaryPath}.OTP_SENT` };
     }
 
-    public async verifyOTP(props: Commands.Auth.VerifyOTP.Props): Commands.Auth.VerifyOTP.Result {
+    public async verifyOTP(props: Commands.Authn.VerifyOTP.Props): Commands.Authn.VerifyOTP.Result {
         const cachedIdentifier = await this.otpCacheService.consume({
             key: props.input.code,
             purpose: "login",
@@ -125,23 +125,23 @@ export class AuthCommands implements Commands.Auth.Contract {
             where: { id: cachedIdentifier },
         });
 
-        this.assertCanAuth(identifier.account);
+        this.assertCanAuthenticate(identifier.account);
 
         const session = await this.createSession({ account: identifier.account, context: props.context });
         return { message: `${this.dictionaryPath}.VERIFIED`, ...session };
     }
 
     public async verifySecondFactor(
-        props: Commands.Auth.VerifySecondFactor.Props,
-    ): Commands.Auth.VerifySecondFactor.Result {
+        props: Commands.Authn.VerifySecondFactor.Props,
+    ): Commands.Authn.VerifySecondFactor.Result {
         if (!props.token) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.PENDING_TOKEN_MISSING` });
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.PENDING_2FA_TOKEN_MISSING` });
         }
 
-        const cachedAccount = await this.pendingAuthCacheService.get({ token: props.token });
+        const cachedAccount = await this.pending2FACacheService.get({ token: props.token });
 
         if (!cachedAccount) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.EXPIRED_PENDING_AUTH` });
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.EXPIRED_PENDING_2FA` });
         }
 
         const factor = await this.secondFactorRepository.findUnique({
@@ -164,13 +164,13 @@ export class AuthCommands implements Commands.Auth.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
         }
 
-        await this.pendingAuthCacheService.delete({ token: props.token });
+        await this.pending2FACacheService.delete({ token: props.token });
 
         const session = await this.createSession({ account: factor.account, context: props.context });
         return { message: `${this.dictionaryPath}.VERIFIED`, ...session };
     }
 
-    public async createSession(props: Commands.Auth.CreateSession.Props): Commands.Auth.CreateSession.Result {
+    public async createSession(props: Commands.Authn.CreateSession.Props): Commands.Authn.CreateSession.Result {
         const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
             resource: this.resource,
             audit: {
@@ -207,7 +207,9 @@ export class AuthCommands implements Commands.Auth.Contract {
         };
     }
 
-    public assertCanAuth(props: Commands.Auth.AssertCanAuth.Props): Commands.Auth.AssertCanAuth.Result {
+    public assertCanAuthenticate(
+        props: Commands.Authn.AssertCanAuthenticate.Props,
+    ): Commands.Authn.AssertCanAuthenticate.Result {
         if (props.status === AccountStatus.SUSPENDED) {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_SUSPENDED` });
         }

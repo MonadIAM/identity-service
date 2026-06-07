@@ -8,4 +8,4 @@ export const ACCOUNT_COMMANDS = Symbol("Commands.Account.Contract");
 export const PROFILE_COMMANDS = Symbol("Commands.Profile.Contract");
 export const SESSION_COMMANDS = Symbol("Commands.Session.Contract");
 export const OAUTH_COMMANDS = Symbol("Commands.OAuth.Contract");
-export const AUTH_COMMANDS = Symbol("Commands.Auth.Contract");
+export const AUTHN_COMMANDS = Symbol("Commands.Authn.Contract");

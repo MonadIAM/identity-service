@@ -13,7 +13,7 @@ declare namespace Commands {
             };
         };
 
-        type AuthResult = MessageResult &
+        type AuthnResult = MessageResult &
             Services.Session.Create.Tokens & {
                 recoveryCodes?: string[];
             };
@@ -54,7 +54,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<AuthResult>;
+            type Result = Promise<AuthnResult>;
         }
 
         namespace AuthenticateExisting {
@@ -65,7 +65,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<AuthResult>;
+            type Result = Promise<AuthnResult>;
         }
 
         namespace AttachToExisting {
@@ -76,7 +76,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<AuthResult>;
+            type Result = Promise<AuthnResult>;
         }
 
         namespace Provision {
@@ -85,7 +85,7 @@ declare namespace Commands {
                 input: Identity;
             };
 
-            type Result = Promise<AuthResult>;
+            type Result = Promise<AuthnResult>;
         }
 
         namespace ResolveProvider {

@@ -2,7 +2,7 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post }
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decorators";
-import { AUTH_COMMANDS } from "~context/application/commands";
+import { AUTHN_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 
@@ -12,7 +12,7 @@ import {
     VerifyOTPBodyDTO,
     SigninResultDTO,
     SigninBodyDTO,
-} from "../dto/auth";
+} from "../dto/authn";
 
 const {
     INTERNAL_SERVER_ERROR,
@@ -26,13 +26,13 @@ const {
     OK,
 } = HttpStatus;
 
-@ApiTags("Auth")
-@Controller("/auth")
+@ApiTags("Authn")
+@Controller("/authn")
 @UseInterceptors(MonitoringInterceptor)
-export class AuthController {
+export class AuthnController {
     public constructor(
-        @Inject(AUTH_COMMANDS)
-        private readonly authCommands: Commands.Auth.ControllerContract,
+        @Inject(AUTHN_COMMANDS)
+        private readonly authnCommands: Commands.Authn.ControllerContract,
     ) {}
 
     @Public()
@@ -49,8 +49,8 @@ export class AuthController {
         FORBIDDEN,
         CONFLICT,
     )
-    public signin(@Body() input: SigninBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Auth.Signin.Result {
-        return this.authCommands.signin({ context, input });
+    public signin(@Body() input: SigninBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Authn.Signin.Result {
+        return this.authnCommands.signin({ context, input });
     }
 
     @Public()
@@ -59,8 +59,8 @@ export class AuthController {
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Request passwordless OTP" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED)
-    public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Auth.RequestOTP.Result {
-        return this.authCommands.requestOTP({ input });
+    public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Authn.RequestOTP.Result {
+        return this.authnCommands.requestOTP({ input });
     }
 
     @Public()
@@ -81,8 +81,8 @@ export class AuthController {
     public verifyOTP(
         @Body() input: VerifyOTPBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-    ): Commands.Auth.VerifyOTP.Result {
-        return this.authCommands.verifyOTP({ context, input });
+    ): Commands.Authn.VerifyOTP.Result {
+        return this.authnCommands.verifyOTP({ context, input });
     }
 
     @Public()
@@ -102,7 +102,7 @@ export class AuthController {
         @Body() input: VerifySecondFactorBodyDTO,
         @Extract.Meta() context: Extract.Meta,
         @Tokens.Pending() token?: string,
-    ): Commands.Auth.VerifySecondFactor.Result {
-        return this.authCommands.verifySecondFactor({ token, context, input });
+    ): Commands.Authn.VerifySecondFactor.Result {
+        return this.authnCommands.verifySecondFactor({ token, context, input });
     }
 }

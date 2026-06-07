@@ -9,15 +9,15 @@
     "SUSPENDED": "Account successfully suspended.",
     "RESTORED": "Account successfully restored."
   },
-  "auth": {
+  "authn": {
     "INVALID_CREDENTIALS": "Invalid identifier or password.",
     "SIGNED_IN": "Signed in successfully.",
     "PASSWORDLESS_NOT_AVAILABLE": "Passwordless sign-in is not available for this identifier.",
     "OTP_SENT": "One-time password successfully sent.",
     "INVALID_OR_EXPIRED_CODE": "The one-time password is invalid or expired.",
     "VERIFIED": "Authentication successfully verified.",
-    "PENDING_TOKEN_MISSING": "A pending authentication token is required.",
-    "EXPIRED_PENDING_AUTH": "The pending authentication session is expired.",
+    "PENDING_2FA_TOKEN_MISSING": "A pending 2FA verification token is required.",
+    "EXPIRED_PENDING_2FA": "The pending 2FA verification session is expired.",
     "NO_ACTIVE_2FA": "No active second factor is available for this account.",
     "INVALID_TOTP_CODE": "The second-factor code is invalid.",
     "ACCOUNT_SUSPENDED": "The account is suspended.",

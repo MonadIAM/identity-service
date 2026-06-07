@@ -49,7 +49,7 @@ export class GoogleOAuthService implements CommonServices.GoogleOAuth.Contract {
         if (response.ok) {
             return await response.json();
         } else {
-            throw Exception.externalAuthFailed({ messageKey: `${this.dictionaryPath}.CODE_EXCHANGE_FAILED` });
+            throw Exception.externalAuthnFailed({ messageKey: `${this.dictionaryPath}.CODE_EXCHANGE_FAILED` });
         }
     }
 
