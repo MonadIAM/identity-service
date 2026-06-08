@@ -50,6 +50,10 @@ export class SessionCommands implements Commands.Session.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.SESSION_NOT_FOUND` });
         }
 
+        if (props.input.client !== session.client || payload.client_id !== session.client) {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
+        }
+
         session.isExpired();
 
         const tokenHash = this.cryptoService.hashToken(props.input.refreshToken);
@@ -59,6 +63,7 @@ export class SessionCommands implements Commands.Session.Contract {
         }
 
         const refreshToken = await this.jwtService.signRefreshToken({
+            client_id: session.client,
             sub: session.account.id,
             sid: session.id,
         });
@@ -78,6 +83,7 @@ export class SessionCommands implements Commands.Session.Contract {
         });
 
         const accessToken = await this.jwtService.signAccessToken({
+            client_id: session.client,
             sub: session.account.id,
             sid: session.id,
         });

@@ -1,5 +1,5 @@
-import { Expose, Type } from "class-transformer";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { Expose, Type } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
@@ -16,6 +16,11 @@ export class SessionDTO {
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public userAgent: string;
+
+    @Expose()
+    @Validator.IsString()
+    @ApiProperty({ required: true, type: String })
+    declare public client: string;
 
     @Expose()
     @ApiProperty({ required: false, type: String })

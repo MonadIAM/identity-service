@@ -20,6 +20,7 @@ declare global {
             THROTTLE_TTL: StringValue;
             HSTS_MAX_AGE: StringValue;
             BODY_LIMIT_BYTES: `${number}`;
+            ALLOWED_ORIGINS: string;
             ACCESS_CONTROL_GRPC_URL: string;
 
             // ---------------------------------------------------------------------------

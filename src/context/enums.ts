@@ -34,6 +34,15 @@ export enum SecondFactorType {
     TOTP = "totp",
 }
 
+export enum TokenGrantType {
+    PASSWORD = "password",
+    REFRESH_TOKEN = "refresh_token",
+}
+
+export enum Client {
+    WEB_DEV = "web-dev",
+}
+
 export enum ActionType {
     /* eslint-disable prettier/prettier */
     DEACTIVATE = "DEACTIVATE",

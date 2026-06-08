@@ -1,14 +1,14 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Get } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Delete, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { Extract, Tokens, Public, FormatResponse, Swagger, RequirePermission } from "~common/decorators";
+import { Extract, FormatResponse, Swagger, RequirePermission } from "~common/decorators";
 import { SESSION_COMMANDS } from "~context/application/commands";
 import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
-import { RevokeBodyDTO, SessionDTO, ListDTO, RefreshResultDTO } from "../dto/session";
+import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
 
 const { SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE, SESSION_LOGOUT, SESSION_REVOKE } = PermissionCode;
 const {
@@ -17,7 +17,6 @@ const {
     SERVICE_UNAVAILABLE,
     REQUEST_TIMEOUT,
     UNAUTHORIZED,
-    BAD_REQUEST,
     NOT_FOUND,
     FORBIDDEN,
     CONFLICT,
@@ -55,19 +54,6 @@ export class SessionController {
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
     public getList(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.Session.FindMany.Result {
         return this.sessionQueries.findMany({ account });
-    }
-
-    @Public()
-    @HttpCode(OK)
-    @Post("refresh")
-    @FormatResponse(RefreshResultDTO)
-    @ApiOperation({ summary: "Refresh session tokens" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, BAD_REQUEST, CONFLICT)
-    public refresh(
-        @Extract.Meta() context: Extract.Meta,
-        @Tokens.Refresh() refreshToken?: string,
-    ): Commands.Session.Refresh.Result {
-        return this.sessionCommands.refresh({ context, input: { refreshToken } });
     }
 
     @HttpCode(OK)

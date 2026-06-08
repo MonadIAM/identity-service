@@ -1,4 +1,4 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decorators";
@@ -8,10 +8,12 @@ import { SuccessMessageDTO } from "~common/dto";
 
 import {
     VerifySecondFactorBodyDTO,
+    ExternalTokenResultDTO,
+    InternalTokenResultDTO,
+    ExternalTokenBodyDTO,
+    InternalTokenBodyDTO,
     RequestOTPBodyDTO,
     VerifyOTPBodyDTO,
-    SigninResultDTO,
-    SigninBodyDTO,
 } from "../dto/authn";
 
 const {
@@ -37,9 +39,11 @@ export class AuthnController {
 
     @Public()
     @HttpCode(OK)
-    @Post("signin")
-    @FormatResponse(SigninResultDTO)
-    @ApiOperation({ summary: "Signin by password" })
+    @Post("token/internal")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
+    @ApiOperation({ summary: "Issue tokens using the internal contract" })
+    @FormatResponse(InternalTokenResultDTO)
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -49,8 +53,43 @@ export class AuthnController {
         FORBIDDEN,
         CONFLICT,
     )
-    public signin(@Body() input: SigninBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Authn.Signin.Result {
-        return this.authnCommands.signin({ context, input });
+    public tokenInternal(
+        @Body() input: InternalTokenBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
+        @Tokens.Refresh() refreshToken?: string,
+    ): Commands.Authn.Token.Result {
+        return this.authnCommands.token({
+            context,
+            input: { ...input, refreshToken: input.refreshToken ?? refreshToken },
+        });
+    }
+
+    @Public()
+    @HttpCode(OK)
+    @Post("token/external")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
+    @Header("Content-Type", "application/json")
+    @ApiOperation({ summary: "Issue tokens using the external RFC 6749 contract" })
+    @FormatResponse(ExternalTokenResultDTO)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public tokenExternal(
+        @Body() input: ExternalTokenBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
+        @Tokens.Refresh() refreshToken?: string,
+    ): Commands.Authn.Token.Result {
+        return this.authnCommands.token({
+            context,
+            input: { ...input, refreshToken: input.refreshToken ?? refreshToken },
+        });
     }
 
     @Public()

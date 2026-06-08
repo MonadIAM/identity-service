@@ -118,6 +118,7 @@ declare global {
                 account: AccountEntity;
                 userAgent: string;
                 expiresAt: Date;
+                client: string;
                 ip: string;
             };
         }

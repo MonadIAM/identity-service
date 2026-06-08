@@ -17,9 +17,10 @@ export const SessionSchema = new EntitySchema<Session>({
             deleteRule: "cascade",
         },
 
-        refreshTokenHash: { type: "text" },
         ip: { type: "text", columnType: "inet" },
+        refreshTokenHash: { type: "text" },
         userAgent: { type: "text" },
+        client: { type: "text" },
 
         expiresAt: { type: "timestamptz", length: 3 },
         createdAt: { type: "timestamptz", length: 3 },

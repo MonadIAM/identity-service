@@ -47,6 +47,9 @@ export class EnvironmentVariablesDTO {
     declare public BODY_LIMIT_BYTES: number;
 
     @Validator.IsString()
+    declare public ALLOWED_ORIGINS: string;
+
+    @Validator.IsString()
     declare public ACCESS_CONTROL_GRPC_URL: string;
 
     // ---------------------------------------------------------------------------

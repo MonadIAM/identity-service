@@ -586,6 +586,89 @@
     },
     {
       "columns": {
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "invited_by": {
+          "name": "invited_by",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "membership",
+      "schema": "identity",
+      "indexes": [
+        {
+          "keyName": "membership_pkey",
+          "columnNames": [
+            "account_id",
+            "realm_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "membership_account_id_foreign": {
+          "constraintName": "membership_account_id_foreign",
+          "columnNames": [
+            "account_id"
+          ],
+          "localTableName": "identity.membership",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "identity.account",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
         "id": {
           "name": "id",
           "type": "uuid",
@@ -1175,15 +1258,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "refresh_token_hash": {
-          "name": "refresh_token_hash",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "text"
-        },
         "ip": {
           "name": "ip",
           "type": "inet",
@@ -1193,8 +1267,26 @@
           "nullable": false,
           "mappedType": "unknown"
         },
+        "refresh_token_hash": {
+          "name": "refresh_token_hash",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
         "user_agent": {
           "name": "user_agent",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "client": {
+          "name": "client",
           "type": "text",
           "unsigned": false,
           "autoincrement": false,

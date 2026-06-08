@@ -39,7 +39,7 @@ export class AuthnTokenInterceptor implements NestInterceptor {
 
                     reply.setCookie("refresh_token", refreshToken, {
                         maxAge: this.refreshTokenMaxAge,
-                        path: "/session/refresh",
+                        path: "/authn/token",
                         sameSite: "strict",
                         httpOnly: true,
                         secure: true,

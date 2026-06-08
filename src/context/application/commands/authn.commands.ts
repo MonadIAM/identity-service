@@ -1,23 +1,31 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { BlacklistTopicAction } from "@liam/contracts";
+import { ConfigService } from "@nestjs/config";
+import ms, { StringValue } from "ms";
 import { TOTP, Secret } from "otpauth";
 
+import { IdentifierType, AccountStatus, TokenGrantType, EntityType, KafkaTopic, ActionType, Client } from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
-import { IdentifierType, AccountStatus, EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { OTP_CACHE_SERVICE, PENDING_2FA_CACHE_SERVICE } from "~context/infrastructure/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
+import { SESSION_COMMANDS } from "~context/application/commands/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthnCommands implements Commands.Authn.Contract {
     private readonly dictionaryPath = "commands.authn";
+    private readonly client = Client.WEB_DEV;
+    private readonly accessTokenTTL: number;
     private readonly resource = "Authn";
 
     public constructor(
+        private readonly configService: ConfigService,
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
+        @Inject(SESSION_COMMANDS)
+        private readonly sessionCommands: Commands.Session.PrivateContract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(SECOND_FACTOR_REPOSITORY)
@@ -38,9 +46,41 @@ export class AuthnCommands implements Commands.Authn.Contract {
         private readonly emailService: CommonServices.Email.Contract,
         @Inject(SMS_SERVICE)
         private readonly smsService: CommonServices.SMS.Contract,
-    ) {}
+    ) {
+        this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
+    }
 
-    public async signin(props: Commands.Authn.Signin.Props): Commands.Authn.Signin.Result {
+    public async token(props: Commands.Authn.Token.Props): Commands.Authn.Token.Result {
+        if (props.input.client !== this.client) {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CLIENT` });
+        }
+
+        let result: Awaited<Commands.Authn.Password.Result | Commands.Authn.Refresh.Result>;
+
+        if (props.input.grantType === TokenGrantType.PASSWORD) {
+            result = await this.password(props);
+        } else if (props.input.grantType === TokenGrantType.REFRESH_TOKEN) {
+            result = await this.refresh(props);
+        } else {
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_GRANT_TYPE` });
+        }
+
+        if ("accessToken" in result) {
+            return {
+                ...result,
+                tokenType: "Bearer",
+                expiresIn: this.accessTokenTTL,
+            };
+        } else {
+            return result;
+        }
+    }
+
+    public async password(props: Commands.Authn.Password.Props): Commands.Authn.Password.Result {
+        if (!props.input.identifier || !props.input.password) {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CREDENTIALS` });
+        }
+
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.secondFactors", "account.password"] },
             where: { value: props.input.identifier },
@@ -75,6 +115,16 @@ export class AuthnCommands implements Commands.Authn.Contract {
             const session = await this.createSession({ account: identifier.account, context: props.context });
             return { message: `${this.dictionaryPath}.SIGNED_IN`, ...session };
         }
+    }
+
+    public refresh(props: Commands.Authn.Refresh.Props): Commands.Authn.Refresh.Result {
+        return this.sessionCommands.refresh({
+            context: props.context,
+            input: {
+                refreshToken: props.input.refreshToken,
+                client: props.input.client,
+            },
+        });
     }
 
     public async requestOTP(props: Commands.Authn.RequestOTP.Props): Commands.Authn.RequestOTP.Result {

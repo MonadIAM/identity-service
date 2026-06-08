@@ -21,7 +21,9 @@
     "NO_ACTIVE_2FA": "No active second factor is available for this account.",
     "INVALID_TOTP_CODE": "The second-factor code is invalid.",
     "ACCOUNT_SUSPENDED": "The account is suspended.",
-    "ACCOUNT_NOT_VERIFIED": "The account is not verified."
+    "ACCOUNT_NOT_VERIFIED": "The account is not verified.",
+    "UNSUPPORTED_GRANT_TYPE": "The requested grant type is not supported.",
+    "INVALID_CLIENT": "The client is invalid."
   },
   "elevated-access": {
     "NO_PASSWORD_SET": "No password is set for this account.",

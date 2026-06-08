@@ -2,20 +2,21 @@ declare namespace Commands {
     namespace Session {
         interface ControllerContract {
             revokeAll: (props: RevokeAll.Props) => RevokeAll.Result;
-            refresh: (props: Refresh.Props) => Refresh.Result;
             revoke: (props: Revoke.Props) => Revoke.Result;
         }
 
         interface PrivateContract {
             outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+            refresh: (props: Refresh.Props) => Refresh.Result;
         }
 
-        interface Contract extends ControllerContract {}
+        interface Contract extends PrivateContract, ControllerContract {}
 
         namespace Refresh {
             type Props = {
                 context: Extract.Meta;
                 input: {
+                    client: string;
                     refreshToken?: string;
                 };
             };

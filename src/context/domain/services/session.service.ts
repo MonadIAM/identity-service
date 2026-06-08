@@ -5,12 +5,14 @@ import ms, { StringValue } from "ms";
 import { SESSION_REPOSITORY } from "~context/infrastructure/repositories";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { Session } from "~context/domain/entities";
+import { Client } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionService implements Services.Session.Contract {
     private readonly sessionExpiryDays: number;
     private readonly maxActiveSessions: number;
     private readonly accessTokenMaxTTL: number;
+    private readonly client = Client.WEB_DEV;
 
     public constructor(
         private readonly configService: ConfigService,
@@ -53,10 +55,12 @@ export class SessionService implements Services.Session.Contract {
             expiresAt: this.resolveExpiry(),
             userAgent: input.userAgent,
             account: input.account,
+            client: this.client,
             ip: input.ip,
         });
 
         const refreshToken = await this.jwtService.signRefreshToken({
+            client_id: session.client,
             sub: input.account.id,
             sid: session.id,
         });
@@ -66,6 +70,7 @@ export class SessionService implements Services.Session.Contract {
         transaction.persist(session);
 
         const accessToken = await this.jwtService.signAccessToken({
+            client_id: session.client,
             sub: input.account.id,
             sid: session.id,
         });

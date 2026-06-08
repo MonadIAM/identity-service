@@ -60,7 +60,7 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
     public async verifyAccess(token: string): Promise<JWTPayload> {
         try {
             const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
-                requiredClaims: ["sub", "sid", "exp", "iat", "jti"],
+                requiredClaims: ["client_id", "sub", "sid", "exp", "iat", "jti"],
                 audience: this.accessAudience,
                 algorithms: [this.algorithm],
                 issuer: this.issuer,
@@ -95,7 +95,7 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
     public async verifyRefresh(token: string): Promise<JWTPayload> {
         try {
             const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
-                requiredClaims: ["sub", "sid", "exp", "iat", "jti"],
+                requiredClaims: ["client_id", "sub", "sid", "exp", "iat", "jti"],
                 audience: this.refreshAudience,
                 algorithms: [this.algorithm],
                 issuer: this.issuer,
