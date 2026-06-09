@@ -9,7 +9,6 @@ const SWAGGER_TAGS: Record<string, string> = {
     /* eslint-disable prettier/prettier */
     Authn: "Primary authentication flows, including passwordless, password-based, and second-factor verification scenarios.",
     Account: "Account lifecycle management, including registration, verification, suspension, restoration, and self-service access.",
-    Session: "Session lifecycle and token rotation, including refresh, revocation, logout, and active session visibility.",
     Identifier: "Management of account identifiers such as email or phone, including verification and visibility preferences.",
     Profile: "Self-service profile updates for account-owned personal and presentation data.",
     Password: "Password credential management, including rotation and recovery through OTP or recovery code flows.",

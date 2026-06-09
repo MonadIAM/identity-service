@@ -6,7 +6,6 @@ import { ChangeLogController } from "./change-log.controller";
 import { AuditLogController } from "./audit-log.controller";
 import { PasswordController } from "./password.controller";
 import { ProfileController } from "./profile.controller";
-import { SessionController } from "./session.controller";
 import { AccountController } from "./account.controller";
 import { OAuthController } from "./oauth.controller";
 import { AuthnController } from "./authn.controller";
@@ -21,7 +20,6 @@ export const CONTROLLERS = [
     AuditLogController,
     PasswordController,
     ProfileController,
-    SessionController,
     AccountController,
     OAuthController,
     AuthnController,
@@ -37,7 +35,6 @@ export {
     AuditLogController,
     PasswordController,
     ProfileController,
-    SessionController,
     AccountController,
     OAuthController,
     AuthnController,
