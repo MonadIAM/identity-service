@@ -101,6 +101,25 @@ declare global {
             DEBEZIUM_INIT_IMAGE: string;
 
             // ---------------------------------------------------------------------------
+            // Vault
+            // ---------------------------------------------------------------------------
+
+            VAULT_IMAGE: string;
+            VAULT_URL: string;
+            VAULT_PORT: `${number}`;
+            VAULT_PUBLISHED_PORT: `${number}`;
+            VAULT_ROOT_TOKEN: string;
+            VAULT_TOKEN: string;
+            VAULT_TRANSIT_MOUNT: string;
+            VAULT_TRANSIT_ACCESS_KEY: string;
+            VAULT_TRANSIT_REFRESH_KEY: string;
+            VAULT_TRANSIT_TOTP_KEY: string;
+            VAULT_KV_MOUNT: string;
+            VAULT_KV_OAUTH_PATH: string;
+            VAULT_KV_RUNTIME_PATH: string;
+            VAULT_KV_REPLICATION_PATH: string;
+
+            // ---------------------------------------------------------------------------
             // Cache TTLs
             // ---------------------------------------------------------------------------
 

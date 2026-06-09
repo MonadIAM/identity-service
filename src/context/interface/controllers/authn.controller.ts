@@ -88,7 +88,7 @@ export class AuthnController {
     ): Commands.Authn.Token.Result {
         return this.authnCommands.token({
             context,
-            input: { ...input, refreshToken: input.refreshToken ?? refreshToken },
+            input: { ...input, refreshToken },
         });
     }
 

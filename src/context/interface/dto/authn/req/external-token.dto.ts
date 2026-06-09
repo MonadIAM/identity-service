@@ -28,10 +28,4 @@ export class ExternalTokenBodyDTO {
     @Validator.IsString()
     @ApiPropertyOptional({ type: String })
     declare public password?: string;
-
-    @Expose({ name: "refresh_token" })
-    @Validator.IsOptional()
-    @Validator.IsString()
-    @ApiPropertyOptional({ type: String, name: "refresh_token" })
-    declare public refreshToken?: string;
 }

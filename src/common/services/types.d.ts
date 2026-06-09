@@ -2,6 +2,28 @@ import { Options as ArgonOptions } from "argon2";
 import { JWTPayload, JWK } from "jose";
 
 declare global {
+    namespace Vault {
+        type Response<T> = {
+            data: T;
+        };
+
+        type Key = {
+            creation_time: string;
+            public_key: string;
+        };
+
+        type GetKey = {
+            keys: Record<string, Key>;
+            latest_version: number;
+            type: string;
+        };
+
+        type Sign = {
+            key_version: number;
+            signature: string;
+        };
+    }
+
     namespace CommonServices {
         namespace Hashing {
             type Options = ArgonOptions & { raw?: false };
@@ -42,6 +64,44 @@ declare global {
                 hashToken: (token: string) => string;
                 generateRecoveryCode: () => string;
             }
+        }
+
+        namespace VaultTransit {
+            interface Contract {
+                getKey: (props: GetKey.Props) => GetKey.Result;
+                sign: (props: Sign.Props) => Sign.Result;
+            }
+
+            namespace GetKey {
+                type Props = {
+                    name: string;
+                };
+
+                type Result = Promise<{
+                    versions: KeyVersion[];
+                    latestVersion: number;
+                    name: string;
+                    type: string;
+                }>;
+            }
+
+            namespace Sign {
+                type Props = {
+                    input: string;
+                    name: string;
+                };
+
+                type Result = Promise<{
+                    signature: string;
+                    version: number;
+                }>;
+            }
+
+            type KeyVersion = {
+                publicKey: string;
+                createdAt: string;
+                version: number;
+            };
         }
 
         namespace JWT {

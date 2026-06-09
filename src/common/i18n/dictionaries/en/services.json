@@ -6,6 +6,10 @@
     "INVALID_ACCESS_TOKEN": "The access token is invalid or expired.",
     "INVALID_REFRESH_TOKEN": "The refresh token is invalid."
   },
+  "vault": {
+    "REQUEST_FAILED": "Vault Transit request failed.",
+    "INVALID_SIGNATURE": "Vault Transit returned an invalid signature."
+  },
   "oauth": {
     "google": {
       "CODE_EXCHANGE_FAILED": "Google OAuth code exchange failed.",

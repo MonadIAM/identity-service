@@ -1,5 +1,6 @@
 import { Provider } from "@nestjs/common";
 
+import { VaultTransitService } from "./vault-transit.service";
 import { GoogleOAuthService } from "./google-oauth.service";
 import { GitHubOAuthService } from "./github-oauth.service";
 import { HashingService } from "./hashing.service";
@@ -10,6 +11,7 @@ import { JWTService } from "./jwt.service";
 import {
     GOOGLE_OAUTH_SERVICE,
     GITHUB_OAUTH_SERVICE,
+    VAULT_TRANSIT_SERVICE,
     HASHING_SERVICE,
     CRYPTO_SERVICE,
     EMAIL_SERVICE,
@@ -25,6 +27,10 @@ export const COMMON_SERVICES: Provider[] = [
     {
         provide: GITHUB_OAUTH_SERVICE,
         useClass: GitHubOAuthService,
+    },
+    {
+        provide: VAULT_TRANSIT_SERVICE,
+        useClass: VaultTransitService,
     },
     {
         provide: HASHING_SERVICE,
@@ -51,6 +57,7 @@ export const COMMON_SERVICES: Provider[] = [
 export {
     GOOGLE_OAUTH_SERVICE,
     GITHUB_OAUTH_SERVICE,
+    VAULT_TRANSIT_SERVICE,
     HASHING_SERVICE,
     CRYPTO_SERVICE,
     EMAIL_SERVICE,

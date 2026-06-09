@@ -6,6 +6,10 @@
     "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",
     "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен."
   },
+  "vault": {
+    "REQUEST_FAILED": "Запрос к Vault Transit завершился ошибкой.",
+    "INVALID_SIGNATURE": "Vault Transit вернул недействительную подпись."
+  },
   "oauth": {
     "google": {
       "CODE_EXCHANGE_FAILED": "Не удалось обменять код Google OAuth.",

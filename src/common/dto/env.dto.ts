@@ -216,6 +216,54 @@ export class EnvironmentVariablesDTO {
     declare public DEBEZIUM_INIT_IMAGE: string;
 
     // ---------------------------------------------------------------------------
+    // Vault
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    declare public VAULT_IMAGE: string;
+
+    @Validator.IsString()
+    declare public VAULT_URL: string;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public VAULT_PORT: number;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public VAULT_PUBLISHED_PORT: number;
+
+    @Validator.IsString()
+    declare public VAULT_ROOT_TOKEN: string;
+
+    @Validator.IsString()
+    declare public VAULT_TOKEN: string;
+
+    @Validator.IsString()
+    declare public VAULT_TRANSIT_MOUNT: string;
+
+    @Validator.IsString()
+    declare public VAULT_TRANSIT_ACCESS_KEY: string;
+
+    @Validator.IsString()
+    declare public VAULT_TRANSIT_REFRESH_KEY: string;
+
+    @Validator.IsString()
+    declare public VAULT_TRANSIT_TOTP_KEY: string;
+
+    @Validator.IsString()
+    declare public VAULT_KV_MOUNT: string;
+
+    @Validator.IsString()
+    declare public VAULT_KV_OAUTH_PATH: string;
+
+    @Validator.IsString()
+    declare public VAULT_KV_RUNTIME_PATH: string;
+
+    @Validator.IsString()
+    declare public VAULT_KV_REPLICATION_PATH: string;
+
+    // ---------------------------------------------------------------------------
     // Cache TTLs
     // ---------------------------------------------------------------------------
 
