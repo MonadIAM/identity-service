@@ -38,11 +38,12 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
             body: JSON.stringify({
                 input: Buffer.from(props.input).toString("base64"),
                 marshaling_algorithm: "jws",
+                key_version: props.version,
             }),
         });
 
         const match = /^vault:v(\d+):(.+)$/.exec(data.signature);
-        if (!match || Number(match[1]) !== data.key_version) {
+        if (!match || Number(match[1]) !== data.key_version || data.key_version !== props.version) {
             throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.INVALID_SIGNATURE` });
         } else {
             return {

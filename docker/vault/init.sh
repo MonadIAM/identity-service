@@ -13,6 +13,12 @@ vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_ACCESS_KEY" >/dev/null 2>&1
 vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY" >/dev/null 2>&1 ||
     vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY" type=ecdsa-p256
 
+vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_ACCESS_KEY/config" \
+    auto_rotate_period="$VAULT_TRANSIT_ACCESS_ROTATION_PERIOD"
+
+vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY/config" \
+    auto_rotate_period="$VAULT_TRANSIT_REFRESH_ROTATION_PERIOD"
+
 vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY" >/dev/null 2>&1 ||
     vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY" type=aes256-gcm96
 

@@ -1,16 +1,19 @@
-import { SignJWT, jwtVerify, importPKCS8, importSPKI, exportJWK, JWTPayload, calculateJwkThumbprint } from "jose";
-import { Injectable, OnModuleInit, Scope } from "@nestjs/common";
+import { base64url, createLocalJWKSet, exportJWK, importSPKI, jwtVerify, JWTPayload } from "jose";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { randomUUID } from "node:crypto";
 import ms, { StringValue } from "ms";
 
 import { Exception } from "~common/exceptions";
 
+import { VAULT_TRANSIT_SERVICE } from "./tokens";
+
 @Injectable({ scope: Scope.DEFAULT })
-export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
+export class JWTService implements CommonServices.JWT.Contract {
     private readonly dictionaryPath = "services.jwt";
 
-    declare private signingKey: CommonServices.JWT.SigningKey;
+    private readonly refreshKey: string;
+    private readonly accessKey: string;
 
     private readonly refreshAudience: string;
     private readonly accessAudience: string;
@@ -20,7 +23,13 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
 
     private readonly algorithm = "ES256";
 
-    public constructor(private readonly config: ConfigService) {
+    public constructor(
+        @Inject(VAULT_TRANSIT_SERVICE)
+        private readonly vaultTransitService: CommonServices.VaultTransit.Contract,
+        private readonly config: ConfigService,
+    ) {
+        this.refreshKey = this.config.getOrThrow<string>("VAULT_TRANSIT_REFRESH_KEY");
+        this.accessKey = this.config.getOrThrow<string>("VAULT_TRANSIT_ACCESS_KEY");
         this.refreshTTL = ms(this.config.getOrThrow<StringValue>("JWT_REFRESH_TTL"));
         this.accessTTL = ms(this.config.getOrThrow<StringValue>("JWT_ACCESS_TTL"));
         this.issuer = this.config.getOrThrow<string>("JWT_ISSUER");
@@ -28,38 +37,18 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
         this.accessAudience = `${this.issuer}:api`;
     }
 
-    public async onModuleInit(): Promise<void> {
-        const rawPrivate = this.config.getOrThrow<string>("JWT_PRIVATE_KEY").replace(/\\n/g, "\n");
-        const rawPublic = this.config.getOrThrow<string>("JWT_PUBLIC_KEY").replace(/\\n/g, "\n");
-
-        const publicKey = await importSPKI(rawPublic, this.algorithm);
-
-        this.signingKey = {
-            kid: await calculateJwkThumbprint(await exportJWK(publicKey), "sha256"),
-            privateKey: await importPKCS8(rawPrivate, this.algorithm),
-            publicKey,
-        };
-    }
-
     public signAccessToken(payload: JWTPayload): Promise<string> {
-        return new SignJWT(payload)
-            .setProtectedHeader({
-                kid: this.signingKey.kid,
-                alg: this.algorithm,
-                typ: "at+jwt",
-            })
-            .setAudience(this.accessAudience)
-            .setIssuer(this.issuer)
-            .setSubject(payload.sub!)
-            .setJti(payload.jti ?? randomUUID())
-            .setIssuedAt()
-            .setExpirationTime(this.accessTTL)
-            .sign(this.signingKey.privateKey);
+        return this.sign(payload, {
+            audience: this.accessAudience,
+            key: this.accessKey,
+            ttl: this.accessTTL,
+            type: "at+jwt",
+        });
     }
 
     public async verifyAccess(token: string): Promise<JWTPayload> {
         try {
-            const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
+            const { payload } = await jwtVerify(token, createLocalJWKSet(await this.getJWKS(this.accessKey)), {
                 requiredClaims: ["client_id", "sub", "sid", "exp", "iat", "jti"],
                 audience: this.accessAudience,
                 algorithms: [this.algorithm],
@@ -77,24 +66,17 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
     }
 
     public signRefreshToken(payload: JWTPayload): Promise<string> {
-        return new SignJWT(payload)
-            .setProtectedHeader({
-                kid: this.signingKey.kid,
-                alg: this.algorithm,
-                typ: "rt+jwt",
-            })
-            .setAudience(this.refreshAudience)
-            .setIssuer(this.issuer)
-            .setSubject(payload.sub!)
-            .setJti(payload.jti ?? randomUUID())
-            .setIssuedAt()
-            .setExpirationTime(this.refreshTTL)
-            .sign(this.signingKey.privateKey);
+        return this.sign(payload, {
+            audience: this.refreshAudience,
+            key: this.refreshKey,
+            ttl: this.refreshTTL,
+            type: "rt+jwt",
+        });
     }
 
     public async verifyRefresh(token: string): Promise<JWTPayload> {
         try {
-            const { payload } = await jwtVerify(token, this.signingKey.publicKey, {
+            const { payload } = await jwtVerify(token, createLocalJWKSet(await this.getJWKS(this.refreshKey)), {
                 requiredClaims: ["client_id", "sub", "sid", "exp", "iat", "jti"],
                 audience: this.refreshAudience,
                 algorithms: [this.algorithm],
@@ -108,17 +90,48 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
         }
     }
 
-    public async getJWKS(): Promise<CommonServices.JWT.GetJWKS> {
-        const jwk = await exportJWK(this.signingKey.publicKey);
-        return {
-            keys: [
-                {
-                    ...jwk,
-                    kid: this.signingKey.kid,
-                    alg: this.algorithm,
-                    use: "sig",
-                },
-            ],
-        };
+    public async getJWKS(name = this.accessKey): Promise<CommonServices.JWT.GetJWKS> {
+        const key = await this.vaultTransitService.getKey({ name });
+        const keys = await Promise.all(
+            key.versions.map(async ({ publicKey, version }) => ({
+                ...(await exportJWK(await importSPKI(publicKey, this.algorithm))),
+                kid: `${name}:v${version}`,
+                alg: this.algorithm,
+                use: "sig",
+            })),
+        );
+
+        return { keys };
+    }
+
+    public async sign(payload: JWTPayload, props: CommonServices.JWT.Sign.Props): Promise<string> {
+        const key = await this.vaultTransitService.getKey({ name: props.key });
+        const now = Math.floor(Date.now() / 1e3);
+        const version = key.latestVersion;
+
+        const header = base64url.encode(
+            JSON.stringify({
+                kid: `${props.key}:v${version}`,
+                alg: this.algorithm,
+                typ: props.type,
+            }),
+        );
+
+        const claims = base64url.encode(
+            JSON.stringify({
+                ...payload,
+                exp: now + Math.ceil(props.ttl / 1e3),
+                jti: payload.jti ?? randomUUID(),
+                aud: props.audience,
+                sub: payload.sub,
+                iss: this.issuer,
+                iat: now,
+            }),
+        );
+
+        const input = `${header}.${claims}`;
+        const { signature } = await this.vaultTransitService.sign({ input, version, name: props.key });
+
+        return `${input}.${signature}`;
     }
 }

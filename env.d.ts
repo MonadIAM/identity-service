@@ -112,7 +112,9 @@ declare global {
             VAULT_TOKEN: string;
             VAULT_TRANSIT_MOUNT: string;
             VAULT_TRANSIT_ACCESS_KEY: string;
+            VAULT_TRANSIT_ACCESS_ROTATION_PERIOD: StringValue;
             VAULT_TRANSIT_REFRESH_KEY: string;
+            VAULT_TRANSIT_REFRESH_ROTATION_PERIOD: StringValue;
             VAULT_TRANSIT_TOTP_KEY: string;
             VAULT_KV_MOUNT: string;
             VAULT_KV_OAUTH_PATH: string;
@@ -179,8 +181,6 @@ declare global {
             JWT_ISSUER: string;
             JWT_ACCESS_TTL: StringValue;
             JWT_REFRESH_TTL: StringValue;
-            JWT_PRIVATE_KEY: string;
-            JWT_PUBLIC_KEY: string;
 
             // Session
             SESSION_EXPIRY_DAYS: StringValue;

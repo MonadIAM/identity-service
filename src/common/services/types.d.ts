@@ -87,6 +87,7 @@ declare global {
 
             namespace Sign {
                 type Props = {
+                    version: number;
                     input: string;
                     name: string;
                 };
@@ -105,23 +106,30 @@ declare global {
         }
 
         namespace JWT {
-            interface Contract {
-                verifyAccess: (token: string) => Promise<JWTPayload>;
+            interface PrivateContract {
+                sign: (payload: JWTPayload, props: Sign.Props) => Promise<string>;
+            }
+
+            interface Contract extends PrivateContract {
                 signRefreshToken: (payload: JWTPayload) => Promise<string>;
                 signAccessToken: (payload: JWTPayload) => Promise<string>;
                 verifyRefresh: (token: string) => Promise<JWTPayload>;
-                getJWKS: () => Promise<GetJWKS>;
+                verifyAccess: (token: string) => Promise<JWTPayload>;
+                getJWKS: (name?: string) => Promise<GetJWKS>;
             }
 
             type GetJWKS = {
                 keys: JWK[];
             };
 
-            type SigningKey = {
-                privateKey: CryptoKey;
-                publicKey: CryptoKey;
-                kid: string;
-            };
+            namespace Sign {
+                type Props = {
+                    audience: string;
+                    type: string;
+                    key: string;
+                    ttl: number;
+                };
+            }
         }
 
         namespace Email {
