@@ -44,11 +44,25 @@ sed \
     -e "s|{{access_key}}|$VAULT_TRANSIT_ACCESS_KEY|g" \
     -e "s|{{refresh_key}}|$VAULT_TRANSIT_REFRESH_KEY|g" \
     -e "s|{{totp_key}}|$VAULT_TRANSIT_TOTP_KEY|g" \
-    -e "s|{{kv_mount}}|$VAULT_KV_MOUNT|g" \
-    -e "s|{{oauth_path}}|$VAULT_KV_OAUTH_PATH|g" \
-    -e "s|{{runtime_path}}|$VAULT_KV_RUNTIME_PATH|g" \
     /identity-service-policy.hcl > /tmp/identity-service-policy.hcl
 
 vault policy write identity-service /tmp/identity-service-policy.hcl
 vault token lookup "$VAULT_IDENTITY_TOKEN" >/dev/null 2>&1 ||
     vault token create -id="$VAULT_IDENTITY_TOKEN" -policy=identity-service -no-default-policy
+
+sed \
+    -e "s|{{kv_mount}}|$VAULT_KV_MOUNT|g" \
+    -e "s|{{oauth_path}}|$VAULT_KV_OAUTH_PATH|g" \
+    -e "s|{{runtime_path}}|$VAULT_KV_RUNTIME_PATH|g" \
+    -e "s|{{replication_path}}|$VAULT_KV_REPLICATION_PATH|g" \
+    /secrets-policy.hcl > /tmp/secrets-policy.hcl
+
+vault policy write identity-service-secrets /tmp/secrets-policy.hcl
+vault token create \
+    -field=token \
+    -policy=identity-service-secrets \
+    -no-default-policy \
+    -ttl=15m \
+    -explicit-max-ttl=15m \
+    > /vault/token/secrets
+chmod 0400 /vault/token/secrets

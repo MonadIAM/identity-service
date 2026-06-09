@@ -135,9 +135,6 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_REPLICATION_USER: string;
 
     @Validator.IsString()
-    declare public POSTGRES_REPLICATION_PASSWORD: string;
-
-    @Validator.IsString()
     declare public POSTGRES_REPLICATION_SLOT: string;
 
     // ---------------------------------------------------------------------------

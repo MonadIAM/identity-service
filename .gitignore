@@ -38,6 +38,7 @@ lerna-debug.log*
 # Environment variables and secrets
 *.csv
 .env
+.vault.env
 
 # temp directory
 .temp

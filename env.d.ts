@@ -63,7 +63,6 @@ declare global {
             // ---------------------------------------------------------------------------
 
             POSTGRES_REPLICATION_USER: string;
-            POSTGRES_REPLICATION_PASSWORD: string;
             POSTGRES_REPLICATION_SLOT: string;
 
             // ---------------------------------------------------------------------------
