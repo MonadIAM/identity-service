@@ -22,6 +22,20 @@ declare global {
             key_version: number;
             signature: string;
         };
+
+        type Encrypt = {
+            key_version: number;
+            ciphertext: string;
+        };
+
+        type Decrypt = {
+            plaintext: string;
+        };
+
+        type Rewrap = {
+            key_version: number;
+            ciphertext: string;
+        };
     }
 
     namespace CommonServices {
@@ -68,8 +82,20 @@ declare global {
 
         namespace VaultTransit {
             interface Contract {
+                getLatestVersion: (props: GetLatestVersion.Props) => GetLatestVersion.Result;
                 getKey: (props: GetKey.Props) => GetKey.Result;
+                decrypt: (props: Decrypt.Props) => Decrypt.Result;
+                encrypt: (props: Encrypt.Props) => Encrypt.Result;
+                rewrap: (props: Rewrap.Props) => Rewrap.Result;
                 sign: (props: Sign.Props) => Sign.Result;
+            }
+
+            namespace GetLatestVersion {
+                type Props = {
+                    name: string;
+                };
+
+                type Result = Promise<number>;
             }
 
             namespace GetKey {
@@ -94,6 +120,39 @@ declare global {
 
                 type Result = Promise<{
                     signature: string;
+                    version: number;
+                }>;
+            }
+
+            namespace Encrypt {
+                type Props = {
+                    plaintext: string;
+                    name: string;
+                };
+
+                type Result = Promise<{
+                    ciphertext: string;
+                    version: number;
+                }>;
+            }
+
+            namespace Decrypt {
+                type Props = {
+                    ciphertext: string;
+                    name: string;
+                };
+
+                type Result = Promise<string>;
+            }
+
+            namespace Rewrap {
+                type Props = {
+                    ciphertext: string;
+                    name: string;
+                };
+
+                type Result = Promise<{
+                    ciphertext: string;
                     version: number;
                 }>;
             }

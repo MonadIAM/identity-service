@@ -1,4 +1,30 @@
 declare namespace InfrastructureServices {
+    namespace SecondFactorSecret {
+        interface Contract {
+            resolve: (props: Resolve.Props) => Resolve.Result;
+            encrypt: (props: Encrypt.Props) => Encrypt.Result;
+        }
+
+        namespace Encrypt {
+            type Props = {
+                secret: string;
+            };
+
+            type Result = Promise<string>;
+        }
+
+        namespace Resolve {
+            type Props = {
+                secret: string;
+            };
+
+            type Result = Promise<{
+                ciphertext?: string;
+                plaintext: string;
+            }>;
+        }
+    }
+
     namespace AccessCache {
         interface PrivateContract {
             resolveVersionedKey: (props: ResolveVersionedKey.Props) => ResolveVersionedKey.Result;

@@ -22,6 +22,9 @@ vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY/config" \
 vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY" >/dev/null 2>&1 ||
     vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY" type=aes256-gcm96
 
+vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY/config" \
+    auto_rotate_period="$VAULT_TRANSIT_TOTP_ROTATION_PERIOD"
+
 vault kv get "$VAULT_KV_MOUNT/$VAULT_KV_OAUTH_PATH" >/dev/null 2>&1 ||
     vault kv put "$VAULT_KV_MOUNT/$VAULT_KV_OAUTH_PATH" \
         google_client_secret="$OAUTH_GOOGLE_CLIENT_SECRET" \

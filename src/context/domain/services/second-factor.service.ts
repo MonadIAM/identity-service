@@ -32,6 +32,12 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
         }
     }
 
+    public rewrap(props: Services.SecondFactor.Rewrap.Props): Services.SecondFactor.Rewrap.Result {
+        const { transaction, input } = props;
+        input.factor.rewrap(input.secret);
+        transaction.merge(input.factor);
+    }
+
     public purge(props: Services.SecondFactor.Purge.Props): Services.SecondFactor.Purge.Result {
         const { transaction, input } = props;
 

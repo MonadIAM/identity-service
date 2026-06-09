@@ -1,16 +1,26 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
+import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorQueries implements Queries.SecondFactor.Contract {
     private readonly dictionaryPath = "queries.second-factor";
+    private readonly resource = "SecondFactor";
 
     public constructor(
+        @Inject(TRANSACTIONAL_SERVICE)
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(SECOND_FACTOR_REPOSITORY)
         private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
+        @Inject(SECOND_FACTOR_SECRET_SERVICE)
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
+        @Inject(SECOND_FACTOR_SERVICE)
+        private readonly secondFactorService: Services.SecondFactor.Contract,
     ) {}
 
     public findMany(props: Queries.SecondFactor.FindMany.Props): Queries.SecondFactor.FindMany.Result {
@@ -20,20 +30,37 @@ export class SecondFactorQueries implements Queries.SecondFactor.Contract {
     }
 
     public async getQRCode(props: Queries.SecondFactor.GetQRCode.Props): Queries.SecondFactor.GetQRCode.Result {
-        const factor = await this.secondFactorRepository.findUnique({
-            where: { account: props.actor, id: props.id },
+        let result: Optional<{ id: string; uri: string }>;
+
+        await this.transactionalService.run({
+            resource: this.resource,
+            execute: async (transaction) => {
+                const factor = await this.secondFactorRepository.findUnique({
+                    where: { account: props.actor, id: props.id },
+                    transaction,
+                });
+
+                if (!factor || factor.confirmedAt) {
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.QR_UNAVAILABLE` });
+                }
+
+                const { ciphertext, plaintext } = await this.secondFactorSecretService.resolve({
+                    secret: factor.secret,
+                });
+                if (ciphertext) {
+                    this.secondFactorService.rewrap({ input: { factor, secret: ciphertext }, transaction });
+                }
+
+                const totp = new TOTP({
+                    secret: Secret.fromBase32(plaintext),
+                    label: props.actor,
+                    issuer: "LIAM",
+                });
+
+                result = { id: factor.id, uri: totp.toString() };
+            },
         });
 
-        if (factor && !factor.confirmedAt) {
-            const totp = new TOTP({
-                secret: Secret.fromBase32(factor.secret),
-                label: props.actor,
-                issuer: "LIAM",
-            });
-
-            return { id: factor.id, uri: totp.toString() };
-        } else {
-            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.QR_UNAVAILABLE` });
-        }
+        return result!;
     }
 }

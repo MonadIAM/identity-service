@@ -1,17 +1,21 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { BlacklistTopicAction } from "@liam/contracts";
 import { ConfigService } from "@nestjs/config";
-import ms, { StringValue } from "ms";
 import { TOTP, Secret } from "otpauth";
+import ms, { StringValue } from "ms";
 
 import { IdentifierType, AccountStatus, TokenGrantType, EntityType, KafkaTopic, ActionType, Client } from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
-import { OTP_CACHE_SERVICE, PENDING_2FA_CACHE_SERVICE } from "~context/infrastructure/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
-import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
+import { ACCOUNT_SERVICE, SECOND_FACTOR_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
+import {
+    SECOND_FACTOR_SECRET_SERVICE,
+    PENDING_2FA_CACHE_SERVICE,
+    OTP_CACHE_SERVICE,
+} from "~context/infrastructure/services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthnCommands implements Commands.Authn.Contract {
@@ -34,10 +38,14 @@ export class AuthnCommands implements Commands.Authn.Contract {
         private readonly accountService: Services.Account.Contract,
         @Inject(SESSION_SERVICE)
         private readonly sessionService: Services.Session.Contract,
+        @Inject(SECOND_FACTOR_SERVICE)
+        private readonly secondFactorService: Services.SecondFactor.Contract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
         @Inject(PENDING_2FA_CACHE_SERVICE)
         private readonly pending2FACacheService: InfrastructureServices.Pending2FACache.Contract,
+        @Inject(SECOND_FACTOR_SECRET_SERVICE)
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
@@ -194,25 +202,40 @@ export class AuthnCommands implements Commands.Authn.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.EXPIRED_PENDING_2FA` });
         }
 
-        const factor = await this.secondFactorRepository.findUnique({
-            options: { populate: ["account"] },
-            where: {
-                confirmedAt: { $ne: null },
-                account: cachedAccount,
-                id: props.input.id,
+        const factor = await this.transactionalService.run<Entities.SecondFactor>({
+            resource: this.resource,
+            execute: async (transaction) => {
+                const factor = await this.secondFactorRepository.findUnique({
+                    options: { populate: ["account"] },
+                    where: {
+                        confirmedAt: { $ne: null },
+                        account: cachedAccount,
+                        id: props.input.id,
+                    },
+                    transaction,
+                });
+
+                if (!factor) {
+                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.NO_ACTIVE_2FA` });
+                }
+
+                const { ciphertext, plaintext } = await this.secondFactorSecretService.resolve({
+                    secret: factor.secret,
+                });
+                const totp = new TOTP({ secret: Secret.fromBase32(plaintext) });
+                const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
+
+                if (!isValid) {
+                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
+                }
+
+                if (ciphertext) {
+                    this.secondFactorService.rewrap({ input: { factor, secret: ciphertext }, transaction });
+                }
+
+                return factor;
             },
         });
-
-        if (!factor) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.NO_ACTIVE_2FA` });
-        }
-
-        const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
-        const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
-
-        if (!isValid) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
-        }
 
         await this.pending2FACacheService.delete({ token: props.token });
 

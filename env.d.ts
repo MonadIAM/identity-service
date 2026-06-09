@@ -116,6 +116,7 @@ declare global {
             VAULT_TRANSIT_REFRESH_KEY: string;
             VAULT_TRANSIT_REFRESH_ROTATION_PERIOD: StringValue;
             VAULT_TRANSIT_TOTP_KEY: string;
+            VAULT_TRANSIT_TOTP_ROTATION_PERIOD: StringValue;
             VAULT_KV_MOUNT: string;
             VAULT_KV_OAUTH_PATH: string;
             VAULT_KV_RUNTIME_PATH: string;

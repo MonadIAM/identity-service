@@ -7,6 +7,7 @@ declare global {
         namespace SecondFactor {
             interface Contract {
                 create: (props: Create.Props) => Create.Result;
+                rewrap: (props: Rewrap.Props) => Rewrap.Result;
                 verify: (props: Verify.Props) => Verify.Result;
                 purge: (props: Purge.Props) => Purge.Result;
                 reset: (props: Reset.Props) => Reset.Result;
@@ -32,6 +33,18 @@ declare global {
                     input: {
                         factor: Entities.SecondFactor;
                         masterCodeHash: string;
+                    };
+                };
+
+                type Result = void;
+            }
+
+            namespace Rewrap {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        factor: Entities.SecondFactor;
+                        secret: string;
                     };
                 };
 

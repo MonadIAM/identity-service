@@ -2,6 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { ActionType, EntityType, SecondFactorType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
@@ -28,10 +29,13 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
+        @Inject(SECOND_FACTOR_SECRET_SERVICE)
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
     ) {}
 
     public async create(props: Commands.SecondFactor.Create.Props): Commands.SecondFactor.Create.Result {
         const secret = new Secret({ size: 20 });
+        const ciphertext = await this.secondFactorSecretService.encrypt({ secret: secret.base32 });
         const type = SecondFactorType.TOTP;
 
         const factor = await this.transactionalService.run({
@@ -61,7 +65,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                     transaction,
                     input: {
                         name: props.input.name,
-                        secret: secret.base32,
+                        secret: ciphertext,
                         account,
                         type,
                     },
@@ -79,24 +83,9 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
     }
 
     public async verify(props: Commands.SecondFactor.Verify.Props): Commands.SecondFactor.Verify.Result {
-        const factor = await this.secondFactorRepository.findUniqueOrThrow({
-            options: { populate: ["account.masterCode"] },
-            where: {
-                id: props.input.factor,
-                account: props.actor,
-            },
-        });
-
-        const hasMasterCode = factor.account.masterCode;
-        const totp = new TOTP({ secret: Secret.fromBase32(factor.secret) });
-        const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
-
-        if (!isValid) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
-        }
-
         const masterCodePlaintext = this.cryptoService.generateRecoveryCode();
         const masterCodeHash = await this.hashingService.hash({ value: masterCodePlaintext });
+        let hasMasterCode = false;
 
         await this.transactionalService.run({
             resource: this.resource,
@@ -105,8 +94,29 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 actionType: ActionType.VERIFY,
                 ...props,
             },
-            execute: (transaction) => {
-                transaction.merge(factor);
+            execute: async (transaction) => {
+                const factor = await this.secondFactorRepository.findUniqueOrThrow({
+                    options: { populate: ["account.masterCode"] },
+                    where: {
+                        id: props.input.factor,
+                        account: props.actor,
+                    },
+                    transaction,
+                });
+                const { ciphertext, plaintext } = await this.secondFactorSecretService.resolve({
+                    secret: factor.secret,
+                });
+                const totp = new TOTP({ secret: Secret.fromBase32(plaintext) });
+                const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
+
+                if (!isValid) {
+                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
+                }
+
+                hasMasterCode = Boolean(factor.account.masterCode);
+                if (ciphertext) {
+                    this.secondFactorService.rewrap({ input: { factor, secret: ciphertext }, transaction });
+                }
                 this.secondFactorService.verify({
                     input: { factor, masterCodeHash },
                     transaction,

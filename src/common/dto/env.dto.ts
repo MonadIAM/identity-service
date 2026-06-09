@@ -257,6 +257,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public VAULT_TRANSIT_TOTP_KEY: string;
 
+    @Validator.IsMsString()
+    declare public VAULT_TRANSIT_TOTP_ROTATION_PERIOD: StringValue;
+
     @Validator.IsString()
     declare public VAULT_KV_MOUNT: string;
 

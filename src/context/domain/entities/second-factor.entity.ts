@@ -38,4 +38,8 @@ export class SecondFactor {
             this.confirmedAt = new Date();
         }
     }
+
+    public rewrap(secret: string): void {
+        this.secret = secret;
+    }
 }

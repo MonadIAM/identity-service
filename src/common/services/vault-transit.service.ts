@@ -32,6 +32,46 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
         };
     }
 
+    public async getLatestVersion(
+        props: CommonServices.VaultTransit.GetLatestVersion.Props,
+    ): CommonServices.VaultTransit.GetLatestVersion.Result {
+        const data = await this.request<Vault.GetKey>(`keys/${encodeURIComponent(props.name)}`);
+        return data.latest_version;
+    }
+
+    public async encrypt(props: CommonServices.VaultTransit.Encrypt.Props): CommonServices.VaultTransit.Encrypt.Result {
+        const data = await this.request<Vault.Encrypt>(`encrypt/${encodeURIComponent(props.name)}`, {
+            method: "POST",
+            body: JSON.stringify({ plaintext: Buffer.from(props.plaintext).toString("base64") }),
+        });
+
+        return {
+            ciphertext: data.ciphertext,
+            version: data.key_version,
+        };
+    }
+
+    public async decrypt(props: CommonServices.VaultTransit.Decrypt.Props): CommonServices.VaultTransit.Decrypt.Result {
+        const data = await this.request<Vault.Decrypt>(`decrypt/${encodeURIComponent(props.name)}`, {
+            method: "POST",
+            body: JSON.stringify({ ciphertext: props.ciphertext }),
+        });
+
+        return Buffer.from(data.plaintext, "base64").toString();
+    }
+
+    public async rewrap(props: CommonServices.VaultTransit.Rewrap.Props): CommonServices.VaultTransit.Rewrap.Result {
+        const data = await this.request<Vault.Rewrap>(`rewrap/${encodeURIComponent(props.name)}`, {
+            method: "POST",
+            body: JSON.stringify({ ciphertext: props.ciphertext }),
+        });
+
+        return {
+            ciphertext: data.ciphertext,
+            version: data.key_version,
+        };
+    }
+
     public async sign(props: CommonServices.VaultTransit.Sign.Props): CommonServices.VaultTransit.Sign.Result {
         const data = await this.request<Vault.Sign>(`sign/${encodeURIComponent(props.name)}`, {
             method: "POST",
