@@ -14,10 +14,12 @@ vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY" >/dev/null 2>&
     vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY" type=ecdsa-p256
 
 vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_ACCESS_KEY/config" \
-    auto_rotate_period="$VAULT_TRANSIT_ACCESS_ROTATION_PERIOD"
+    auto_rotate_period="$VAULT_TRANSIT_ACCESS_ROTATION_PERIOD" \
+    deletion_allowed=true
 
 vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY/config" \
-    auto_rotate_period="$VAULT_TRANSIT_REFRESH_ROTATION_PERIOD"
+    auto_rotate_period="$VAULT_TRANSIT_REFRESH_ROTATION_PERIOD" \
+    deletion_allowed=true
 
 vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY" >/dev/null 2>&1 ||
     vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY" type=aes256-gcm96
@@ -47,6 +49,21 @@ sed \
     /identity-service-policy.hcl > /tmp/identity-service-policy.hcl
 
 vault policy write identity-service /tmp/identity-service-policy.hcl
+
+sed \
+    -e "s|{{mount}}|$VAULT_TRANSIT_MOUNT|g" \
+    -e "s|{{access_key}}|$VAULT_TRANSIT_ACCESS_KEY|g" \
+    -e "s|{{refresh_key}}|$VAULT_TRANSIT_REFRESH_KEY|g" \
+    /key-trim-policy.hcl > /tmp/key-trim-policy.hcl
+
+vault policy write vault-key-trim /tmp/key-trim-policy.hcl
+vault token create \
+    -field=token \
+    -policy=vault-key-trim \
+    -no-default-policy \
+    -period=48h \
+    > /vault/token/key-trim
+chmod 0400 /vault/token/key-trim
 vault token lookup "$VAULT_IDENTITY_TOKEN" >/dev/null 2>&1 ||
     vault token create -id="$VAULT_IDENTITY_TOKEN" -policy=identity-service -no-default-policy
 

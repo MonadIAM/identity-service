@@ -6,7 +6,9 @@ import { Exception } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class VaultTransitService implements CommonServices.VaultTransit.Contract {
     private readonly dictionaryPath = "services.vault";
+    private readonly cacheTTL = 6e4;
 
+    private readonly keyCache = new Map<string, Vault.KeyCache>();
     private readonly transitMount: string;
     private readonly token: string;
     private readonly url: string;
@@ -18,9 +20,13 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
     }
 
     public async getKey(props: CommonServices.VaultTransit.GetKey.Props): CommonServices.VaultTransit.GetKey.Result {
-        const data = await this.request<Vault.GetKey>(`keys/${encodeURIComponent(props.name)}`);
+        const cached = this.keyCache.get(props.name);
+        if (cached && cached.expiresAt > Date.now()) {
+            return cached.data;
+        }
 
-        return {
+        const data = await this.request<Vault.GetKey>(`keys/${encodeURIComponent(props.name)}`);
+        const result = {
             latestVersion: data.latest_version,
             name: props.name,
             type: data.type,
@@ -30,13 +36,16 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
                 version: Number(version),
             })),
         };
+
+        this.keyCache.set(props.name, { data: result, expiresAt: Date.now() + this.cacheTTL });
+        return result;
     }
 
     public async getLatestVersion(
         props: CommonServices.VaultTransit.GetLatestVersion.Props,
     ): CommonServices.VaultTransit.GetLatestVersion.Result {
-        const data = await this.request<Vault.GetKey>(`keys/${encodeURIComponent(props.name)}`);
-        return data.latest_version;
+        const key = await this.getKey({ name: props.name });
+        return key.latestVersion;
     }
 
     public async encrypt(props: CommonServices.VaultTransit.Encrypt.Props): CommonServices.VaultTransit.Encrypt.Result {

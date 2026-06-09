@@ -20,7 +20,7 @@ export class JWKSController {
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR)
     @ApiOperation({ summary: "Get JSON Web Key Set" })
     @Header("Content-Type", "application/jwk-set+json")
-    @Header("Cache-Control", "public, max-age=300, must-revalidate")
+    @Header("Cache-Control", "public, max-age=30, must-revalidate")
     public getJWKS(): Promise<CommonServices.JWT.GetJWKS> {
         return this.jwtService.getJWKS();
     }

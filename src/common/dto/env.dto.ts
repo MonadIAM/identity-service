@@ -245,17 +245,26 @@ export class EnvironmentVariablesDTO {
     @Validator.IsMsString()
     declare public VAULT_TRANSIT_ACCESS_ROTATION_PERIOD: StringValue;
 
+    @Validator.IsPositiveInt()
+    declare public VAULT_TRANSIT_ACCESS_RETAIN_VERSIONS: number;
+
     @Validator.IsString()
     declare public VAULT_TRANSIT_REFRESH_KEY: string;
 
     @Validator.IsMsString()
     declare public VAULT_TRANSIT_REFRESH_ROTATION_PERIOD: StringValue;
 
+    @Validator.IsPositiveInt()
+    declare public VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS: number;
+
     @Validator.IsString()
     declare public VAULT_TRANSIT_TOTP_KEY: string;
 
     @Validator.IsMsString()
     declare public VAULT_TRANSIT_TOTP_ROTATION_PERIOD: StringValue;
+
+    @Validator.IsString()
+    declare public VAULT_KEY_TRIM_SCHEDULE: string;
 
     @Validator.IsString()
     declare public VAULT_KV_MOUNT: string;

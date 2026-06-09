@@ -149,6 +149,7 @@ services:
       VAULT_TOKEN: ${VAULT_ROOT_TOKEN}
     volumes:
       - ./docker/vault/identity-service-policy.hcl:/identity-service-policy.hcl:ro
+      - ./docker/vault/key-trim-policy.hcl:/key-trim-policy.hcl:ro
       - ./docker/vault/secrets-policy.hcl:/secrets-policy.hcl:ro
       - ./docker/vault/init.sh:/init.sh:ro
       - vault_secrets_token:/vault/token
@@ -156,6 +157,29 @@ services:
       vault:
         condition: service_healthy
     entrypoint: ["sh", "/init.sh"]
+    networks:
+      - internal
+
+  vault-key-trim:
+    image: ${VAULT_IMAGE:?}
+    container_name: ${SERVICE_NAME}-vault-key-trim
+    restart: always
+    environment:
+      VAULT_ADDR: "http://vault:${VAULT_PORT}"
+      VAULT_TRANSIT_MOUNT: ${VAULT_TRANSIT_MOUNT}
+      VAULT_TRANSIT_ACCESS_KEY: ${VAULT_TRANSIT_ACCESS_KEY}
+      VAULT_TRANSIT_ACCESS_RETAIN_VERSIONS: ${VAULT_TRANSIT_ACCESS_RETAIN_VERSIONS}
+      VAULT_TRANSIT_REFRESH_KEY: ${VAULT_TRANSIT_REFRESH_KEY}
+      VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS: ${VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS}
+      VAULT_KEY_TRIM_SCHEDULE: ${VAULT_KEY_TRIM_SCHEDULE}
+    volumes:
+      - vault_secrets_token:/vault/token:ro
+      - ./docker/vault/trim-keys.sh:/trim-keys.sh:ro
+      - ./docker/vault/trim-keys-cron.sh:/trim-keys-cron.sh:ro
+    entrypoint: ["sh", "/trim-keys-cron.sh"]
+    depends_on:
+      vault-init:
+        condition: service_completed_successfully
     networks:
       - internal
 

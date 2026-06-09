@@ -3,6 +3,11 @@ import { JWTPayload, JWK } from "jose";
 
 declare global {
     namespace Vault {
+        type KeyCache = {
+            data: Awaited<CommonServices.VaultTransit.GetKey.Result>;
+            expiresAt: number;
+        };
+
         type Response<T> = {
             data: T;
         };
