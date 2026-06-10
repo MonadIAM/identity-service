@@ -134,7 +134,7 @@ declare global {
             OAUTH_STATE_TTL: StringValue;
             PENDING_2FA_TTL: StringValue;
             ACCESS_CACHE_TTL: StringValue;
-            ELEVATED_ACCESS_TTL: StringValue;
+            REAUTHENTICATION_TTL: StringValue;
 
             // ---------------------------------------------------------------------------
             // OAuth Providers

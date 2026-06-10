@@ -1,13 +1,14 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Delete, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+import { REAUTHENTICATION_COMMANDS, AUTHN_COMMANDS, SESSION_COMMANDS } from "~context/application/commands";
 import { Extract, FormatResponse, RequirePermission, Tokens, Public, Swagger } from "~common/decorators";
-import { AUTHN_COMMANDS, SESSION_COMMANDS } from "~context/application/commands";
 import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
+import { BySecondFactorBodyDTO, ByPasswordBodyDTO } from "../dto/reauthentication";
 import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
 import {
     VerifySecondFactorBodyDTO,
@@ -19,13 +20,21 @@ import {
     VerifyOTPBodyDTO,
 } from "../dto/authn";
 
-const { SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE, SESSION_LOGOUT, SESSION_REVOKE } = PermissionCode;
+const {
+    REAUTHENTICATION_CONFIRM_SECOND_FACTOR,
+    REAUTHENTICATION_CONFIRM_PASSWORD,
+    SESSION_READ_PERSONAL,
+    SESSION_READ_ABSOLUTE,
+    SESSION_LOGOUT,
+    SESSION_REVOKE,
+} = PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
     SERVICE_UNAVAILABLE,
     REQUEST_TIMEOUT,
     UNAUTHORIZED,
+    BAD_REQUEST,
     FORBIDDEN,
     NOT_FOUND,
     CONFLICT,
@@ -39,6 +48,8 @@ export class AuthnController {
     public constructor(
         @Inject(AUTHN_COMMANDS)
         private readonly authnCommands: Commands.Authn.ControllerContract,
+        @Inject(REAUTHENTICATION_COMMANDS)
+        private readonly reauthenticationCommands: Commands.Reauthentication.ControllerContract,
         @Inject(SESSION_COMMANDS)
         private readonly sessionCommands: Commands.Session.ControllerContract,
         @Inject(SESSION_QUERIES)
@@ -134,7 +145,7 @@ export class AuthnController {
 
     @Public()
     @HttpCode(OK)
-    @Post("verify/second-factor")
+    @Post("verify/2fa")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Verify second-factor TOTP" })
     @Swagger.Exceptions(
@@ -151,6 +162,51 @@ export class AuthnController {
         @Tokens.Pending() token?: string,
     ): Commands.Authn.VerifySecondFactor.Result {
         return this.authnCommands.verifySecondFactor({ token, context, input });
+    }
+
+    @HttpCode(OK)
+    @Post("reauthn/password")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(REAUTHENTICATION_CONFIRM_PASSWORD)
+    @ApiOperation({ summary: "Reauthenticate by password" })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        FORBIDDEN,
+        NOT_FOUND,
+    )
+    public reauthenticateByPassword(
+        @Body() input: ByPasswordBodyDTO,
+        @Extract.Session() { account, session }: Extract.Session.Authenticated,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Reauthentication.ByPassword.Result {
+        return this.reauthenticationCommands.byPassword({ actor: account, context, session, input });
+    }
+
+    @HttpCode(OK)
+    @Post("reauthn/2fa")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(REAUTHENTICATION_CONFIRM_SECOND_FACTOR)
+    @ApiOperation({ summary: "Reauthenticate by TOTP" })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        FORBIDDEN,
+    )
+    public reauthenticateBySecondFactor(
+        @Body() input: BySecondFactorBodyDTO,
+        @Extract.Session() { account, session }: Extract.Session.Authenticated,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Reauthentication.BySecondFactor.Result {
+        return this.reauthenticationCommands.bySecondFactor({ actor: account, context, session, input });
     }
 
     @Get("session")

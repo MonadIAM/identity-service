@@ -10,8 +10,8 @@
     "INVALID_TOKEN": "The authentication token is invalid or expired.",
     "TOKEN_MISSING": "An authentication token is required."
   },
-  "elevated-access": {
-    "ELEVATED_ACCESS_REQUIRED": "Elevated access is required to perform this operation.",
-    "NOT_AUTHENTICATED": "Authentication is required to confirm elevated access."
+  "reauthentication": {
+    "REAUTHENTICATION_REQUIRED": "Reauthentication is required to perform this operation.",
+    "NOT_AUTHENTICATED": "Authentication is required to reauthenticate."
   }
 }

@@ -3,10 +3,10 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-@ApiSchema({ name: "ElevatedAccessBySecondFactorBody" })
-export class BySecondFactorBodyDTO {
+@ApiSchema({ name: "ReauthenticationByPasswordBody" })
+export class ByPasswordBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    declare public code: string;
+    declare public password: string;
 }

@@ -1,4 +1,4 @@
-export const ELEVATED_ACCESS_COMMANDS = Symbol("Commands.ElevatedAccess.Contract");
+export const REAUTHENTICATION_COMMANDS = Symbol("Commands.Reauthentication.Contract");
 export const RECOVERY_CODE_COMMANDS = Symbol("Commands.RecoveryCode.Contract");
 export const SECOND_FACTOR_COMMANDS = Symbol("Commands.SecondFactor.Contract");
 export const MEMBERSHIP_COMMANDS = Symbol("Commands.Membership.Contract");

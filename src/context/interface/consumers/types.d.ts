@@ -18,12 +18,12 @@ declare global {
             type Message = Topics.Blacklist.Message;
         }
 
-        namespace ElevatedAccess {
+        namespace Reauthentication {
             interface Contract {
                 handle: (message: Message) => Promise<void>;
             }
 
-            type Message = Topics.ElevatedAccess.Message;
+            type Message = Topics.Reauthentication.Message;
         }
 
         namespace Membership {

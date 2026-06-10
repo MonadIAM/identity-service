@@ -1,4 +1,3 @@
-import { ElevatedAccessController } from "./elevated-access.controller";
 import { SecondFactorController } from "./second-factor.controller";
 import { RecoveryCodeController } from "./recovery-code.controller";
 import { IdentifierController } from "./identifier.controller";
@@ -12,7 +11,6 @@ import { AuthnController } from "./authn.controller";
 import { JWKSController } from "./jwks.controller";
 
 export const CONTROLLERS = [
-    ElevatedAccessController,
     SecondFactorController,
     RecoveryCodeController,
     IdentifierController,
@@ -27,7 +25,6 @@ export const CONTROLLERS = [
 ];
 
 export {
-    ElevatedAccessController,
     SecondFactorController,
     RecoveryCodeController,
     IdentifierController,

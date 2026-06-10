@@ -1,4 +1,4 @@
-import { ElevatedAccessTopicAction } from "@liam/contracts";
+import { ReauthenticationTopicAction } from "@liam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TOTP, Secret } from "otpauth";
@@ -13,9 +13,9 @@ import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract {
-    private readonly dictionaryPath = "commands.elevated-access";
-    private readonly resource = "ElevatedAccess";
+export class ReauthenticationCommands implements Commands.Reauthentication.Contract {
+    private readonly dictionaryPath = "commands.reauthentication";
+    private readonly resource = "Reauthentication";
     private readonly ttl: number;
 
     public constructor(
@@ -33,10 +33,12 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
         protected readonly configService: ConfigService,
     ) {
-        this.ttl = ms(this.configService.getOrThrow<StringValue>("ELEVATED_ACCESS_TTL")) / 1e3;
+        this.ttl = ms(this.configService.getOrThrow<StringValue>("REAUTHENTICATION_TTL")) / 1e3;
     }
 
-    public async byPassword(props: Commands.ElevatedAccess.ByPassword.Props): Commands.ElevatedAccess.ByPassword.Result {
+    public async byPassword(
+        props: Commands.Reauthentication.ByPassword.Props,
+    ): Commands.Reauthentication.ByPassword.Result {
         const account = await this.accountRepository.findUniqueOrThrow({
             options: { populate: ["password"] },
             where: { id: props.actor },
@@ -62,17 +64,17 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
                 actionType: ActionType.GRANT,
                 ...props,
             },
-            destinationTopic: KafkaTopic.ELEVATED_ACCESS,
-            actionType: ElevatedAccessTopicAction.GRANT,
+            destinationTopic: KafkaTopic.REAUTHENTICATION,
+            actionType: ReauthenticationTopicAction.GRANT,
             payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
         });
 
-        return { message: `${this.dictionaryPath}.ELEVATED` };
+        return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
     }
 
     public async bySecondFactor(
-        props: Commands.ElevatedAccess.BySecondFactor.Props,
-    ): Commands.ElevatedAccess.BySecondFactor.Result {
+        props: Commands.Reauthentication.BySecondFactor.Props,
+    ): Commands.Reauthentication.BySecondFactor.Result {
         await this.transactionalService.run({
             resource: this.resource,
             execute: async (transaction) => {
@@ -111,11 +113,11 @@ export class ElevatedAccessCommands implements Commands.ElevatedAccess.Contract 
                 actionType: ActionType.GRANT,
                 ...props,
             },
-            destinationTopic: KafkaTopic.ELEVATED_ACCESS,
-            actionType: ElevatedAccessTopicAction.GRANT,
+            destinationTopic: KafkaTopic.REAUTHENTICATION,
+            actionType: ReauthenticationTopicAction.GRANT,
             payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
         });
 
-        return { message: `${this.dictionaryPath}.ELEVATED` };
+        return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
     }
 }

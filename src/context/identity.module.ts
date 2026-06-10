@@ -5,7 +5,7 @@ import { Module } from "@nestjs/common";
 import { FormatResponseInterceptor, PendingTokenInterceptor, AuthnTokenInterceptor } from "~common/interceptors";
 import { TransactionManagerModule } from "~common/transaction-manager";
 
-import { ElevatedAccessGuard, PermissionGuard, AuthnGuard } from "./infrastructure/guards";
+import { ReauthenticationGuard, PermissionGuard, AuthnGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { QUEUES, BullQueue } from "./infrastructure/queues";
@@ -29,7 +29,7 @@ import { QUERIES } from "./application/queries";
         ...COMMANDS,
         ...QUERIES,
         ...QUEUES,
-        ElevatedAccessGuard,
+        ReauthenticationGuard,
         PermissionGuard,
         AuthnGuard,
         {
@@ -54,7 +54,7 @@ import { QUERIES } from "./application/queries";
         },
         {
             provide: APP_GUARD,
-            useExisting: ElevatedAccessGuard,
+            useExisting: ReauthenticationGuard,
         },
     ],
     controllers: [...CONTROLLERS, ...CONSUMERS],

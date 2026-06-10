@@ -301,7 +301,7 @@ export class EnvironmentVariablesDTO {
     declare public ACCESS_CACHE_TTL: StringValue;
 
     @Validator.IsMsString()
-    declare public ELEVATED_ACCESS_TTL: StringValue;
+    declare public REAUTHENTICATION_TTL: StringValue;
 
     // ---------------------------------------------------------------------------
     // OAuth Providers

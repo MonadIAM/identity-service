@@ -14,7 +14,6 @@ const SWAGGER_TAGS: Record<string, string> = {
     Password: "Password credential management, including rotation and recovery through OTP or recovery code flows.",
     SecondFactor: "TOTP-based multi-factor authentication setup, verification, reset, and factor lifecycle management.",
     RecoveryCodes: "Backup recovery code management for second-factor fallback and emergency account access restoration.",
-    ElevatedAccess: "Step-up identity confirmation for sensitive operations using password or second-factor verification.",
     OAuth: "External OAuth integration flows for provider authorization, callback handling, and federated account access.",
     JWKS: "Public JSON Web Key Set endpoint used by clients and gateways to validate issued JWT signatures.",
     AuditLog: "Centralized security log tracking operations, actors, and request context across authentication workflows.",

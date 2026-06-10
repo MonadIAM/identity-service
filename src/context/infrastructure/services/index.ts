@@ -1,6 +1,6 @@
 import { Provider } from "@nestjs/common";
 
-import { ElevatedAccessCacheService } from "./elevated-access-cache.service";
+import { ReauthenticationCacheService } from "./reauthentication-cache.service";
 import { Pending2FACacheService } from "./pending-2fa-cache.service";
 import { OAuthStateCacheService } from "./oauth-state-cache.service";
 import { BlacklistCacheService } from "./blacklist-cache.service";
@@ -8,7 +8,7 @@ import { AccessCacheService } from "./access-cache.service";
 import { OTPCacheService } from "./otp-cache.service";
 import { SecondFactorSecretService } from "./second-factor-secret.service";
 import {
-    ELEVATED_ACCESS_CACHE_SERVICE,
+    REAUTHENTICATION_CACHE_SERVICE,
     PENDING_2FA_CACHE_SERVICE,
     OAUTH_STATE_CACHE_SERVICE,
     BLACKLIST_CACHE_SERVICE,
@@ -19,8 +19,8 @@ import {
 
 export const INFRASTRUCTURE_SERVICES: Provider[] = [
     {
-        provide: ELEVATED_ACCESS_CACHE_SERVICE,
-        useClass: ElevatedAccessCacheService,
+        provide: REAUTHENTICATION_CACHE_SERVICE,
+        useClass: ReauthenticationCacheService,
     },
     {
         provide: PENDING_2FA_CACHE_SERVICE,
@@ -49,7 +49,7 @@ export const INFRASTRUCTURE_SERVICES: Provider[] = [
 ];
 
 export {
-    ELEVATED_ACCESS_CACHE_SERVICE,
+    REAUTHENTICATION_CACHE_SERVICE,
     PENDING_2FA_CACHE_SERVICE,
     OAUTH_STATE_CACHE_SERVICE,
     BLACKLIST_CACHE_SERVICE,

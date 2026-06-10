@@ -13,7 +13,7 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { Extract, ElevatedAccess, FormatResponse, Swagger, RequirePermission } from "~common/decorators";
+import { Extract, Reauthentication, FormatResponse, Swagger, RequirePermission } from "~common/decorators";
 import { IDENTIFIER_COMMANDS } from "~context/application/commands";
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { IDENTIFIER_QUERIES } from "~context/application/queries";
@@ -249,7 +249,7 @@ export class IdentifierController {
 
     @HttpCode(OK)
     @Delete("purge")
-    @ElevatedAccess()
+    @Reauthentication()
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(IDENTIFIER_PURGE)
     @ApiOperation({ summary: "Remove identifier" })

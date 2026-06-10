@@ -1,15 +1,15 @@
-import { ElevatedAccessConsumer } from "./elevated-access.consumer";
+import { ReauthenticationConsumer } from "./reauthentication.consumer";
 import { MembershipConsumer } from "./membership.consumer";
 import { AccessCacheConsumer } from "./access-cache.consumer";
 import { BlacklistConsumer } from "./blacklist.consumer";
 import { RetryConsumer } from "./retry.consumer";
 
 export const CONSUMERS = [
-    ElevatedAccessConsumer,
+    ReauthenticationConsumer,
     AccessCacheConsumer,
     MembershipConsumer,
     BlacklistConsumer,
     RetryConsumer,
 ];
 
-export { AccessCacheConsumer, BlacklistConsumer, ElevatedAccessConsumer, MembershipConsumer, RetryConsumer };
+export { AccessCacheConsumer, BlacklistConsumer, ReauthenticationConsumer, MembershipConsumer, RetryConsumer };

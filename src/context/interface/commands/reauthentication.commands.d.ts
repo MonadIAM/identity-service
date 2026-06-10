@@ -1,5 +1,5 @@
 declare namespace Commands {
-    namespace ElevatedAccess {
+    namespace Reauthentication {
         interface ControllerContract {
             bySecondFactor: (props: BySecondFactor.Props) => BySecondFactor.Result;
             byPassword: (props: ByPassword.Props) => ByPassword.Result;

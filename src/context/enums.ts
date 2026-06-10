@@ -63,7 +63,7 @@ export enum ActionType {
 
 export enum EntityType {
     /* eslint-disable prettier/prettier */
-    ELEVATED_ACCESS = "ELEVATED_ACCESS",
+    REAUTHENTICATION = "REAUTHENTICATION",
     RECOVERY_CODE   = "RECOVERY_CODE",
     SECOND_FACTOR   = "SECOND_FACTOR",
     MASTER_CODE     = "MASTER_CODE",
