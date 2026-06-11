@@ -50,6 +50,12 @@ export class EnvironmentVariablesDTO {
     declare public ALLOWED_ORIGINS: string;
 
     @Validator.IsString()
+    declare public IDENTITY_SERVICE_URL: string;
+
+    @Validator.IsString()
+    declare public ACCESS_CONTROL_SERVICE_URL: string;
+
+    @Validator.IsString()
     declare public ACCESS_CONTROL_GRPC_URL: string;
 
     // ---------------------------------------------------------------------------

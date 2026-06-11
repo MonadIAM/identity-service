@@ -1,12 +1,18 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
+import { KAFKA_RETRY_PROCESSOR, CLEANUP_PROCESSOR, KAFKA_RETRY_QUEUE, CLEANUP_QUEUE } from "./tokens";
 import { KafkaRetryProcessor, KafkaRetryQueue } from "./kafka-retry";
 import { CleanupProcessor, CleanupQueue } from "./cleanup";
-import { KAFKA_RETRY_QUEUE, CLEANUP_QUEUE } from "./tokens";
 
-export const QUEUES: Provider[] = [
-    KafkaRetryProcessor,
-    CleanupProcessor,
+export const QUEUES: ClassProvider[] = [
+    {
+        provide: KAFKA_RETRY_PROCESSOR,
+        useClass: KafkaRetryProcessor,
+    },
+    {
+        provide: CLEANUP_PROCESSOR,
+        useClass: CleanupProcessor,
+    },
     {
         provide: KAFKA_RETRY_QUEUE,
         useClass: KafkaRetryQueue,
@@ -17,5 +23,5 @@ export const QUEUES: Provider[] = [
     },
 ];
 
+export { KAFKA_RETRY_PROCESSOR, CLEANUP_PROCESSOR, KAFKA_RETRY_QUEUE, CLEANUP_QUEUE };
 export { BullQueue } from "./enums";
-export { KAFKA_RETRY_QUEUE, CLEANUP_QUEUE };

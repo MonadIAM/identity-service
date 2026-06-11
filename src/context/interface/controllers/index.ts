@@ -10,7 +10,7 @@ import { OAuthController } from "./oauth.controller";
 import { AuthnController } from "./authn.controller";
 import { JWKSController } from "./jwks.controller";
 
-export const CONTROLLERS = [
+export const HTTP_CONTROLLERS = [
     SecondFactorController,
     RecoveryCodeController,
     IdentifierController,

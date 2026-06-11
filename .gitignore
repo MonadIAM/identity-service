@@ -40,6 +40,10 @@ lerna-debug.log*
 .env
 .vault.env
 
+# CLI generated artifacts
+*.swagger.json
+*.postman.json
+
 # temp directory
 .temp
 .tmp

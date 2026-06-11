@@ -17,8 +17,8 @@ const {
     REQUEST_TIMEOUT,
     UNAUTHORIZED,
     NOT_FOUND,
-    CONFLICT,
     FORBIDDEN,
+    CONFLICT,
     OK,
 } = HttpStatus;
 
@@ -37,7 +37,10 @@ export class RecoveryCodeController {
     @Get("status")
     @FormatResponse(StatusResultDTO)
     @RequirePermission(RECOVERY_CODE_READ_STATUS)
-    @ApiOperation({ summary: "Get recovery codes status" })
+    @ApiOperation({
+        summary: "Get recovery codes status",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
     public getStatus(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.RecoveryCode.GetStatus.Result {
         return this.recoveryCodeQueries.getStatus({ account });
@@ -48,7 +51,10 @@ export class RecoveryCodeController {
     @Post("regenerate")
     @FormatResponse(RegenerateResultDTO)
     @RequirePermission(RECOVERY_CODE_REGENERATE)
-    @ApiOperation({ summary: "Regenerate recovery codes" })
+    @ApiOperation({
+        summary: "Regenerate recovery codes",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -56,8 +62,8 @@ export class RecoveryCodeController {
         REQUEST_TIMEOUT,
         UNAUTHORIZED,
         NOT_FOUND,
-        CONFLICT,
         FORBIDDEN,
+        CONFLICT,
     )
     public regenerate(
         @Extract.Session() { account: actor }: Extract.Session.Authenticated,

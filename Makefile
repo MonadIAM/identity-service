@@ -1,4 +1,4 @@
-.PHONY: coverage
+.PHONY: coverage swagger postman docs
 
 # Infrastructure
 env:
@@ -30,6 +30,13 @@ lint-fix:
 	npm run lint:fix
 knip:
 	npm run knip
+aws:
+	npm run aws -- $(file)
+swagger:
+	npm run swagger
+postman:
+	npm run postman
+docs: swagger postman
 
 # Database
 migrate:
@@ -46,9 +53,3 @@ test:
 	npx jest --config ./jest.unit.config.ts
 coverage:
 	npx jest --config ./jest.unit.config.ts --coverage
-
-# Scripts
-jwt-keys:
-	@node scripts/generate-jwt-keys.mjs
-aws-cred:
-	@node scripts/import-aws-credentials.mjs $(file)

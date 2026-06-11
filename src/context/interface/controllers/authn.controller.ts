@@ -61,8 +61,11 @@ export class AuthnController {
     @Post("token/internal")
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
-    @ApiOperation({ summary: "Issue tokens using the internal contract" })
     @FormatResponse(InternalTokenResultDTO)
+    @ApiOperation({
+        summary: "Issue tokens using the internal contract",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -89,8 +92,11 @@ export class AuthnController {
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
     @Header("Content-Type", "application/json")
-    @ApiOperation({ summary: "Issue tokens using the external RFC 6749 contract" })
     @FormatResponse(ExternalTokenResultDTO)
+    @ApiOperation({
+        summary: "Issue tokens using the external RFC 6749 contract",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -115,7 +121,10 @@ export class AuthnController {
     @HttpCode(OK)
     @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Request passwordless OTP" })
+    @ApiOperation({
+        summary: "Request passwordless OTP",
+        security: [],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED)
     public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Authn.RequestOTP.Result {
         return this.authnCommands.requestOTP({ input });
@@ -125,7 +134,10 @@ export class AuthnController {
     @HttpCode(OK)
     @Post("verify/otp")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Verify passwordless OTP" })
+    @ApiOperation({
+        summary: "Verify passwordless OTP",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -147,7 +159,10 @@ export class AuthnController {
     @HttpCode(OK)
     @Post("verify/2fa")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Verify second-factor TOTP" })
+    @ApiOperation({
+        summary: "Verify second-factor TOTP",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -168,7 +183,10 @@ export class AuthnController {
     @Post("reauthn/password")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(REAUTHENTICATION_CONFIRM_PASSWORD)
-    @ApiOperation({ summary: "Reauthenticate by password" })
+    @ApiOperation({
+        summary: "Reauthenticate by password",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -191,7 +209,10 @@ export class AuthnController {
     @Post("reauthn/2fa")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(REAUTHENTICATION_CONFIRM_SECOND_FACTOR)
-    @ApiOperation({ summary: "Reauthenticate by TOTP" })
+    @ApiOperation({
+        summary: "Reauthenticate by TOTP",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -209,11 +230,14 @@ export class AuthnController {
         return this.reauthenticationCommands.bySecondFactor({ actor: account, context, session, input });
     }
 
-    @Get("session")
     @HttpCode(OK)
+    @Get("session")
     @FormatResponse(SessionDTO)
     @RequirePermission(SESSION_READ_PERSONAL)
-    @ApiOperation({ summary: "Get current session" })
+    @ApiOperation({
+        summary: "Get current session",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getCurrentSession(
         @Extract.Session() { session, account }: Extract.Session.Authenticated,
@@ -221,11 +245,14 @@ export class AuthnController {
         return this.sessionQueries.getCurrent({ session, account });
     }
 
-    @Get("session/list")
     @HttpCode(OK)
+    @Get("session/list")
     @FormatResponse(ListDTO)
-    @ApiOperation({ summary: "Get list of sessions" })
     @RequirePermission(SESSION_READ_PERSONAL, SESSION_READ_ABSOLUTE)
+    @ApiOperation({
+        summary: "Get list of sessions",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
     public getSessions(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.Session.FindMany.Result {
         return this.sessionQueries.findMany({ account });
@@ -235,7 +262,10 @@ export class AuthnController {
     @Delete("session/logout")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SESSION_LOGOUT)
-    @ApiOperation({ summary: "Revoke current session" })
+    @ApiOperation({
+        summary: "Revoke current session",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, CONFLICT, FORBIDDEN)
     public logout(
         @Extract.Session() { account: actor, session }: Extract.Session.Authenticated,
@@ -248,7 +278,10 @@ export class AuthnController {
     @Delete("session/revoke")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SESSION_REVOKE)
-    @ApiOperation({ summary: "Revoke specific sessions" })
+    @ApiOperation({
+        summary: "Revoke specific sessions",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -270,7 +303,10 @@ export class AuthnController {
     @Delete("session/revoke-all")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SESSION_REVOKE)
-    @ApiOperation({ summary: "Revoke all sessions" })
+    @ApiOperation({
+        summary: "Revoke all sessions",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         SERVICE_UNAVAILABLE,

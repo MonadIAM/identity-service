@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { ReauthenticationCacheService } from "./reauthentication-cache.service";
 import { Pending2FACacheService } from "./pending-2fa-cache.service";
@@ -9,15 +9,19 @@ import { OTPCacheService } from "./otp-cache.service";
 import { SecondFactorSecretService } from "./second-factor-secret.service";
 import {
     REAUTHENTICATION_CACHE_SERVICE,
+    SECOND_FACTOR_SECRET_SERVICE,
     PENDING_2FA_CACHE_SERVICE,
     OAUTH_STATE_CACHE_SERVICE,
     BLACKLIST_CACHE_SERVICE,
     ACCESS_CACHE_SERVICE,
     OTP_CACHE_SERVICE,
-    SECOND_FACTOR_SECRET_SERVICE,
 } from "./tokens";
 
-export const INFRASTRUCTURE_SERVICES: Provider[] = [
+export const INFRASTRUCTURE_SERVICES: ClassProvider[] = [
+    {
+        provide: SECOND_FACTOR_SECRET_SERVICE,
+        useClass: SecondFactorSecretService,
+    },
     {
         provide: REAUTHENTICATION_CACHE_SERVICE,
         useClass: ReauthenticationCacheService,
@@ -42,18 +46,14 @@ export const INFRASTRUCTURE_SERVICES: Provider[] = [
         provide: OTP_CACHE_SERVICE,
         useClass: OTPCacheService,
     },
-    {
-        provide: SECOND_FACTOR_SECRET_SERVICE,
-        useClass: SecondFactorSecretService,
-    },
 ];
 
 export {
     REAUTHENTICATION_CACHE_SERVICE,
+    SECOND_FACTOR_SECRET_SERVICE,
     PENDING_2FA_CACHE_SERVICE,
     OAUTH_STATE_CACHE_SERVICE,
     BLACKLIST_CACHE_SERVICE,
     ACCESS_CACHE_SERVICE,
     OTP_CACHE_SERVICE,
-    SECOND_FACTOR_SECRET_SERVICE,
 };

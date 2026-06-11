@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { RecoveryCodeService } from "./recovery-code.service";
 import { SecondFactorService } from "./second-factor.service";
@@ -19,7 +19,7 @@ import {
     PROFILE_SERVICE,
 } from "./tokens";
 
-export const DOMAIN_SERVICES: Provider[] = [
+export const DOMAIN_SERVICES: ClassProvider[] = [
     {
         provide: RECOVERY_CODE_SERVICE,
         useClass: RecoveryCodeService,

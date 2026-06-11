@@ -52,7 +52,10 @@ export class AccountController {
     @FormatResponse(AccountDTO)
     @RequirePermission(ACCOUNT_READ_PERSONAL)
     @ApiResponse({ status: OK, type: AccountDTO })
-    @ApiOperation({ summary: "Get current account" })
+    @ApiOperation({
+        summary: "Get current account",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getMe(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.Account.FindUnique.Result {
         return this.accountQueries.findUnique({ account, view: ResponseViewType.DETAILED });
@@ -63,7 +66,10 @@ export class AccountController {
     @FormatResponse(AccountDTO)
     @RequirePermission(ACCOUNT_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: AccountDTO })
-    @ApiOperation({ summary: "Get account by ID" })
+    @ApiOperation({
+        security: [{ identity: [] }],
+        summary: "Get account by ID",
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -82,7 +88,10 @@ export class AccountController {
     @FormatResponse(ListDTO)
     @RequirePermission(ACCOUNT_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({ summary: "Get paginated list of accounts" })
+    @ApiOperation({
+        summary: "Get paginated list of accounts",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -102,7 +111,10 @@ export class AccountController {
     @Post("signup")
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Register a new account" })
+    @ApiOperation({
+        summary: "Register a new account",
+        security: [],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, CONFLICT)
     public signup(@Body() input: SignupBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Account.Signup.Result {
         return this.accountCommands.signup({ context, input });
@@ -112,7 +124,10 @@ export class AccountController {
     @HttpCode(OK)
     @Post("resend")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Resend verification code" })
+    @ApiOperation({
+        summary: "Resend verification code",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -129,7 +144,10 @@ export class AccountController {
     @HttpCode(OK)
     @Post("verify")
     @FormatResponse(VerifyResultDTO)
-    @ApiOperation({ summary: "Verify account with OTP" })
+    @ApiOperation({
+        summary: "Verify account with OTP",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -147,7 +165,10 @@ export class AccountController {
     @Post("suspend")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ACCOUNT_SUSPEND)
-    @ApiOperation({ summary: "Suspend account" })
+    @ApiOperation({
+        security: [{ identity: [] }],
+        summary: "Suspend account",
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -170,7 +191,10 @@ export class AccountController {
     @Post("restore")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ACCOUNT_RESTORE)
-    @ApiOperation({ summary: "Restore account" })
+    @ApiOperation({
+        security: [{ identity: [] }],
+        summary: "Restore account",
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

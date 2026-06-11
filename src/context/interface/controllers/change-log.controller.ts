@@ -34,7 +34,10 @@ export class ChangeLogController {
     @FormatResponse(ChangeLogDTO)
     @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ChangeLogDTO })
-    @ApiOperation({ summary: "Returns a change log by identifier" })
+    @ApiOperation({
+        summary: "Returns a change log by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -53,7 +56,10 @@ export class ChangeLogController {
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
-    @ApiOperation({ summary: "Returns a paginated list of change logs" })
+    @ApiOperation({
+        summary: "Returns a paginated list of change logs",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

@@ -2,10 +2,14 @@ import type { KnipConfig } from "knip";
 
 const config: KnipConfig = {
     ignoreExportsUsedInFile: true, // reduces noise from re-exports inside index.ts
-    project: ["src/**/*.ts"],
+    project: ["src/**/*.ts", "cli/**/*.ts"],
     entry: [
         "mikro-orm.config.ts",
         "src/main.ts",
+        // CLI tools - run directly via npm scripts
+        "cli/postman/patch.ts",
+        "cli/postman/main.ts",
+        "cli/aws/main.ts",
         // Standalone scripts - run directly, not via import
         "src/infrastructure/database/migrations/*.ts",
         "src/infrastructure/database/seeders/*.ts",
@@ -16,18 +20,13 @@ const config: KnipConfig = {
         "src/context/infrastructure/schemas/*.ts",
     ],
     ignoreDependencies: [
-        // MikroORM CLI tools - used via makefile/npx, not imported
+        "openapi-to-postmanv2",
         "@mikro-orm/entity-generator",
         "@mikro-orm/cli",
-        // Peer deps of @nestjs/swagger required by Fastify adapter - not imported directly
         "@fastify/swagger-ui",
         "@fastify/swagger",
-        // Transitive - provided by @nestjs/platform-fastify and jest respectively
         "@jest/globals",
         "fastify",
-        // CLI and path resolver for ts-node/jest
-        "tsconfig-paths",
-        "ts-node",
     ],
 };
 

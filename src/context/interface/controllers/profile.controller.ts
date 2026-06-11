@@ -36,7 +36,10 @@ export class ProfileController {
     @Patch("update")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PROFILE_UPDATE)
-    @ApiOperation({ summary: "Update profile" })
+    @ApiOperation({
+        security: [{ identity: [] }],
+        summary: "Update profile",
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

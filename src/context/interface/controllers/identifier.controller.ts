@@ -74,8 +74,11 @@ export class IdentifierController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(IdentifierDTO)
-    @ApiOperation({ summary: "Get identifier by ID" })
     @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @ApiOperation({
+        summary: "Get identifier by ID",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -92,8 +95,11 @@ export class IdentifierController {
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
-    @ApiOperation({ summary: "Get paginated list of identifiers" })
     @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @ApiOperation({
+        summary: "Get paginated list of identifiers",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -112,8 +118,11 @@ export class IdentifierController {
     @HttpCode(OK)
     @Post("list/lookup")
     @FormatResponse(LookupListDTO)
-    @ApiOperation({ summary: "Returns a lookup list of identifiers" })
     @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @ApiOperation({
+        summary: "Returns a lookup list of identifiers",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -134,7 +143,10 @@ export class IdentifierController {
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(IDENTIFIER_CREATE)
-    @ApiOperation({ summary: "Add identifier" })
+    @ApiOperation({
+        security: [{ identity: [] }],
+        summary: "Add identifier",
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -157,7 +169,10 @@ export class IdentifierController {
     @Post("resend")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(IDENTIFIER_RESEND)
-    @ApiOperation({ summary: "Resend identifier verification" })
+    @ApiOperation({
+        summary: "Resend identifier verification",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -179,7 +194,10 @@ export class IdentifierController {
     @Post("verify")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(IDENTIFIER_VERIFY)
-    @ApiOperation({ summary: "Verify identifier with OTP" })
+    @ApiOperation({
+        summary: "Verify identifier with OTP",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -202,8 +220,11 @@ export class IdentifierController {
     @HttpCode(OK)
     @Patch("toggle/notifications")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Toggle notifications" })
     @RequirePermission(IDENTIFIER_TOGGLE_NOTIFICATIONS)
+    @ApiOperation({
+        summary: "Toggle notifications",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -226,8 +247,11 @@ export class IdentifierController {
     @HttpCode(OK)
     @Patch("toggle/public-contact")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Toggle public contact" })
     @RequirePermission(IDENTIFIER_TOGGLE_PUBLIC_CONTACT)
+    @ApiOperation({
+        summary: "Toggle public contact",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -252,7 +276,10 @@ export class IdentifierController {
     @Reauthentication()
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(IDENTIFIER_PURGE)
-    @ApiOperation({ summary: "Remove identifier" })
+    @ApiOperation({
+        summary: "Remove identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

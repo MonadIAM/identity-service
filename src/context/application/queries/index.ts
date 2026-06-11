@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { RecoveryCodeQueries } from "./recovery-code.queries";
 import { SecondFactorQueries } from "./second-factor.queries";
@@ -17,7 +17,7 @@ import {
     SESSION_QUERIES,
 } from "./tokens";
 
-export const QUERIES: Provider[] = [
+export const QUERIES: ClassProvider[] = [
     {
         provide: RECOVERY_CODE_QUERIES,
         useClass: RecoveryCodeQueries,

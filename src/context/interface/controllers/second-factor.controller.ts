@@ -28,8 +28,8 @@ const {
     UNAUTHORIZED,
     BAD_REQUEST,
     NOT_FOUND,
-    CONFLICT,
     FORBIDDEN,
+    CONFLICT,
     CREATED,
     OK,
 } = HttpStatus;
@@ -56,7 +56,10 @@ export class SecondFactorController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @RequirePermission(SECOND_FACTOR_READ_PERSONAL, SECOND_FACTOR_READ_ABSOLUTE)
-    @ApiOperation({ summary: "Get list of second factors" })
+    @ApiOperation({
+        summary: "Get list of second factors",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
     public getList(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.SecondFactor.FindMany.Result {
         return this.secondFactorQueries.findMany({ account });
@@ -66,7 +69,10 @@ export class SecondFactorController {
     @HttpCode(OK)
     @FormatResponse(GetQRCodeResultDTO)
     @RequirePermission(SECOND_FACTOR_READ_PERSONAL)
-    @ApiOperation({ summary: "Get QR code URI for unconfirmed TOTP factor" })
+    @ApiOperation({
+        summary: "Get QR code URI for unconfirmed TOTP factor",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getQRCode(
         @Query() { id }: GetQRCodeQueryDTO,
@@ -79,7 +85,10 @@ export class SecondFactorController {
     @HttpCode(CREATED)
     @FormatResponse(CreateResultDTO)
     @RequirePermission(SECOND_FACTOR_CREATE)
-    @ApiOperation({ summary: "Create TOTP factor" })
+    @ApiOperation({
+        summary: "Create TOTP factor",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -87,8 +96,8 @@ export class SecondFactorController {
         REQUEST_TIMEOUT,
         UNAUTHORIZED,
         NOT_FOUND,
-        CONFLICT,
         FORBIDDEN,
+        CONFLICT,
     )
     public create(
         @Body() input: CreateBodyDTO,
@@ -102,7 +111,10 @@ export class SecondFactorController {
     @Post("verify")
     @FormatResponse(VerifyResultDTO)
     @RequirePermission(SECOND_FACTOR_VERIFY)
-    @ApiOperation({ summary: "Verify TOTP factor" })
+    @ApiOperation({
+        summary: "Verify TOTP factor",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -111,8 +123,8 @@ export class SecondFactorController {
         UNAUTHORIZED,
         BAD_REQUEST,
         NOT_FOUND,
-        CONFLICT,
         FORBIDDEN,
+        CONFLICT,
     )
     public verify(
         @Body() input: VerifyBodyDTO,
@@ -127,7 +139,10 @@ export class SecondFactorController {
     @Reauthentication()
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SECOND_FACTOR_PURGE)
-    @ApiOperation({ summary: "Purge non-active factor" })
+    @ApiOperation({
+        summary: "Purge non-active factor",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -135,8 +150,8 @@ export class SecondFactorController {
         REQUEST_TIMEOUT,
         UNAUTHORIZED,
         NOT_FOUND,
-        CONFLICT,
         FORBIDDEN,
+        CONFLICT,
     )
     public purge(
         @Query() input: PurgeQueryDTO,
@@ -150,7 +165,10 @@ export class SecondFactorController {
     @HttpCode(OK)
     @Post("reset")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Reset all factors by master code" })
+    @ApiOperation({
+        summary: "Reset all factors by master code",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

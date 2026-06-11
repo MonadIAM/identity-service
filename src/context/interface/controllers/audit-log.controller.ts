@@ -34,7 +34,10 @@ export class AuditLogController {
     @FormatResponse(AuditLogDTO)
     @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: AuditLogDTO })
-    @ApiOperation({ summary: "Returns a audit log by identifier" })
+    @ApiOperation({
+        summary: "Returns a audit log by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -53,7 +56,10 @@ export class AuditLogController {
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
-    @ApiOperation({ summary: "Returns a paginated list of audit logs" })
+    @ApiOperation({
+        summary: "Returns a paginated list of audit logs",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

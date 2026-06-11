@@ -36,7 +36,10 @@ export class PasswordController {
     @Post("change")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PASSWORD_CHANGE)
-    @ApiOperation({ summary: "Change password" })
+    @ApiOperation({
+        security: [{ identity: [] }],
+        summary: "Change password",
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -60,7 +63,10 @@ export class PasswordController {
     @HttpCode(OK)
     @Post("request/otp")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Request password reset OTP" })
+    @ApiOperation({
+        summary: "Request password reset OTP",
+        security: [],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT)
     public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Password.RequestOTP.Result {
         return this.passwordCommands.requestOTP({ input });
@@ -70,7 +76,10 @@ export class PasswordController {
     @HttpCode(OK)
     @Post("reset/otp")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Reset password by OTP" })
+    @ApiOperation({
+        summary: "Reset password by OTP",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -91,7 +100,10 @@ export class PasswordController {
     @HttpCode(OK)
     @Post("reset/code")
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Reset password by recovery code" })
+    @ApiOperation({
+        summary: "Reset password by recovery code",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { ReauthenticationCommands } from "./reauthentication.commands";
 import { RecoveryCodeCommands } from "./recovery-code.commands";
@@ -25,7 +25,7 @@ import {
     AUTHN_COMMANDS,
 } from "./tokens";
 
-export const COMMANDS: Provider[] = [
+export const COMMANDS: ClassProvider[] = [
     {
         provide: REAUTHENTICATION_COMMANDS,
         useClass: ReauthenticationCommands,

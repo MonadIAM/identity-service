@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { PasswordHistoryRepository } from "./password-history.repository";
 import { RecoveryCodeRepository } from "./recovery-code.repository";
@@ -27,7 +27,7 @@ import {
     ACCOUNT_REPOSITORY,
 } from "./tokens";
 
-export const REPOSITORIES: Provider[] = [
+export const REPOSITORIES: ClassProvider[] = [
     {
         provide: PASSWORD_HISTORY_REPOSITORY,
         useClass: PasswordHistoryRepository,

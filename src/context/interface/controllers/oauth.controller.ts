@@ -31,7 +31,10 @@ export class OAuthController {
     @Public()
     @HttpCode(OK)
     @Get("authorize")
-    @ApiOperation({ summary: "Get OAuth authorization URL" })
+    @ApiOperation({
+        summary: "Get OAuth authorization URL",
+        security: [],
+    })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
     public authorize(@Query() input: AuthorizeBodyDTO): Commands.OAuth.Authorize.Result {
         return this.oauthCommands.authorize({ input });
@@ -40,7 +43,10 @@ export class OAuthController {
     @Public()
     @HttpCode(OK)
     @Get("callback")
-    @ApiOperation({ summary: "OAuth callback" })
+    @ApiOperation({
+        summary: "OAuth callback",
+        security: [],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

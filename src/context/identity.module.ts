@@ -9,7 +9,7 @@ import { ReauthenticationGuard, PermissionGuard, AuthnGuard } from "./infrastruc
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { QUEUES, BullQueue } from "./infrastructure/queues";
-import { CONTROLLERS } from "./interface/controllers";
+import { HTTP_CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
 import { SCHEDULERS } from "./interface/schedulers";
 import { CONSUMERS } from "./interface/consumers";
@@ -57,6 +57,6 @@ import { QUERIES } from "./application/queries";
             useExisting: ReauthenticationGuard,
         },
     ],
-    controllers: [...CONTROLLERS, ...CONSUMERS],
+    controllers: [...HTTP_CONTROLLERS, ...CONSUMERS],
 })
 export class IdentityModule {}

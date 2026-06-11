@@ -15,7 +15,7 @@ const prettierConfig = [
         ]
     },
     {
-        files: ["src/**/*.ts"],
+        files: ["{src,cli}/**/*.ts"],
         languageOptions: {
             parser,
             parserOptions: {
