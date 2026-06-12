@@ -33,8 +33,10 @@ export abstract class BootstrapSecurity {
      * @see CORS [Cross-Origin Resource Sharing](https://developer.mozilla.org/docs/Web/HTTP/CORS)
      */
     private static enforceAllowedOrigins(application: NestFastifyApplication): void {
-        const allowedOrigins: string[] = JSON.parse(process.env.ALLOWED_ORIGINS ?? "[]");
         const isDevelopment: boolean = (process.env.NODE_ENV ?? "development") === "development";
+        const serviceOrigins: string[] = JSON.parse(process.env.ALLOWED_SERVICE_ORIGINS);
+        const uiOrigins: string[] = JSON.parse(process.env.ALLOWED_UI_ORIGINS);
+        const allowedOrigins: string[] = serviceOrigins.concat(uiOrigins);
 
         application
             .getHttpAdapter()
@@ -98,6 +100,9 @@ export abstract class BootstrapSecurity {
      * @see OWASP [Secure Headers Project](https://owasp.org/www-community/OWASP_Secure_Headers_Project#x-content-type-options)
      */
     private static async configureSecurityHeaders(application: NestFastifyApplication, hstsMaxAge: number): Promise<void> {
+        const serviceOrigins: string[] = JSON.parse(process.env.ALLOWED_SERVICE_ORIGINS);
+        const swagger = serviceOrigins.map((url) => `${url}/docs-json`);
+
         await application.register(fastifyHelmet, {
             crossOriginEmbedderPolicy: true,
             crossOriginOpenerPolicy: { policy: "same-origin" },
@@ -106,8 +111,9 @@ export abstract class BootstrapSecurity {
                 directives: {
                     defaultSrc: ["'self'"],
                     styleSrc: ["'self'", "'unsafe-inline'"],
-                    imgSrc: ["'self'", "data:", "validator.swagger.io"],
                     scriptSrc: ["'self'", "https:", "'unsafe-inline'"],
+                    imgSrc: ["'self'", "data:", "validator.swagger.io"],
+                    connectSrc: ["'self'", ...swagger],
                     upgradeInsecureRequests: [],
                 },
             },

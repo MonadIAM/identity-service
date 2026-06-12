@@ -47,7 +47,10 @@ export class EnvironmentVariablesDTO {
     declare public BODY_LIMIT_BYTES: number;
 
     @Validator.IsString()
-    declare public ALLOWED_ORIGINS: string;
+    declare public ALLOWED_SERVICE_ORIGINS: string;
+
+    @Validator.IsString()
+    declare public ALLOWED_UI_ORIGINS: string;
 
     @Validator.IsString()
     declare public IDENTITY_SERVICE_URL: string;
