@@ -1,4 +1,4 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Post, Get } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Reauthentication, Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
@@ -49,6 +49,8 @@ export class RecoveryCodeController {
     @HttpCode(OK)
     @Reauthentication()
     @Post("regenerate")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
     @FormatResponse(RegenerateResultDTO)
     @RequirePermission(RECOVERY_CODE_REGENERATE)
     @ApiOperation({

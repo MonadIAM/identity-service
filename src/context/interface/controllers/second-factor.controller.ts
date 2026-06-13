@@ -1,5 +1,17 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Delete, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+    UseInterceptors,
+    Controller,
+    HttpStatus,
+    HttpCode,
+    Delete,
+    Header,
+    Inject,
+    Query,
+    Body,
+    Post,
+    Get,
+} from "@nestjs/common";
 
 import { Extract, Public, Reauthentication, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
@@ -67,6 +79,8 @@ export class SecondFactorController {
 
     @Get("qr")
     @HttpCode(OK)
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
     @FormatResponse(GetQRCodeResultDTO)
     @RequirePermission(SECOND_FACTOR_READ_PERSONAL)
     @ApiOperation({
@@ -83,6 +97,8 @@ export class SecondFactorController {
 
     @Post("create")
     @HttpCode(CREATED)
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
     @FormatResponse(CreateResultDTO)
     @RequirePermission(SECOND_FACTOR_CREATE)
     @ApiOperation({
@@ -109,6 +125,8 @@ export class SecondFactorController {
 
     @HttpCode(OK)
     @Post("verify")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
     @FormatResponse(VerifyResultDTO)
     @RequirePermission(SECOND_FACTOR_VERIFY)
     @ApiOperation({

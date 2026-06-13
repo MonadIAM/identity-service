@@ -149,6 +149,8 @@ export class AuthnController {
     @Public()
     @HttpCode(OK)
     @Post("verify/otp")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({
         summary: "Verify passwordless OTP",
@@ -174,6 +176,8 @@ export class AuthnController {
     @Public()
     @HttpCode(OK)
     @Post("verify/2fa")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({
         summary: "Verify second-factor TOTP",
@@ -210,6 +214,8 @@ export class AuthnController {
     @Public()
     @HttpCode(OK)
     @Get("oauth/callback")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
     @ApiOperation({
         summary: "OAuth callback",
         security: [],

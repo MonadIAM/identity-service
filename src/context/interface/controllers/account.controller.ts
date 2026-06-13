@@ -1,4 +1,4 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post, Get, Query } from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Body, Post, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
@@ -143,6 +143,8 @@ export class AccountController {
     @Public()
     @HttpCode(OK)
     @Post("verify")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
     @FormatResponse(VerifyResultDTO)
     @ApiOperation({
         summary: "Verify account with OTP",
