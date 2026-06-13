@@ -83,7 +83,10 @@ export abstract class BootstrapSecurity {
     private static async configureCrossOriginResourceSharing(application: NestFastifyApplication): Promise<void> {
         await application.register(fastifyCors, {
             origin: (_origin, callback) => callback(null, true),
+            methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Authorization", "Content-Type"],
             credentials: true,
+            maxAge: 86400,
         });
     }
 

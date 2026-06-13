@@ -38,7 +38,7 @@ export abstract class BootstrapSwagger {
                         description: "Authenticate through identity-service",
                         flows: {
                             password: {
-                                tokenUrl: "/api/v1/authn/token/external",
+                                tokenUrl: `${process.env.IDENTITY_SERVICE_URL}/api/v1/authn/token/external`,
                                 scopes: {},
                             },
                         },
