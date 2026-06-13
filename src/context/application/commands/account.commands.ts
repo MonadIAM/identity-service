@@ -3,7 +3,7 @@ import { AccountTopicAction } from "@liam/contracts";
 import { isEmail } from "class-validator";
 
 import { AccountSubject, IdentifierType, AccountStatus, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
+import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE } from "~context/domain/services";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
@@ -26,8 +26,6 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly accountService: Services.Account.Contract,
         @Inject(RECOVERY_CODE_SERVICE)
         private readonly recoveryCodeService: Services.RecoveryCode.Contract,
-        @Inject(SESSION_SERVICE)
-        private readonly sessionService: Services.Session.Contract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
         @Inject(HASHING_SERVICE)
@@ -105,10 +103,7 @@ export class AccountCommands implements Commands.Account.Contract {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        const { tokens } = await this.transactionalService.run<{
-            tokens: Awaited<Services.Session.Create.Result>;
-            account: Entities.Account;
-        }>({
+        await this.transactionalService.run<Entities.Account>({
             resource: this.resource,
             audit: {
                 entityType: EntityType.ACCOUNT,
@@ -116,7 +111,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (result) => ({ account: result.account.id }),
+                payloadMapper: (account) => ({ account: account.id }),
                 actionType: AccountTopicAction.CREATE,
                 destinationTopic: KafkaTopic.ACCOUNT,
             },
@@ -133,23 +128,12 @@ export class AccountCommands implements Commands.Account.Contract {
                     input: { account, hashes: hashedCodes },
                 });
 
-                const tokens = await this.sessionService.create({
-                    transaction,
-                    input: {
-                        userAgent: props.context.userAgent,
-                        ip: props.context.ip,
-                        account,
-                    },
-                });
-
-                return { account, tokens };
+                return account;
             },
         });
 
         return {
             message: `${this.dictionaryPath}.VERIFIED`,
-            refreshToken: tokens.refreshToken,
-            accessToken: tokens.accessToken,
             codes,
         };
     }

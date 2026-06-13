@@ -1,7 +1,19 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Delete, Body, Post, Get } from "@nestjs/common";
+import {
+    UseInterceptors,
+    Controller,
+    HttpStatus,
+    HttpCode,
+    Header,
+    Inject,
+    Delete,
+    Query,
+    Body,
+    Post,
+    Get,
+} from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { REAUTHENTICATION_COMMANDS, AUTHN_COMMANDS, SESSION_COMMANDS } from "~context/application/commands";
+import { REAUTHENTICATION_COMMANDS, SESSION_COMMANDS, OAUTH_COMMANDS, AUTHN_COMMANDS } from "~context/application/commands";
 import { Extract, FormatResponse, RequirePermission, Tokens, Public, Swagger } from "~common/decorators";
 import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
@@ -10,6 +22,7 @@ import { PermissionCode } from "~context/enums";
 
 import { BySecondFactorBodyDTO, ByPasswordBodyDTO } from "../dto/reauthentication";
 import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
+import { AuthorizeBodyDTO, CallbackBodyDTO } from "../dto/oauth";
 import {
     VerifySecondFactorBodyDTO,
     ExternalTokenResultDTO,
@@ -37,6 +50,7 @@ const {
     BAD_REQUEST,
     FORBIDDEN,
     NOT_FOUND,
+    BAD_GATEWAY,
     CONFLICT,
     OK,
 } = HttpStatus;
@@ -50,6 +64,8 @@ export class AuthnController {
         private readonly authnCommands: Commands.Authn.ControllerContract,
         @Inject(REAUTHENTICATION_COMMANDS)
         private readonly reauthenticationCommands: Commands.Reauthentication.ControllerContract,
+        @Inject(OAUTH_COMMANDS)
+        private readonly oauthCommands: Commands.OAuth.ControllerContract,
         @Inject(SESSION_COMMANDS)
         private readonly sessionCommands: Commands.Session.ControllerContract,
         @Inject(SESSION_QUERIES)
@@ -177,6 +193,42 @@ export class AuthnController {
         @Tokens.Pending() token?: string,
     ): Commands.Authn.VerifySecondFactor.Result {
         return this.authnCommands.verifySecondFactor({ token, context, input });
+    }
+
+    @Public()
+    @HttpCode(OK)
+    @Get("oauth/authorize")
+    @ApiOperation({
+        summary: "Get OAuth authorization URL",
+        security: [],
+    })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
+    public authorizeOAuth(@Query() input: AuthorizeBodyDTO): Commands.OAuth.Authorize.Result {
+        return this.oauthCommands.authorize({ input });
+    }
+
+    @Public()
+    @HttpCode(OK)
+    @Get("oauth/callback")
+    @ApiOperation({
+        summary: "OAuth callback",
+        security: [],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        BAD_GATEWAY,
+        CONFLICT,
+    )
+    public callbackOAuth(
+        @Query() input: CallbackBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.OAuth.Callback.Result {
+        return this.oauthCommands.callback({ context, input });
     }
 
     @HttpCode(OK)

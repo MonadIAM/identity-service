@@ -6,7 +6,6 @@ import { AuditLogController } from "./audit-log.controller";
 import { PasswordController } from "./password.controller";
 import { ProfileController } from "./profile.controller";
 import { AccountController } from "./account.controller";
-import { OAuthController } from "./oauth.controller";
 import { AuthnController } from "./authn.controller";
 import { JWKSController } from "./jwks.controller";
 
@@ -19,7 +18,6 @@ export const HTTP_CONTROLLERS = [
     PasswordController,
     ProfileController,
     AccountController,
-    OAuthController,
     AuthnController,
     JWKSController,
 ];
@@ -33,7 +31,6 @@ export {
     PasswordController,
     ProfileController,
     AccountController,
-    OAuthController,
     AuthnController,
     JWKSController,
 };

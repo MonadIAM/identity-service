@@ -75,10 +75,9 @@ declare global {
                 };
 
                 type Result = Promise<
-                    MessageResult &
-                        Services.Session.Create.Tokens & {
-                            codes: string[];
-                        }
+                    MessageResult & {
+                        codes: string[];
+                    }
                 >;
             }
 
