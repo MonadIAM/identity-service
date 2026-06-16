@@ -31,9 +31,9 @@ declare namespace InfrastructureServices {
         }
 
         interface Contract extends PrivateContract {
+            checkPermissions: (props: CheckPermissions.Props) => CheckPermissions.Result;
             deleteAccount: (props: DeleteAccount.Props) => DeleteAccount.Result;
             deleteRealm: (props: DeleteRealm.Props) => DeleteRealm.Result;
-            exists: (props: Exists.Props) => Exists.Result;
             delete: (props: Delete.Props) => Delete.Result;
             deleteAll: () => DeleteAll.Result;
         }
@@ -54,14 +54,14 @@ declare namespace InfrastructureServices {
             type Result = Promise<void>;
         }
 
-        namespace Exists {
+        namespace CheckPermissions {
             type Props = {
                 permissions: string[];
                 account: string;
                 realm: string;
             };
 
-            type Result = Promise<boolean>;
+            type Result = Promise<string[]>;
         }
 
         namespace Delete {

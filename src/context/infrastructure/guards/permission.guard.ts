@@ -44,19 +44,19 @@ export class PermissionGuard implements CanActivate {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_REQUIRED` });
         }
 
-        const allowed = await this.accessCacheService.exists({
+        const matched = await this.accessCacheService.checkPermissions({
             permissions,
             account,
             realm,
         });
 
-        if (!allowed) {
+        if (!matched.length) {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.INSUFFICIENT_PERMISSIONS` });
         }
 
         request.metadata = {
             ...request.metadata,
-            permissions,
+            permissions: matched,
         };
 
         return true;

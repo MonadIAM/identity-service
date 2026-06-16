@@ -20,9 +20,9 @@ export class AccessCacheService implements InfrastructureServices.AccessCache.Co
         this.ttl = ms(this.configService.getOrThrow<StringValue>("ACCESS_CACHE_TTL"));
     }
 
-    public async exists(
-        props: InfrastructureServices.AccessCache.Exists.Props,
-    ): InfrastructureServices.AccessCache.Exists.Result {
+    public async checkPermissions(
+        props: InfrastructureServices.AccessCache.CheckPermissions.Props,
+    ): InfrastructureServices.AccessCache.CheckPermissions.Result {
         const { account, realm, permissions } = props;
         const key = await this.resolveVersionedKey({ account, realm });
         const loadedKey = `${key}:loaded`;
@@ -42,7 +42,7 @@ export class AccessCacheService implements InfrastructureServices.AccessCache.Co
 
         if (isLoaded) {
             const checks = results?.slice(1, 1 + permissions.length) ?? [];
-            return checks.some(([, exists]) => exists === 1);
+            return permissions.filter((_, i) => checks[i]?.[1] === 1);
         }
 
         const effectivePermissions = await this.accessControlClient.listEffectivePrivileges({ account, realm });
@@ -57,7 +57,7 @@ export class AccessCacheService implements InfrastructureServices.AccessCache.Co
 
         await cachePipeline.exec();
 
-        return permissions.some((permission) => Boolean(effectivePermissions[permission]));
+        return permissions.filter((permission) => Boolean(effectivePermissions[permission]));
     }
 
     public async delete(
