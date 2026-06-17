@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/commo
 import { Reflector } from "@nestjs/core";
 
 import { ACCESS_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
-import { REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
+import { REQUIRE_GLOBAL_PERMISSION, REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
 import { Exception } from "~common/exceptions";
 
 @Injectable()
@@ -23,10 +23,14 @@ export class PermissionGuard implements CanActivate {
             return true;
         }
 
-        const permissions = this.reflector.getAllAndOverride<string[]>(REQUIRE_PERMISSION, [
+        const globalPermissions = this.reflector.getAllAndOverride<string[]>(REQUIRE_GLOBAL_PERMISSION, [
             context.getHandler(),
             context.getClass(),
         ]);
+
+        const permissions =
+            globalPermissions ??
+            this.reflector.getAllAndOverride<string[]>(REQUIRE_PERMISSION, [context.getHandler(), context.getClass()]);
 
         if (!permissions?.length) {
             return true;
@@ -45,6 +49,7 @@ export class PermissionGuard implements CanActivate {
         }
 
         const matched = await this.accessCacheService.checkPermissions({
+            globalOnly: !!globalPermissions,
             permissions,
             account,
             realm,

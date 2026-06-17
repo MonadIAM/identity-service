@@ -23,7 +23,7 @@ export class AccessCacheService implements InfrastructureServices.AccessCache.Co
     public async checkPermissions(
         props: InfrastructureServices.AccessCache.CheckPermissions.Props,
     ): InfrastructureServices.AccessCache.CheckPermissions.Result {
-        const { account, realm, permissions } = props;
+        const { account, realm, permissions, globalOnly } = props;
         const key = await this.resolveVersionedKey({ account, realm });
         const loadedKey = `${key}:loaded`;
         const pipeline = this.redis.pipeline();
@@ -31,7 +31,11 @@ export class AccessCacheService implements InfrastructureServices.AccessCache.Co
         pipeline.exists(loadedKey);
 
         for (const permission of permissions) {
-            pipeline.hexists(key, permission);
+            if (globalOnly) {
+                pipeline.hget(key, permission);
+            } else {
+                pipeline.hexists(key, permission);
+            }
         }
 
         pipeline.expire(key, this.ttl);
@@ -42,7 +46,8 @@ export class AccessCacheService implements InfrastructureServices.AccessCache.Co
 
         if (isLoaded) {
             const checks = results?.slice(1, 1 + permissions.length) ?? [];
-            return permissions.filter((_, i) => checks[i]?.[1] === 1);
+
+            return permissions.filter((_, i) => (globalOnly ? checks[i]?.[1] === "GLOBAL" : checks[i]?.[1] === 1));
         }
 
         const effectivePermissions = await this.accessControlClient.listEffectivePrivileges({ account, realm });
@@ -57,7 +62,9 @@ export class AccessCacheService implements InfrastructureServices.AccessCache.Co
 
         await cachePipeline.exec();
 
-        return permissions.filter((permission) => Boolean(effectivePermissions[permission]));
+        return permissions.filter((permission) =>
+            globalOnly ? effectivePermissions[permission] === "GLOBAL" : Boolean(effectivePermissions[permission]),
+        );
     }
 
     public async delete(

@@ -57,6 +57,7 @@ declare namespace InfrastructureServices {
         namespace CheckPermissions {
             type Props = {
                 permissions: string[];
+                globalOnly?: boolean;
                 account: string;
                 realm: string;
             };
