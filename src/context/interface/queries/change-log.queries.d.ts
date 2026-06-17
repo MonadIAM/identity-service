@@ -1,8 +1,8 @@
 declare namespace Queries {
     namespace ChangeLog {
         interface ControllerContract {
-            findUnique: (props: FindUnique.Props) => FindUnique.Result;
-            findMany: (props: FindMany.Props) => FindMany.Result;
+            findUnique(props: FindUnique.Props): FindUnique.Result;
+            findMany(props: FindMany.Props): FindMany.Result;
         }
 
         interface Contract extends ControllerContract {}

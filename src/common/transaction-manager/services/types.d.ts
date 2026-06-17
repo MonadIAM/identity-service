@@ -10,18 +10,18 @@ declare global {
                     <T extends AnyEntity>(props: RunWithResult<T>): Promise<T>;
                     (props: RunVoid): Promise<void>;
                 };
-                emit: (props: Emit) => Promise<void>;
+                emit(props: Emit): Promise<void>;
             }
 
             type Outbox<T> = {
-                payloadMapper: (result: T) => AnyEntity | AnyEntity[];
+                payloadMapper(result: T): AnyEntity | AnyEntity[];
                 destinationTopic: KafkaTopic;
                 metadata?: UnknownObject;
                 actionType: string;
             };
 
             type RunWithResult<T extends AnyEntity> = {
-                execute: (transaction: EntityManager) => Promise<T> | T;
+                execute(transaction: EntityManager): Promise<T> | T;
                 audit?: Entities.AuditLog.ConstructorProps;
                 outbox?: Outbox<T>;
                 changeLog?: boolean;
@@ -29,7 +29,7 @@ declare global {
             };
 
             type RunVoid = {
-                execute: (transaction: EntityManager) => Promise<void> | void;
+                execute(transaction: EntityManager): Promise<void> | void;
                 audit?: Entities.AuditLog.ConstructorProps;
                 changeLog?: never;
                 resource?: string;

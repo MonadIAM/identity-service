@@ -1,7 +1,7 @@
 declare namespace Commands {
     namespace RecoveryCode {
         interface ControllerContract {
-            regenerate: (props: Regenerate.Props) => Regenerate.Result;
+            regenerate(props: Regenerate.Props): Regenerate.Result;
         }
 
         interface Contract extends ControllerContract {}

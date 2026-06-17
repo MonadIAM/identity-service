@@ -4,8 +4,8 @@ declare global {
     namespace Services {
         namespace Password {
             interface Contract {
-                rotate: (props: Rotate.Props) => Rotate.Result;
-                purge: (props: Purge.Props) => Purge.Result;
+                rotate(props: Rotate.Props): Rotate.Result;
+                purge(props: Purge.Props): Purge.Result;
             }
 
             namespace Rotate {

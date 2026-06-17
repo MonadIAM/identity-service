@@ -1,8 +1,8 @@
 declare namespace Queries {
     namespace SecondFactor {
         interface ControllerContract {
-            getQRCode: (props: GetQRCode.Props) => GetQRCode.Result;
-            findMany: (props: FindMany.Props) => FindMany.Result;
+            getQRCode(props: GetQRCode.Props): GetQRCode.Result;
+            findMany(props: FindMany.Props): FindMany.Result;
         }
 
         interface Contract extends ControllerContract {}

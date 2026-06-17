@@ -4,16 +4,16 @@ declare global {
     namespace Commands {
         namespace Identifier {
             interface PrivateContract {
-                sendOTP: (props: SendOTP.Props) => SendOTP.Result;
+                sendOTP(props: SendOTP.Props): SendOTP.Result;
             }
 
             interface ControllerContract {
-                toggleNotifications: (props: ToggleNotifications.Props) => ToggleNotifications.Result;
-                togglePublicContact: (props: TogglePublicContact.Props) => ToggleNotifications.Result;
-                verify: (props: Verify.Props) => Verify.Result;
-                create: (props: Create.Props) => Create.Result;
-                resend: (props: Resend.Props) => Resend.Pesult;
-                purge: (props: Purge.Props) => Purge.Result;
+                toggleNotifications(props: ToggleNotifications.Props): ToggleNotifications.Result;
+                togglePublicContact(props: TogglePublicContact.Props): ToggleNotifications.Result;
+                verify(props: Verify.Props): Verify.Result;
+                create(props: Create.Props): Create.Result;
+                resend(props: Resend.Props): Resend.Pesult;
+                purge(props: Purge.Props): Purge.Result;
             }
 
             interface Contract extends PrivateContract, ControllerContract {}

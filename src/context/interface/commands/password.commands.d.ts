@@ -1,15 +1,15 @@
 declare namespace Commands {
     namespace Password {
         interface PrivateContract {
-            findMatchingRecoveryCode: (props: FindMatchingRecoveryCode.Props) => FindMatchingRecoveryCode.Result;
-            checkPasswordHistory: (props: CheckPasswordHistory.Props) => CheckPasswordHistory.Result;
+            findMatchingRecoveryCode(props: FindMatchingRecoveryCode.Props): FindMatchingRecoveryCode.Result;
+            checkPasswordHistory(props: CheckPasswordHistory.Props): CheckPasswordHistory.Result;
         }
 
         interface ControllerContract {
-            resetByRecoveryCode: (props: ResetByRecoveryCode.Props) => ResetByRecoveryCode.Result;
-            requestOTP: (props: RequestOTP.Props) => RequestOTP.Result;
-            resetByOTP: (props: ResetByOTP.Props) => ResetByOTP.Result;
-            change: (props: Change.Props) => Change.Result;
+            resetByRecoveryCode(props: ResetByRecoveryCode.Props): ResetByRecoveryCode.Result;
+            requestOTP(props: RequestOTP.Props): RequestOTP.Result;
+            resetByOTP(props: ResetByOTP.Props): ResetByOTP.Result;
+            change(props: Change.Props): Change.Result;
         }
 
         interface Contract extends PrivateContract, ControllerContract {}

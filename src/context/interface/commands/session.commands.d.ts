@@ -1,13 +1,13 @@
 declare namespace Commands {
     namespace Session {
         interface ControllerContract {
-            revokeAll: (props: RevokeAll.Props) => RevokeAll.Result;
-            revoke: (props: Revoke.Props) => Revoke.Result;
+            revokeAll(props: RevokeAll.Props): RevokeAll.Result;
+            revoke(props: Revoke.Props): Revoke.Result;
         }
 
         interface PrivateContract {
-            outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
-            refresh: (props: Refresh.Props) => Refresh.Result;
+            outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
+            refresh(props: Refresh.Props): Refresh.Result;
         }
 
         interface Contract extends PrivateContract, ControllerContract {}

@@ -5,7 +5,7 @@ declare global {
     namespace GRPC {
         namespace AccessControl {
             interface Contract {
-                listEffectivePrivileges: (props: ListEffectivePrivileges.Props) => ListEffectivePrivileges.Result;
+                listEffectivePrivileges(props: ListEffectivePrivileges.Props): ListEffectivePrivileges.Result;
             }
 
             namespace ListEffectivePrivileges {
@@ -14,9 +14,9 @@ declare global {
             }
 
             type Service = {
-                listEffectivePrivileges: (
+                listEffectivePrivileges(
                     request: ListEffectivePrivilegesRequest,
-                ) => Observable<ListEffectivePrivilegesResponse>;
+                ): Observable<ListEffectivePrivilegesResponse>;
             };
         }
     }

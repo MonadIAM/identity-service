@@ -4,16 +4,16 @@ declare global {
     namespace Commands {
         namespace Account {
             interface PrivateContract {
-                sendOTP: (props: SendOTP.Props) => SendOTP.Result;
+                sendOTP(props: SendOTP.Props): SendOTP.Result;
             }
 
             interface ControllerContract {
-                deactivate: (props: Deactivate.Props) => Deactivate.Result;
-                suspend: (props: Suspend.Props) => Suspend.Result;
-                restore: (props: Restore.Props) => Restore.Result;
-                signup: (props: Signup.Props) => Signup.Result;
-                verify: (props: Verify.Props) => Verify.Result;
-                resend: (props: Resend.Props) => Resend.Result;
+                deactivate(props: Deactivate.Props): Deactivate.Result;
+                suspend(props: Suspend.Props): Suspend.Result;
+                restore(props: Restore.Props): Restore.Result;
+                signup(props: Signup.Props): Signup.Result;
+                verify(props: Verify.Props): Verify.Result;
+                resend(props: Resend.Props): Resend.Result;
             }
 
             interface Contract extends PrivateContract, ControllerContract {}

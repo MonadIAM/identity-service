@@ -1,8 +1,8 @@
 declare namespace Commands {
     namespace Reauthentication {
         interface ControllerContract {
-            bySecondFactor: (props: BySecondFactor.Props) => BySecondFactor.Result;
-            byPassword: (props: ByPassword.Props) => ByPassword.Result;
+            bySecondFactor(props: BySecondFactor.Props): BySecondFactor.Result;
+            byPassword(props: ByPassword.Props): ByPassword.Result;
         }
 
         interface Contract extends ControllerContract {}

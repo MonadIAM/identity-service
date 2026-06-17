@@ -6,11 +6,11 @@ declare global {
     namespace Services {
         namespace SecondFactor {
             interface Contract {
-                create: (props: Create.Props) => Create.Result;
-                rewrap: (props: Rewrap.Props) => Rewrap.Result;
-                verify: (props: Verify.Props) => Verify.Result;
-                purge: (props: Purge.Props) => Purge.Result;
-                reset: (props: Reset.Props) => Reset.Result;
+                create(props: Create.Props): Create.Result;
+                rewrap(props: Rewrap.Props): Rewrap.Result;
+                verify(props: Verify.Props): Verify.Result;
+                purge(props: Purge.Props): Purge.Result;
+                reset(props: Reset.Props): Reset.Result;
             }
 
             namespace Create {

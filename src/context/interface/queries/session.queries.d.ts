@@ -1,8 +1,8 @@
 declare namespace Queries {
     namespace Session {
         interface ControllerContract {
-            getCurrent: (props: GetCurrent.Props) => GetCurrent.Result;
-            findMany: (props: FindMany.Props) => FindMany.Result;
+            getCurrent(props: GetCurrent.Props): GetCurrent.Result;
+            findMany(props: FindMany.Props): FindMany.Result;
         }
 
         interface Contract extends ControllerContract {}

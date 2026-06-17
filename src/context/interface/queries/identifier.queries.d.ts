@@ -4,9 +4,9 @@ declare global {
     namespace Queries {
         namespace Identifier {
             interface ControllerContract {
-                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
-                findUnique: (props: FindUnique.Props) => FindUnique.Result;
-                findMany: (props: FindMany.Props) => FindMany.Result;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+                findUnique(props: FindUnique.Props): FindUnique.Result;
+                findMany(props: FindMany.Props): FindMany.Result;
             }
 
             interface Contract extends ControllerContract {}

@@ -4,8 +4,8 @@ declare global {
     namespace Services {
         namespace Membership {
             interface Contract {
-                create: (props: Create.Props) => Create.Result;
-                revoke: (props: Revoke.Props) => Revoke.Result;
+                create(props: Create.Props): Create.Result;
+                revoke(props: Revoke.Props): Revoke.Result;
             }
 
             namespace Create {

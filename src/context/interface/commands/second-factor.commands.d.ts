@@ -1,10 +1,10 @@
 declare namespace Commands {
     namespace SecondFactor {
         interface ControllerContract {
-            create: (props: Create.Props) => Create.Result;
-            verify: (props: Verify.Props) => Verify.Result;
-            purge: (props: Purge.Props) => Purge.Result;
-            reset: (props: Reset.Props) => Reset.Result;
+            create(props: Create.Props): Create.Result;
+            verify(props: Verify.Props): Verify.Result;
+            purge(props: Purge.Props): Purge.Result;
+            reset(props: Reset.Props): Reset.Result;
         }
 
         interface Contract extends ControllerContract {}

@@ -10,13 +10,13 @@ declare global {
         };
 
         interface Contract<E, A extends Meta> {
-            buildOptionsORM: <P extends string, F extends string>(
+            buildOptionsORM<P extends string, F extends string>(
                 sort: A["Sort"],
                 pagination: Pagination,
                 options?: FindOptions<E, P, F>,
-            ) => FindOptions<E, P, F>;
+            ): FindOptions<E, P, F>;
 
-            buildWhereORM: (filters: A["Filters"]) => FilterQuery<E>;
+            buildWhereORM(filters: A["Filters"]): FilterQuery<E>;
         }
 
         namespace Account {

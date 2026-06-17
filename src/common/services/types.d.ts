@@ -48,9 +48,9 @@ declare global {
             type Options = ArgonOptions & { raw?: false };
 
             interface Contract {
-                verifyAndUpgrade: (props: VerifyAndUpgrade.Props) => Promise<VerifyAndUpgrade.Result>;
-                verify: (props: Verify) => Promise<boolean>;
-                hash: (props: Hash) => Promise<string>;
+                verifyAndUpgrade(props: VerifyAndUpgrade.Props): Promise<VerifyAndUpgrade.Result>;
+                verify(props: Verify): Promise<boolean>;
+                hash(props: Hash): Promise<string>;
             }
 
             type Hash = {
@@ -77,22 +77,22 @@ declare global {
 
         namespace Crypto {
             interface Contract {
-                generateRecoveryCodes: (count?: number) => string[];
-                generateToken: (bytes?: number) => string;
-                generateOTP: (length?: number) => string;
-                hashToken: (token: string) => string;
-                generateRecoveryCode: () => string;
+                generateRecoveryCodes(count?: number): string[];
+                generateToken(bytes?: number): string;
+                generateOTP(length?: number): string;
+                hashToken(token: string): string;
+                generateRecoveryCode(): string;
             }
         }
 
         namespace VaultTransit {
             interface Contract {
-                getLatestVersion: (props: GetLatestVersion.Props) => GetLatestVersion.Result;
-                getKey: (props: GetKey.Props) => GetKey.Result;
-                decrypt: (props: Decrypt.Props) => Decrypt.Result;
-                encrypt: (props: Encrypt.Props) => Encrypt.Result;
-                rewrap: (props: Rewrap.Props) => Rewrap.Result;
-                sign: (props: Sign.Props) => Sign.Result;
+                getLatestVersion(props: GetLatestVersion.Props): GetLatestVersion.Result;
+                getKey(props: GetKey.Props): GetKey.Result;
+                decrypt(props: Decrypt.Props): Decrypt.Result;
+                encrypt(props: Encrypt.Props): Encrypt.Result;
+                rewrap(props: Rewrap.Props): Rewrap.Result;
+                sign(props: Sign.Props): Sign.Result;
             }
 
             namespace GetLatestVersion {
@@ -171,15 +171,15 @@ declare global {
 
         namespace JWT {
             interface PrivateContract {
-                sign: (payload: JWTPayload, props: Sign.Props) => Promise<string>;
+                sign(payload: JWTPayload, props: Sign.Props): Promise<string>;
             }
 
             interface Contract extends PrivateContract {
-                signRefreshToken: (payload: JWTPayload) => Promise<string>;
-                signAccessToken: (payload: JWTPayload) => Promise<string>;
-                verifyRefresh: (token: string) => Promise<JWTPayload>;
-                verifyAccess: (token: string) => Promise<JWTPayload>;
-                getJWKS: (name?: string) => Promise<GetJWKS>;
+                signRefreshToken(payload: JWTPayload): Promise<string>;
+                signAccessToken(payload: JWTPayload): Promise<string>;
+                verifyRefresh(token: string): Promise<JWTPayload>;
+                verifyAccess(token: string): Promise<JWTPayload>;
+                getJWKS(name?: string): Promise<GetJWKS>;
             }
 
             type GetJWKS = {
@@ -198,7 +198,7 @@ declare global {
 
         namespace Email {
             interface Contract {
-                send: (props: Send) => Promise<void>;
+                send(props: Send): Promise<void>;
             }
 
             type Send = {
@@ -210,7 +210,7 @@ declare global {
 
         namespace SMS {
             interface Contract {
-                send: (props: Send) => Promise<void>;
+                send(props: Send): Promise<void>;
             }
 
             type Send = {
@@ -221,9 +221,9 @@ declare global {
 
         namespace GoogleOAuth {
             interface Contract {
-                fetchProfile: (accessToken: string) => Promise<Profile>;
-                exchangeCode: (code: string) => Promise<TokenResponse>;
-                getAuthorizationUrl: (state: string) => string;
+                fetchProfile(accessToken: string): Promise<Profile>;
+                exchangeCode(code: string): Promise<TokenResponse>;
+                getAuthorizationUrl(state: string): string;
             }
 
             type TokenResponse = {
@@ -246,9 +246,9 @@ declare global {
 
         namespace GitHubOAuth {
             interface Contract {
-                fetchProfile: (accessToken: string) => Promise<Profile>;
-                exchangeCode: (code: string) => Promise<TokenResponse>;
-                getAuthorizationUrl: (state: string) => string;
+                fetchProfile(accessToken: string): Promise<Profile>;
+                exchangeCode(code: string): Promise<TokenResponse>;
+                getAuthorizationUrl(state: string): string;
             }
 
             type TokenResponse = {

@@ -4,7 +4,7 @@ declare global {
     namespace Consumers {
         namespace AccessCache {
             interface Contract {
-                handle: (message: Message, ctx: KafkaContext) => Promise<void>;
+                handle(message: Message, ctx: KafkaContext): Promise<void>;
             }
 
             type Message = Topics.AccessCache.Message;
@@ -12,7 +12,7 @@ declare global {
 
         namespace Blacklist {
             interface Contract {
-                handle: (message: Message) => Promise<void>;
+                handle(message: Message): Promise<void>;
             }
 
             type Message = Topics.Blacklist.Message;
@@ -20,7 +20,7 @@ declare global {
 
         namespace Reauthentication {
             interface Contract {
-                handle: (message: Message) => Promise<void>;
+                handle(message: Message): Promise<void>;
             }
 
             type Message = Topics.Reauthentication.Message;
@@ -28,7 +28,7 @@ declare global {
 
         namespace Membership {
             interface Contract {
-                handle: (message: Message, ctx: KafkaContext) => Promise<void>;
+                handle(message: Message, ctx: KafkaContext): Promise<void>;
             }
 
             type Message = Topics.Membership.Message;

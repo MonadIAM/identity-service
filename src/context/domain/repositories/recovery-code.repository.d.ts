@@ -4,7 +4,7 @@ declare global {
     namespace Repositories {
         namespace RecoveryCode {
             interface Contract extends Repositories.Base.Contract<Entities.RecoveryCode, Adapters.RecoveryCode.Types> {
-                getStatus: (props: GetStatus.Props) => GetStatus.Result;
+                getStatus(props: GetStatus.Props): GetStatus.Result;
             }
 
             namespace GetStatus {

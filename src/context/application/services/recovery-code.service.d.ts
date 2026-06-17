@@ -4,8 +4,8 @@ declare global {
     namespace Services {
         namespace RecoveryCode {
             interface Contract {
-                regenerate: (props: Regenerate.Props) => Regenerate.Result;
-                generate: (props: Generate.Props) => Generate.Result;
+                regenerate(props: Regenerate.Props): Regenerate.Result;
+                generate(props: Generate.Props): Generate.Result;
             }
 
             namespace Regenerate {

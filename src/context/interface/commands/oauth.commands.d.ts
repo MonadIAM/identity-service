@@ -19,15 +19,15 @@ declare namespace Commands {
             };
 
         interface PrivateContract {
-            authenticateExisting: (props: AuthenticateExisting.Props) => AuthenticateExisting.Result;
-            attachToExisting: (props: AttachToExisting.Props) => AttachToExisting.Result;
-            resolveProvider: (props: ResolveProvider.Props) => ResolveProvider.Result;
-            provision: (props: Provision.Props) => Provision.Result;
+            authenticateExisting(props: AuthenticateExisting.Props): AuthenticateExisting.Result;
+            attachToExisting(props: AttachToExisting.Props): AttachToExisting.Result;
+            resolveProvider(props: ResolveProvider.Props): ResolveProvider.Result;
+            provision(props: Provision.Props): Provision.Result;
         }
 
         interface ControllerContract {
-            authorize: (props: Authorize.Props) => Authorize.Result;
-            callback: (props: Callback.Props) => Callback.Result;
+            authorize(props: Authorize.Props): Authorize.Result;
+            callback(props: Callback.Props): Callback.Result;
         }
 
         interface Contract extends PrivateContract, ControllerContract {}

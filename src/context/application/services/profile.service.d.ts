@@ -1,7 +1,7 @@
 declare namespace Services {
     namespace Profile {
         interface Contract {
-            update: (props: Update.Props) => Update.Result;
+            update(props: Update.Props): Update.Result;
         }
 
         namespace Update {

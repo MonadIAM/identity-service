@@ -7,7 +7,7 @@ declare global {
         namespace KafkaRetry {
             interface Contract {
                 readonly maxRetryCount: number;
-                schedule: (message: Consumers.DLQ.Message, retryCount: number) => Promise<void>;
+                schedule(message: Consumers.DLQ.Message, retryCount: number): Promise<void>;
             }
 
             type JobData = Consumers.DLQ.Message & { retryCount: number };
@@ -15,8 +15,8 @@ declare global {
 
         namespace Cleanup {
             interface Contract {
-                scheduleNextBatch: (job: CleanupJob, data: JobData) => Promise<void>;
-                schedule: (job: CleanupJob, data: JobData) => Promise<void>;
+                scheduleNextBatch(job: CleanupJob, data: JobData): Promise<void>;
+                schedule(job: CleanupJob, data: JobData): Promise<void>;
             }
 
             type JobData = {

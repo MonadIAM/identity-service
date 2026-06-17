@@ -4,11 +4,11 @@ declare global {
     namespace Services {
         namespace Identifier {
             interface Contract {
-                toggleNotifications: (props: ToggleNotifications.Props) => ToggleNotifications.Result;
-                togglePublicContact: (props: TogglePublicContact.Props) => TogglePublicContact.Result;
-                create: (props: Create.Props) => Create.Result;
-                verify: (props: Verify.Props) => Verify.Result;
-                purge: (props: Purge.Props) => Purge.Result;
+                toggleNotifications(props: ToggleNotifications.Props): ToggleNotifications.Result;
+                togglePublicContact(props: TogglePublicContact.Props): TogglePublicContact.Result;
+                create(props: Create.Props): Create.Result;
+                verify(props: Verify.Props): Verify.Result;
+                purge(props: Purge.Props): Purge.Result;
             }
 
             namespace Create {

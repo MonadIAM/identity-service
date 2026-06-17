@@ -4,17 +4,17 @@ declare global {
     namespace Commands {
         namespace Authn {
             interface PrivateContract {
-                assertCanAuthenticate: (props: AssertCanAuthenticate.Props) => AssertCanAuthenticate.Result;
-                createSession: (props: CreateSession.Props) => CreateSession.Result;
-                password: (props: Password.Props) => Password.Result;
-                refresh: (props: Refresh.Props) => Refresh.Result;
+                assertCanAuthenticate(props: AssertCanAuthenticate.Props): AssertCanAuthenticate.Result;
+                createSession(props: CreateSession.Props): CreateSession.Result;
+                password(props: Password.Props): Password.Result;
+                refresh(props: Refresh.Props): Refresh.Result;
             }
 
             interface ControllerContract {
-                verifySecondFactor: (props: VerifySecondFactor.Props) => VerifySecondFactor.Result;
-                requestOTP: (props: RequestOTP.Props) => RequestOTP.Result;
-                verifyOTP: (props: VerifyOTP.Props) => VerifyOTP.Result;
-                token: (props: Token.Props) => Token.Result;
+                verifySecondFactor(props: VerifySecondFactor.Props): VerifySecondFactor.Result;
+                requestOTP(props: RequestOTP.Props): RequestOTP.Result;
+                verifyOTP(props: VerifyOTP.Props): VerifyOTP.Result;
+                token(props: Token.Props): Token.Result;
             }
 
             interface Contract extends PrivateContract, ControllerContract {}

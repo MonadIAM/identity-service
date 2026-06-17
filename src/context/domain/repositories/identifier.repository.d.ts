@@ -4,8 +4,8 @@ declare global {
     namespace Repositories {
         namespace Identifier {
             interface Contract extends Repositories.Base.Contract<Entities.Identifier, Adapters.Identifier.Types> {
-                isLastVerifiedIdentifier: (props: IsLastVerifiedIdentifier.Props) => IsLastVerifiedIdentifier.Result;
-                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
+                isLastVerifiedIdentifier(props: IsLastVerifiedIdentifier.Props): IsLastVerifiedIdentifier.Result;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
             }
 
             namespace GetLookupList {

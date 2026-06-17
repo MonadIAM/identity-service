@@ -6,13 +6,13 @@ declare global {
     namespace Services {
         namespace Account {
             interface Contract {
-                deactivate: (props: Deactivate.Props) => Deactivate.Result;
-                unsuspend: (props: Unsuspend.Props) => Unsuspend.Result;
-                suspend: (props: Suspend.Props) => Suspend.Result;
-                restore: (props: Restore.Props) => Restore.Result;
-                create: (props: Create.Props) => Create.Result;
-                verify: (props: Verify.Props) => Verify.Result;
-                purge: (props: Purge.Props) => Purge.Result;
+                deactivate(props: Deactivate.Props): Deactivate.Result;
+                unsuspend(props: Unsuspend.Props): Unsuspend.Result;
+                suspend(props: Suspend.Props): Suspend.Result;
+                restore(props: Restore.Props): Restore.Result;
+                create(props: Create.Props): Create.Result;
+                verify(props: Verify.Props): Verify.Result;
+                purge(props: Purge.Props): Purge.Result;
             }
 
             namespace Create {

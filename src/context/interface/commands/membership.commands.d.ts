@@ -1,8 +1,8 @@
 declare namespace Commands {
     namespace Membership {
         interface Contract {
-            revoke: (props: Revoke.Props) => Revoke.Result;
-            grant: (props: Grant.Props) => Grant.Result;
+            revoke(props: Revoke.Props): Revoke.Result;
+            grant(props: Grant.Props): Grant.Result;
         }
 
         namespace Grant {

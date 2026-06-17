@@ -1,8 +1,8 @@
 declare namespace InfrastructureServices {
     namespace SecondFactorSecret {
         interface Contract {
-            resolve: (props: Resolve.Props) => Resolve.Result;
-            encrypt: (props: Encrypt.Props) => Encrypt.Result;
+            resolve(props: Resolve.Props): Resolve.Result;
+            encrypt(props: Encrypt.Props): Encrypt.Result;
         }
 
         namespace Encrypt {
@@ -27,15 +27,15 @@ declare namespace InfrastructureServices {
 
     namespace AccessCache {
         interface PrivateContract {
-            resolveVersionedKey: (props: ResolveVersionedKey.Props) => ResolveVersionedKey.Result;
+            resolveVersionedKey(props: ResolveVersionedKey.Props): ResolveVersionedKey.Result;
         }
 
         interface Contract extends PrivateContract {
-            checkPermissions: (props: CheckPermissions.Props) => CheckPermissions.Result;
-            deleteAccount: (props: DeleteAccount.Props) => DeleteAccount.Result;
-            deleteRealm: (props: DeleteRealm.Props) => DeleteRealm.Result;
-            delete: (props: Delete.Props) => Delete.Result;
-            deleteAll: () => DeleteAll.Result;
+            checkPermissions(props: CheckPermissions.Props): CheckPermissions.Result;
+            deleteAccount(props: DeleteAccount.Props): DeleteAccount.Result;
+            deleteRealm(props: DeleteRealm.Props): DeleteRealm.Result;
+            delete(props: Delete.Props): Delete.Result;
+            deleteAll(): DeleteAll.Result;
         }
 
         namespace DeleteAccount {
@@ -89,8 +89,8 @@ declare namespace InfrastructureServices {
 
     namespace OAuthStateCache {
         interface Contract {
-            consume: (props: Consume.Props) => Consume.Result;
-            set: (props: Set.Props) => Set.Result;
+            consume(props: Consume.Props): Consume.Result;
+            set(props: Set.Props): Set.Result;
         }
 
         type Metadata = {
@@ -118,8 +118,8 @@ declare namespace InfrastructureServices {
 
     namespace OTPCache {
         interface Contract {
-            consume: (props: Consume.Props) => Consume.Result;
-            set: (props: Set.Props) => Set.Result;
+            consume(props: Consume.Props): Consume.Result;
+            set(props: Set.Props): Set.Result;
         }
 
         type Purpose = "verification" | "identifier" | "login" | "reset" | "setup2FA";
@@ -146,9 +146,9 @@ declare namespace InfrastructureServices {
 
     namespace Pending2FACache {
         interface Contract {
-            set: (props: Set) => Promise<void>;
-            get: (props: Get) => Promise<Nullable<string>>;
-            delete: (props: Delete) => Promise<void>;
+            set(props: Set): Promise<void>;
+            get(props: Get): Promise<Nullable<string>>;
+            delete(props: Delete): Promise<void>;
         }
 
         type Set = {
@@ -167,9 +167,9 @@ declare namespace InfrastructureServices {
 
     namespace ReauthenticationCache {
         interface Contract {
-            set: (props: Set) => Promise<void>;
-            exists: (props: Exists) => Promise<boolean>;
-            delete: (props: Delete) => Promise<void>;
+            set(props: Set): Promise<void>;
+            exists(props: Exists): Promise<boolean>;
+            delete(props: Delete): Promise<void>;
         }
 
         type Set = {
@@ -188,8 +188,8 @@ declare namespace InfrastructureServices {
 
     namespace BlacklistCache {
         interface Contract {
-            exists: (props: Exists) => Promise<boolean>;
-            set: (props: Set) => Promise<void>;
+            exists(props: Exists): Promise<boolean>;
+            set(props: Set): Promise<void>;
         }
 
         type Set = {

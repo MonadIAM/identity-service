@@ -1,7 +1,7 @@
 declare namespace Commands {
     namespace Profile {
         interface ControllerContract {
-            update: (props: Update.Props) => Update.Result;
+            update(props: Update.Props): Update.Result;
         }
 
         interface Contract extends ControllerContract {}
