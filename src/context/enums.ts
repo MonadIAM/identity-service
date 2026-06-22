@@ -24,6 +24,13 @@ export enum AccountStatus {
     /* eslint-enable prettier/prettier */
 }
 
+export enum QueryMode {
+    /* eslint-disable prettier/prettier */
+    DEFAULT = "DEFAULT",
+    MANAGE  = "MANAGE",
+    /* eslint-enable prettier/prettier */
+}
+
 export enum IdentifierType {
     EMAIL = "email",
     PHONE = "phone",

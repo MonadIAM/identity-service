@@ -16,11 +16,11 @@ declare global {
                 options?: FindOptions<E, P, F>,
             ): FindOptions<E, P, F>;
 
-            buildWhereORM(filters: A["Filters"]): FilterQuery<E>;
+            buildWhereORM(filters: A["Filters"], basic?: FilterQuery<E>): FilterQuery<E>;
         }
 
         namespace Account {
-            type Filters = {
+            type DefaultFilters = {
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
                 subject?: StringFilterDTO;
@@ -31,6 +31,12 @@ declare global {
                 id?: StringFilterDTO;
                 is2FAEnforced?: boolean;
             };
+
+            type ManageFilters = DefaultFilters & {
+                realm?: LinkFilterDTO;
+            };
+
+            type Filters = DefaultFilters & ManageFilters;
 
             type Sort = {
                 createdAt?: QueryOrder;

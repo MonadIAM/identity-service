@@ -5,6 +5,7 @@ import {
     PasswordHistory,
     SecondFactor,
     RecoveryCode,
+    Membership,
     Identifier,
     MasterCode,
     Password,
@@ -72,6 +73,12 @@ export const AccountSchema = new EntitySchema<Account>({
         sessions: {
             kind: "1:m",
             entity: () => Session,
+            mappedBy: "account",
+        },
+
+        memberships: {
+            kind: "1:m",
+            entity: () => Membership,
             mappedBy: "account",
         },
 

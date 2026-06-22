@@ -3,12 +3,13 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { PermissionCode, ResponseViewType } from "~context/enums";
-import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { ACCOUNT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { SuccessMessageDTO } from "~common/dto";
 
 import {
+    GetListQueryDTO,
     GetByIdQueryDTO,
     VerifyResultDTO,
     SuspendBodyDTO,
@@ -57,8 +58,8 @@ export class AccountController {
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public getMe(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.Account.FindUnique.Result {
-        return this.accountQueries.findUnique({ account, view: ResponseViewType.DETAILED });
+    public findMe(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.Account.FindUnique.Result {
+        return this.accountQueries.findMe({ account, view: ResponseViewType.DETAILED });
     }
 
     @Get()
@@ -79,8 +80,8 @@ export class AccountController {
         NOT_FOUND,
         FORBIDDEN,
     )
-    public getById(@Query() { account, view }: GetByIdQueryDTO): Queries.Account.FindUnique.Result {
-        return this.accountQueries.findUnique({ account, view });
+    public findUnique(@Query() { account, realm, view, mode }: GetByIdQueryDTO): Queries.Account.FindUnique.Result {
+        return this.accountQueries.findUnique({ account, realm, view, mode });
     }
 
     @HttpCode(OK)
@@ -89,7 +90,7 @@ export class AccountController {
     @RequirePermission(ACCOUNT_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({
-        summary: "Get paginated list of accounts",
+        summary: "Get paginated list of realm member accounts",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -100,11 +101,11 @@ export class AccountController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    public getList(
+    public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { view }: BaseReadQueryDTO,
+        @Query() { realm, view, mode }: GetListQueryDTO,
     ): Queries.Account.FindMany.Result {
-        return this.accountQueries.findMany({ pagination, filters, sort, view });
+        return this.accountQueries.findMany({ pagination, filters, realm, sort, view, mode });
     }
 
     @Public()

@@ -27,6 +27,10 @@ export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapt
             where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
 
+        if (filters.realm) {
+            where.memberships = { realm: MikroAdapter.applyStringFilter(filters.realm) };
+        }
+
         if (filters.name) {
             where.profile = { displayName: MikroAdapter.applyStringFilter(filters.name) };
         }

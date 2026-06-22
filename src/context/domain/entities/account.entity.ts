@@ -12,6 +12,7 @@ import { Identifier } from "./identifier.entity";
 import { Password } from "./password.entity";
 import { Profile } from "./profile.entity";
 import { Session } from "./session.entity";
+import type { Membership } from "./membership.entity";
 
 export class Account {
     private get dictionaryPath(): string {
@@ -37,6 +38,7 @@ export class Account {
     public secondFactors = new Collection<SecondFactor>(this);
     public recoveryCodes = new Collection<RecoveryCode>(this);
     public passwordHistory = new Collection<PasswordHistory>(this);
+    public memberships = new Collection<Membership>(this);
 
     public constructor(props: Entities.Account.ConstructorProps) {
         this.createdAt = new Date();
