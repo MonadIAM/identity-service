@@ -15,9 +15,9 @@ import {
 
 import { Extract, Reauthentication, FormatResponse, Swagger, RequirePermission } from "~common/decorators";
 import { IDENTIFIER_COMMANDS } from "~context/application/commands";
-import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { IDENTIFIER_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
@@ -26,6 +26,7 @@ import {
     GetLookupListQueryDTO,
     GetLookupListBodyDTO,
     GetByIdQueryDTO,
+    GetListQueryDTO,
     GetListBodyDTO,
     VerifyBodyDTO,
     LookupListDTO,
@@ -39,7 +40,6 @@ import {
 const {
     IDENTIFIER_TOGGLE_PUBLIC_CONTACT,
     IDENTIFIER_TOGGLE_NOTIFICATIONS,
-    IDENTIFIER_READ_ABSOLUTE,
     IDENTIFIER_READ_PERSONAL,
     IDENTIFIER_CREATE,
     IDENTIFIER_RESEND,
@@ -74,7 +74,7 @@ export class IdentifierController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(IdentifierDTO)
-    @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @RequirePermission(IDENTIFIER_READ_PERSONAL)
     @ApiOperation({
         summary: "Get identifier by ID",
         security: [{ identity: [] }],
@@ -88,14 +88,17 @@ export class IdentifierController {
         NOT_FOUND,
         FORBIDDEN,
     )
-    public getById(@Query() { identifier, view }: GetByIdQueryDTO): Queries.Identifier.FindUnique.Result {
-        return this.identifierQueries.findUnique({ identifier, view });
+    public findUnique(
+        @Query() { identifier, view, mode }: GetByIdQueryDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+    ): Queries.Identifier.FindUnique.Result {
+        return this.identifierQueries.findUnique({ mode, identifier, actor, view });
     }
 
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
-    @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @RequirePermission(IDENTIFIER_READ_PERSONAL)
     @ApiOperation({
         summary: "Get paginated list of identifiers",
         security: [{ identity: [] }],
@@ -108,17 +111,18 @@ export class IdentifierController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    public getList(
+    public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { view }: BaseReadQueryDTO,
+        @Query() { view, mode }: GetListQueryDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
     ): Queries.Identifier.FindMany.Result {
-        return this.identifierQueries.findMany({ pagination, filters, sort, view });
+        return this.identifierQueries.findMany({ mode, pagination, filters, sort, view, actor });
     }
 
     @HttpCode(OK)
     @Post("list/lookup")
     @FormatResponse(LookupListDTO)
-    @RequirePermission(IDENTIFIER_READ_PERSONAL, IDENTIFIER_READ_ABSOLUTE)
+    @RequirePermission(IDENTIFIER_READ_PERSONAL)
     @ApiOperation({
         summary: "Returns a lookup list of identifiers",
         security: [{ identity: [] }],

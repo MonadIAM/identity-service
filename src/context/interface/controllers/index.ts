@@ -1,3 +1,4 @@
+import { IdentifierManageController } from "./manage-identifier.controller";
 import { AccountManageController } from "./manage-account.controller";
 import { SecondFactorController } from "./second-factor.controller";
 import { RecoveryCodeController } from "./recovery-code.controller";
@@ -11,6 +12,7 @@ import { AuthnController } from "./authn.controller";
 import { JWKSController } from "./jwks.controller";
 
 export const HTTP_CONTROLLERS = [
+    IdentifierManageController,
     AccountManageController,
     SecondFactorController,
     RecoveryCodeController,
@@ -25,6 +27,7 @@ export const HTTP_CONTROLLERS = [
 ];
 
 export {
+    IdentifierManageController,
     AccountManageController,
     SecondFactorController,
     RecoveryCodeController,

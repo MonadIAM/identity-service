@@ -92,7 +92,7 @@ declare global {
         }
 
         namespace Identifier {
-            type Filters = {
+            type DefaultFilters = {
                 verifiedAt?: OrdinalFilterDTO<Date>;
                 lastUsedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
@@ -100,11 +100,16 @@ declare global {
                 email?: StringFilterDTO;
                 phone?: StringFilterDTO;
                 id?: StringFilterDTO;
-                account?: LinkFilterDTO;
                 receiveNotifications?: boolean;
                 isPublicContact?: boolean;
                 isVerified?: boolean;
             };
+
+            type ManageFilters = DefaultFilters & {
+                account?: LinkFilterDTO;
+            };
+
+            type Filters = DefaultFilters & ManageFilters;
 
             type Sort = {
                 verifiedAt?: QueryOrder;
