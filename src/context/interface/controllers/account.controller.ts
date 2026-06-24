@@ -22,7 +22,8 @@ import {
     ListDTO,
 } from "../dto/account";
 
-const { ACCOUNT_READ_PERSONAL, ACCOUNT_READ_ABSOLUTE, ACCOUNT_SUSPEND, ACCOUNT_RESTORE } = PermissionCode;
+const { ACCOUNT_READ_PERSONAL, ACCOUNT_READ_COMMON, ACCOUNT_READ_ABSOLUTE, ACCOUNT_SUSPEND, ACCOUNT_RESTORE } =
+    PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
@@ -65,7 +66,7 @@ export class AccountController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(AccountDTO)
-    @RequirePermission(ACCOUNT_READ_ABSOLUTE)
+    @RequirePermission(ACCOUNT_READ_ABSOLUTE, ACCOUNT_READ_COMMON)
     @ApiResponse({ status: OK, type: AccountDTO })
     @ApiOperation({
         security: [{ identity: [] }],
@@ -87,7 +88,7 @@ export class AccountController {
     @HttpCode(OK)
     @Post("list")
     @FormatResponse(ListDTO)
-    @RequirePermission(ACCOUNT_READ_ABSOLUTE)
+    @RequirePermission(ACCOUNT_READ_ABSOLUTE, ACCOUNT_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({
         summary: "Get paginated list of realm member accounts",
