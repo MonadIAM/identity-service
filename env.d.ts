@@ -140,6 +140,16 @@ declare global {
             REAUTHENTICATION_TTL: StringValue;
 
             // ---------------------------------------------------------------------------
+            // Authorization Code Flow
+            // ---------------------------------------------------------------------------
+
+            AUTHORIZATION_LOGIN_URL: string;
+            AUTHORIZATION_CLIENT_ID: string;
+            AUTHORIZATION_REDIRECT_URIS: string;
+            AUTHORIZATION_REQUEST_TTL: StringValue;
+            AUTHORIZATION_CODE_TTL: StringValue;
+
+            // ---------------------------------------------------------------------------
             // OAuth Providers
             // ---------------------------------------------------------------------------
 

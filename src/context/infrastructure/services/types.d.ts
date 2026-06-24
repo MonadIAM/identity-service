@@ -1,4 +1,102 @@
 declare namespace InfrastructureServices {
+    namespace AuthorizationRequestCache {
+        interface PrivateContract {
+            deserialize(props: Deserialize.Props): Deserialize.Result;
+        }
+
+        interface PublicContract {
+            create(props: Create.Props): Create.Result;
+            confirm(props: Confirm.Props): Confirm.Result;
+            consume(props: Consume.Props): Consume.Result;
+            delete(props: Delete.Props): Delete.Result;
+            get(props: Get.Props): Get.Result;
+        }
+
+        interface Contract extends PublicContract, PrivateContract {}
+
+        namespace Deserialize {
+            type Props = Nullable<string>;
+            type Result = Nullable<Metadata>;
+        }
+
+        type Metadata = {
+            codeChallengeMethod: "S256";
+            codeChallenge: string;
+            redirectUri: string;
+            clientId: string;
+            account?: string;
+            scope?: string;
+            state?: string;
+        };
+
+        namespace Create {
+            type Props = Metadata;
+
+            type Result = Promise<{
+                id: string;
+            }>;
+        }
+
+        namespace Get {
+            type Props = {
+                id: string;
+            };
+
+            type Result = Promise<Nullable<Metadata>>;
+        }
+
+        namespace Confirm {
+            type Props = {
+                account: string;
+                id: string;
+            };
+
+            type Result = Promise<void>;
+        }
+
+        namespace Consume {
+            type Props = {
+                id: string;
+            };
+
+            type Result = Promise<Nullable<Metadata>>;
+        }
+
+        namespace Delete {
+            type Props = {
+                id: string;
+            };
+
+            type Result = Promise<void>;
+        }
+    }
+
+    namespace AuthorizationClient {
+        interface Contract {
+            resolve(props: Resolve.Props): Resolve.Result;
+            getLoginUrl(): string;
+        }
+
+        type Grant = "authorization_code" | "refresh_token";
+
+        type Client = {
+            allowedGrants: Grant[];
+            redirectUris: string[];
+            requirePKCE: true;
+            public: true;
+            id: string;
+        };
+
+        namespace Resolve {
+            type Props = {
+                redirectUri: string;
+                client: string;
+            };
+
+            type Result = Client;
+        }
+    }
+
     namespace SecondFactorSecret {
         interface Contract {
             resolve(props: Resolve.Props): Resolve.Result;

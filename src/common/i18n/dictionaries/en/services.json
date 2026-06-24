@@ -6,6 +6,10 @@
     "INVALID_ACCESS_TOKEN": "The access token is invalid or expired.",
     "INVALID_REFRESH_TOKEN": "The refresh token is invalid."
   },
+  "authorization-client": {
+    "INVALID_CLIENT": "The OAuth client is invalid.",
+    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client."
+  },
   "vault": {
     "REQUEST_FAILED": "Vault Transit request failed.",
     "INVALID_SIGNATURE": "Vault Transit returned an invalid signature."
