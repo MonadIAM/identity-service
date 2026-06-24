@@ -1,10 +1,10 @@
 import { IdentifierManageController } from "./manage-identifier.controller";
+import { ChangeLogManageController } from "./manage-change-log.controller";
+import { AuditLogManageController } from "./manage-audit-log.controller";
 import { AccountManageController } from "./manage-account.controller";
 import { SecondFactorController } from "./second-factor.controller";
 import { RecoveryCodeController } from "./recovery-code.controller";
 import { IdentifierController } from "./identifier.controller";
-import { ChangeLogController } from "./change-log.controller";
-import { AuditLogController } from "./audit-log.controller";
 import { PasswordController } from "./password.controller";
 import { ProfileController } from "./profile.controller";
 import { AccountController } from "./account.controller";
@@ -13,12 +13,12 @@ import { JWKSController } from "./jwks.controller";
 
 export const HTTP_CONTROLLERS = [
     IdentifierManageController,
+    ChangeLogManageController,
+    AuditLogManageController,
     AccountManageController,
     SecondFactorController,
     RecoveryCodeController,
     IdentifierController,
-    ChangeLogController,
-    AuditLogController,
     PasswordController,
     ProfileController,
     AccountController,
@@ -28,12 +28,12 @@ export const HTTP_CONTROLLERS = [
 
 export {
     IdentifierManageController,
+    ChangeLogManageController,
+    AuditLogManageController,
     AccountManageController,
     SecondFactorController,
     RecoveryCodeController,
     IdentifierController,
-    ChangeLogController,
-    AuditLogController,
     PasswordController,
     ProfileController,
     AccountController,

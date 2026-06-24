@@ -1,4 +1,12 @@
-import { AnyEntity, EntityClass, EntityManager, FilterQuery, FindOptions, Loaded } from "@mikro-orm/postgresql";
+import {
+    EntityManager,
+    FilterQuery,
+    FindOptions,
+    ObjectQuery,
+    EntityClass,
+    AnyEntity,
+    Loaded,
+} from "@mikro-orm/postgresql";
 
 declare global {
     namespace Repositories {
@@ -50,6 +58,7 @@ declare global {
                   }
                 | {
                       options?: FindOptions<E, P, F>;
+                      prefilter?: ObjectQuery<E>;
                       pagination: Pagination;
                       filters: A["Filters"];
                       sort: A["Sort"];

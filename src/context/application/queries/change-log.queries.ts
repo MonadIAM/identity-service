@@ -6,7 +6,7 @@ import { CHANGE_LOG_REPOSITORY } from "~context/infrastructure/repositories";
 export class ChangeLogQueries implements Queries.ChangeLog.Contract {
     public constructor(
         @Inject(CHANGE_LOG_REPOSITORY)
-        private readonly changeLogRepository: Repositories.ChangeLog.Contract,
+        private readonly changeLogRepository: Repositories.ChangeLog.QueryContract,
     ) {}
 
     public findUnique(props: Queries.ChangeLog.FindUnique.Props): Queries.ChangeLog.FindUnique.Result {

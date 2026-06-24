@@ -68,9 +68,9 @@ export function BaseRepository<
                     const entityManager = transaction ?? this.readManager.fork();
                     return await entityManager.findAndCount(Entity, where, options);
                 } else {
-                    const { pagination, filters, sort, options } = props;
+                    const { pagination, filters, sort, options, prefilter } = props;
                     const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                    const where = super.buildWhereORM(filters);
+                    const where = super.buildWhereORM(filters, prefilter);
                     const entityManager = this.readManager.fork();
                     return await entityManager.findAndCount(Entity, where, opts);
                 }

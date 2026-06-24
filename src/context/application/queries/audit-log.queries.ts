@@ -6,7 +6,7 @@ import { AUDIT_LOG_REPOSITORY } from "~context/infrastructure/repositories";
 export class AuditLogQueries implements Queries.AuditLog.Contract {
     public constructor(
         @Inject(AUDIT_LOG_REPOSITORY)
-        private readonly auditLogRepository: Repositories.AuditLog.Contract,
+        private readonly auditLogRepository: Repositories.AuditLog.QueryContract,
     ) {}
 
     public findUnique(props: Queries.AuditLog.FindUnique.Props): Queries.AuditLog.FindUnique.Result {
