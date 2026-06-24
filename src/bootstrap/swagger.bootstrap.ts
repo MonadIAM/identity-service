@@ -3,6 +3,8 @@ import { INestApplication } from "@nestjs/common";
 import { readFileSync } from "fs";
 import { join } from "path";
 
+import { Client } from "~context/enums";
+
 import { name, version } from "../../package.json";
 
 const SWAGGER_TAGS: Record<string, string> = {
@@ -63,7 +65,7 @@ export abstract class BootstrapSwagger {
                     filter: true,
                     initOAuth: {
                         useBasicAuthenticationWithAccessCodeGrant: false,
-                        clientId: "web-dev",
+                        clientId: Client.WEB_DEV,
                         appName: name,
                     },
                     urls: [

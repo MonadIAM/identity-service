@@ -57,7 +57,7 @@ export abstract class BootstrapSecurity {
                             }),
                         );
                     }
-                } else if (isDevelopment) {
+                } else if (isDevelopment || request.method === "GET" || request.method === "HEAD") {
                     done();
                 } else {
                     this.sendException(

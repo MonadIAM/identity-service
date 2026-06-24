@@ -1,6 +1,8 @@
 import { describe, it, expect } from "@jest/globals";
 import { isUUID } from "class-validator";
 
+import { Client } from "~context/enums";
+
 import { Account } from "./account.entity";
 import { Session } from "./session.entity";
 
@@ -9,7 +11,7 @@ function createSession(overrides?: Partial<Entities.Session.ConstructorProps>): 
         expiresAt: new Date(Date.now() + 3600000),
         userAgent: "Mozilla/5.0",
         account: {} as Account,
-        client: "web-dev",
+        client: Client.WEB_DEV,
         ip: "127.0.0.1",
         ...overrides,
     });
@@ -26,7 +28,7 @@ describe("Session Entity", () => {
             expect(session.account).toBe(account);
             expect(session.expiresAt).toBe(expiresAt);
             expect(session.userAgent).toBe("curl/7.0");
-            expect(session.client).toBe("web-dev");
+            expect(session.client).toBe(Client.WEB_DEV);
             expect(session.ip).toBe("10.0.0.1");
         });
 

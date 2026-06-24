@@ -22,6 +22,8 @@
     "INVALID_TOTP_CODE": "The second-factor code is invalid.",
     "ACCOUNT_SUSPENDED": "The account is suspended.",
     "ACCOUNT_NOT_VERIFIED": "The account is not verified.",
+    "UNSUPPORTED_RESPONSE_TYPE": "The requested response type is not supported.",
+    "UNSUPPORTED_CODE_CHALLENGE_METHOD": "The requested PKCE code challenge method is not supported.",
     "UNSUPPORTED_GRANT_TYPE": "The requested grant type is not supported.",
     "INVALID_CLIENT": "The client is invalid."
   },

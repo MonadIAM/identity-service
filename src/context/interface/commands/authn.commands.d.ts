@@ -1,4 +1,4 @@
-import { TokenGrantType } from "~context/enums";
+import { OAuthResponseType, CodeChallengeMethod, TokenGrantType } from "~context/enums";
 
 declare global {
     namespace Commands {
@@ -14,6 +14,7 @@ declare global {
                 verifySecondFactor(props: VerifySecondFactor.Props): VerifySecondFactor.Result;
                 requestOTP(props: RequestOTP.Props): RequestOTP.Result;
                 verifyOTP(props: VerifyOTP.Props): VerifyOTP.Result;
+                authorize(props: Authorize.Props): Authorize.Result;
                 token(props: Token.Props): Token.Result;
             }
 
@@ -41,6 +42,23 @@ declare global {
                             | { pendingToken: string; requires2FA: true }
                         )
                 >;
+            }
+
+            namespace Authorize {
+                type Props = {
+                    input: {
+                        codeChallengeMethod: CodeChallengeMethod;
+                        responseType: OAuthResponseType;
+                        codeChallenge: string;
+                        redirectUri: string;
+                        client: string;
+                        state: string;
+                    };
+                };
+
+                type Result = Promise<{
+                    url: string;
+                }>;
             }
 
             namespace Password {

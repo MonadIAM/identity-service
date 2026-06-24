@@ -4,7 +4,17 @@ import { ConfigService } from "@nestjs/config";
 import { TOTP, Secret } from "otpauth";
 import ms, { StringValue } from "ms";
 
-import { IdentifierType, AccountStatus, TokenGrantType, EntityType, KafkaTopic, ActionType, Client } from "~context/enums";
+import {
+    CodeChallengeMethod,
+    OAuthResponseType,
+    IdentifierType,
+    AccountStatus,
+    TokenGrantType,
+    EntityType,
+    KafkaTopic,
+    ActionType,
+    Client,
+} from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_SERVICE, SECOND_FACTOR_SERVICE, SESSION_SERVICE } from "~context/domain/services";
@@ -13,6 +23,8 @@ import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 import {
     SECOND_FACTOR_SECRET_SERVICE,
+    AUTHORIZATION_REQUEST_CACHE_SERVICE,
+    AUTHORIZATION_CLIENT_SERVICE,
     PENDING_2FA_CACHE_SERVICE,
     OTP_CACHE_SERVICE,
 } from "~context/infrastructure/services";
@@ -30,22 +42,26 @@ export class AuthnCommands implements Commands.Authn.Contract {
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(SESSION_COMMANDS)
         private readonly sessionCommands: Commands.Session.PrivateContract,
-        @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(SECOND_FACTOR_REPOSITORY)
         private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
+        @Inject(IDENTIFIER_REPOSITORY)
+        private readonly identifierRepository: Repositories.Identifier.Contract,
+        @Inject(SECOND_FACTOR_SERVICE)
+        private readonly secondFactorService: Services.SecondFactor.Contract,
         @Inject(ACCOUNT_SERVICE)
         private readonly accountService: Services.Account.Contract,
         @Inject(SESSION_SERVICE)
         private readonly sessionService: Services.Session.Contract,
-        @Inject(SECOND_FACTOR_SERVICE)
-        private readonly secondFactorService: Services.SecondFactor.Contract,
-        @Inject(OTP_CACHE_SERVICE)
-        private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
-        @Inject(PENDING_2FA_CACHE_SERVICE)
-        private readonly pending2FACacheService: InfrastructureServices.Pending2FACache.Contract,
+        @Inject(AUTHORIZATION_REQUEST_CACHE_SERVICE)
+        private readonly authorizationRequestCacheService: InfrastructureServices.AuthorizationRequestCache.Contract,
+        @Inject(AUTHORIZATION_CLIENT_SERVICE)
+        private readonly authorizationClientService: InfrastructureServices.AuthorizationClient.Contract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
+        @Inject(PENDING_2FA_CACHE_SERVICE)
+        private readonly pending2FACacheService: InfrastructureServices.Pending2FACache.Contract,
+        @Inject(OTP_CACHE_SERVICE)
+        private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
@@ -56,6 +72,34 @@ export class AuthnCommands implements Commands.Authn.Contract {
         private readonly smsService: CommonServices.SMS.Contract,
     ) {
         this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
+    }
+
+    public async authorize(props: Commands.Authn.Authorize.Props): Commands.Authn.Authorize.Result {
+        if (props.input.responseType !== OAuthResponseType.CODE) {
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_RESPONSE_TYPE` });
+        }
+
+        if (props.input.codeChallengeMethod !== CodeChallengeMethod.S256) {
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_CODE_CHALLENGE_METHOD` });
+        }
+
+        const client = this.authorizationClientService.resolve({
+            redirectUri: props.input.redirectUri,
+            client: props.input.client,
+        });
+
+        const { id } = await this.authorizationRequestCacheService.create({
+            codeChallengeMethod: props.input.codeChallengeMethod,
+            codeChallenge: props.input.codeChallenge,
+            redirectUri: props.input.redirectUri,
+            state: props.input.state,
+            client: client.id,
+        });
+
+        const url = new URL(this.authorizationClientService.getLoginUrl());
+        url.searchParams.set("auth_request", id);
+
+        return { url: url.toString() };
     }
 
     public async token(props: Commands.Authn.Token.Props): Commands.Authn.Token.Result {

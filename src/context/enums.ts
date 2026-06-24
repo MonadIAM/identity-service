@@ -46,6 +46,14 @@ export enum TokenGrantType {
     REFRESH_TOKEN = "refresh_token",
 }
 
+export enum OAuthResponseType {
+    CODE = "code",
+}
+
+export enum CodeChallengeMethod {
+    S256 = "S256",
+}
+
 export enum Client {
     WEB_DEV = "web-dev",
 }

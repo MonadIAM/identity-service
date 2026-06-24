@@ -3,6 +3,7 @@ import {
     Controller,
     HttpStatus,
     HttpCode,
+    Redirect,
     Header,
     Inject,
     Delete,
@@ -31,6 +32,7 @@ import {
     InternalTokenBodyDTO,
     RequestOTPBodyDTO,
     VerifyOTPBodyDTO,
+    AuthorizeQueryDTO,
 } from "../dto/authn";
 
 const {
@@ -52,6 +54,7 @@ const {
     NOT_FOUND,
     BAD_GATEWAY,
     CONFLICT,
+    FOUND,
     OK,
 } = HttpStatus;
 
@@ -71,6 +74,20 @@ export class AuthnController {
         @Inject(SESSION_QUERIES)
         private readonly sessionQueries: Queries.Session.ControllerContract,
     ) {}
+
+    @Public()
+    @Get("authorize")
+    @Redirect(undefined, FOUND)
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
+    @ApiOperation({
+        summary: "Start OAuth authorization code flow",
+        security: [],
+    })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
+    public authorize(@Query() input: AuthorizeQueryDTO): Commands.Authn.Authorize.Result {
+        return this.authnCommands.authorize({ input });
+    }
 
     @Public()
     @HttpCode(OK)

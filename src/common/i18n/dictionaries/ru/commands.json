@@ -22,6 +22,8 @@
     "INVALID_TOTP_CODE": "Код второго фактора недействителен.",
     "ACCOUNT_SUSPENDED": "Учетная запись заблокирована.",
     "ACCOUNT_NOT_VERIFIED": "Учетная запись не подтверждена.",
+    "UNSUPPORTED_RESPONSE_TYPE": "Запрошенный тип ответа не поддерживается.",
+    "UNSUPPORTED_CODE_CHALLENGE_METHOD": "Запрошенный метод PKCE code challenge не поддерживается.",
     "UNSUPPORTED_GRANT_TYPE": "Запрошенный тип предоставления не поддерживается.",
     "INVALID_CLIENT": "Клиент недействителен."
   },

@@ -1,303 +1,306 @@
-declare namespace InfrastructureServices {
-    namespace AuthorizationRequestCache {
-        interface PrivateContract {
-            deserialize(props: Deserialize.Props): Deserialize.Result;
-        }
+import { CodeChallengeMethod } from "~context/enums";
 
-        interface PublicContract {
-            create(props: Create.Props): Create.Result;
-            confirm(props: Confirm.Props): Confirm.Result;
-            consume(props: Consume.Props): Consume.Result;
-            delete(props: Delete.Props): Delete.Result;
-            get(props: Get.Props): Get.Result;
-        }
+declare global {
+    namespace InfrastructureServices {
+        namespace AuthorizationRequestCache {
+            interface PrivateContract {
+                deserialize(props: Deserialize.Props): Deserialize.Result;
+            }
 
-        interface Contract extends PublicContract, PrivateContract {}
+            interface PublicContract {
+                create(props: Create.Props): Create.Result;
+                confirm(props: Confirm.Props): Confirm.Result;
+                consume(props: Consume.Props): Consume.Result;
+                delete(props: Delete.Props): Delete.Result;
+                get(props: Get.Props): Get.Result;
+            }
 
-        namespace Deserialize {
-            type Props = Nullable<string>;
-            type Result = Nullable<Metadata>;
-        }
+            interface Contract extends PublicContract, PrivateContract {}
 
-        type Metadata = {
-            codeChallengeMethod: "S256";
-            codeChallenge: string;
-            redirectUri: string;
-            clientId: string;
-            account?: string;
-            scope?: string;
-            state?: string;
-        };
+            namespace Deserialize {
+                type Props = Nullable<string>;
+                type Result = Nullable<Metadata>;
+            }
 
-        namespace Create {
-            type Props = Metadata;
-
-            type Result = Promise<{
-                id: string;
-            }>;
-        }
-
-        namespace Get {
-            type Props = {
-                id: string;
-            };
-
-            type Result = Promise<Nullable<Metadata>>;
-        }
-
-        namespace Confirm {
-            type Props = {
-                account: string;
-                id: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace Consume {
-            type Props = {
-                id: string;
-            };
-
-            type Result = Promise<Nullable<Metadata>>;
-        }
-
-        namespace Delete {
-            type Props = {
-                id: string;
-            };
-
-            type Result = Promise<void>;
-        }
-    }
-
-    namespace AuthorizationClient {
-        interface Contract {
-            resolve(props: Resolve.Props): Resolve.Result;
-            getLoginUrl(): string;
-        }
-
-        type Grant = "authorization_code" | "refresh_token";
-
-        type Client = {
-            allowedGrants: Grant[];
-            redirectUris: string[];
-            requirePKCE: true;
-            public: true;
-            id: string;
-        };
-
-        namespace Resolve {
-            type Props = {
+            type Metadata = {
+                codeChallengeMethod: CodeChallengeMethod.S256;
+                codeChallenge: string;
                 redirectUri: string;
+                account?: string;
                 client: string;
-            };
-
-            type Result = Client;
-        }
-    }
-
-    namespace SecondFactorSecret {
-        interface Contract {
-            resolve(props: Resolve.Props): Resolve.Result;
-            encrypt(props: Encrypt.Props): Encrypt.Result;
-        }
-
-        namespace Encrypt {
-            type Props = {
-                secret: string;
-            };
-
-            type Result = Promise<string>;
-        }
-
-        namespace Resolve {
-            type Props = {
-                secret: string;
-            };
-
-            type Result = Promise<{
-                ciphertext?: string;
-                plaintext: string;
-            }>;
-        }
-    }
-
-    namespace AccessCache {
-        interface PrivateContract {
-            resolveVersionedKey(props: ResolveVersionedKey.Props): ResolveVersionedKey.Result;
-        }
-
-        interface Contract extends PrivateContract {
-            checkPermissions(props: CheckPermissions.Props): CheckPermissions.Result;
-            deleteAccount(props: DeleteAccount.Props): DeleteAccount.Result;
-            deleteRealm(props: DeleteRealm.Props): DeleteRealm.Result;
-            delete(props: Delete.Props): Delete.Result;
-            deleteAll(): DeleteAll.Result;
-        }
-
-        namespace DeleteAccount {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace DeleteRealm {
-            type Props = {
-                realm: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace CheckPermissions {
-            type Props = {
-                permissions: string[];
-                globalOnly?: boolean;
-                account: string;
-                realm: string;
-            };
-
-            type Result = Promise<string[]>;
-        }
-
-        namespace Delete {
-            type Props = {
-                account: string;
-                realm: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace DeleteAll {
-            type Result = Promise<void>;
-        }
-
-        namespace ResolveVersionedKey {
-            type Props = {
-                account: string;
-                realm: string;
-            };
-
-            type Result = Promise<string>;
-        }
-    }
-
-    namespace OAuthStateCache {
-        interface Contract {
-            consume(props: Consume.Props): Consume.Result;
-            set(props: Set.Props): Set.Result;
-        }
-
-        type Metadata = {
-            redirectUri?: string;
-            provider: string;
-        };
-
-        namespace Set {
-            type Props = {
-                metadata: Metadata;
                 state: string;
             };
 
-            type Result = Promise<void>;
+            namespace Create {
+                type Props = Metadata;
+
+                type Result = Promise<{
+                    id: string;
+                }>;
+            }
+
+            namespace Get {
+                type Props = {
+                    id: string;
+                };
+
+                type Result = Promise<Nullable<Metadata>>;
+            }
+
+            namespace Confirm {
+                type Props = {
+                    account: string;
+                    id: string;
+                };
+
+                type Result = Promise<void>;
+            }
+
+            namespace Consume {
+                type Props = {
+                    id: string;
+                };
+
+                type Result = Promise<Nullable<Metadata>>;
+            }
+
+            namespace Delete {
+                type Props = {
+                    id: string;
+                };
+
+                type Result = Promise<void>;
+            }
         }
 
-        namespace Consume {
-            type Props = {
-                state: string;
+        namespace AuthorizationClient {
+            interface Contract {
+                resolve(props: Resolve.Props): Resolve.Result;
+                getLoginUrl(): string;
+            }
+
+            type Grant = "authorization_code" | "refresh_token";
+
+            type Client = {
+                allowedGrants: Grant[];
+                redirectUris: string[];
+                requirePKCE: true;
+                public: true;
+                id: string;
             };
 
-            type Result = Promise<Nullable<Metadata>>;
+            namespace Resolve {
+                type Props = {
+                    redirectUri: string;
+                    client: string;
+                };
+
+                type Result = Client;
+            }
         }
-    }
 
-    namespace OTPCache {
-        interface Contract {
-            consume(props: Consume.Props): Consume.Result;
-            set(props: Set.Props): Set.Result;
+        namespace SecondFactorSecret {
+            interface Contract {
+                resolve(props: Resolve.Props): Resolve.Result;
+                encrypt(props: Encrypt.Props): Encrypt.Result;
+            }
+
+            namespace Encrypt {
+                type Props = {
+                    secret: string;
+                };
+
+                type Result = Promise<string>;
+            }
+
+            namespace Resolve {
+                type Props = {
+                    secret: string;
+                };
+
+                type Result = Promise<{
+                    ciphertext?: string;
+                    plaintext: string;
+                }>;
+            }
         }
 
-        type Purpose = "verification" | "identifier" | "login" | "reset" | "setup2FA";
+        namespace AccessCache {
+            interface PrivateContract {
+                resolveVersionedKey(props: ResolveVersionedKey.Props): ResolveVersionedKey.Result;
+            }
 
-        namespace Consume {
-            type Props = {
-                purpose: Purpose;
-                key: string;
+            interface Contract extends PrivateContract {
+                checkPermissions(props: CheckPermissions.Props): CheckPermissions.Result;
+                deleteAccount(props: DeleteAccount.Props): DeleteAccount.Result;
+                deleteRealm(props: DeleteRealm.Props): DeleteRealm.Result;
+                delete(props: Delete.Props): Delete.Result;
+                deleteAll(): DeleteAll.Result;
+            }
+
+            namespace DeleteAccount {
+                type Props = {
+                    account: string;
+                };
+
+                type Result = Promise<void>;
+            }
+
+            namespace DeleteRealm {
+                type Props = {
+                    realm: string;
+                };
+
+                type Result = Promise<void>;
+            }
+
+            namespace CheckPermissions {
+                type Props = {
+                    permissions: string[];
+                    globalOnly?: boolean;
+                    account: string;
+                    realm: string;
+                };
+
+                type Result = Promise<string[]>;
+            }
+
+            namespace Delete {
+                type Props = {
+                    account: string;
+                    realm: string;
+                };
+
+                type Result = Promise<void>;
+            }
+
+            namespace DeleteAll {
+                type Result = Promise<void>;
+            }
+
+            namespace ResolveVersionedKey {
+                type Props = {
+                    account: string;
+                    realm: string;
+                };
+
+                type Result = Promise<string>;
+            }
+        }
+
+        namespace OAuthStateCache {
+            interface Contract {
+                consume(props: Consume.Props): Consume.Result;
+                set(props: Set.Props): Set.Result;
+            }
+
+            type Metadata = {
+                redirectUri?: string;
+                provider: string;
             };
 
-            type Result = Promise<Nullable<string>>;
+            namespace Set {
+                type Props = {
+                    metadata: Metadata;
+                    state: string;
+                };
+
+                type Result = Promise<void>;
+            }
+
+            namespace Consume {
+                type Props = {
+                    state: string;
+                };
+
+                type Result = Promise<Nullable<Metadata>>;
+            }
         }
 
-        namespace Set {
-            type Props = {
-                purpose: Purpose;
-                key: string;
-                value: string;
+        namespace OTPCache {
+            interface Contract {
+                consume(props: Consume.Props): Consume.Result;
+                set(props: Set.Props): Set.Result;
+            }
+
+            type Purpose = "verification" | "identifier" | "login" | "reset" | "setup2FA";
+
+            namespace Consume {
+                type Props = {
+                    purpose: Purpose;
+                    key: string;
+                };
+
+                type Result = Promise<Nullable<string>>;
+            }
+
+            namespace Set {
+                type Props = {
+                    purpose: Purpose;
+                    key: string;
+                    value: string;
+                };
+
+                type Result = Promise<void>;
+            }
+        }
+
+        namespace Pending2FACache {
+            interface Contract {
+                set(props: Set): Promise<void>;
+                get(props: Get): Promise<Nullable<string>>;
+                delete(props: Delete): Promise<void>;
+            }
+
+            type Set = {
+                account: string;
+                token: string;
             };
 
-            type Result = Promise<void>;
-        }
-    }
+            type Get = {
+                token: string;
+            };
 
-    namespace Pending2FACache {
-        interface Contract {
-            set(props: Set): Promise<void>;
-            get(props: Get): Promise<Nullable<string>>;
-            delete(props: Delete): Promise<void>;
+            type Delete = {
+                token: string;
+            };
         }
 
-        type Set = {
-            account: string;
-            token: string;
-        };
+        namespace ReauthenticationCache {
+            interface Contract {
+                set(props: Set): Promise<void>;
+                exists(props: Exists): Promise<boolean>;
+                delete(props: Delete): Promise<void>;
+            }
 
-        type Get = {
-            token: string;
-        };
+            type Set = {
+                session: string;
+                ttl: number;
+            };
 
-        type Delete = {
-            token: string;
-        };
-    }
+            type Exists = {
+                session: string;
+            };
 
-    namespace ReauthenticationCache {
-        interface Contract {
-            set(props: Set): Promise<void>;
-            exists(props: Exists): Promise<boolean>;
-            delete(props: Delete): Promise<void>;
+            type Delete = {
+                session: string;
+            };
         }
 
-        type Set = {
-            session: string;
-            ttl: number;
-        };
+        namespace BlacklistCache {
+            interface Contract {
+                exists(props: Exists): Promise<boolean>;
+                set(props: Set): Promise<void>;
+            }
 
-        type Exists = {
-            session: string;
-        };
+            type Set = {
+                session: string;
+                ttl: number;
+            };
 
-        type Delete = {
-            session: string;
-        };
-    }
-
-    namespace BlacklistCache {
-        interface Contract {
-            exists(props: Exists): Promise<boolean>;
-            set(props: Set): Promise<void>;
+            type Exists = {
+                session: string;
+            };
         }
-
-        type Set = {
-            session: string;
-            ttl: number;
-        };
-
-        type Exists = {
-            session: string;
-        };
     }
 }
