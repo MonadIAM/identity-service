@@ -23,10 +23,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<
-                MessageResult & {
-                    pendingToken?: string;
-                    requires2FA?: true;
-                }
+                MessageResult &
+                    (Awaited<Commands.OAuth.CompleteAuthorization.Result> | { pendingToken: string; requires2FA: true })
             >;
         }
 
@@ -49,7 +47,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<MessageResult>;
+            type Result = Promise<MessageResult & Awaited<Commands.OAuth.CompleteAuthorization.Result>>;
         }
 
         namespace VerifySecondFactor {
@@ -61,7 +59,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<MessageResult>;
+            type Result = Promise<MessageResult & Awaited<Commands.OAuth.CompleteAuthorization.Result>>;
         }
 
         namespace AssertCanAuthenticate {

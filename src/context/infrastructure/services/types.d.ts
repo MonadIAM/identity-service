@@ -1,38 +1,57 @@
 import { CodeChallengeMethod } from "~context/enums";
+import { LuaScript } from "~context/infrastructure/scripts";
 
 declare global {
     namespace InfrastructureServices {
-        namespace AuthorizationRequestCache {
+        namespace ScriptLoader {
+            interface Contract {
+                reload(script: LuaScript): Promise<string>;
+                getHash(script: LuaScript): string;
+            }
+        }
+
+        namespace ScriptExecutor {
+            interface Contract {
+                execute<T>(script: LuaScript, args: string[], keys?: string[]): Promise<T>;
+            }
+        }
+
+        namespace AuthorizationCache {
             interface PrivateContract {
-                deserialize(props: Deserialize.Props): Deserialize.Result;
+                issueAttempt(props: IssueAttempt.Props): IssueAttempt.Result;
             }
 
             interface PublicContract {
-                create(props: Create.Props): Create.Result;
-                confirm(props: Confirm.Props): Confirm.Result;
                 consume(props: Consume.Props): Consume.Result;
-                delete(props: Delete.Props): Delete.Result;
+                create(props: Create.Props): Create.Result;
+                issue(props: Issue.Props): Issue.Result;
                 get(props: Get.Props): Get.Result;
             }
 
             interface Contract extends PublicContract, PrivateContract {}
 
-            namespace Deserialize {
-                type Props = Nullable<string>;
-                type Result = Nullable<Metadata>;
-            }
-
-            type Metadata = {
+            type RequestMetadata = {
                 codeChallengeMethod: CodeChallengeMethod.S256;
                 codeChallenge: string;
                 redirectUri: string;
-                account?: string;
                 client: string;
                 state: string;
             };
 
+            type CodeMetadata = Omit<RequestMetadata, "state"> & {
+                account: string;
+            };
+
+            namespace IssueAttempt {
+                type Props = Issue.Props & {
+                    attemptsRemaining: number;
+                };
+
+                type Result = Issue.Result;
+            }
+
             namespace Create {
-                type Props = Metadata;
+                type Props = RequestMetadata;
 
                 type Result = Promise<{
                     id: string;
@@ -44,32 +63,29 @@ declare global {
                     id: string;
                 };
 
-                type Result = Promise<Nullable<Metadata>>;
+                type Result = Promise<Nullable<RequestMetadata>>;
             }
 
-            namespace Confirm {
+            namespace Issue {
                 type Props = {
+                    authorizationRequest: string;
                     account: string;
-                    id: string;
                 };
 
-                type Result = Promise<boolean>;
+                type Result = Promise<
+                    Nullable<{
+                        request: RequestMetadata;
+                        code: string;
+                    }>
+                >;
             }
 
             namespace Consume {
                 type Props = {
-                    id: string;
+                    code: string;
                 };
 
-                type Result = Promise<Nullable<Metadata>>;
-            }
-
-            namespace Delete {
-                type Props = {
-                    id: string;
-                };
-
-                type Result = Promise<void>;
+                type Result = Promise<Nullable<CodeMetadata>>;
             }
         }
 

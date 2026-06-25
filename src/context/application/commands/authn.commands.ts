@@ -86,12 +86,12 @@ export class AuthnCommands implements Commands.Authn.Contract {
             return { message: `${this.dictionaryPath}.PASSWORD_VERIFIED`, pendingToken, requires2FA: true };
         }
 
-        await this.oauthCommands.completeAuthorization({
+        const result = await this.oauthCommands.completeAuthorization({
             authorizationRequest: props.input.authorizationRequest,
             account: identifier.account.id,
         });
 
-        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED` };
+        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED`, ...result };
     }
 
     public async requestOTP(props: Commands.Authn.RequestOTP.Props): Commands.Authn.RequestOTP.Result {
@@ -156,12 +156,12 @@ export class AuthnCommands implements Commands.Authn.Contract {
 
         this.assertCanAuthenticate(identifier.account);
 
-        await this.oauthCommands.completeAuthorization({
+        const result = await this.oauthCommands.completeAuthorization({
             authorizationRequest: props.input.authorizationRequest,
             account: identifier.account.id,
         });
 
-        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED` };
+        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED`, ...result };
     }
 
     public async verifySecondFactor(
@@ -214,12 +214,12 @@ export class AuthnCommands implements Commands.Authn.Contract {
 
         await this.pending2FACacheService.delete({ token: props.token });
 
-        await this.oauthCommands.completeAuthorization({
+        const result = await this.oauthCommands.completeAuthorization({
             authorizationRequest: cached.authorizationRequest,
             account: factor.account.id,
         });
 
-        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED` };
+        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED`, ...result };
     }
 
     public assertCanAuthenticate(

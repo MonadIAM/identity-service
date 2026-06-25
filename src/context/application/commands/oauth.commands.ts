@@ -2,10 +2,10 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { AUTHORIZATION_REQUEST_CACHE_SERVICE, AUTHORIZATION_CLIENT_SERVICE } from "~context/infrastructure/services";
 import { CodeChallengeMethod, OAuthResponseType, TokenGrantType } from "~context/enums";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
 import { Exception } from "~common/exceptions";
+import { AUTHORIZATION_CACHE_SERVICE, AUTHORIZATION_CLIENT_SERVICE } from "~context/infrastructure/services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthCommands implements Commands.OAuth.Contract {
@@ -16,8 +16,8 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         private readonly configService: ConfigService,
         @Inject(SESSION_COMMANDS)
         private readonly sessionCommands: Commands.Session.CommandsContract,
-        @Inject(AUTHORIZATION_REQUEST_CACHE_SERVICE)
-        private readonly authorizationRequestCacheService: InfrastructureServices.AuthorizationRequestCache.Contract,
+        @Inject(AUTHORIZATION_CACHE_SERVICE)
+        private readonly authorizationCacheService: InfrastructureServices.AuthorizationCache.Contract,
         @Inject(AUTHORIZATION_CLIENT_SERVICE)
         private readonly authorizationClientService: InfrastructureServices.AuthorizationClient.Contract,
     ) {
@@ -38,7 +38,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             client: props.input.client,
         });
 
-        const { id } = await this.authorizationRequestCacheService.create({
+        const { id } = await this.authorizationCacheService.create({
             codeChallengeMethod: props.input.codeChallengeMethod,
             codeChallenge: props.input.codeChallenge,
             redirectUri: props.input.redirectUri,
@@ -79,11 +79,11 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     public async assertAuthorizationPending(
         props: Commands.OAuth.AssertAuthorizationPending.Props,
     ): Commands.OAuth.AssertAuthorizationPending.Result {
-        const request = await this.authorizationRequestCacheService.get({
+        const request = await this.authorizationCacheService.get({
             id: props.authorizationRequest,
         });
 
-        if (!request || request.account) {
+        if (!request) {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_AUTHORIZATION_REQUEST` });
         }
     }
@@ -91,13 +91,19 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     public async completeAuthorization(
         props: Commands.OAuth.CompleteAuthorization.Props,
     ): Commands.OAuth.CompleteAuthorization.Result {
-        const confirmed = await this.authorizationRequestCacheService.confirm({
-            id: props.authorizationRequest,
+        const issued = await this.authorizationCacheService.issue({
+            authorizationRequest: props.authorizationRequest,
             account: props.account,
         });
 
-        if (!confirmed) {
+        if (!issued) {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_AUTHORIZATION_REQUEST` });
         }
+
+        const url = new URL(issued.request.redirectUri);
+        url.searchParams.set("state", issued.request.state);
+        url.searchParams.set("code", issued.code);
+
+        return { authorizationUrl: url.toString() };
     }
 }

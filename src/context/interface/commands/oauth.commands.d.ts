@@ -71,7 +71,9 @@ declare global {
                     account: string;
                 };
 
-                type Result = Promise<void>;
+                type Result = Promise<{
+                    authorizationUrl: string;
+                }>;
             }
         }
     }
