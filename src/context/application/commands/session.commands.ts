@@ -4,10 +4,10 @@ import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
 import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { EntityType, KafkaTopic, ActionType } from "~context/enums";
+import { EntityType, KafkaTopic, ActionType, AccountStatus } from "~context/enums";
+import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
-import { SESSION_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -23,6 +23,8 @@ export class SessionCommands implements Commands.Session.Contract {
         private readonly sessionRepository: Repositories.Session.Contract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
+        @Inject(ACCOUNT_SERVICE)
+        private readonly accountService: Services.Account.Contract,
         @Inject(SESSION_SERVICE)
         private readonly sessionService: Services.Session.Contract,
         @Inject(CRYPTO_SERVICE)
@@ -32,6 +34,54 @@ export class SessionCommands implements Commands.Session.Contract {
         protected readonly configService: ConfigService,
     ) {
         this.sessionTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
+    }
+
+    public async create(props: Commands.Session.Create.Props): Commands.Session.Create.Result {
+        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
+            resource: this.resource,
+            audit: {
+                entityType: EntityType.ACCOUNT,
+                actionType: ActionType.SIGN_IN,
+                context: props.context,
+                input: props.input,
+            },
+            outbox: {
+                payloadMapper: ({ revokedSessions }) => revokedSessions,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                actionType: BlacklistTopicAction.ADD,
+            },
+            execute: async (transaction) => {
+                const account = await this.accountRepository.findUniqueOrThrow({
+                    where: { id: props.input.account },
+                    transaction,
+                });
+
+                if (account.status === AccountStatus.SUSPENDED || account.status === AccountStatus.PENDING) {
+                    throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_AUTHENTICATABLE` });
+                }
+
+                if (account.status === AccountStatus.DEACTIVATED) {
+                    this.accountService.restore({ input: { account } });
+                }
+
+                account.touch();
+
+                return this.sessionService.create({
+                    transaction,
+                    input: {
+                        userAgent: props.context.userAgent,
+                        client: props.input.client,
+                        ip: props.context.ip,
+                        account,
+                    },
+                });
+            },
+        });
+
+        return {
+            refreshToken: session.refreshToken,
+            accessToken: session.accessToken,
+        };
     }
 
     public async refresh(props: Commands.Session.Refresh.Props): Commands.Session.Refresh.Result {

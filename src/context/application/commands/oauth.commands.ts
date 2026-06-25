@@ -2,10 +2,11 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
+import { AUTHORIZATION_CACHE_SERVICE, AUTHORIZATION_CLIENT_SERVICE } from "~context/infrastructure/services";
 import { CodeChallengeMethod, OAuthResponseType, TokenGrantType } from "~context/enums";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
-import { Exception } from "~common/exceptions";
-import { AUTHORIZATION_CACHE_SERVICE, AUTHORIZATION_CLIENT_SERVICE } from "~context/infrastructure/services";
+import { ErrorCode, Exception } from "~common/exceptions";
+import { CRYPTO_SERVICE } from "~common/services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthCommands implements Commands.OAuth.Contract {
@@ -20,6 +21,8 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         private readonly authorizationCacheService: InfrastructureServices.AuthorizationCache.Contract,
         @Inject(AUTHORIZATION_CLIENT_SERVICE)
         private readonly authorizationClientService: InfrastructureServices.AuthorizationClient.Contract,
+        @Inject(CRYPTO_SERVICE)
+        private readonly cryptoService: CommonServices.Crypto.Contract,
     ) {
         this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
     }
@@ -53,17 +56,66 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     }
 
     public async token(props: Commands.OAuth.Token.Props): Commands.OAuth.Token.Result {
-        if (props.input.grantType !== TokenGrantType.REFRESH_TOKEN) {
-            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_GRANT_TYPE` });
-        }
+        let result: Awaited<Commands.OAuth.AuthorizationCode.Result | Commands.OAuth.Refresh.Result>;
 
-        const result = await this.refresh(props);
+        if (props.input.grantType === TokenGrantType.AUTHORIZATION_CODE) {
+            if (!props.input.code || !props.input.redirectUri || !props.input.codeVerifier) {
+                throw Exception.badRequest({
+                    messageKey: `${this.dictionaryPath}.INVALID_GRANT`,
+                    code: ErrorCode.INVALID_GRANT,
+                });
+            }
+
+            result = await this.authorizationCode({
+                context: props.context,
+                input: {
+                    codeVerifier: props.input.codeVerifier,
+                    redirectUri: props.input.redirectUri,
+                    client: props.input.client,
+                    code: props.input.code,
+                },
+            });
+        } else if (props.input.grantType === TokenGrantType.REFRESH_TOKEN) {
+            result = await this.refresh(props);
+        } else {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.UNSUPPORTED_GRANT_TYPE`,
+                code: ErrorCode.UNSUPPORTED_GRANT_TYPE,
+            });
+        }
 
         return {
             ...result,
             tokenType: "Bearer",
             expiresIn: this.accessTokenTTL,
         };
+    }
+
+    public async authorizationCode(props: Commands.OAuth.AuthorizationCode.Props): Commands.OAuth.AuthorizationCode.Result {
+        const authorization = await this.authorizationCacheService.consume({
+            code: props.input.code,
+        });
+
+        const isValid =
+            authorization &&
+            authorization.client === props.input.client &&
+            authorization.redirectUri === props.input.redirectUri &&
+            this.cryptoService.verifyCodeChallenge(props.input.codeVerifier, authorization.codeChallenge);
+
+        if (!isValid) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.INVALID_GRANT`,
+                code: ErrorCode.INVALID_GRANT,
+            });
+        }
+
+        return this.sessionCommands.create({
+            context: props.context,
+            input: {
+                account: authorization.account,
+                client: authorization.client,
+            },
+        });
     }
 
     public refresh(props: Commands.OAuth.Refresh.Props): Commands.OAuth.Refresh.Result {

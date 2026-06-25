@@ -6,6 +6,7 @@ declare global {
             interface CommandsContract {
                 assertAuthorizationPending(props: AssertAuthorizationPending.Props): AssertAuthorizationPending.Result;
                 completeAuthorization(props: CompleteAuthorization.Props): CompleteAuthorization.Result;
+                authorizationCode(props: AuthorizationCode.Props): AuthorizationCode.Result;
                 refresh(props: Refresh.Props): Refresh.Result;
             }
 
@@ -37,19 +38,36 @@ declare global {
                 type Props = {
                     context: Extract.Meta;
                     input: {
-                        grantType: TokenGrantType.REFRESH_TOKEN;
+                        grantType: TokenGrantType;
                         refreshToken?: string;
+                        codeVerifier?: string;
+                        redirectUri?: string;
+                        code?: string;
                         client: string;
                     };
                 };
 
                 type Result = Promise<
-                    MessageResult &
-                        Services.Session.Create.Tokens & {
-                            tokenType: "Bearer";
-                            expiresIn: number;
-                        }
+                    Services.Session.Create.Tokens & {
+                        message?: string;
+                        tokenType: "Bearer";
+                        expiresIn: number;
+                    }
                 >;
+            }
+
+            namespace AuthorizationCode {
+                type Props = {
+                    context: Extract.Meta;
+                    input: {
+                        codeVerifier: string;
+                        redirectUri: string;
+                        client: string;
+                        code: string;
+                    };
+                };
+
+                type Result = Commands.Session.Create.Result;
             }
 
             namespace Refresh {

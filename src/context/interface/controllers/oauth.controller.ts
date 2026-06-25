@@ -1,4 +1,4 @@
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -61,6 +61,7 @@ export class OAuthController {
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
     @Header("Content-Type", "application/json")
+    @ApiConsumes("application/x-www-form-urlencoded")
     @FormatResponse(TokenResultDTO)
     @ApiOperation({
         summary: "OAuth token endpoint",
@@ -72,6 +73,7 @@ export class OAuthController {
         SERVICE_UNAVAILABLE,
         REQUEST_TIMEOUT,
         UNAUTHORIZED,
+        BAD_REQUEST,
         FORBIDDEN,
         CONFLICT,
     )

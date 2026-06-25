@@ -1,4 +1,4 @@
-import { randomBytes, randomInt, createHash } from "node:crypto";
+import { randomBytes, randomInt, timingSafeEqual, createHash } from "node:crypto";
 import { Injectable, Scope } from "@nestjs/common";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -9,6 +9,13 @@ export class CryptoService implements CommonServices.Crypto.Contract {
 
     public hashToken(token: string): string {
         return createHash("sha256").update(token).digest("hex");
+    }
+
+    public verifyCodeChallenge(verifier: string, challenge: string): boolean {
+        const actual = Buffer.from(createHash("sha256").update(verifier).digest("base64url"));
+        const expected = Buffer.from(challenge);
+
+        return actual.length === expected.length && timingSafeEqual(actual, expected);
     }
 
     public generateOTP(length = 6): string {

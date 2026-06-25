@@ -81,6 +81,7 @@ declare global {
                 generateToken(bytes?: number): string;
                 generateOTP(length?: number): string;
                 hashToken(token: string): string;
+                verifyCodeChallenge(verifier: string, challenge: string): boolean;
                 generateRecoveryCode(): string;
             }
         }

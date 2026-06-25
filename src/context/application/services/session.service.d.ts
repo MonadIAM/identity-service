@@ -24,6 +24,7 @@ declare global {
                     input: {
                         account: Entities.Account;
                         userAgent: string;
+                        client: string;
                         ip: string;
                     };
                 };

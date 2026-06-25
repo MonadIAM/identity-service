@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { BlacklistTopicAction } from "@liam/contracts";
 
+import { AccountSubject, IdentifierType, AccountStatus, EntityType, KafkaTopic, ActionType, Client } from "~context/enums";
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
-import { AccountSubject, IdentifierType, AccountStatus, EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SERVICE } from "~common/services";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
@@ -91,8 +91,8 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         const emailIdentifier =
             identity.email && identity.emailVerified
                 ? await this.identifierRepository.findUnique({
-                      options: { populate: ["account"] },
                       where: { type: IdentifierType.EMAIL, value: identity.email },
+                      options: { populate: ["account"] },
                   })
                 : null;
 
@@ -127,6 +127,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     input: {
                         userAgent: props.context.userAgent,
                         account: props.input.account,
+                        client: Client.WEB_DEV,
                         ip: props.context.ip,
                     },
                 });
@@ -175,6 +176,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     input: {
                         account: props.input.account,
                         userAgent: props.context.userAgent,
+                        client: Client.WEB_DEV,
                         ip: props.context.ip,
                     },
                 });
@@ -234,6 +236,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     input: {
                         account,
                         userAgent: props.context.userAgent,
+                        client: Client.WEB_DEV,
                         ip: props.context.ip,
                     },
                 });

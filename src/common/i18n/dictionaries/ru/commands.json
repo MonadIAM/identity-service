@@ -51,6 +51,7 @@
   },
   "oauth": {
     "INVALID_AUTHORIZATION_REQUEST": "Запрос авторизации недействителен или просрочен.",
+    "INVALID_GRANT": "Код авторизации недействителен, просрочен или не соответствует запросу.",
     "UNSUPPORTED_RESPONSE_TYPE": "Запрошенный тип ответа не поддерживается.",
     "UNSUPPORTED_CODE_CHALLENGE_METHOD": "Запрошенный метод PKCE code challenge не поддерживается.",
     "UNSUPPORTED_GRANT_TYPE": "Запрошенный тип предоставления не поддерживается."
@@ -80,6 +81,7 @@
     "RESET": "Вторые факторы успешно сброшены."
   },
   "session": {
+    "ACCOUNT_NOT_AUTHENTICATABLE": "Учетная запись не может создать сессию.",
     "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен.",
     "SESSION_NOT_FOUND": "Сессия не найдена.",
     "REFRESHED": "Сессия успешно обновлена.",

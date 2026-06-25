@@ -51,6 +51,7 @@
   },
   "oauth": {
     "INVALID_AUTHORIZATION_REQUEST": "The authorization request is invalid or expired.",
+    "INVALID_GRANT": "The authorization code is invalid, expired, or does not match the request.",
     "UNSUPPORTED_RESPONSE_TYPE": "The requested response type is not supported.",
     "UNSUPPORTED_CODE_CHALLENGE_METHOD": "The requested PKCE code challenge method is not supported.",
     "UNSUPPORTED_GRANT_TYPE": "The requested grant type is not supported."
@@ -80,6 +81,7 @@
     "RESET": "Second factors successfully reset."
   },
   "session": {
+    "ACCOUNT_NOT_AUTHENTICATABLE": "The account cannot create a session.",
     "INVALID_REFRESH_TOKEN": "The refresh token is invalid.",
     "SESSION_NOT_FOUND": "The session was not found.",
     "REFRESHED": "Session successfully refreshed.",

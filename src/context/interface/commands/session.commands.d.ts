@@ -11,9 +11,22 @@ declare namespace Commands {
 
         interface CommandsContract {
             refresh(props: Refresh.Props): Refresh.Result;
+            create(props: Create.Props): Create.Result;
         }
 
         interface Contract extends PrivateContract, CommandsContract, ControllerContract {}
+
+        namespace Create {
+            type Props = {
+                context: Extract.Meta;
+                input: {
+                    account: string;
+                    client: string;
+                };
+            };
+
+            type Result = Promise<Services.Session.Create.Tokens>;
+        }
 
         namespace Refresh {
             type Props = {
