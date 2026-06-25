@@ -1,6 +1,7 @@
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
 import { MicroserviceOptions } from "@nestjs/microservices";
 import { ConfigService } from "@nestjs/config";
+import { RequestMethod } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import formbody from "@fastify/formbody";
 import { Logger } from "nestjs-pino";
@@ -31,7 +32,9 @@ async function bootstrap(): Promise<void> {
 
     const version: number = configService.getOrThrow<number>("API_VERSION");
 
-    application.setGlobalPrefix(`api/v${version}`);
+    application.setGlobalPrefix(`api/v${version}`, {
+        exclude: [{ path: ".well-known/oauth-authorization-server", method: RequestMethod.GET }],
+    });
 
     BootstrapPipes.applyGlobalPipes(application);
     BootstrapSwagger.registerSwagger(application);
