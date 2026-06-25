@@ -12,12 +12,14 @@ import { SKIP_INTERCEPTORS } from "~common/decorators";
 @Injectable()
 export class AuthnTokenInterceptor implements NestInterceptor {
     private readonly refreshTokenMaxAge: number;
+    private readonly refreshTokenPath: string;
 
     public constructor(
         private readonly configService: ConfigService,
         private readonly reflector: Reflector,
     ) {
         this.refreshTokenMaxAge = ms(this.configService.getOrThrow<StringValue>("SESSION_EXPIRY_DAYS")) / 1e3;
+        this.refreshTokenPath = `/api/v${this.configService.getOrThrow<number>("API_VERSION")}/oauth/token`;
     }
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -39,7 +41,7 @@ export class AuthnTokenInterceptor implements NestInterceptor {
 
                     reply.setCookie("refresh_token", refreshToken, {
                         maxAge: this.refreshTokenMaxAge,
-                        path: "/authn/token",
+                        path: this.refreshTokenPath,
                         sameSite: "strict",
                         httpOnly: true,
                         secure: true,

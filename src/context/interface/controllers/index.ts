@@ -9,6 +9,8 @@ import { PasswordController } from "./password.controller";
 import { ProfileController } from "./profile.controller";
 import { AccountController } from "./account.controller";
 import { AuthnController } from "./authn.controller";
+import { FederatedAuthnController } from "./federated-authn.controller";
+import { OAuthController } from "./oauth.controller";
 import { JWKSController } from "./jwks.controller";
 
 export const HTTP_CONTROLLERS = [
@@ -23,6 +25,8 @@ export const HTTP_CONTROLLERS = [
     ProfileController,
     AccountController,
     AuthnController,
+    FederatedAuthnController,
+    OAuthController,
     JWKSController,
 ];
 
@@ -38,5 +42,7 @@ export {
     ProfileController,
     AccountController,
     AuthnController,
+    FederatedAuthnController,
+    OAuthController,
     JWKSController,
 };

@@ -1,6 +1,7 @@
 import { ClassProvider } from "@nestjs/common";
 
 import { ReauthenticationCommands } from "./reauthentication.commands";
+import { FederatedAuthnCommands } from "./federated-authn.commands";
 import { RecoveryCodeCommands } from "./recovery-code.commands";
 import { SecondFactorCommands } from "./second-factor.commands";
 import { MembershipCommands } from "./membership.commands";
@@ -13,6 +14,7 @@ import { OAuthCommands } from "./oauth.commands";
 import { AuthnCommands } from "./authn.commands";
 import {
     REAUTHENTICATION_COMMANDS,
+    FEDERATED_AUTHN_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
     MEMBERSHIP_COMMANDS,
@@ -29,6 +31,10 @@ export const COMMANDS: ClassProvider[] = [
     {
         provide: REAUTHENTICATION_COMMANDS,
         useClass: ReauthenticationCommands,
+    },
+    {
+        provide: FEDERATED_AUTHN_COMMANDS,
+        useClass: FederatedAuthnCommands,
     },
     {
         provide: RECOVERY_CODE_COMMANDS,
@@ -74,6 +80,7 @@ export const COMMANDS: ClassProvider[] = [
 
 export {
     REAUTHENTICATION_COMMANDS,
+    FEDERATED_AUTHN_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
     MEMBERSHIP_COMMANDS,

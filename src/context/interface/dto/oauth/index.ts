@@ -1,2 +1,4 @@
-export { AuthorizeBodyDTO } from "./req/authorize.dto";
-export { CallbackBodyDTO } from "./req/callback.dto";
+export { AuthorizeQueryDTO } from "./req/authorize.dto";
+export { TokenBodyDTO } from "./req/token.dto";
+
+export { TokenResultDTO } from "./res/token.dto";

@@ -4,8 +4,8 @@ import { Expose } from "class-transformer";
 import { SuccessMessageDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-@ApiSchema({ name: "AuthnExternalTokenResult" })
-export class ExternalTokenResultDTO extends SuccessMessageDTO {
+@ApiSchema({ name: "OAuthTokenResult" })
+export class TokenResultDTO extends SuccessMessageDTO {
     @Expose({ name: "accessToken" })
     @Validator.IsOptional()
     @Validator.IsString()
@@ -23,10 +23,4 @@ export class ExternalTokenResultDTO extends SuccessMessageDTO {
     @Validator.IsPositiveInt()
     @ApiPropertyOptional({ type: Number, name: "expires_in" })
     declare public expires_in?: number;
-
-    @Expose({ name: "requires2FA" })
-    @Validator.IsOptional()
-    @Validator.IsBoolean()
-    @ApiPropertyOptional({ type: Boolean, name: "requires_2fa" })
-    declare public requires_2fa?: boolean;
 }

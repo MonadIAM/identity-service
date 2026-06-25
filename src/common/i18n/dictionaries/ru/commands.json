@@ -22,10 +22,8 @@
     "INVALID_TOTP_CODE": "Код второго фактора недействителен.",
     "ACCOUNT_SUSPENDED": "Учетная запись заблокирована.",
     "ACCOUNT_NOT_VERIFIED": "Учетная запись не подтверждена.",
-    "UNSUPPORTED_RESPONSE_TYPE": "Запрошенный тип ответа не поддерживается.",
-    "UNSUPPORTED_CODE_CHALLENGE_METHOD": "Запрошенный метод PKCE code challenge не поддерживается.",
-    "UNSUPPORTED_GRANT_TYPE": "Запрошенный тип предоставления не поддерживается.",
-    "INVALID_CLIENT": "Клиент недействителен."
+    "PASSWORD_VERIFIED": "Пароль подтвержден. Требуется проверка второго фактора.",
+    "AUTHORIZATION_CONFIRMED": "Аутентификация для запроса авторизации завершена."
   },
   "reauthentication": {
     "NO_PASSWORD_SET": "Для этой учетной записи не задан пароль.",
@@ -44,12 +42,18 @@
     "PUBLIC_CONTACT_TOGGLED": "Публичная видимость контакта успешно переключена.",
     "PURGED": "Идентификатор успешно удален."
   },
-  "oauth": {
+  "federated-authn": {
     "INVALID_STATE": "Состояние OAuth недействительно или просрочено.",
     "SIGNED_IN": "Вход выполнен успешно.",
     "LINKED_AND_SIGNED_IN": "OAuth-аккаунт успешно привязан, вход выполнен.",
     "SIGNED_UP": "Учетная запись успешно зарегистрирована через OAuth.",
     "UNSUPPORTED_PROVIDER": "OAuth-провайдер не поддерживается."
+  },
+  "oauth": {
+    "INVALID_AUTHORIZATION_REQUEST": "Запрос авторизации недействителен или просрочен.",
+    "UNSUPPORTED_RESPONSE_TYPE": "Запрошенный тип ответа не поддерживается.",
+    "UNSUPPORTED_CODE_CHALLENGE_METHOD": "Запрошенный метод PKCE code challenge не поддерживается.",
+    "UNSUPPORTED_GRANT_TYPE": "Запрошенный тип предоставления не поддерживается."
   },
   "password": {
     "NO_PASSWORD_SET": "Для этой учетной записи не задан пароль.",

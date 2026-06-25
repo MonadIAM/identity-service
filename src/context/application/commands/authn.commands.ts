@@ -1,30 +1,15 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { BlacklistTopicAction } from "@liam/contracts";
-import { ConfigService } from "@nestjs/config";
 import { TOTP, Secret } from "otpauth";
-import ms, { StringValue } from "ms";
 
-import {
-    CodeChallengeMethod,
-    OAuthResponseType,
-    IdentifierType,
-    AccountStatus,
-    TokenGrantType,
-    EntityType,
-    KafkaTopic,
-    ActionType,
-    Client,
-} from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
-import { ACCOUNT_SERVICE, SECOND_FACTOR_SERVICE, SESSION_SERVICE } from "~context/domain/services";
-import { SESSION_COMMANDS } from "~context/application/commands/tokens";
+import { OAUTH_COMMANDS } from "~context/application/commands/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
+import { IdentifierType, AccountStatus } from "~context/enums";
 import { Exception } from "~common/exceptions";
 import {
     SECOND_FACTOR_SECRET_SERVICE,
-    AUTHORIZATION_REQUEST_CACHE_SERVICE,
-    AUTHORIZATION_CLIENT_SERVICE,
     PENDING_2FA_CACHE_SERVICE,
     OTP_CACHE_SERVICE,
 } from "~context/infrastructure/services";
@@ -32,30 +17,19 @@ import {
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthnCommands implements Commands.Authn.Contract {
     private readonly dictionaryPath = "commands.authn";
-    private readonly client = Client.WEB_DEV;
-    private readonly accessTokenTTL: number;
     private readonly resource = "Authn";
 
     public constructor(
-        private readonly configService: ConfigService,
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
-        @Inject(SESSION_COMMANDS)
-        private readonly sessionCommands: Commands.Session.PrivateContract,
+        @Inject(OAUTH_COMMANDS)
+        private readonly oauthCommands: Commands.OAuth.CommandsContract,
         @Inject(SECOND_FACTOR_REPOSITORY)
         private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(SECOND_FACTOR_SERVICE)
         private readonly secondFactorService: Services.SecondFactor.Contract,
-        @Inject(ACCOUNT_SERVICE)
-        private readonly accountService: Services.Account.Contract,
-        @Inject(SESSION_SERVICE)
-        private readonly sessionService: Services.Session.Contract,
-        @Inject(AUTHORIZATION_REQUEST_CACHE_SERVICE)
-        private readonly authorizationRequestCacheService: InfrastructureServices.AuthorizationRequestCache.Contract,
-        @Inject(AUTHORIZATION_CLIENT_SERVICE)
-        private readonly authorizationClientService: InfrastructureServices.AuthorizationClient.Contract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
         @Inject(PENDING_2FA_CACHE_SERVICE)
@@ -70,68 +44,12 @@ export class AuthnCommands implements Commands.Authn.Contract {
         private readonly emailService: CommonServices.Email.Contract,
         @Inject(SMS_SERVICE)
         private readonly smsService: CommonServices.SMS.Contract,
-    ) {
-        this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
-    }
-
-    public async authorize(props: Commands.Authn.Authorize.Props): Commands.Authn.Authorize.Result {
-        if (props.input.responseType !== OAuthResponseType.CODE) {
-            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_RESPONSE_TYPE` });
-        }
-
-        if (props.input.codeChallengeMethod !== CodeChallengeMethod.S256) {
-            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_CODE_CHALLENGE_METHOD` });
-        }
-
-        const client = this.authorizationClientService.resolve({
-            redirectUri: props.input.redirectUri,
-            client: props.input.client,
-        });
-
-        const { id } = await this.authorizationRequestCacheService.create({
-            codeChallengeMethod: props.input.codeChallengeMethod,
-            codeChallenge: props.input.codeChallenge,
-            redirectUri: props.input.redirectUri,
-            state: props.input.state,
-            client: client.id,
-        });
-
-        const url = new URL(this.authorizationClientService.getLoginUrl());
-        url.searchParams.set("auth_request", id);
-
-        return { url: url.toString() };
-    }
-
-    public async token(props: Commands.Authn.Token.Props): Commands.Authn.Token.Result {
-        if (props.input.client !== this.client) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CLIENT` });
-        }
-
-        let result: Awaited<Commands.Authn.Password.Result | Commands.Authn.Refresh.Result>;
-
-        if (props.input.grantType === TokenGrantType.PASSWORD) {
-            result = await this.password(props);
-        } else if (props.input.grantType === TokenGrantType.REFRESH_TOKEN) {
-            result = await this.refresh(props);
-        } else {
-            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_GRANT_TYPE` });
-        }
-
-        if ("accessToken" in result) {
-            return {
-                ...result,
-                tokenType: "Bearer",
-                expiresIn: this.accessTokenTTL,
-            };
-        } else {
-            return result;
-        }
-    }
+    ) {}
 
     public async password(props: Commands.Authn.Password.Props): Commands.Authn.Password.Result {
-        if (!props.input.identifier || !props.input.password) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CREDENTIALS` });
-        }
+        await this.oauthCommands.assertAuthorizationPending({
+            authorizationRequest: props.input.authorizationRequest,
+        });
 
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.secondFactors", "account.password"] },
@@ -158,28 +76,29 @@ export class AuthnCommands implements Commands.Authn.Contract {
         if (hasActive2FA) {
             const pendingToken = this.cryptoService.generateToken();
             await this.pending2FACacheService.set({
-                account: identifier.account.id,
+                metadata: {
+                    authorizationRequest: props.input.authorizationRequest,
+                    account: identifier.account.id,
+                },
                 token: pendingToken,
             });
 
-            return { message: `${this.dictionaryPath}.SIGNED_IN`, pendingToken, requires2FA: true };
-        } else {
-            const session = await this.createSession({ account: identifier.account, context: props.context });
-            return { message: `${this.dictionaryPath}.SIGNED_IN`, ...session };
+            return { message: `${this.dictionaryPath}.PASSWORD_VERIFIED`, pendingToken, requires2FA: true };
         }
-    }
 
-    public refresh(props: Commands.Authn.Refresh.Props): Commands.Authn.Refresh.Result {
-        return this.sessionCommands.refresh({
-            context: props.context,
-            input: {
-                refreshToken: props.input.refreshToken,
-                client: props.input.client,
-            },
+        await this.oauthCommands.completeAuthorization({
+            authorizationRequest: props.input.authorizationRequest,
+            account: identifier.account.id,
         });
+
+        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED` };
     }
 
     public async requestOTP(props: Commands.Authn.RequestOTP.Props): Commands.Authn.RequestOTP.Result {
+        await this.oauthCommands.assertAuthorizationPending({
+            authorizationRequest: props.input.authorizationRequest,
+        });
+
         const identifier = await this.identifierRepository.findUnique({
             where: { value: props.input.identifier },
         });
@@ -191,7 +110,10 @@ export class AuthnCommands implements Commands.Authn.Contract {
         const otp = this.cryptoService.generateOTP();
 
         await this.otpCacheService.set({
-            value: identifier.id,
+            value: JSON.stringify({
+                authorizationRequest: props.input.authorizationRequest,
+                identifier: identifier.id,
+            }),
             purpose: "login",
             key: otp,
         });
@@ -213,24 +135,33 @@ export class AuthnCommands implements Commands.Authn.Contract {
     }
 
     public async verifyOTP(props: Commands.Authn.VerifyOTP.Props): Commands.Authn.VerifyOTP.Result {
-        const cachedIdentifier = await this.otpCacheService.consume({
+        const raw = await this.otpCacheService.consume({
             key: props.input.code,
             purpose: "login",
         });
 
-        if (!cachedIdentifier) {
+        if (!raw) {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
+        }
+
+        const cached: { authorizationRequest: string; identifier: string } = JSON.parse(raw);
+        if (cached.authorizationRequest !== props.input.authorizationRequest) {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
         }
 
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             options: { populate: ["account"] },
-            where: { id: cachedIdentifier },
+            where: { id: cached.identifier },
         });
 
         this.assertCanAuthenticate(identifier.account);
 
-        const session = await this.createSession({ account: identifier.account, context: props.context });
-        return { message: `${this.dictionaryPath}.VERIFIED`, ...session };
+        await this.oauthCommands.completeAuthorization({
+            authorizationRequest: props.input.authorizationRequest,
+            account: identifier.account.id,
+        });
+
+        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED` };
     }
 
     public async verifySecondFactor(
@@ -240,9 +171,9 @@ export class AuthnCommands implements Commands.Authn.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.PENDING_2FA_TOKEN_MISSING` });
         }
 
-        const cachedAccount = await this.pending2FACacheService.get({ token: props.token });
+        const cached = await this.pending2FACacheService.get({ token: props.token });
 
-        if (!cachedAccount) {
+        if (!cached) {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.EXPIRED_PENDING_2FA` });
         }
 
@@ -253,7 +184,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
                     options: { populate: ["account"] },
                     where: {
                         confirmedAt: { $ne: null },
-                        account: cachedAccount,
+                        account: cached.account,
                         id: props.input.id,
                     },
                     transaction,
@@ -283,45 +214,12 @@ export class AuthnCommands implements Commands.Authn.Contract {
 
         await this.pending2FACacheService.delete({ token: props.token });
 
-        const session = await this.createSession({ account: factor.account, context: props.context });
-        return { message: `${this.dictionaryPath}.VERIFIED`, ...session };
-    }
-
-    public async createSession(props: Commands.Authn.CreateSession.Props): Commands.Authn.CreateSession.Result {
-        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.ACCOUNT,
-                actionType: ActionType.SIGN_IN,
-                ...props,
-            },
-            outbox: {
-                payloadMapper: ({ revokedSessions }) => revokedSessions,
-                destinationTopic: KafkaTopic.BLACKLIST,
-                actionType: BlacklistTopicAction.ADD,
-            },
-            execute: (transaction) => {
-                if (props.account.status === AccountStatus.DEACTIVATED) {
-                    this.accountService.restore({ input: { account: props.account } });
-                }
-
-                props.account.touch();
-
-                return this.sessionService.create({
-                    transaction,
-                    input: {
-                        account: props.account,
-                        userAgent: props.context.userAgent,
-                        ip: props.context.ip,
-                    },
-                });
-            },
+        await this.oauthCommands.completeAuthorization({
+            authorizationRequest: cached.authorizationRequest,
+            account: factor.account.id,
         });
 
-        return {
-            refreshToken: session.refreshToken,
-            accessToken: session.accessToken,
-        };
+        return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED` };
     }
 
     public assertCanAuthenticate(

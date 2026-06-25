@@ -7,10 +7,13 @@ declare namespace Commands {
 
         interface PrivateContract {
             outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
+        }
+
+        interface CommandsContract {
             refresh(props: Refresh.Props): Refresh.Result;
         }
 
-        interface Contract extends PrivateContract, ControllerContract {}
+        interface Contract extends PrivateContract, CommandsContract, ControllerContract {}
 
         namespace Refresh {
             type Props = {

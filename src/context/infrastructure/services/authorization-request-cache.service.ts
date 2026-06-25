@@ -40,14 +40,18 @@ export class AuthorizationRequestCacheService implements InfrastructureServices.
     ): InfrastructureServices.AuthorizationRequestCache.Confirm.Result {
         const metadata = await this.get({ id: props.id });
 
-        if (metadata) {
-            await this.redis.set(
-                `${this.namespace}:${props.id}`,
-                JSON.stringify({ ...metadata, account: props.account }),
-                "EX",
-                this.ttl,
-            );
+        if (!metadata || metadata.account) {
+            return false;
         }
+
+        await this.redis.set(
+            `${this.namespace}:${props.id}`,
+            JSON.stringify({ ...metadata, account: props.account }),
+            "EX",
+            this.ttl,
+        );
+
+        return true;
     }
 
     public async consume(

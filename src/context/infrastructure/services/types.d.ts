@@ -53,7 +53,7 @@ declare global {
                     id: string;
                 };
 
-                type Result = Promise<void>;
+                type Result = Promise<boolean>;
             }
 
             namespace Consume {
@@ -248,12 +248,17 @@ declare global {
         namespace Pending2FACache {
             interface Contract {
                 set(props: Set): Promise<void>;
-                get(props: Get): Promise<Nullable<string>>;
+                get(props: Get): Promise<Nullable<Metadata>>;
                 delete(props: Delete): Promise<void>;
             }
 
-            type Set = {
+            type Metadata = {
+                authorizationRequest: string;
                 account: string;
+            };
+
+            type Set = {
+                metadata: Metadata;
                 token: string;
             };
 

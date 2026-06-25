@@ -3,20 +3,20 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-@ApiSchema({ name: "OAuthCallbackBody" })
-export class CallbackBodyDTO {
-    @Expose()
+@ApiSchema({ name: "AuthnPasswordBody" })
+export class PasswordBodyDTO {
+    @Expose({ name: "auth_request" })
     @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    declare public provider: string;
+    @ApiProperty({ required: true, type: String, name: "auth_request" })
+    declare public authorizationRequest: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    declare public state: string;
+    declare public identifier: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    declare public code: string;
+    declare public password: string;
 }

@@ -1,99 +1,78 @@
-declare namespace Commands {
-    namespace OAuth {
-        type Identity = {
-            provider: string;
-            providerUserId: string;
-            email?: string;
-            emailVerified: boolean;
-            profile: {
-                displayName: string;
-                pictureUrl?: string;
-                timeZone?: string;
-                locale?: string;
-            };
-        };
+import { OAuthResponseType, CodeChallengeMethod, TokenGrantType } from "~context/enums";
 
-        type AuthnResult = MessageResult &
-            Services.Session.Create.Tokens & {
-                recoveryCodes?: string[];
-            };
+declare global {
+    namespace Commands {
+        namespace OAuth {
+            interface CommandsContract {
+                assertAuthorizationPending(props: AssertAuthorizationPending.Props): AssertAuthorizationPending.Result;
+                completeAuthorization(props: CompleteAuthorization.Props): CompleteAuthorization.Result;
+                refresh(props: Refresh.Props): Refresh.Result;
+            }
 
-        interface PrivateContract {
-            authenticateExisting(props: AuthenticateExisting.Props): AuthenticateExisting.Result;
-            attachToExisting(props: AttachToExisting.Props): AttachToExisting.Result;
-            resolveProvider(props: ResolveProvider.Props): ResolveProvider.Result;
-            provision(props: Provision.Props): Provision.Result;
-        }
+            interface ControllerContract {
+                authorize(props: Authorize.Props): Authorize.Result;
+                token(props: Token.Props): Token.Result;
+            }
 
-        interface ControllerContract {
-            authorize(props: Authorize.Props): Authorize.Result;
-            callback(props: Callback.Props): Callback.Result;
-        }
+            interface Contract extends CommandsContract, ControllerContract {}
 
-        interface Contract extends PrivateContract, ControllerContract {}
-
-        namespace Authorize {
-            type Props = {
-                input: {
-                    provider: string;
+            namespace Authorize {
+                type Props = {
+                    input: {
+                        codeChallengeMethod: CodeChallengeMethod;
+                        responseType: OAuthResponseType;
+                        codeChallenge: string;
+                        redirectUri: string;
+                        client: string;
+                        state: string;
+                    };
                 };
-            };
 
-            type Result = Promise<{
-                url: string;
-            }>;
-        }
+                type Result = Promise<{
+                    url: string;
+                }>;
+            }
 
-        namespace Callback {
-            type Props = {
-                context: Extract.Meta;
-                input: {
-                    provider: string;
-                    state: string;
-                    code: string;
+            namespace Token {
+                type Props = {
+                    context: Extract.Meta;
+                    input: {
+                        grantType: TokenGrantType.REFRESH_TOKEN;
+                        refreshToken?: string;
+                        client: string;
+                    };
                 };
-            };
 
-            type Result = Promise<AuthnResult>;
-        }
+                type Result = Promise<
+                    MessageResult &
+                        Services.Session.Create.Tokens & {
+                            tokenType: "Bearer";
+                            expiresIn: number;
+                        }
+                >;
+            }
 
-        namespace AuthenticateExisting {
-            type Props = {
-                context: Extract.Meta;
-                input: {
-                    account: Entities.Account;
+            namespace Refresh {
+                type Props = Token.Props;
+                type Result = Commands.Session.Refresh.Result;
+            }
+
+            namespace AssertAuthorizationPending {
+                type Props = {
+                    authorizationRequest: string;
                 };
-            };
 
-            type Result = Promise<AuthnResult>;
-        }
+                type Result = Promise<void>;
+            }
 
-        namespace AttachToExisting {
-            type Props = {
-                context: Extract.Meta;
-                input: Identity & {
-                    account: Entities.Account;
+            namespace CompleteAuthorization {
+                type Props = {
+                    authorizationRequest: string;
+                    account: string;
                 };
-            };
 
-            type Result = Promise<AuthnResult>;
-        }
-
-        namespace Provision {
-            type Props = {
-                context: Extract.Meta;
-                input: Identity;
-            };
-
-            type Result = Promise<AuthnResult>;
-        }
-
-        namespace ResolveProvider {
-            type Props = {
-                provider: string;
-            };
-
-            type Result = globalThis.OAuth.ResolveProvider;
+                type Result = Promise<void>;
+            }
         }
     }
 }

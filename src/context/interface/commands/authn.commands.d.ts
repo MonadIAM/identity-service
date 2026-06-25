@@ -1,125 +1,72 @@
-import { OAuthResponseType, CodeChallengeMethod, TokenGrantType } from "~context/enums";
+declare namespace Commands {
+    namespace Authn {
+        interface PrivateContract {
+            assertCanAuthenticate(props: AssertCanAuthenticate.Props): AssertCanAuthenticate.Result;
+        }
 
-declare global {
-    namespace Commands {
-        namespace Authn {
-            interface PrivateContract {
-                assertCanAuthenticate(props: AssertCanAuthenticate.Props): AssertCanAuthenticate.Result;
-                createSession(props: CreateSession.Props): CreateSession.Result;
-                password(props: Password.Props): Password.Result;
-                refresh(props: Refresh.Props): Refresh.Result;
-            }
+        interface ControllerContract {
+            verifySecondFactor(props: VerifySecondFactor.Props): VerifySecondFactor.Result;
+            requestOTP(props: RequestOTP.Props): RequestOTP.Result;
+            verifyOTP(props: VerifyOTP.Props): VerifyOTP.Result;
+            password(props: Password.Props): Password.Result;
+        }
 
-            interface ControllerContract {
-                verifySecondFactor(props: VerifySecondFactor.Props): VerifySecondFactor.Result;
-                requestOTP(props: RequestOTP.Props): RequestOTP.Result;
-                verifyOTP(props: VerifyOTP.Props): VerifyOTP.Result;
-                authorize(props: Authorize.Props): Authorize.Result;
-                token(props: Token.Props): Token.Result;
-            }
+        interface Contract extends PrivateContract, ControllerContract {}
 
-            interface Contract extends PrivateContract, ControllerContract {}
-
-            namespace Token {
-                type Props = {
-                    context: Extract.Meta;
-                    input: {
-                        grantType: TokenGrantType;
-                        refreshToken?: string;
-                        identifier?: string;
-                        password?: string;
-                        client: string;
-                    };
+        namespace Password {
+            type Props = {
+                input: {
+                    authorizationRequest: string;
+                    identifier: string;
+                    password: string;
                 };
+            };
 
-                type Result = Promise<
-                    MessageResult &
-                        (
-                            | (Services.Session.Create.Tokens & {
-                                  tokenType: "Bearer";
-                                  expiresIn: number;
-                              })
-                            | { pendingToken: string; requires2FA: true }
-                        )
-                >;
-            }
+            type Result = Promise<
+                MessageResult & {
+                    pendingToken?: string;
+                    requires2FA?: true;
+                }
+            >;
+        }
 
-            namespace Authorize {
-                type Props = {
-                    input: {
-                        codeChallengeMethod: CodeChallengeMethod;
-                        responseType: OAuthResponseType;
-                        codeChallenge: string;
-                        redirectUri: string;
-                        client: string;
-                        state: string;
-                    };
+        namespace RequestOTP {
+            type Props = {
+                input: {
+                    authorizationRequest: string;
+                    identifier: string;
                 };
+            };
 
-                type Result = Promise<{
-                    url: string;
-                }>;
-            }
+            type Result = Promise<MessageResult>;
+        }
 
-            namespace Password {
-                type Props = Token.Props;
-                type Result = Promise<
-                    MessageResult & (Services.Session.Create.Tokens | { pendingToken: string; requires2FA: true })
-                >;
-            }
-
-            namespace Refresh {
-                type Props = Token.Props;
-                type Result = Commands.Session.Refresh.Result;
-            }
-
-            namespace RequestOTP {
-                type Props = {
-                    input: {
-                        identifier: string;
-                    };
+        namespace VerifyOTP {
+            type Props = {
+                input: {
+                    authorizationRequest: string;
+                    code: string;
                 };
+            };
 
-                type Result = Promise<MessageResult>;
-            }
+            type Result = Promise<MessageResult>;
+        }
 
-            namespace VerifyOTP {
-                type Props = {
-                    context: Extract.Meta;
-                    input: {
-                        code: string;
-                    };
+        namespace VerifySecondFactor {
+            type Props = {
+                token?: string;
+                input: {
+                    code: string;
+                    id: string;
                 };
+            };
 
-                type Result = Promise<MessageResult & Services.Session.Create.Tokens>;
-            }
+            type Result = Promise<MessageResult>;
+        }
 
-            namespace VerifySecondFactor {
-                type Props = {
-                    context: Extract.Meta;
-                    token?: string;
-                    input: {
-                        code: string;
-                        id: string;
-                    };
-                };
-
-                type Result = Promise<MessageResult & Services.Session.Create.Tokens>;
-            }
-
-            namespace CreateSession {
-                type Props = {
-                    account: Entities.Account;
-                    context: Extract.Meta;
-                };
-
-                type Result = Promise<Services.Session.Create.Tokens>;
-            }
-
-            namespace AssertCanAuthenticate {
-                type Props = Entities.Account;
-                type Result = void;
-            }
+        namespace AssertCanAuthenticate {
+            type Props = Entities.Account;
+            type Result = void;
         }
     }
 }

@@ -14,15 +14,18 @@ export class Pending2FACacheService implements InfrastructureServices.Pending2FA
         @Inject(REDIS_CACHE_CLIENT) private readonly redis: Redis,
         private readonly configService: ConfigService,
     ) {
-        this.ttl = ms(this.configService.getOrThrow<StringValue>("PENDING_2FA_TTL"));
+        this.ttl = ms(this.configService.getOrThrow<StringValue>("PENDING_2FA_TTL")) / 1e3;
     }
 
-    public async set({ token, account }: InfrastructureServices.Pending2FACache.Set): Promise<void> {
-        await this.redis.set(`${this.namespace}:${token}`, account, "EX", this.ttl);
+    public async set({ token, metadata }: InfrastructureServices.Pending2FACache.Set): Promise<void> {
+        await this.redis.set(`${this.namespace}:${token}`, JSON.stringify(metadata), "EX", this.ttl);
     }
 
-    public async get({ token }: InfrastructureServices.Pending2FACache.Get): Promise<Nullable<string>> {
-        return await this.redis.get(`${this.namespace}:${token}`);
+    public async get(
+        props: InfrastructureServices.Pending2FACache.Get,
+    ): Promise<Nullable<InfrastructureServices.Pending2FACache.Metadata>> {
+        const raw = await this.redis.get(`${this.namespace}:${props.token}`);
+        return raw ? JSON.parse(raw) : null;
     }
 
     public async delete({ token }: InfrastructureServices.Pending2FACache.Delete): Promise<void> {

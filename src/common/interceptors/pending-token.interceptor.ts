@@ -12,12 +12,14 @@ import { SKIP_INTERCEPTORS } from "~common/decorators";
 @Injectable()
 export class PendingTokenInterceptor implements NestInterceptor {
     private readonly pending2FAMaxAge: number;
+    private readonly pending2FAPath: string;
 
     public constructor(
         private readonly configService: ConfigService,
         private readonly reflector: Reflector,
     ) {
         this.pending2FAMaxAge = ms(this.configService.getOrThrow<StringValue>("PENDING_TOKEN_EXPIRY_MINUTES")) / 1e3;
+        this.pending2FAPath = `/api/v${this.configService.getOrThrow<number>("API_VERSION")}/authn/verify/2fa`;
     }
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -39,7 +41,7 @@ export class PendingTokenInterceptor implements NestInterceptor {
 
                     reply.setCookie("pending_token", pendingToken, {
                         maxAge: this.pending2FAMaxAge,
-                        path: "/authn/verify/second-factor",
+                        path: this.pending2FAPath,
                         sameSite: "strict",
                         httpOnly: true,
                         secure: true,

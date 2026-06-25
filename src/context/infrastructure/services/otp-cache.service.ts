@@ -17,11 +17,11 @@ export class OTPCacheService implements InfrastructureServices.OTPCache.Contract
         private readonly configService: ConfigService,
     ) {
         this.ttl = {
-            verification: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")),
-            identifier: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")),
-            setup2FA: ms(this.configService.getOrThrow<StringValue>("PENDING_2FA_TTL")),
-            login: ms(this.configService.getOrThrow<StringValue>("OTP_LOGIN_TTL")),
-            reset: ms(this.configService.getOrThrow<StringValue>("OTP_RESET_TTL")),
+            verification: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")) / 1e3,
+            identifier: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")) / 1e3,
+            setup2FA: ms(this.configService.getOrThrow<StringValue>("PENDING_2FA_TTL")) / 1e3,
+            login: ms(this.configService.getOrThrow<StringValue>("OTP_LOGIN_TTL")) / 1e3,
+            reset: ms(this.configService.getOrThrow<StringValue>("OTP_RESET_TTL")) / 1e3,
         };
     }
 

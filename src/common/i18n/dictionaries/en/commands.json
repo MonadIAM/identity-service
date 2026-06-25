@@ -22,10 +22,8 @@
     "INVALID_TOTP_CODE": "The second-factor code is invalid.",
     "ACCOUNT_SUSPENDED": "The account is suspended.",
     "ACCOUNT_NOT_VERIFIED": "The account is not verified.",
-    "UNSUPPORTED_RESPONSE_TYPE": "The requested response type is not supported.",
-    "UNSUPPORTED_CODE_CHALLENGE_METHOD": "The requested PKCE code challenge method is not supported.",
-    "UNSUPPORTED_GRANT_TYPE": "The requested grant type is not supported.",
-    "INVALID_CLIENT": "The client is invalid."
+    "PASSWORD_VERIFIED": "The password was verified. Second-factor verification is required.",
+    "AUTHORIZATION_CONFIRMED": "Authentication for the authorization request was completed."
   },
   "reauthentication": {
     "NO_PASSWORD_SET": "No password is set for this account.",
@@ -44,12 +42,18 @@
     "PUBLIC_CONTACT_TOGGLED": "Identifier public contact visibility successfully toggled.",
     "PURGED": "Identifier successfully deleted."
   },
-  "oauth": {
+  "federated-authn": {
     "INVALID_STATE": "The OAuth state is invalid or expired.",
     "SIGNED_IN": "Signed in successfully.",
     "LINKED_AND_SIGNED_IN": "OAuth account successfully linked and signed in.",
     "SIGNED_UP": "Account successfully registered with OAuth.",
     "UNSUPPORTED_PROVIDER": "The OAuth provider is not supported."
+  },
+  "oauth": {
+    "INVALID_AUTHORIZATION_REQUEST": "The authorization request is invalid or expired.",
+    "UNSUPPORTED_RESPONSE_TYPE": "The requested response type is not supported.",
+    "UNSUPPORTED_CODE_CHALLENGE_METHOD": "The requested PKCE code challenge method is not supported.",
+    "UNSUPPORTED_GRANT_TYPE": "The requested grant type is not supported."
   },
   "password": {
     "NO_PASSWORD_SET": "No password is set for this account.",

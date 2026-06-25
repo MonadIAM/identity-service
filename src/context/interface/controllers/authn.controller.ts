@@ -1,20 +1,7 @@
-import {
-    UseInterceptors,
-    Controller,
-    HttpStatus,
-    HttpCode,
-    Redirect,
-    Header,
-    Inject,
-    Delete,
-    Query,
-    Body,
-    Post,
-    Get,
-} from "@nestjs/common";
+import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Delete, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { REAUTHENTICATION_COMMANDS, SESSION_COMMANDS, OAUTH_COMMANDS, AUTHN_COMMANDS } from "~context/application/commands";
+import { REAUTHENTICATION_COMMANDS, SESSION_COMMANDS, AUTHN_COMMANDS } from "~context/application/commands";
 import { Extract, FormatResponse, RequirePermission, Tokens, Public, Swagger } from "~common/decorators";
 import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
@@ -23,16 +10,12 @@ import { PermissionCode } from "~context/enums";
 
 import { BySecondFactorBodyDTO, ByPasswordBodyDTO } from "../dto/reauthentication";
 import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
-import { AuthorizeBodyDTO, CallbackBodyDTO } from "../dto/oauth";
 import {
     VerifySecondFactorBodyDTO,
-    ExternalTokenResultDTO,
-    InternalTokenResultDTO,
-    ExternalTokenBodyDTO,
-    InternalTokenBodyDTO,
+    AuthenticationResultDTO,
     RequestOTPBodyDTO,
     VerifyOTPBodyDTO,
-    AuthorizeQueryDTO,
+    PasswordBodyDTO,
 } from "../dto/authn";
 
 const {
@@ -52,9 +35,7 @@ const {
     BAD_REQUEST,
     FORBIDDEN,
     NOT_FOUND,
-    BAD_GATEWAY,
     CONFLICT,
-    FOUND,
     OK,
 } = HttpStatus;
 
@@ -63,40 +44,24 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class AuthnController {
     public constructor(
-        @Inject(AUTHN_COMMANDS)
-        private readonly authnCommands: Commands.Authn.ControllerContract,
         @Inject(REAUTHENTICATION_COMMANDS)
         private readonly reauthenticationCommands: Commands.Reauthentication.ControllerContract,
-        @Inject(OAUTH_COMMANDS)
-        private readonly oauthCommands: Commands.OAuth.ControllerContract,
         @Inject(SESSION_COMMANDS)
         private readonly sessionCommands: Commands.Session.ControllerContract,
+        @Inject(AUTHN_COMMANDS)
+        private readonly authnCommands: Commands.Authn.ControllerContract,
         @Inject(SESSION_QUERIES)
         private readonly sessionQueries: Queries.Session.ControllerContract,
     ) {}
 
     @Public()
-    @Get("authorize")
-    @Redirect(undefined, FOUND)
-    @Header("Pragma", "no-cache")
-    @Header("Cache-Control", "no-store")
-    @ApiOperation({
-        summary: "Start OAuth authorization code flow",
-        security: [],
-    })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
-    public authorize(@Query() input: AuthorizeQueryDTO): Commands.Authn.Authorize.Result {
-        return this.authnCommands.authorize({ input });
-    }
-
-    @Public()
     @HttpCode(OK)
-    @Post("token/internal")
+    @Post("password")
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
-    @FormatResponse(InternalTokenResultDTO)
+    @FormatResponse(AuthenticationResultDTO)
     @ApiOperation({
-        summary: "Issue tokens using the internal contract",
+        summary: "Authenticate by password",
         security: [],
     })
     @Swagger.Exceptions(
@@ -108,46 +73,8 @@ export class AuthnController {
         FORBIDDEN,
         CONFLICT,
     )
-    public tokenInternal(
-        @Body() input: InternalTokenBodyDTO,
-        @Extract.Meta() context: Extract.Meta,
-        @Tokens.Refresh() refreshToken?: string,
-    ): Commands.Authn.Token.Result {
-        return this.authnCommands.token({
-            context,
-            input: { ...input, refreshToken: input.refreshToken ?? refreshToken },
-        });
-    }
-
-    @Public()
-    @HttpCode(OK)
-    @Post("token/external")
-    @Header("Pragma", "no-cache")
-    @Header("Cache-Control", "no-store")
-    @Header("Content-Type", "application/json")
-    @FormatResponse(ExternalTokenResultDTO)
-    @ApiOperation({
-        summary: "Issue tokens using the external RFC 6749 contract",
-        security: [],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        FORBIDDEN,
-        CONFLICT,
-    )
-    public tokenExternal(
-        @Body() input: ExternalTokenBodyDTO,
-        @Extract.Meta() context: Extract.Meta,
-        @Tokens.Refresh() refreshToken?: string,
-    ): Commands.Authn.Token.Result {
-        return this.authnCommands.token({
-            context,
-            input: { ...input, refreshToken },
-        });
+    public password(@Body() input: PasswordBodyDTO): Commands.Authn.Password.Result {
+        return this.authnCommands.password({ input });
     }
 
     @Public()
@@ -168,7 +95,7 @@ export class AuthnController {
     @Post("verify/otp")
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
-    @FormatResponse(SuccessMessageDTO)
+    @FormatResponse(AuthenticationResultDTO)
     @ApiOperation({
         summary: "Verify passwordless OTP",
         security: [],
@@ -183,11 +110,8 @@ export class AuthnController {
         NOT_FOUND,
         CONFLICT,
     )
-    public verifyOTP(
-        @Body() input: VerifyOTPBodyDTO,
-        @Extract.Meta() context: Extract.Meta,
-    ): Commands.Authn.VerifyOTP.Result {
-        return this.authnCommands.verifyOTP({ context, input });
+    public verifyOTP(@Body() input: VerifyOTPBodyDTO): Commands.Authn.VerifyOTP.Result {
+        return this.authnCommands.verifyOTP({ input });
     }
 
     @Public()
@@ -195,7 +119,7 @@ export class AuthnController {
     @Post("verify/2fa")
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
-    @FormatResponse(SuccessMessageDTO)
+    @FormatResponse(AuthenticationResultDTO)
     @ApiOperation({
         summary: "Verify second-factor TOTP",
         security: [],
@@ -210,48 +134,9 @@ export class AuthnController {
     )
     public verifySecondFactor(
         @Body() input: VerifySecondFactorBodyDTO,
-        @Extract.Meta() context: Extract.Meta,
         @Tokens.Pending() token?: string,
     ): Commands.Authn.VerifySecondFactor.Result {
-        return this.authnCommands.verifySecondFactor({ token, context, input });
-    }
-
-    @Public()
-    @HttpCode(OK)
-    @Get("oauth/authorize")
-    @ApiOperation({
-        summary: "Get OAuth authorization URL",
-        security: [],
-    })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
-    public authorizeOAuth(@Query() input: AuthorizeBodyDTO): Commands.OAuth.Authorize.Result {
-        return this.oauthCommands.authorize({ input });
-    }
-
-    @Public()
-    @HttpCode(OK)
-    @Get("oauth/callback")
-    @Header("Pragma", "no-cache")
-    @Header("Cache-Control", "no-store")
-    @ApiOperation({
-        summary: "OAuth callback",
-        security: [],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        BAD_REQUEST,
-        BAD_GATEWAY,
-        CONFLICT,
-    )
-    public callbackOAuth(
-        @Query() input: CallbackBodyDTO,
-        @Extract.Meta() context: Extract.Meta,
-    ): Commands.OAuth.Callback.Result {
-        return this.oauthCommands.callback({ context, input });
+        return this.authnCommands.verifySecondFactor({ token, input });
     }
 
     @HttpCode(OK)

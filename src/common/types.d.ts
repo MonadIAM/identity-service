@@ -18,7 +18,7 @@ declare global {
         };
     };
 
-    namespace OAuth {
+    namespace FederatedAuthn {
         type ResolveProvider = CommonServices.GoogleOAuth.Contract | CommonServices.GitHubOAuth.Contract;
     }
 }
