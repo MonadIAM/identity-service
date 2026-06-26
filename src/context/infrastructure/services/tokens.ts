@@ -1,5 +1,4 @@
 export const REAUTHENTICATION_CACHE_SERVICE = Symbol("InfrastructureServices.ReauthenticationCache.Contract");
-export const AUTHORIZATION_CLIENT_SERVICE = Symbol("InfrastructureServices.AuthorizationClient.Contract");
 export const SECOND_FACTOR_SECRET_SERVICE = Symbol("InfrastructureServices.SecondFactorSecret.Contract");
 export const AUTHORIZATION_CACHE_SERVICE = Symbol("InfrastructureServices.AuthorizationCache.Contract");
 export const PENDING_2FA_CACHE_SERVICE = Symbol("InfrastructureServices.Pending2FACache.Contract");

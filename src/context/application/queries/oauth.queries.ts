@@ -21,7 +21,7 @@ export class OAuthQueries implements Queries.OAuth.Contract {
         return {
             grantTypesSupported: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],
             authorizationEndpoint: new URL("oauth/authorize", this.apiBaseUrl).toString(),
-            jwksUri: new URL(".well-known/jwks.json", this.apiBaseUrl).toString(),
+            jwksURI: new URL(".well-known/jwks.json", this.apiBaseUrl).toString(),
             tokenEndpoint: new URL("oauth/token", this.apiBaseUrl).toString(),
             codeChallengeMethodsSupported: [CodeChallengeMethod.S256],
             responseTypesSupported: [OAuthResponseType.CODE],

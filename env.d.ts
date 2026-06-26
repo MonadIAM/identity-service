@@ -144,8 +144,6 @@ declare global {
             // ---------------------------------------------------------------------------
 
             AUTHORIZATION_LOGIN_URL: string;
-            AUTHORIZATION_CLIENT_ID: string;
-            AUTHORIZATION_REDIRECT_URIS: string;
             AUTHORIZATION_REQUEST_TTL: StringValue;
             AUTHORIZATION_CODE_TTL: StringValue;
             OAUTH_CLIENT_PER_REALM_LIMIT: `${number}`;

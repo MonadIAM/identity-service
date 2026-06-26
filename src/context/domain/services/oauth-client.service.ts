@@ -1,5 +1,4 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { isString } from "class-validator";
 
 import { OAUTH_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { OAuthClient } from "~context/domain/entities";
@@ -39,7 +38,7 @@ export class OAuthClientService implements Services.OAuthClient.Contract {
     public update(props: Services.OAuthClient.Update.Props): Services.OAuthClient.Update.Result {
         const { entity, patch } = props;
 
-        if (isString(patch.redirectUri)) {
+        if (patch.redirectUri !== undefined) {
             this.validateRedirectUri(patch.redirectUri);
         }
 

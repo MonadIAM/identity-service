@@ -51,10 +51,10 @@
   },
   "oauth": {
     "INVALID_AUTHORIZATION_REQUEST": "The authorization request is invalid or expired.",
+    "CLIENT_REVOKED": "The OAuth client is revoked.",
+    "CLIENT_REALM_REVOKED": "The realm linked to this OAuth client is revoked.",
     "INVALID_GRANT": "The authorization code is invalid, expired, or does not match the request.",
-    "UNSUPPORTED_RESPONSE_TYPE": "The requested response type is not supported.",
-    "UNSUPPORTED_CODE_CHALLENGE_METHOD": "The requested PKCE code challenge method is not supported.",
-    "UNSUPPORTED_GRANT_TYPE": "The requested grant type is not supported."
+    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client."
   },
   "oauth-client": {
     "CREATED": "OAuth client successfully created.",

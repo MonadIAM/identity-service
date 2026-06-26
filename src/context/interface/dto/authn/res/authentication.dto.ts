@@ -6,15 +6,15 @@ import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "AuthnAuthenticationResult" })
 export class AuthenticationResultDTO extends SuccessMessageDTO {
-    @Expose({ name: "authorizationUrl" })
+    @Expose()
     @Validator.IsOptional()
     @Validator.IsString()
-    @ApiPropertyOptional({ type: String, name: "authorization_url" })
+    @ApiPropertyOptional({ type: String })
     declare public authorization_url?: string;
 
-    @Expose({ name: "requires2FA" })
+    @Expose()
     @Validator.IsOptional()
     @Validator.IsBoolean()
-    @ApiPropertyOptional({ type: Boolean, name: "requires_2fa" })
+    @ApiPropertyOptional({ type: Boolean })
     declare public requires_2fa?: boolean;
 }

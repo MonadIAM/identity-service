@@ -2,6 +2,13 @@
   "identifier": {
     "CANNOT_REMOVE_LAST_VERIFIED": "Нельзя удалить последний подтвержденный идентификатор."
   },
+  "authorization-cache": {
+    "CODE_ALLOCATION_FAILED": "Не удалось выделить уникальный код авторизации."
+  },
+  "script-loader": {
+    "INVALID_SCRIPT_HASH": "Redis вернул недействительный hash Lua-скрипта.",
+    "SCRIPT_NOT_LOADED": "Lua-скрипт не загружен: {script}."
+  },
   "oauth-client": {
     "REALM_LIMIT_EXCEEDED": "Достигнут лимит OAuth-клиентов для этого realm.",
     "REDIRECT_URI_REQUIRED": "Redirect URI обязателен.",
@@ -11,10 +18,6 @@
   "jwt": {
     "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",
     "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен."
-  },
-  "authorization-client": {
-    "INVALID_CLIENT": "OAuth-клиент недействителен.",
-    "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента."
   },
   "vault": {
     "REQUEST_FAILED": "Запрос к Vault Transit завершился ошибкой.",

@@ -40,10 +40,10 @@ declare global {
                     input: {
                         grantType: TokenGrantType;
                         refreshToken?: string;
-                        codeVerifier?: string;
-                        redirectUri?: string;
-                        code?: string;
+                        codeVerifier: string;
+                        redirectUri: string;
                         client: string;
+                        code: string;
                     };
                 };
 
@@ -57,21 +57,34 @@ declare global {
             }
 
             namespace AuthorizationCode {
+                type Input = {
+                    grantType: TokenGrantType.AUTHORIZATION_CODE;
+                    codeVerifier: string;
+                    redirectUri: string;
+                    client: string;
+                    code: string;
+                };
+
                 type Props = {
                     context: Extract.Meta;
-                    input: {
-                        codeVerifier: string;
-                        redirectUri: string;
-                        client: string;
-                        code: string;
-                    };
+                    input: Input;
                 };
 
                 type Result = Commands.Session.Create.Result;
             }
 
             namespace Refresh {
-                type Props = Token.Props;
+                type Input = {
+                    grantType: TokenGrantType.REFRESH_TOKEN;
+                    refreshToken?: string;
+                    client: string;
+                };
+
+                type Props = {
+                    context: Extract.Meta;
+                    input: Input;
+                };
+
                 type Result = Commands.Session.Refresh.Result;
             }
 

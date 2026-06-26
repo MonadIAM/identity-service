@@ -6,19 +6,19 @@ import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "OAuthAuthorizeQuery" })
 export class AuthorizeQueryDTO {
-    @Expose({ name: "response_type" })
-    @Validator.IsString()
-    @ApiProperty({ required: true, enum: OAuthResponseType, name: "response_type" })
+    @Expose()
+    @Validator.IsEnum(OAuthResponseType)
+    @ApiProperty({ required: true, enum: OAuthResponseType })
     declare public responseType: OAuthResponseType;
 
-    @Expose({ name: "client_id" })
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String, name: "client_id" })
+    @Expose()
+    @Validator.IsUUID("4")
+    @ApiProperty({ required: true, type: String, format: "uuid" })
     declare public client: string;
 
-    @Expose({ name: "redirect_uri" })
+    @Expose()
     @Validator.IsString()
-    @ApiProperty({ required: true, type: String, name: "redirect_uri" })
+    @ApiProperty({ required: true, type: String })
     declare public redirectUri: string;
 
     @Expose()
@@ -26,15 +26,15 @@ export class AuthorizeQueryDTO {
     @ApiProperty({ required: true, type: String })
     declare public state: string;
 
-    @Expose({ name: "code_challenge" })
+    @Expose()
     @Validator.IsString()
     @Validator.Length(43, 43)
     @Validator.IsMatches(/^[A-Za-z0-9_-]{43}$/)
-    @ApiProperty({ required: true, type: String, name: "code_challenge" })
+    @ApiProperty({ required: true, type: String })
     declare public codeChallenge: string;
 
-    @Expose({ name: "code_challenge_method" })
-    @Validator.IsString()
-    @ApiProperty({ required: true, enum: CodeChallengeMethod, name: "CodeChallengeMethod" })
+    @Expose()
+    @Validator.IsEnum(CodeChallengeMethod)
+    @ApiProperty({ required: true, enum: CodeChallengeMethod })
     declare public codeChallengeMethod: CodeChallengeMethod;
 }

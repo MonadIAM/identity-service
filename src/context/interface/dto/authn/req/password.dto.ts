@@ -5,9 +5,9 @@ import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "AuthnPasswordBody" })
 export class PasswordBodyDTO {
-    @Expose({ name: "auth_request" })
+    @Expose()
     @Validator.IsString()
-    @ApiProperty({ required: true, type: String, name: "auth_request" })
+    @ApiProperty({ required: true, type: String })
     declare public authorizationRequest: string;
 
     @Expose()

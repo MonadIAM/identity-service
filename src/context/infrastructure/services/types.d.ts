@@ -89,32 +89,6 @@ declare global {
             }
         }
 
-        namespace AuthorizationClient {
-            interface Contract {
-                resolve(props: Resolve.Props): Resolve.Result;
-                getLoginUrl(): string;
-            }
-
-            type Grant = "authorization_code" | "refresh_token";
-
-            type Client = {
-                allowedGrants: Grant[];
-                redirectUris: string[];
-                requirePKCE: true;
-                public: true;
-                id: string;
-            };
-
-            namespace Resolve {
-                type Props = {
-                    redirectUri: string;
-                    client: string;
-                };
-
-                type Result = Client;
-            }
-        }
-
         namespace SecondFactorSecret {
             interface Contract {
                 resolve(props: Resolve.Props): Resolve.Result;

@@ -2,6 +2,13 @@
   "identifier": {
     "CANNOT_REMOVE_LAST_VERIFIED": "The last verified identifier cannot be removed."
   },
+  "authorization-cache": {
+    "CODE_ALLOCATION_FAILED": "Failed to allocate a unique authorization code."
+  },
+  "script-loader": {
+    "INVALID_SCRIPT_HASH": "Redis returned an invalid Lua script hash.",
+    "SCRIPT_NOT_LOADED": "Lua script is not loaded: {script}."
+  },
   "oauth-client": {
     "REALM_LIMIT_EXCEEDED": "The OAuth client limit for this realm has been reached.",
     "REDIRECT_URI_REQUIRED": "The redirect URI is required.",
@@ -11,10 +18,6 @@
   "jwt": {
     "INVALID_ACCESS_TOKEN": "The access token is invalid or expired.",
     "INVALID_REFRESH_TOKEN": "The refresh token is invalid."
-  },
-  "authorization-client": {
-    "INVALID_CLIENT": "The OAuth client is invalid.",
-    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client."
   },
   "vault": {
     "REQUEST_FAILED": "Vault Transit request failed.",

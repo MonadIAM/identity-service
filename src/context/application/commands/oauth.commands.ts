@@ -2,16 +2,18 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { AUTHORIZATION_CACHE_SERVICE, AUTHORIZATION_CLIENT_SERVICE } from "~context/infrastructure/services";
-import { CodeChallengeMethod, OAuthResponseType, TokenGrantType } from "~context/enums";
+import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { OAUTH_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
 import { ErrorCode, Exception } from "~common/exceptions";
 import { CRYPTO_SERVICE } from "~common/services";
+import { TokenGrantType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthCommands implements Commands.OAuth.Contract {
     private readonly dictionaryPath = "commands.oauth";
     private readonly accessTokenTTL: number;
+    private readonly loginUrl: string;
 
     public constructor(
         private readonly configService: ConfigService,
@@ -19,27 +21,38 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         private readonly sessionCommands: Commands.Session.CommandsContract,
         @Inject(AUTHORIZATION_CACHE_SERVICE)
         private readonly authorizationCacheService: InfrastructureServices.AuthorizationCache.Contract,
-        @Inject(AUTHORIZATION_CLIENT_SERVICE)
-        private readonly authorizationClientService: InfrastructureServices.AuthorizationClient.Contract,
+        @Inject(OAUTH_CLIENT_REPOSITORY)
+        private readonly oauthClientRepository: Repositories.OAuthClient.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
     ) {
         this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
+        this.loginUrl = this.configService.getOrThrow<string>("AUTHORIZATION_LOGIN_URL");
     }
 
     public async authorize(props: Commands.OAuth.Authorize.Props): Commands.OAuth.Authorize.Result {
-        if (props.input.responseType !== OAuthResponseType.CODE) {
-            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_RESPONSE_TYPE` });
+        const client = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
+
+        if (client.isRevoked) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_REVOKED`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
         }
 
-        if (props.input.codeChallengeMethod !== CodeChallengeMethod.S256) {
-            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_CODE_CHALLENGE_METHOD` });
+        if (client.isRealmRevoked) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
         }
 
-        const client = this.authorizationClientService.resolve({
-            redirectUri: props.input.redirectUri,
-            client: props.input.client,
-        });
+        if (client.redirectUri !== props.input.redirectUri) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.INVALID_REDIRECT_URI`,
+                code: ErrorCode.INVALID_REQUEST,
+            });
+        }
 
         const { id } = await this.authorizationCacheService.create({
             codeChallengeMethod: props.input.codeChallengeMethod,
@@ -49,7 +62,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             client: client.id,
         });
 
-        const url = new URL(this.authorizationClientService.getLoginUrl());
+        const url = new URL(this.loginUrl);
         url.searchParams.set("auth_request", id);
 
         return { url: url.toString() };
@@ -59,28 +72,40 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         let result: Awaited<Commands.OAuth.AuthorizationCode.Result | Commands.OAuth.Refresh.Result>;
 
         if (props.input.grantType === TokenGrantType.AUTHORIZATION_CODE) {
-            if (!props.input.code || !props.input.redirectUri || !props.input.codeVerifier) {
-                throw Exception.badRequest({
-                    messageKey: `${this.dictionaryPath}.INVALID_GRANT`,
-                    code: ErrorCode.INVALID_GRANT,
-                });
-            }
-
             result = await this.authorizationCode({
                 context: props.context,
                 input: {
+                    grantType: TokenGrantType.AUTHORIZATION_CODE,
                     codeVerifier: props.input.codeVerifier,
                     redirectUri: props.input.redirectUri,
                     client: props.input.client,
                     code: props.input.code,
                 },
             });
-        } else if (props.input.grantType === TokenGrantType.REFRESH_TOKEN) {
-            result = await this.refresh(props);
         } else {
-            throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.UNSUPPORTED_GRANT_TYPE`,
-                code: ErrorCode.UNSUPPORTED_GRANT_TYPE,
+            const client = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
+
+            if (client.isRevoked) {
+                throw Exception.badRequest({
+                    messageKey: `${this.dictionaryPath}.CLIENT_REVOKED`,
+                    code: ErrorCode.INVALID_CLIENT,
+                });
+            }
+
+            if (client.isRealmRevoked) {
+                throw Exception.badRequest({
+                    messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                    code: ErrorCode.INVALID_CLIENT,
+                });
+            }
+
+            result = await this.refresh({
+                context: props.context,
+                input: {
+                    grantType: TokenGrantType.REFRESH_TOKEN,
+                    refreshToken: props.input.refreshToken,
+                    client: props.input.client,
+                },
             });
         }
 
@@ -92,17 +117,39 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     }
 
     public async authorizationCode(props: Commands.OAuth.AuthorizationCode.Props): Commands.OAuth.AuthorizationCode.Result {
+        const client = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
+
+        if (client.isRevoked) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_REVOKED`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
+        }
+
+        if (client.isRealmRevoked) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
+        }
+
+        if (client.redirectUri !== props.input.redirectUri) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.INVALID_REDIRECT_URI`,
+                code: ErrorCode.INVALID_REQUEST,
+            });
+        }
+
         const authorization = await this.authorizationCacheService.consume({
             code: props.input.code,
         });
 
-        const isValid =
-            authorization &&
-            authorization.client === props.input.client &&
-            authorization.redirectUri === props.input.redirectUri &&
-            this.cryptoService.verifyCodeChallenge(props.input.codeVerifier, authorization.codeChallenge);
-
-        if (!isValid) {
+        if (
+            authorization === null ||
+            authorization.client !== client.id ||
+            authorization.redirectUri !== props.input.redirectUri ||
+            !this.cryptoService.verifyCodeChallenge(props.input.codeVerifier, authorization.codeChallenge)
+        ) {
             throw Exception.badRequest({
                 messageKey: `${this.dictionaryPath}.INVALID_GRANT`,
                 code: ErrorCode.INVALID_GRANT,
@@ -135,7 +182,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             id: props.authorizationRequest,
         });
 
-        if (!request) {
+        if (request === null) {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_AUTHORIZATION_REQUEST` });
         }
     }
@@ -148,7 +195,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             account: props.account,
         });
 
-        if (!issued) {
+        if (issued === null) {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_AUTHORIZATION_REQUEST` });
         }
 

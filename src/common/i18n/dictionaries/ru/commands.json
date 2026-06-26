@@ -51,10 +51,10 @@
   },
   "oauth": {
     "INVALID_AUTHORIZATION_REQUEST": "Запрос авторизации недействителен или просрочен.",
+    "CLIENT_REVOKED": "OAuth-клиент отозван.",
+    "CLIENT_REALM_REVOKED": "Realm, к которому привязан OAuth-клиент, отозван.",
     "INVALID_GRANT": "Код авторизации недействителен, просрочен или не соответствует запросу.",
-    "UNSUPPORTED_RESPONSE_TYPE": "Запрошенный тип ответа не поддерживается.",
-    "UNSUPPORTED_CODE_CHALLENGE_METHOD": "Запрошенный метод PKCE code challenge не поддерживается.",
-    "UNSUPPORTED_GRANT_TYPE": "Запрошенный тип предоставления не поддерживается."
+    "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента."
   },
   "oauth-client": {
     "CREATED": "OAuth-клиент успешно создан.",

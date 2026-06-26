@@ -319,12 +319,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public AUTHORIZATION_LOGIN_URL: string;
 
-    @Validator.IsString()
-    declare public AUTHORIZATION_CLIENT_ID: string;
-
-    @Validator.IsString()
-    declare public AUTHORIZATION_REDIRECT_URIS: string;
-
     @Validator.IsMsString()
     declare public AUTHORIZATION_REQUEST_TTL: StringValue;
 

@@ -17,7 +17,7 @@ declare global {
                     grantTypesSupported: TokenGrantType[];
                     authorizationEndpoint: string;
                     tokenEndpoint: string;
-                    jwksUri: string;
+                    jwksURI: string;
                     issuer: string;
                 };
             }

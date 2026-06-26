@@ -11,38 +11,38 @@ export class AuthzServerMetadataDTO {
     @ApiProperty({ type: String })
     declare public issuer: string;
 
-    @Expose({ name: "authorizationEndpoint" })
+    @Expose()
     @Validator.IsString()
-    @ApiProperty({ type: String, name: "authorization_endpoint" })
-    declare public authorization_endpoint: string;
+    @ApiProperty({ type: String })
+    declare public authorizationEndpoint: string;
 
-    @Expose({ name: "tokenEndpoint" })
+    @Expose()
     @Validator.IsString()
-    @ApiProperty({ type: String, name: "token_endpoint" })
-    declare public token_endpoint: string;
+    @ApiProperty({ type: String })
+    declare public tokenEndpoint: string;
 
-    @Expose({ name: "jwksUri" })
+    @Expose()
     @Validator.IsString()
-    @ApiProperty({ type: String, name: "jwks_uri" })
-    declare public jwks_uri: string;
+    @ApiProperty({ type: String })
+    declare public jwksURI: string;
 
-    @Expose({ name: "responseTypesSupported" })
+    @Expose()
     @Validator.IsArray()
-    @ApiProperty({ type: [String], enum: OAuthResponseType, name: "response_types_supported" })
-    declare public response_types_supported: OAuthResponseType[];
+    @ApiProperty({ type: [String], enum: OAuthResponseType })
+    declare public responseTypesSupported: OAuthResponseType[];
 
-    @Expose({ name: "grantTypesSupported" })
+    @Expose()
     @Validator.IsArray()
-    @ApiProperty({ type: [String], enum: TokenGrantType, name: "grant_types_supported" })
-    declare public grant_types_supported: TokenGrantType[];
+    @ApiProperty({ type: [String], enum: TokenGrantType })
+    declare public grantTypesSupported: TokenGrantType[];
 
-    @Expose({ name: "codeChallengeMethodsSupported" })
+    @Expose()
     @Validator.IsArray()
-    @ApiProperty({ type: [String], enum: CodeChallengeMethod, name: "code_challenge_methods_supported" })
-    declare public code_challenge_methods_supported: CodeChallengeMethod[];
+    @ApiProperty({ type: [String], enum: CodeChallengeMethod })
+    declare public codeChallengeMethodsSupported: CodeChallengeMethod[];
 
-    @Expose({ name: "tokenEndpointAuthMethodsSupported" })
+    @Expose()
     @Validator.IsArray()
-    @ApiProperty({ type: [String], enum: ["none"], name: "token_endpoint_auth_methods_supported" })
-    declare public token_endpoint_auth_methods_supported: ["none"];
+    @ApiProperty({ type: [String], enum: ["none"] })
+    declare public tokenEndpointAuthMethodsSupported: ["none"];
 }

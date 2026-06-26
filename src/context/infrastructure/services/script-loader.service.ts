@@ -10,6 +10,7 @@ import { LUA_SCRIPT_FILES, LuaScript } from "../scripts";
 
 @Injectable()
 export class ScriptLoaderService implements OnModuleInit, InfrastructureServices.ScriptLoader.Contract {
+    private readonly dictionaryPath = "services.script-loader";
     private readonly scriptHashes = new Map<LuaScript, string>();
 
     public constructor(
@@ -28,7 +29,7 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
             this.scriptHashes.set(script, hash);
             return hash;
         } else {
-            throw Exception.invariantViolation({ messageKey: "Redis returned an invalid Lua script hash." });
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.INVALID_SCRIPT_HASH` });
         }
     }
 
@@ -37,7 +38,10 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
         if (hash) {
             return hash;
         } else {
-            throw Exception.invariantViolation({ messageKey: `Lua script is not loaded: ${script}` });
+            throw Exception.invariantViolation({
+                messageKey: `${this.dictionaryPath}.SCRIPT_NOT_LOADED`,
+                params: { script },
+            });
         }
     }
 }

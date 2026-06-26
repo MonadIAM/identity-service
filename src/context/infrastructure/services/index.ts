@@ -1,7 +1,6 @@
 import { ClassProvider } from "@nestjs/common";
 
 import { ReauthenticationCacheService } from "./reauthentication-cache.service";
-import { AuthorizationClientService } from "./authorization-client.service";
 import { SecondFactorSecretService } from "./second-factor-secret.service";
 import { AuthorizationCacheService } from "./authorization-cache.service";
 import { Pending2FACacheService } from "./pending-2fa-cache.service";
@@ -13,7 +12,6 @@ import { AccessCacheService } from "./access-cache.service";
 import { OTPCacheService } from "./otp-cache.service";
 import {
     REAUTHENTICATION_CACHE_SERVICE,
-    AUTHORIZATION_CLIENT_SERVICE,
     SECOND_FACTOR_SECRET_SERVICE,
     AUTHORIZATION_CACHE_SERVICE,
     PENDING_2FA_CACHE_SERVICE,
@@ -29,10 +27,6 @@ export const INFRASTRUCTURE_SERVICES: ClassProvider[] = [
     {
         provide: REAUTHENTICATION_CACHE_SERVICE,
         useClass: ReauthenticationCacheService,
-    },
-    {
-        provide: AUTHORIZATION_CLIENT_SERVICE,
-        useClass: AuthorizationClientService,
     },
     {
         provide: SECOND_FACTOR_SECRET_SERVICE,
@@ -74,7 +68,6 @@ export const INFRASTRUCTURE_SERVICES: ClassProvider[] = [
 
 export {
     REAUTHENTICATION_CACHE_SERVICE,
-    AUTHORIZATION_CLIENT_SERVICE,
     SECOND_FACTOR_SECRET_SERVICE,
     AUTHORIZATION_CACHE_SERVICE,
     PENDING_2FA_CACHE_SERVICE,

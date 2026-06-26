@@ -83,8 +83,8 @@ export class OAuthController {
         @Tokens.Refresh() refreshToken?: string,
     ): Commands.OAuth.Token.Result {
         return this.oauthCommands.token({
+            input: { ...input, refreshToken },
             context,
-            input: { ...input, refreshToken: input.refreshToken ?? refreshToken },
         });
     }
 }

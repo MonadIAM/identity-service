@@ -12,6 +12,7 @@ import { SCRIPT_EXECUTOR_SERVICE } from "./tokens";
 
 @Injectable()
 export class AuthorizationCacheService implements InfrastructureServices.AuthorizationCache.Contract {
+    private readonly dictionaryPath = "services.authorization-cache";
     private readonly REQUEST_NAMESPACE = "authorization:request";
     private readonly CODE_NAMESPACE = "authorization:code";
     private readonly requestTTL: number;
@@ -80,7 +81,7 @@ export class AuthorizationCacheService implements InfrastructureServices.Authori
             if (props.attemptsRemaining > 1) {
                 return this.issueAttempt({ ...props, attemptsRemaining: props.attemptsRemaining - 1 });
             } else {
-                throw Exception.badRequest({ messageKey: "Failed to allocate a unique authorization code" });
+                throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.CODE_ALLOCATION_FAILED` });
             }
         } else if (result.status === "issued") {
             return { code, request: result.request };
