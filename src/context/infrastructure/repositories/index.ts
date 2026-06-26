@@ -3,6 +3,7 @@ import { ClassProvider } from "@nestjs/common";
 import { PasswordHistoryRepository } from "./password-history.repository";
 import { RecoveryCodeRepository } from "./recovery-code.repository";
 import { SecondFactorRepository } from "./second-factor.repository";
+import { OAuthClientRepository } from "./oauth-client.repository";
 import { MasterCodeRepository } from "./master-code.repository";
 import { MembershipRepository } from "./membership.repository";
 import { IdentifierRepository } from "./identifier.repository";
@@ -16,6 +17,7 @@ import {
     PASSWORD_HISTORY_REPOSITORY,
     RECOVERY_CODE_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
+    OAUTH_CLIENT_REPOSITORY,
     MASTER_CODE_REPOSITORY,
     MEMBERSHIP_REPOSITORY,
     IDENTIFIER_REPOSITORY,
@@ -39,6 +41,10 @@ export const REPOSITORIES: ClassProvider[] = [
     {
         provide: SECOND_FACTOR_REPOSITORY,
         useClass: SecondFactorRepository,
+    },
+    {
+        provide: OAUTH_CLIENT_REPOSITORY,
+        useClass: OAuthClientRepository,
     },
     {
         provide: MASTER_CODE_REPOSITORY,
@@ -82,6 +88,7 @@ export {
     PASSWORD_HISTORY_REPOSITORY,
     RECOVERY_CODE_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
+    OAUTH_CLIENT_REPOSITORY,
     MASTER_CODE_REPOSITORY,
     MEMBERSHIP_REPOSITORY,
     IDENTIFIER_REPOSITORY,

@@ -12,6 +12,14 @@
     "PUBLIC_CONTACT_REQUIRES_VERIFICATION": "Public contact visibility requires a verified identifier.",
     "ALREADY_VERIFIED": "The identifier is already verified."
   },
+  "oauth-client": {
+    "CANNOT_UPDATE_REVOKED": "A revoked OAuth client cannot be updated.",
+    "NO_CHANGES_DETECTED": "The OAuth client already matches the provided changes.",
+    "EMPTY_UPDATE_PATCH": "The OAuth client update payload is empty.",
+    "ALREADY_REVOKED": "The OAuth client is already revoked.",
+    "ALREADY_ACTIVE": "The OAuth client is already active.",
+    "CANNOT_PURGE_ACTIVE": "An active OAuth client cannot be permanently deleted."
+  },
   "profile": {
     "NO_CHANGES_DETECTED": "The profile already matches the provided changes.",
     "EMPTY_UPDATE_PATCH": "The profile update payload is empty."

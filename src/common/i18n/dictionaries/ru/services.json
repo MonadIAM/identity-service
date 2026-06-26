@@ -2,6 +2,12 @@
   "identifier": {
     "CANNOT_REMOVE_LAST_VERIFIED": "Нельзя удалить последний подтвержденный идентификатор."
   },
+  "oauth-client": {
+    "REALM_LIMIT_EXCEEDED": "Достигнут лимит OAuth-клиентов для этого realm.",
+    "REDIRECT_URI_REQUIRED": "Redirect URI обязателен.",
+    "INVALID_REDIRECT_URI": "Redirect URI недействителен.",
+    "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "Redirect URI не должен содержать fragment."
+  },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",
     "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен."

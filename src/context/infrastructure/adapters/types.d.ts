@@ -219,6 +219,28 @@ declare global {
             }
         }
 
+        namespace OAuthClient {
+            type Filters = {
+                updatedAt?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
+                name?: StringFilterDTO;
+                realm?: StringFilterDTO;
+                id?: StringFilterDTO;
+                isRevoked?: boolean;
+            };
+
+            type Sort = {
+                updatedAt?: QueryOrder;
+                createdAt?: QueryOrder;
+                name?: QueryOrder;
+            };
+
+            interface Types {
+                Filters: Filters;
+                Sort: Sort;
+            }
+        }
+
         namespace Membership {
             type Filters = {};
 

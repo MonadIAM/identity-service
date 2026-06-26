@@ -1,8 +1,9 @@
-import { SecondFactorType, AccountSubject, IdentifierType, AccountStatus } from "~context/enums";
+import { SecondFactorType, AccountSubject, IdentifierType, AccountStatus, TokenGrantType } from "~context/enums";
 
 import { PasswordHistory as PasswordHistoryEntity } from "./password-history.entity";
 import { RecoveryCode as RecoveryCodeEntity } from "./recovery-code.entity";
 import { SecondFactor as SecondFactorEntity } from "./second-factor.entity";
+import { OAuthClient as OAuthClientEntity } from "./oauth-client.entity";
 import { MasterCode as MasterCodeEntity } from "./master-code.entity";
 import { Membership as MembershipEntity } from "./membership.entity";
 import { Identifier as IdentifierEntity } from "./identifier.entity";
@@ -124,6 +125,27 @@ declare global {
         }
 
         type Session = SessionEntity;
+
+        namespace OAuthClient {
+            type ConstructorProps = {
+                grantTypes: TokenGrantType[];
+                redirectUri: string;
+                realm: string;
+                name: string;
+                description?: string;
+                isRevoked?: boolean;
+                isRealmRevoked?: boolean;
+                realmVersion?: number;
+            };
+
+            type ChangeDataProps = {
+                redirectUri?: string;
+                description?: string;
+                name?: string;
+            };
+        }
+
+        type OAuthClient = OAuthClientEntity;
 
         namespace Membership {
             type ConstructorProps = {

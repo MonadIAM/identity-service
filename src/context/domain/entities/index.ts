@@ -1,6 +1,7 @@
 export { PasswordHistory } from "./password-history.entity";
 export { SecondFactor } from "./second-factor.entity";
 export { RecoveryCode } from "./recovery-code.entity";
+export { OAuthClient } from "./oauth-client.entity";
 export { MasterCode } from "./master-code.entity";
 export { Membership } from "./membership.entity";
 export { Identifier } from "./identifier.entity";

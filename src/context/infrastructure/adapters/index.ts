@@ -1,6 +1,7 @@
 export { PasswordHistoryAdapter } from "./password-history.adapter";
 export { RecoveryCodeAdapter } from "./recovery-code.adapter";
 export { SecondFactorAdapter } from "./second-factor.adapter";
+export { OAuthClientAdapter } from "./oauth-client.adapter";
 export { MasterCodeAdapter } from "./master-code.adapter";
 export { MembershipAdapter } from "./membership.adapter";
 export { IdentifierAdapter } from "./identifier.adapter";

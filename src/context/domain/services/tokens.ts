@@ -1,4 +1,5 @@
 export const RECOVERY_CODE_SERVICE = Symbol("Services.RecoveryCode.Contract");
+export const OAUTH_CLIENT_SERVICE = Symbol("Services.OAuthClient.Contract");
 export const SECOND_FACTOR_SERVICE = Symbol("Services.SecondFactor.Contract");
 export const MEMBERSHIP_SERVICE = Symbol("Services.Membership.Contract");
 export const IDENTIFIER_SERVICE = Symbol("Services.Identifier.Contract");

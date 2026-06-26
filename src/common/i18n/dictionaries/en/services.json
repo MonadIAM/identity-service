@@ -2,6 +2,12 @@
   "identifier": {
     "CANNOT_REMOVE_LAST_VERIFIED": "The last verified identifier cannot be removed."
   },
+  "oauth-client": {
+    "REALM_LIMIT_EXCEEDED": "The OAuth client limit for this realm has been reached.",
+    "REDIRECT_URI_REQUIRED": "The redirect URI is required.",
+    "INVALID_REDIRECT_URI": "The redirect URI is invalid.",
+    "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "The redirect URI must not contain a fragment."
+  },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "The access token is invalid or expired.",
     "INVALID_REFRESH_TOKEN": "The refresh token is invalid."

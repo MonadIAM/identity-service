@@ -331,6 +331,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsMsString()
     declare public AUTHORIZATION_CODE_TTL: StringValue;
 
+    @Validator.IsPositiveInt()
+    declare public OAUTH_CLIENT_PER_REALM_LIMIT: number;
+
     // ---------------------------------------------------------------------------
     // OAuth Providers
     // ---------------------------------------------------------------------------
