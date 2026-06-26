@@ -1,0 +1,65 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
+
+import { TokenGrantType } from "~context/enums";
+import { Validator } from "~common/validator";
+
+@ApiSchema({ name: "OAuthClient" })
+export class OAuthClientDTO {
+    @Expose()
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    declare public id: string;
+
+    @Expose()
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    declare public realm: string;
+
+    @Expose()
+    @Validator.IsString()
+    @ApiProperty({ required: true, type: String })
+    declare public name: string;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsString()
+    @ApiProperty({ required: false, type: String })
+    declare public description?: string;
+
+    @Expose()
+    @Validator.IsString()
+    @ApiProperty({ required: true, type: String })
+    declare public redirectUri: string;
+
+    @Expose()
+    @Validator.IsArray()
+    @Validator.IsEnum(TokenGrantType, { each: true })
+    @ApiProperty({ required: true, enum: TokenGrantType, enumName: "TokenGrantType", isArray: true })
+    declare public grantTypes: TokenGrantType[];
+
+    @Expose()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: true, type: Boolean })
+    declare public isRevoked: boolean;
+
+    @Expose()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: true, type: Boolean })
+    declare public isRealmRevoked: boolean;
+
+    @Expose()
+    @Validator.IsInt()
+    @ApiProperty({ required: true, type: Number })
+    declare public realmVersion: number;
+
+    @Expose()
+    @Validator.IsDate()
+    @ApiProperty({ required: false, type: Date })
+    declare public updatedAt?: Date;
+
+    @Expose()
+    @Validator.IsDate()
+    @ApiProperty({ required: true, type: Date })
+    declare public createdAt: Date;
+}

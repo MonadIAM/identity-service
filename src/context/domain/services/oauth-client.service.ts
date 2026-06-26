@@ -44,36 +44,20 @@ export class OAuthClientService implements Services.OAuthClient.Contract {
     }
 
     public revoke(props: Services.OAuthClient.Revoke.Props): Services.OAuthClient.Revoke.Result {
-        props.entity.revoke();
+        for (const entity of props.entities) {
+            entity.revoke();
+        }
     }
 
     public restore(props: Services.OAuthClient.Restore.Props): Services.OAuthClient.Restore.Result {
-        props.entity.restore();
+        for (const entity of props.entities) {
+            entity.restore();
+        }
     }
 
     public purge(props: Services.OAuthClient.Purge.Props): Services.OAuthClient.Purge.Result {
-        props.entity.canPurge();
-        props.transaction.remove(props.entity);
-    }
-
-    public applyRealmRevocation(
-        props: Services.OAuthClient.ApplyRealmRevocation.Props,
-    ): Services.OAuthClient.ApplyRealmRevocation.Result {
         for (const entity of props.entities) {
-            entity.applyRealmRevocation(props.version);
-        }
-    }
-
-    public applyRealmRestore(
-        props: Services.OAuthClient.ApplyRealmRestore.Props,
-    ): Services.OAuthClient.ApplyRealmRestore.Result {
-        for (const entity of props.entities) {
-            entity.applyRealmRestore(props.version);
-        }
-    }
-
-    public purgeRealm(props: Services.OAuthClient.PurgeRealm.Props): Services.OAuthClient.PurgeRealm.Result {
-        for (const entity of props.entities) {
+            entity.canPurge();
             props.transaction.remove(entity);
         }
     }

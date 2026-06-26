@@ -2,6 +2,7 @@ import { ClassProvider } from "@nestjs/common";
 
 import { RecoveryCodeQueries } from "./recovery-code.queries";
 import { SecondFactorQueries } from "./second-factor.queries";
+import { OAuthClientQueries } from "./oauth-client.queries";
 import { IdentifierQueries } from "./identifier.queries";
 import { ChangeLogQueries } from "./change-log.queries";
 import { AuditLogQueries } from "./audit-log.queries";
@@ -11,6 +12,7 @@ import { OAuthQueries } from "./oauth.queries";
 import {
     RECOVERY_CODE_QUERIES,
     SECOND_FACTOR_QUERIES,
+    OAUTH_CLIENT_QUERIES,
     IDENTIFIER_QUERIES,
     CHANGE_LOG_QUERIES,
     AUDIT_LOG_QUERIES,
@@ -27,6 +29,10 @@ export const QUERIES: ClassProvider[] = [
     {
         provide: SECOND_FACTOR_QUERIES,
         useClass: SecondFactorQueries,
+    },
+    {
+        provide: OAUTH_CLIENT_QUERIES,
+        useClass: OAuthClientQueries,
     },
     {
         provide: IDENTIFIER_QUERIES,
@@ -57,6 +63,7 @@ export const QUERIES: ClassProvider[] = [
 export {
     RECOVERY_CODE_QUERIES,
     SECOND_FACTOR_QUERIES,
+    OAUTH_CLIENT_QUERIES,
     IDENTIFIER_QUERIES,
     CHANGE_LOG_QUERIES,
     AUDIT_LOG_QUERIES,

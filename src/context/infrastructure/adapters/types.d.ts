@@ -220,14 +220,20 @@ declare global {
         }
 
         namespace OAuthClient {
-            type Filters = {
+            type DefaultFilters = {
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
                 name?: StringFilterDTO;
-                realm?: StringFilterDTO;
                 id?: StringFilterDTO;
+                isRealmRevoked?: boolean;
                 isRevoked?: boolean;
             };
+
+            type ManageFilters = DefaultFilters & {
+                realm?: LinkFilterDTO;
+            };
+
+            type Filters = DefaultFilters & ManageFilters;
 
             type Sort = {
                 updatedAt?: QueryOrder;

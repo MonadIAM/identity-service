@@ -56,6 +56,17 @@
     "UNSUPPORTED_CODE_CHALLENGE_METHOD": "The requested PKCE code challenge method is not supported.",
     "UNSUPPORTED_GRANT_TYPE": "The requested grant type is not supported."
   },
+  "oauth-client": {
+    "CREATED": "OAuth client successfully created.",
+    "UPDATED": "OAuth client successfully updated.",
+    "REVOKED": "OAuth client successfully revoked.",
+    "BULK_REVOKED_COUNT": "{count} OAuth clients successfully revoked.",
+    "RESTORED": "OAuth client successfully restored.",
+    "BULK_RESTORED_COUNT": "{count} OAuth clients successfully restored.",
+    "PURGED": "OAuth client successfully deleted.",
+    "BULK_PURGED_COUNT": "{count} OAuth clients successfully deleted.",
+    "CLIENTS_NOT_FOUND": "One or more OAuth clients were not found."
+  },
   "password": {
     "NO_PASSWORD_SET": "No password is set for this account.",
     "INVALID_CURRENT_PASSWORD": "The current password is invalid.",

@@ -56,6 +56,17 @@
     "UNSUPPORTED_CODE_CHALLENGE_METHOD": "Запрошенный метод PKCE code challenge не поддерживается.",
     "UNSUPPORTED_GRANT_TYPE": "Запрошенный тип предоставления не поддерживается."
   },
+  "oauth-client": {
+    "CREATED": "OAuth-клиент успешно создан.",
+    "UPDATED": "OAuth-клиент успешно обновлен.",
+    "REVOKED": "OAuth-клиент успешно отозван.",
+    "BULK_REVOKED_COUNT": "{count} OAuth-клиентов успешно отозвано.",
+    "RESTORED": "OAuth-клиент успешно восстановлен.",
+    "BULK_RESTORED_COUNT": "{count} OAuth-клиентов успешно восстановлено.",
+    "PURGED": "OAuth-клиент успешно удален.",
+    "BULK_PURGED_COUNT": "{count} OAuth-клиентов успешно удалено.",
+    "CLIENTS_NOT_FOUND": "Один или несколько OAuth-клиентов не найдены."
+  },
   "password": {
     "NO_PASSWORD_SET": "Для этой учетной записи не задан пароль.",
     "INVALID_CURRENT_PASSWORD": "Текущий пароль недействителен.",
