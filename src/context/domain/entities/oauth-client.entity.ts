@@ -88,6 +88,7 @@ export class OAuthClient {
         if (version > this.realmVersion) {
             this.isRealmRevoked = true;
             this.realmVersion = version;
+            this.updatedAt = new Date();
         }
     }
 
@@ -95,6 +96,7 @@ export class OAuthClient {
         if (version > this.realmVersion) {
             this.isRealmRevoked = false;
             this.realmVersion = version;
+            this.updatedAt = new Date();
         }
     }
 

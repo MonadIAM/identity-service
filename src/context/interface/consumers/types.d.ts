@@ -1,7 +1,20 @@
 import { KafkaContext } from "@nestjs/microservices";
+import { RealmTopicAction } from "@liam/contracts";
 
 declare global {
     namespace Consumers {
+        namespace Realm {
+            interface Contract {
+                handle(message: Message, ctx: KafkaContext): Promise<void>;
+            }
+
+            type Message = Topics.Realm.Message;
+
+            type Handlers = {
+                [K in RealmTopicAction]: (payload: Topics.Realm.Message["payload"]) => Promise<void>;
+            };
+        }
+
         namespace AccessCache {
             interface Contract {
                 handle(message: Message, ctx: KafkaContext): Promise<void>;

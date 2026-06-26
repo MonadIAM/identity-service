@@ -90,18 +90,20 @@ export class OAuthClientCommands implements Commands.OAuthClient.Contract {
                     transaction,
                 });
 
-                this.assertAllFound({ entities, clients: props.input.clients });
+                if (entities.length < props.input.clients.length) {
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
+                }
 
                 this.oauthClientService.revoke({ entities });
                 return entities;
             },
         });
 
-        return this.message({
-            bulk: "BULK_REVOKED_COUNT",
-            single: "REVOKED",
-            count: entities.length,
-        });
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.REVOKED` };
+        }
     }
 
     public async restore(props: Commands.OAuthClient.Restore.Props): Commands.OAuthClient.Restore.Result {
@@ -121,18 +123,20 @@ export class OAuthClientCommands implements Commands.OAuthClient.Contract {
                     transaction,
                 });
 
-                this.assertAllFound({ entities, clients: props.input.clients });
+                if (entities.length < props.input.clients.length) {
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
+                }
 
                 this.oauthClientService.restore({ entities });
                 return entities;
             },
         });
 
-        return this.message({
-            bulk: "BULK_RESTORED_COUNT",
-            single: "RESTORED",
-            count: entities.length,
-        });
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.RESTORED` };
+        }
     }
 
     public async purge(props: Commands.OAuthClient.Purge.Props): Commands.OAuthClient.Purge.Result {
@@ -152,31 +156,62 @@ export class OAuthClientCommands implements Commands.OAuthClient.Contract {
                     transaction,
                 });
 
-                this.assertAllFound({ entities, clients: props.input.clients });
+                if (entities.length < props.input.clients.length) {
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
+                }
 
                 this.oauthClientService.purge({ transaction, entities });
                 return entities;
             },
         });
 
-        return this.message({
-            bulk: "BULK_PURGED_COUNT",
-            single: "PURGED",
-            count: entities.length,
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
+        }
+    }
+
+    public async revokeRealm(props: Commands.OAuthClient.RevokeRealm.Props): Commands.OAuthClient.RevokeRealm.Result {
+        await this.transactionalService.run({
+            resource: this.resource,
+            execute: async (transaction) => {
+                const entities = await this.oauthClientRepository.find({ transaction, where: { realm: props.realm } });
+
+                this.oauthClientService.applyRealmRevocation({
+                    version: props.version,
+                    entities,
+                });
+            },
         });
     }
 
-    private assertAllFound(props: { entities: Entities.OAuthClient[]; clients: string[] }): void {
-        if (props.entities.length < props.clients.length) {
-            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
-        }
+    public async restoreRealm(props: Commands.OAuthClient.RestoreRealm.Props): Commands.OAuthClient.RestoreRealm.Result {
+        await this.transactionalService.run({
+            resource: this.resource,
+            execute: async (transaction) => {
+                const entities = await this.oauthClientRepository.find({ transaction, where: { realm: props.realm } });
+
+                this.oauthClientService.applyRealmRestore({
+                    version: props.version,
+                    entities,
+                });
+            },
+        });
     }
 
-    private message(props: { single: string; bulk: string; count: number }): MessageResult {
-        if (props.count > 1) {
-            return { message: `${this.dictionaryPath}.${props.bulk}`, params: { count: props.count } };
-        } else {
-            return { message: `${this.dictionaryPath}.${props.single}` };
-        }
+    public async purgeRealm(props: Commands.OAuthClient.PurgeRealm.Props): Commands.OAuthClient.PurgeRealm.Result {
+        await this.transactionalService.run({
+            resource: this.resource,
+            execute: async (transaction) => {
+                const entities = await this.oauthClientRepository.find({ transaction, where: { realm: props.realm } });
+
+                this.oauthClientService.purgeRealm({
+                    version: props.version,
+                    transaction,
+                    entities,
+                });
+            },
+        });
     }
 }

@@ -8,7 +8,13 @@ declare namespace Commands {
             purge(props: Purge.Props): Purge.Result;
         }
 
-        interface Contract extends ControllerContract {}
+        interface ConsumerContract {
+            revokeRealm(props: RevokeRealm.Props): RevokeRealm.Result;
+            restoreRealm(props: RestoreRealm.Props): RestoreRealm.Result;
+            purgeRealm(props: PurgeRealm.Props): PurgeRealm.Result;
+        }
+
+        interface Contract extends ControllerContract, ConsumerContract {}
 
         namespace Create {
             type Props = {
@@ -78,6 +84,33 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+        }
+
+        namespace RevokeRealm {
+            type Props = {
+                version: number;
+                realm: string;
+            };
+
+            type Result = Promise<void>;
+        }
+
+        namespace RestoreRealm {
+            type Props = {
+                version: number;
+                realm: string;
+            };
+
+            type Result = Promise<void>;
+        }
+
+        namespace PurgeRealm {
+            type Props = {
+                version: number;
+                realm: string;
+            };
+
+            type Result = Promise<void>;
         }
     }
 }

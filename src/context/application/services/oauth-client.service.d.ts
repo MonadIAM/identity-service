@@ -4,6 +4,9 @@ declare global {
     namespace Services {
         namespace OAuthClient {
             interface Contract {
+                applyRealmRevocation(props: ApplyRealmRevocation.Props): ApplyRealmRevocation.Result;
+                applyRealmRestore(props: ApplyRealmRestore.Props): ApplyRealmRestore.Result;
+                purgeRealm(props: PurgeRealm.Props): PurgeRealm.Result;
                 restore(props: Restore.Props): Restore.Result;
                 create(props: Create.Props): Create.Result;
                 update(props: Update.Props): Update.Result;
@@ -51,6 +54,34 @@ declare global {
                 type Props = {
                     transaction: EntityManager;
                     entities: Entities.OAuthClient[];
+                };
+
+                type Result = void;
+            }
+
+            namespace ApplyRealmRevocation {
+                type Props = {
+                    entities: Entities.OAuthClient[];
+                    version: number;
+                };
+
+                type Result = void;
+            }
+
+            namespace ApplyRealmRestore {
+                type Props = {
+                    entities: Entities.OAuthClient[];
+                    version: number;
+                };
+
+                type Result = void;
+            }
+
+            namespace PurgeRealm {
+                type Props = {
+                    transaction: EntityManager;
+                    entities: Entities.OAuthClient[];
+                    version: number;
                 };
 
                 type Result = void;

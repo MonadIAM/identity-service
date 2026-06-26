@@ -6,12 +6,18 @@ import { KAFKA_RETRY_QUEUE } from "~context/infrastructure/queues";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { KafkaTopic } from "~context/enums";
 
-const RETRY_TOPICS = [KafkaTopic.REAUTHENTICATION_RETRY, KafkaTopic.ACCESS_CACHE_RETRY, KafkaTopic.MEMBERSHIP_RETRY];
+const RETRY_TOPICS = [
+    KafkaTopic.REAUTHENTICATION_RETRY,
+    KafkaTopic.ACCESS_CACHE_RETRY,
+    KafkaTopic.MEMBERSHIP_RETRY,
+    KafkaTopic.REALM_RETRY,
+];
 
 const DEAD_TOPIC_MAP: Partial<Record<string, string>> = {
     [KafkaTopic.REAUTHENTICATION]: KafkaTopic.REAUTHENTICATION_DEAD,
     [KafkaTopic.ACCESS_CACHE]: KafkaTopic.ACCESS_CACHE_DEAD,
     [KafkaTopic.MEMBERSHIP]: KafkaTopic.MEMBERSHIP_DEAD,
+    [KafkaTopic.REALM]: KafkaTopic.REALM_DEAD,
 };
 
 @Controller()
