@@ -23,7 +23,6 @@ const {
     REAUTHENTICATION_CONFIRM_PASSWORD,
     SESSION_READ_PERSONAL,
     SESSION_READ_ABSOLUTE,
-    SESSION_LOGOUT,
     SESSION_REVOKE,
 } = PermissionCode;
 const {
@@ -219,27 +218,11 @@ export class AuthnController {
     }
 
     @HttpCode(OK)
-    @Delete("session/logout")
-    @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(SESSION_LOGOUT)
-    @ApiOperation({
-        summary: "Revoke current session",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, CONFLICT, FORBIDDEN)
-    public logout(
-        @Extract.Session() { account: actor, session }: Extract.Session.Authenticated,
-        @Extract.Meta() context: Extract.Meta,
-    ): Commands.Session.Revoke.Result {
-        return this.sessionCommands.revoke({ context, actor, input: { sessions: [session] } });
-    }
-
-    @HttpCode(OK)
     @Delete("session/revoke")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SESSION_REVOKE)
     @ApiOperation({
-        summary: "Revoke specific sessions",
+        summary: "Sign out from the current or selected sessions",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -253,10 +236,15 @@ export class AuthnController {
     )
     public revokeSessions(
         @Body() input: RevokeBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor, session }: Extract.Session.Authenticated,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Session.Revoke.Result {
-        return this.sessionCommands.revoke({ context, actor, input });
+        return this.sessionCommands.revoke({
+            context,
+            session,
+            input,
+            actor,
+        });
     }
 
     @HttpCode(OK)
@@ -264,7 +252,7 @@ export class AuthnController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SESSION_REVOKE)
     @ApiOperation({
-        summary: "Revoke all sessions",
+        summary: "Sign out from all sessions",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

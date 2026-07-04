@@ -3,7 +3,6 @@ import { MicroserviceOptions } from "@nestjs/microservices";
 import { ConfigService } from "@nestjs/config";
 import { RequestMethod } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import formbody from "@fastify/formbody";
 import { Logger } from "nestjs-pino";
 import cookie from "@fastify/cookie";
 
@@ -25,7 +24,6 @@ async function bootstrap(): Promise<void> {
     const application = await NestFactory.create<NestFastifyApplication>(MainModule, fastifyAdapter, { bufferLogs: true });
 
     await application.register(cookie);
-    await application.register(formbody);
 
     application.useLogger(application.get(Logger));
     const configService = application.get(ConfigService);

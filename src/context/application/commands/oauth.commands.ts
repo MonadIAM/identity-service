@@ -5,8 +5,8 @@ import ms, { StringValue } from "ms";
 import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { OAUTH_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
+import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { ErrorCode, Exception } from "~common/exceptions";
-import { CRYPTO_SERVICE } from "~common/services";
 import { TokenGrantType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -25,6 +25,8 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         private readonly oauthClientRepository: Repositories.OAuthClient.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
+        @Inject(JWT_SERVICE)
+        private readonly jwtService: CommonServices.JWT.Contract,
     ) {
         this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
         this.loginUrl = this.configService.getOrThrow<string>("AUTHORIZATION_LOGIN_URL");
@@ -63,7 +65,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         });
 
         const url = new URL(this.loginUrl);
-        url.searchParams.set("auth_request", id);
+        url.searchParams.set("authorizationRequest", id);
 
         return { url: url.toString() };
     }
@@ -145,7 +147,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         });
 
         if (
-            authorization === null ||
+            !authorization ||
             authorization.client !== client.id ||
             authorization.redirectUri !== props.input.redirectUri ||
             !this.cryptoService.verifyCodeChallenge(props.input.codeVerifier, authorization.codeChallenge)
@@ -175,6 +177,48 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         });
     }
 
+    public async revoke(props: Commands.OAuth.Revoke.Props): Commands.OAuth.Revoke.Result {
+        const { refreshToken, client, context } = props;
+        if (!refreshToken) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.INVALID_REVOCATION_REQUEST`,
+                code: ErrorCode.INVALID_REQUEST,
+            });
+        }
+
+        const clientEntity = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: client } });
+
+        if (clientEntity.isRevoked) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_REVOKED`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
+        }
+
+        if (clientEntity.isRealmRevoked) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
+        }
+
+        const payload = await this.jwtService.verifyRefresh(refreshToken);
+
+        if (payload.client_id !== client) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.INVALID_REVOCATION_REQUEST`,
+                code: ErrorCode.INVALID_REQUEST,
+            });
+        }
+
+        await this.sessionCommands.revoke({
+            session: payload.sid as string,
+            actor: payload.sub as string,
+            input: { refreshToken },
+            context,
+        });
+    }
+
     public async assertAuthorizationPending(
         props: Commands.OAuth.AssertAuthorizationPending.Props,
     ): Commands.OAuth.AssertAuthorizationPending.Result {
@@ -182,7 +226,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             id: props.authorizationRequest,
         });
 
-        if (request === null) {
+        if (!request) {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_AUTHORIZATION_REQUEST` });
         }
     }
@@ -195,14 +239,14 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             account: props.account,
         });
 
-        if (issued === null) {
+        if (issued) {
+            const url = new URL(issued.request.redirectUri);
+            url.searchParams.set("state", issued.request.state);
+            url.searchParams.set("code", issued.code);
+
+            return { authorizationUrl: url.toString() };
+        } else {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_AUTHORIZATION_REQUEST` });
         }
-
-        const url = new URL(issued.request.redirectUri);
-        url.searchParams.set("state", issued.request.state);
-        url.searchParams.set("code", issued.code);
-
-        return { authorizationUrl: url.toString() };
     }
 }

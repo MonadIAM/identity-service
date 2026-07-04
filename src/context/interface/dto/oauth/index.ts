@@ -1,4 +1,5 @@
 export { AuthorizeQueryDTO } from "./req/authorize.dto";
+export { RevokeBodyDTO } from "./req/revoke.dto";
 export { TokenBodyDTO } from "./req/token.dto";
 
 export { AuthzServerMetadataDTO } from "./res/authz-server-metadata.dto";

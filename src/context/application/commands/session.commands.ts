@@ -142,6 +142,7 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async revoke(props: Commands.Session.Revoke.Props): Commands.Session.Revoke.Result {
+        let isLogout = false;
         await this.transactionalService.run<Entities.Session[]>({
             resource: this.resource,
             audit: {
@@ -155,13 +156,28 @@ export class SessionCommands implements Commands.Session.Contract {
                 actionType: BlacklistTopicAction.ADD,
             },
             execute: async (transaction) => {
-                const sessions = await this.sessionRepository.find({
-                    where: {
-                        id: { $in: props.input.sessions },
-                        account: props.actor,
-                    },
-                    transaction,
-                });
+                let sessions: Entities.Session[];
+
+                if ("refreshToken" in props.input) {
+                    const session = await this.sessionRepository.findUnique({
+                        where: {
+                            refreshTokenHash: this.cryptoService.hashToken(props.input.refreshToken),
+                            account: props.actor,
+                        },
+                        transaction,
+                    });
+
+                    sessions = session ? [session] : [];
+                } else {
+                    isLogout = !props.input.sessions?.length;
+                    sessions = await this.sessionRepository.find({
+                        where: {
+                            id: props.input.sessions?.length ? { $in: props.input.sessions } : props.session,
+                            account: props.actor,
+                        },
+                        transaction,
+                    });
+                }
 
                 this.sessionService.purge({
                     input: { sessions },
@@ -172,7 +188,11 @@ export class SessionCommands implements Commands.Session.Contract {
             },
         });
 
-        return { message: `${this.dictionaryPath}.REVOKED` };
+        if (isLogout) {
+            return { message: `${this.dictionaryPath}.LOGOUT` };
+        } else {
+            return { message: `${this.dictionaryPath}.REVOKED` };
+        }
     }
 
     public async revokeAll(props: Commands.Session.RevokeAll.Props): Commands.Session.RevokeAll.Result {
@@ -206,7 +226,7 @@ export class SessionCommands implements Commands.Session.Contract {
             },
         });
 
-        return { message: `${this.dictionaryPath}.ALL_REVOKED` };
+        return { message: `${this.dictionaryPath}.REVOKED_ALL` };
     }
 
     public outboxPayloadMapper(

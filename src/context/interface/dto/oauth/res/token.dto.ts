@@ -5,21 +5,21 @@ import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "OAuthTokenResult" })
 export class TokenResultDTO {
-    @Expose({ name: "accessToken" })
+    @Expose()
     @Validator.IsOptional()
     @Validator.IsString()
-    @ApiPropertyOptional({ type: String, name: "access_token" })
-    declare public access_token?: string;
+    @ApiPropertyOptional({ type: String })
+    declare public accessToken?: string;
 
-    @Expose({ name: "tokenType" })
+    @Expose()
     @Validator.IsOptional()
     @Validator.IsString()
-    @ApiPropertyOptional({ type: String, name: "token_type" })
-    declare public token_type?: string;
+    @ApiPropertyOptional({ type: String })
+    declare public tokenType?: string;
 
-    @Expose({ name: "expiresIn" })
+    @Expose()
     @Validator.IsOptional()
     @Validator.IsPositiveInt()
-    @ApiPropertyOptional({ type: Number, name: "expires_in" })
-    declare public expires_in?: number;
+    @ApiPropertyOptional({ type: Number })
+    declare public expiresIn?: number;
 }

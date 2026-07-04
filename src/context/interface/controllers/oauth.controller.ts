@@ -17,7 +17,7 @@ import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decora
 import { OAUTH_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 
-import { AuthorizeQueryDTO, TokenResultDTO, TokenBodyDTO } from "../dto/oauth";
+import { AuthorizeQueryDTO, TokenResultDTO, TokenBodyDTO, RevokeBodyDTO } from "../dto/oauth";
 
 const {
     INTERNAL_SERVER_ERROR,
@@ -84,6 +84,38 @@ export class OAuthController {
     ): Commands.OAuth.Token.Result {
         return this.oauthCommands.token({
             input: { ...input, refreshToken },
+            context,
+        });
+    }
+
+    @Public()
+    @HttpCode(OK)
+    @Post("revoke")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
+    @ApiConsumes("application/x-www-form-urlencoded")
+    @ApiOperation({
+        summary: "OAuth token revocation endpoint",
+        security: [],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public revoke(
+        @Body() input: RevokeBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
+        @Tokens.Refresh() refreshToken?: string,
+    ): Commands.OAuth.Revoke.Result {
+        return this.oauthCommands.revoke({
+            client: input.client,
+            refreshToken,
             context,
         });
     }

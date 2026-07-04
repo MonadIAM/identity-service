@@ -10,11 +10,11 @@ export class AuthenticationResultDTO extends SuccessMessageDTO {
     @Validator.IsOptional()
     @Validator.IsString()
     @ApiPropertyOptional({ type: String })
-    declare public authorization_url?: string;
+    declare public authorizationUrl?: string;
 
     @Expose()
     @Validator.IsOptional()
     @Validator.IsBoolean()
     @ApiPropertyOptional({ type: Boolean })
-    declare public requires_2fa?: boolean;
+    declare public requires2FA?: boolean;
 }

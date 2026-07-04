@@ -54,7 +54,8 @@
     "CLIENT_REVOKED": "The OAuth client is revoked.",
     "CLIENT_REALM_REVOKED": "The realm linked to this OAuth client is revoked.",
     "INVALID_GRANT": "The authorization code is invalid, expired, or does not match the request.",
-    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client."
+    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client.",
+    "INVALID_REVOCATION_REQUEST": "The token revocation request is invalid."
   },
   "oauth-client": {
     "CREATED": "OAuth client successfully created.",
@@ -95,8 +96,9 @@
     "ACCOUNT_NOT_AUTHENTICATABLE": "The account cannot create a session.",
     "INVALID_REFRESH_TOKEN": "The refresh token is invalid.",
     "SESSION_NOT_FOUND": "The session was not found.",
-    "REFRESHED": "Session successfully refreshed.",
-    "REVOKED": "Session successfully revoked.",
-    "ALL_REVOKED": "All sessions successfully revoked."
+    "REFRESHED": "Session refreshed.",
+    "LOGOUT": "Signed out from the current session.",
+    "REVOKED": "Selected sessions have been signed out.",
+    "REVOKED_ALL": "Signed out from all sessions."
   }
 }

@@ -12,6 +12,7 @@ declare global {
 
             interface ControllerContract {
                 authorize(props: Authorize.Props): Authorize.Result;
+                revoke(props: Revoke.Props): Revoke.Result;
                 token(props: Token.Props): Token.Result;
             }
 
@@ -86,6 +87,16 @@ declare global {
                 };
 
                 type Result = Commands.Session.Refresh.Result;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    refreshToken?: string;
+                    context: Extract.Meta;
+                    client: string;
+                };
+
+                type Result = Promise<void>;
             }
 
             namespace AssertAuthorizationPending {

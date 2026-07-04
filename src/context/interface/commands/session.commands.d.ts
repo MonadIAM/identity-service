@@ -12,6 +12,7 @@ declare namespace Commands {
         interface CommandsContract {
             refresh(props: Refresh.Props): Refresh.Result;
             create(props: Create.Props): Create.Result;
+            revoke(props: Revoke.Props): Revoke.Result;
         }
 
         interface Contract extends PrivateContract, CommandsContract, ControllerContract {}
@@ -42,11 +43,10 @@ declare namespace Commands {
 
         namespace Revoke {
             type Props = {
+                input: { refreshToken: string } | { sessions?: string[] };
                 context: Extract.Meta;
+                session: string;
                 actor: string;
-                input: {
-                    sessions: string[];
-                };
             };
 
             type Result = Promise<MessageResult>;

@@ -1,6 +1,6 @@
 import { AuthzServerMetadataController } from "./authz-server-metadata.controller";
-import { IdentifierManageController } from "./manage-identifier.controller";
 import { OAuthClientManageController } from "./manage-oauth-client.controller";
+import { IdentifierManageController } from "./manage-identifier.controller";
 import { ChangeLogManageController } from "./manage-change-log.controller";
 import { AuditLogManageController } from "./manage-audit-log.controller";
 import { FederatedAuthnController } from "./federated-authn.controller";
@@ -18,8 +18,8 @@ import { JWKSController } from "./jwks.controller";
 
 export const HTTP_CONTROLLERS = [
     AuthzServerMetadataController,
-    IdentifierManageController,
     OAuthClientManageController,
+    IdentifierManageController,
     ChangeLogManageController,
     AuditLogManageController,
     FederatedAuthnController,
@@ -38,8 +38,8 @@ export const HTTP_CONTROLLERS = [
 
 export {
     AuthzServerMetadataController,
-    IdentifierManageController,
     OAuthClientManageController,
+    IdentifierManageController,
     ChangeLogManageController,
     AuditLogManageController,
     FederatedAuthnController,
