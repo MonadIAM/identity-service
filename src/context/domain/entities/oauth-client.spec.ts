@@ -67,6 +67,18 @@ describe("OAuthClient Entity", () => {
             expect(client.isRealmRevoked).toBe(true);
             expect(client.realmVersion).toBe(3);
         });
+
+        it("should default isSystemManaged to false when omitted", () => {
+            const client = createOAuthClient();
+
+            expect(client.isSystemManaged).toBe(false);
+        });
+
+        it("should assign isSystemManaged when provided", () => {
+            const client = createOAuthClient({ isSystemManaged: true });
+
+            expect(client.isSystemManaged).toBe(true);
+        });
     });
 
     describe("update", () => {
@@ -123,6 +135,12 @@ describe("OAuthClient Entity", () => {
 
             expect(() => client.update({ name: "New Name" })).toThrow("CANNOT_UPDATE_REVOKED");
         });
+
+        it("should throw when the client is system-managed", () => {
+            const client = createOAuthClient({ isSystemManaged: true });
+
+            expect(() => client.update({ name: "New Name" })).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+        });
     });
 
     describe("revoke", () => {
@@ -139,6 +157,12 @@ describe("OAuthClient Entity", () => {
             const client = createOAuthClient({ isRevoked: true });
 
             expect(() => client.revoke()).toThrow("ALREADY_REVOKED");
+        });
+
+        it("should throw when the client is system-managed", () => {
+            const client = createOAuthClient({ isSystemManaged: true });
+
+            expect(() => client.revoke()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
     });
 
@@ -157,6 +181,12 @@ describe("OAuthClient Entity", () => {
 
             expect(() => client.restore()).toThrow("ALREADY_ACTIVE");
         });
+
+        it("should throw when the client is system-managed, even if revoked", () => {
+            const client = createOAuthClient({ isRevoked: true, isSystemManaged: true });
+
+            expect(() => client.restore()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+        });
     });
 
     describe("canPurge", () => {
@@ -170,6 +200,12 @@ describe("OAuthClient Entity", () => {
             const client = createOAuthClient({ isRevoked: false });
 
             expect(() => client.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+        });
+
+        it("should throw when the client is system-managed, even if revoked", () => {
+            const client = createOAuthClient({ isRevoked: true, isSystemManaged: true });
+
+            expect(() => client.canPurge()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
     });
 
@@ -202,6 +238,16 @@ describe("OAuthClient Entity", () => {
             expect(client.isRealmRevoked).toBe(false);
             expect(client.realmVersion).toBe(5);
         });
+
+        it("should be a no-op for system-managed clients even with a newer version", () => {
+            const client = createOAuthClient({ isSystemManaged: true, realmVersion: 0 });
+
+            client.applyRealmRevocation(1);
+
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.realmVersion).toBe(0);
+            expect(client.updatedAt).toBeUndefined();
+        });
     });
 
     describe("applyRealmRestore", () => {
@@ -222,6 +268,16 @@ describe("OAuthClient Entity", () => {
 
             expect(client.isRealmRevoked).toBe(true);
             expect(client.realmVersion).toBe(4);
+            expect(client.updatedAt).toBeUndefined();
+        });
+
+        it("should be a no-op for system-managed clients even with a newer version", () => {
+            const client = createOAuthClient({ isSystemManaged: true, isRealmRevoked: true, realmVersion: 1 });
+
+            client.applyRealmRestore(2);
+
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.realmVersion).toBe(1);
             expect(client.updatedAt).toBeUndefined();
         });
     });

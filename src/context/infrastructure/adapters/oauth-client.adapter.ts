@@ -24,6 +24,9 @@ export class OAuthClientAdapter implements Adapters.Contract<Entities.OAuthClien
         if (filters.isRealmRevoked !== undefined) {
             where.isRealmRevoked = filters.isRealmRevoked;
         }
+        if (filters.isSystemManaged !== undefined) {
+            where.isSystemManaged = filters.isSystemManaged;
+        }
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }

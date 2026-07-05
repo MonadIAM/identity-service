@@ -227,6 +227,7 @@ declare global {
                 id?: StringFilterDTO;
                 isRealmRevoked?: boolean;
                 isRevoked?: boolean;
+                isSystemManaged?: boolean;
             };
 
             type ManageFilters = DefaultFilters & {

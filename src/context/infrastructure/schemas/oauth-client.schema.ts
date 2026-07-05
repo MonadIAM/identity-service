@@ -31,9 +31,10 @@ export const OAuthClientSchema = new EntitySchema<OAuthClient>({
         redirectUri: { type: "text" },
         grantTypes: { type: "array", enum: true, items: () => TokenGrantType, array: true },
 
-        isRevoked: { type: "boolean" },
-        isRealmRevoked: { type: "boolean" },
         realmVersion: { type: "int" },
+        isSystemManaged: { type: "boolean" },
+        isRealmRevoked: { type: "boolean" },
+        isRevoked: { type: "boolean" },
 
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },

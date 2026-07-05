@@ -18,7 +18,8 @@
     "EMPTY_UPDATE_PATCH": "The OAuth client update payload is empty.",
     "ALREADY_REVOKED": "The OAuth client is already revoked.",
     "ALREADY_ACTIVE": "The OAuth client is already active.",
-    "CANNOT_PURGE_ACTIVE": "An active OAuth client cannot be permanently deleted."
+    "CANNOT_PURGE_ACTIVE": "An active OAuth client cannot be permanently deleted.",
+    "SYSTEM_MANAGED_IMMUTABLE": "A system-managed OAuth client cannot be modified through this operation."
   },
   "profile": {
     "NO_CHANGES_DETECTED": "The profile already matches the provided changes.",

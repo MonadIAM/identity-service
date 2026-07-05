@@ -33,6 +33,12 @@ export class DefaultFiltersDTO implements Adapters.OAuthClient.DefaultFilters {
     public isRealmRevoked?: boolean;
 
     @Expose()
+    @Validator.IsBoolean()
+    @Validator.IsOptional()
+    @ApiProperty({ required: false, type: Boolean })
+    public isSystemManaged?: boolean;
+
+    @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
     @Type(() => OrdinalFilterDTO)

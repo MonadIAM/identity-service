@@ -18,7 +18,8 @@
     "EMPTY_UPDATE_PATCH": "Тело обновления OAuth-клиента пустое.",
     "ALREADY_REVOKED": "OAuth-клиент уже отозван.",
     "ALREADY_ACTIVE": "OAuth-клиент уже активен.",
-    "CANNOT_PURGE_ACTIVE": "Активный OAuth-клиент нельзя удалить безвозвратно."
+    "CANNOT_PURGE_ACTIVE": "Активный OAuth-клиент нельзя удалить безвозвратно.",
+    "SYSTEM_MANAGED_IMMUTABLE": "Системный OAuth-клиент нельзя изменить этой операцией."
   },
   "profile": {
     "NO_CHANGES_DETECTED": "Профиль уже соответствует переданным изменениям.",

@@ -49,6 +49,11 @@ export class OAuthClientDTO {
     declare public isRealmRevoked: boolean;
 
     @Expose()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: true, type: Boolean })
+    declare public isSystemManaged: boolean;
+
+    @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
     declare public realmVersion: number;

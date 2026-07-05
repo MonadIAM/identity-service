@@ -14,6 +14,7 @@ export const OAuthClients = [
         redirect_uri: "http://localhost:3000/auth/callback",
         grant_types: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],
         realm_version: 0,
+        is_system_managed: true,
         is_realm_revoked: false,
         is_revoked: false,
         created_at: CREATED_AT,

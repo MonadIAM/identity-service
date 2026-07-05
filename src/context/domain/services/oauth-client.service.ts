@@ -82,7 +82,7 @@ export class OAuthClientService implements Services.OAuthClient.Contract {
 
     public purgeRealm(props: Services.OAuthClient.PurgeRealm.Props): Services.OAuthClient.PurgeRealm.Result {
         for (const entity of props.entities) {
-            if (props.version > entity.realmVersion) {
+            if (props.version > entity.realmVersion && !entity.isSystemManaged) {
                 props.transaction.remove(entity);
             }
         }

@@ -19,17 +19,19 @@ export class OAuthClient {
     public name: string;
     public grantTypes: TokenGrantType[];
 
+    public realmVersion: number;
+    public isSystemManaged: boolean;
     public isRealmRevoked: boolean;
     public isRevoked: boolean;
-    public realmVersion: number;
 
     public constructor(props: Entities.OAuthClient.ConstructorProps) {
         this.createdAt = new Date();
         this.id = randomUUID();
 
+        this.realmVersion = props.realmVersion ?? 0;
+        this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRealmRevoked = props.isRealmRevoked ?? false;
         this.isRevoked = props.isRevoked ?? false;
-        this.realmVersion = props.realmVersion ?? 0;
 
         this.description = props.description;
         this.redirectUri = props.redirectUri;
@@ -39,6 +41,10 @@ export class OAuthClient {
     }
 
     public update(patch: Entities.OAuthClient.ChangeDataProps): void {
+        if (this.isSystemManaged) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+        }
+
         if (this.isRevoked) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
         }
@@ -61,6 +67,10 @@ export class OAuthClient {
     }
 
     public revoke(): void {
+        if (this.isSystemManaged) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+        }
+
         if (this.isRevoked) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
         } else {
@@ -70,6 +80,10 @@ export class OAuthClient {
     }
 
     public restore(): void {
+        if (this.isSystemManaged) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+        }
+
         if (this.isRevoked) {
             this.isRevoked = false;
             this.updatedAt = new Date();
@@ -79,13 +93,17 @@ export class OAuthClient {
     }
 
     public canPurge(): void {
+        if (this.isSystemManaged) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+        }
+
         if (!this.isRevoked) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         }
     }
 
     public applyRealmRevocation(version: number): void {
-        if (version > this.realmVersion) {
+        if (!this.isSystemManaged && version > this.realmVersion) {
             this.isRealmRevoked = true;
             this.realmVersion = version;
             this.updatedAt = new Date();
@@ -93,7 +111,7 @@ export class OAuthClient {
     }
 
     public applyRealmRestore(version: number): void {
-        if (version > this.realmVersion) {
+        if (!this.isSystemManaged && version > this.realmVersion) {
             this.isRealmRevoked = false;
             this.realmVersion = version;
             this.updatedAt = new Date();
