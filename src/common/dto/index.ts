@@ -1,3 +1,5 @@
+export { OAuthErrorResponseBodyDTO } from "./oauth-error-response-body.dto";
+export { ValidationErrorDetailsDTO } from "./validation-error-details.dto";
 export { ErrorResponseBodyDTO } from "./error-response-body.dto";
 export { SuccessMessageDTO } from "./success-message.dto";
 export { BaseReadQueryDTO } from "./base-read-query.dto";

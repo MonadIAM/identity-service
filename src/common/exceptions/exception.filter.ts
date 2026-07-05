@@ -92,7 +92,19 @@ export class ExceptionFilter implements Exception.Filter.Contract {
             response.headers(exception.headers);
         }
 
-        response.status(body.statusCode!).send(body);
+        if (/.*\/oauth\/.*/.test(request.routeOptions.url ?? "")) {
+            const { message, code, path, statusCode, timestamp, details } = body;
+            response.status(body.statusCode!).send({
+                errorDescription: message,
+                error: code,
+                statusCode,
+                timestamp,
+                details,
+                path,
+            });
+        } else {
+            response.status(body.statusCode!).send(body);
+        }
     }
 
     public metrics(props: Exception.Filter.Metrics.Props): Exception.Filter.Metrics.Result {
@@ -107,9 +119,9 @@ export class ExceptionFilter implements Exception.Filter.Contract {
         if (props.result.statusCode! >= HttpStatus.INTERNAL_SERVER_ERROR) {
             this.logger.error(
                 {
+                    kind: props.exception instanceof Exception ? props.exception.kind : undefined,
                     statusCode: props.result.statusCode,
                     method: props.request.method,
-                    kind: props.exception instanceof Exception ? props.exception.kind : undefined,
                     code: props.result.code,
                     path: props.request.url,
                     err: props.exception,

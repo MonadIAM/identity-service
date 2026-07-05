@@ -63,6 +63,17 @@ declare global {
             /* eslint-enable prettier/prettier */
         };
 
+        type OAuthResponseBody = {
+            /* eslint-disable prettier/prettier */
+            errorDescription: string | string[]; // human-readable message or list of messages.
+            details?: ValidationDetail[];        // Validation details, if any.
+            statusCode: number;                  // HTTP status code.
+            timestamp?: string;                  // Response creation timestamp in ISO format.
+            error: string;                       // error code (short, machine-readable).
+            path?: string;                       // Request path.
+            /* eslint-enable prettier/prettier */
+        };
+
         type ValidationDetail = {
             /* eslint-disable prettier/prettier */
             args?: UnknownObject    //

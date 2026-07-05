@@ -50,7 +50,7 @@ export class OAuthController {
         summary: "Start OAuth authorization code flow",
         security: [],
     })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
+    @Swagger.OAuthExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
     public authorize(@Query() input: AuthorizeQueryDTO): Commands.OAuth.Authorize.Result {
         return this.oauthCommands.authorize({ input });
     }
@@ -67,7 +67,7 @@ export class OAuthController {
         summary: "OAuth token endpoint",
         security: [],
     })
-    @Swagger.Exceptions(
+    @Swagger.OAuthExceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
         SERVICE_UNAVAILABLE,
@@ -98,7 +98,7 @@ export class OAuthController {
         summary: "OAuth token revocation endpoint",
         security: [],
     })
-    @Swagger.Exceptions(
+    @Swagger.OAuthExceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
         SERVICE_UNAVAILABLE,
