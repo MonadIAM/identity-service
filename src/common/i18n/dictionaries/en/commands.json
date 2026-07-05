@@ -54,8 +54,7 @@
     "CLIENT_REVOKED": "The OAuth client is revoked.",
     "CLIENT_REALM_REVOKED": "The realm linked to this OAuth client is revoked.",
     "INVALID_GRANT": "The authorization code is invalid, expired, or does not match the request.",
-    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client.",
-    "INVALID_REVOCATION_REQUEST": "The token revocation request is invalid."
+    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client."
   },
   "oauth-client": {
     "CREATED": "OAuth client successfully created.",

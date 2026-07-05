@@ -1,6 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
+import { JWTPayload } from "jose";
 
 import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { OAUTH_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
@@ -179,44 +180,35 @@ export class OAuthCommands implements Commands.OAuth.Contract {
 
     public async revoke(props: Commands.OAuth.Revoke.Props): Commands.OAuth.Revoke.Result {
         const { refreshToken, client, context } = props;
-        if (!refreshToken) {
-            throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.INVALID_REVOCATION_REQUEST`,
-                code: ErrorCode.INVALID_REQUEST,
-            });
+
+        if (refreshToken) {
+            const clientEntity = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: client } });
+
+            if (clientEntity.isRevoked) {
+                throw Exception.badRequest({
+                    messageKey: `${this.dictionaryPath}.CLIENT_REVOKED`,
+                    code: ErrorCode.INVALID_CLIENT,
+                });
+            }
+
+            if (clientEntity.isRealmRevoked) {
+                throw Exception.badRequest({
+                    messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                    code: ErrorCode.INVALID_CLIENT,
+                });
+            }
+
+            const payload: Nullable<JWTPayload> = await this.jwtService.verifyRefresh(refreshToken).catch(() => null);
+
+            if (payload?.client_id === client) {
+                await this.sessionCommands.revoke({
+                    session: payload.sid as string,
+                    actor: payload.sub as string,
+                    input: { refreshToken },
+                    context,
+                });
+            }
         }
-
-        const clientEntity = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: client } });
-
-        if (clientEntity.isRevoked) {
-            throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.CLIENT_REVOKED`,
-                code: ErrorCode.INVALID_CLIENT,
-            });
-        }
-
-        if (clientEntity.isRealmRevoked) {
-            throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
-                code: ErrorCode.INVALID_CLIENT,
-            });
-        }
-
-        const payload = await this.jwtService.verifyRefresh(refreshToken);
-
-        if (payload.client_id !== client) {
-            throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.INVALID_REVOCATION_REQUEST`,
-                code: ErrorCode.INVALID_REQUEST,
-            });
-        }
-
-        await this.sessionCommands.revoke({
-            session: payload.sid as string,
-            actor: payload.sub as string,
-            input: { refreshToken },
-            context,
-        });
     }
 
     public async assertAuthorizationPending(

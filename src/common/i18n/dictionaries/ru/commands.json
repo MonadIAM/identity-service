@@ -54,8 +54,7 @@
     "CLIENT_REVOKED": "OAuth-клиент отозван.",
     "CLIENT_REALM_REVOKED": "Realm, к которому привязан OAuth-клиент, отозван.",
     "INVALID_GRANT": "Код авторизации недействителен, просрочен или не соответствует запросу.",
-    "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента.",
-    "INVALID_REVOCATION_REQUEST": "Запрос отзыва токена недействителен."
+    "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента."
   },
   "oauth-client": {
     "CREATED": "OAuth-клиент успешно создан.",
