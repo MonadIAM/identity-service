@@ -135,6 +135,7 @@ declare global {
                 description?: string;
                 isRevoked?: boolean;
                 isRealmRevoked?: boolean;
+                isSystemManaged?: boolean;
                 realmVersion?: number;
             };
 
