@@ -158,7 +158,7 @@ export class SecondFactorController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SECOND_FACTOR_PURGE)
     @ApiOperation({
-        summary: "Purge non-active factor",
+        summary: "Purge inactive second factor",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -184,7 +184,7 @@ export class SecondFactorController {
     @Post("reset")
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({
-        summary: "Reset all factors by master code",
+        summary: "Reset all second factors by master code",
         security: [],
     })
     @Swagger.Exceptions(

@@ -35,7 +35,7 @@ export class AuditLogManageController {
     @RequireGlobalPermission(AUDIT_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: AuditLogDTO })
     @ApiOperation({
-        summary: "Returns an audit log by identifier",
+        summary: "Get audit log by ID",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -57,7 +57,7 @@ export class AuditLogManageController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequireGlobalPermission(AUDIT_LOG_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns a paginated list of all audit logs",
+        summary: "Get paginated list of audit logs",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

@@ -41,7 +41,7 @@ export class IdentifierManageController {
     @ApiResponse({ status: OK, type: IdentifierDTO })
     @RequireGlobalPermission(IDENTIFIER_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns an identifier by identifier",
+        summary: "Get identifier by ID (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -63,7 +63,7 @@ export class IdentifierManageController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequireGlobalPermission(IDENTIFIER_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns a paginated list of all identifiers",
+        summary: "Get paginated list of identifiers (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

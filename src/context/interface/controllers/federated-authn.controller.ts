@@ -33,6 +33,8 @@ export class FederatedAuthnController {
     @Get("authorize")
     @ApiOperation({
         summary: "Get federated authentication URL",
+        description:
+            "Builds the authorization URL for an external OpenID Connect provider (OpenID Connect Core 1.0), acting in the client role.",
         security: [],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
@@ -47,6 +49,8 @@ export class FederatedAuthnController {
     @Header("Cache-Control", "no-store")
     @ApiOperation({
         summary: "Handle federated authentication callback",
+        description:
+            "Handles the redirect back from the external OpenID Connect provider, exchanging the authorization code and completing sign-in.",
         security: [],
     })
     @Swagger.Exceptions(

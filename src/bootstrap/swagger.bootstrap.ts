@@ -9,15 +9,18 @@ import { name, version } from "../../package.json";
 
 const SWAGGER_TAGS: Record<string, string> = {
     /* eslint-disable prettier/prettier */
-    Authn: "Primary authentication flows, including passwordless, password-based, and second-factor verification scenarios.",
+    OAuth: "OAuth 2.0 Authorization Framework (RFC 6749) endpoints for authorization, token issuance, and revocation, designed per current security best practices (RFC 9700).",
+    OAuthClient: "Lifecycle management of registered OAuth clients: creation, updates, revocation, restoration, and permanent deletion.",
+    JWKS: "Public key material used by clients and gateways to verify tokens issued by this service.",
+    Authn: "Authentication, step-up reauthentication, and session lifecycle: password, OTP, and TOTP verification, plus session listing and sign-out.",
+    FederatedAuthn: "Federated authentication through external OpenID Connect providers (OpenID Connect Core 1.0).",
     Account: "Account lifecycle management, including registration, verification, suspension, restoration, and self-service access.",
-    Identifier: "Management of account identifiers such as email or phone, including verification and visibility preferences.",
+    Identifier: "Management of account identifiers such as email or phone: creation, verification, and notification/visibility preferences.",
     Profile: "Self-service profile updates for account-owned personal and presentation data.",
     Password: "Password credential management, including rotation and recovery through OTP or recovery code flows.",
-    SecondFactor: "TOTP-based multi-factor authentication setup, verification, reset, and factor lifecycle management.",
-    RecoveryCodes: "Backup recovery code management for second-factor fallback and emergency account access restoration.",
-    JWKS: "Public JSON Web Key Set endpoint used by clients and gateways to validate issued JWT signatures.",
-    AuditLog: "Centralized security log tracking operations, actors, and request context across authentication workflows.",
+    SecondFactor: "TOTP-based second-factor authentication setup, verification, reset, and factor lifecycle management.",
+    RecoveryCodes: "One-time backup codes issued at account verification, used to reset a password when other credentials are unavailable.",
+    AuditLog: "Centralized security log tracking operations, actors, and request context across the service.",
     ChangeLog: "Field-level change history linked to audit entries, capturing before/after deltas for entity mutations.",
     Health: "Service observability probes exposing liveness status and infrastructure readiness across dependent subsystems.",
     /* eslint-enable prettier/prettier */
@@ -56,7 +59,7 @@ export abstract class BootstrapSwagger {
             const document = SwaggerModule.createDocument(application, config.build());
 
             SwaggerModule.setup("/docs", application, document, {
-                customSiteTitle: "LIAM API",
+                customSiteTitle: "MonadIAM API",
                 jsonDocumentUrl: "/docs-json",
                 explorer: true,
                 swaggerOptions: {

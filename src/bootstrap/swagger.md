@@ -1,1 +1,0 @@
-After authenticating, the access token is valid for 15 minutes. Swagger UI does not support automatic refresh token renewal, so once the token expires, requests will return 401 Unauthorized. Re-authorize using the form. Refresh token support in the UI will be added in a future update.

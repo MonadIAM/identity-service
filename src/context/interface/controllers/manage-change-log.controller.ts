@@ -35,7 +35,7 @@ export class ChangeLogManageController {
     @ApiResponse({ status: OK, type: ChangeLogDTO })
     @RequireGlobalPermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns a change log by identifier",
+        summary: "Get change log by ID",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -57,7 +57,7 @@ export class ChangeLogManageController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequireGlobalPermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns a paginated list of change logs",
+        summary: "Get paginated list of change logs",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

@@ -26,7 +26,7 @@ const {
 } = HttpStatus;
 const { OAUTH_CLIENT_READ_ABSOLUTE } = PermissionCode;
 
-@ApiTags("OAuth Client")
+@ApiTags("OAuthClient")
 @Controller("/oauth-client/manage")
 @UseInterceptors(MonitoringInterceptor)
 export class OAuthClientManageController {
@@ -41,7 +41,7 @@ export class OAuthClientManageController {
     @ApiResponse({ status: OK, type: OAuthClientDTO })
     @RequireGlobalPermission(OAUTH_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Get OAuth client by ID",
+        summary: "Get OAuth client by ID (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -63,7 +63,7 @@ export class OAuthClientManageController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequireGlobalPermission(OAUTH_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Get paginated list of all OAuth clients",
+        summary: "Get paginated list of OAuth clients (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

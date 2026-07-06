@@ -17,7 +17,10 @@ export class HealthController {
     @Public()
     @HealthCheck()
     @Get("liveness")
-    @ApiOperation({ summary: "Returns basic liveness status confirming the service process is running" })
+    @ApiOperation({
+        summary: "Get liveness status",
+        description: "Confirms that the service process is running.",
+    })
     public liveness(): Health.Liveness {
         return this.healthService.liveness();
     }
@@ -25,7 +28,10 @@ export class HealthController {
     @Public()
     @HealthCheck()
     @Get("readiness")
-    @ApiOperation({ summary: "Checks database, Redis, and Kafka availability, returning per-component readiness status" })
+    @ApiOperation({
+        summary: "Get readiness status",
+        description: "Checks database, Redis, and Kafka availability, returning per-component readiness status.",
+    })
     public readiness(): Promise<Health.Readiness> {
         return this.healthService.readiness();
     }

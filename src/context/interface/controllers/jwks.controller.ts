@@ -22,6 +22,8 @@ export class JWKSController {
     @Header("Cache-Control", "public, max-age=30, must-revalidate")
     @ApiOperation({
         summary: "Get JSON Web Key Set",
+        description:
+            "Publishes verification keys as a JWK Set (RFC 7517), using JWA algorithm identifiers (RFC 7518, ES256) for keys used in JWS-signed tokens (RFC 7515).",
         security: [],
     })
     public getJWKS(): Promise<CommonServices.JWT.GetJWKS> {

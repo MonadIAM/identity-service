@@ -23,18 +23,18 @@ import { PermissionCode } from "~context/enums";
 import {
     GetByIdQueryDTO,
     GetListQueryDTO,
-    GetListBodyDTO,
     RestoreQueryDTO,
+    GetListBodyDTO,
     RestoreBodyDTO,
     RevokeQueryDTO,
-    RevokeBodyDTO,
     UpdateQueryDTO,
     CreateQueryDTO,
     OAuthClientDTO,
     CreateBodyDTO,
     UpdateBodyDTO,
-    PurgeBodyDTO,
+    RevokeBodyDTO,
     PurgeQueryDTO,
+    PurgeBodyDTO,
     ListDTO,
 } from "../dto/oauth-client";
 
@@ -60,7 +60,7 @@ const {
     OK,
 } = HttpStatus;
 
-@ApiTags("OAuth Client")
+@ApiTags("OAuthClient")
 @Controller("/oauth-client")
 @UseInterceptors(MonitoringInterceptor)
 export class OAuthClientController {
@@ -233,7 +233,7 @@ export class OAuthClientController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(OAUTH_CLIENT_PURGE)
     @ApiOperation({
-        summary: "Delete OAuth client",
+        summary: "Purge OAuth client",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

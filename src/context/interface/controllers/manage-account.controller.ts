@@ -35,7 +35,7 @@ export class AccountManageController {
     @ApiResponse({ status: OK, type: AccountDTO })
     @RequireGlobalPermission(ACCOUNT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns an account by identifier",
+        summary: "Get account by ID (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -57,7 +57,7 @@ export class AccountManageController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequireGlobalPermission(ACCOUNT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns a paginated list of all accounts",
+        summary: "Get paginated list of accounts (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

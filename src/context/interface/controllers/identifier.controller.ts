@@ -124,7 +124,7 @@ export class IdentifierController {
     @FormatResponse(LookupListDTO)
     @RequirePermission(IDENTIFIER_READ_PERSONAL)
     @ApiOperation({
-        summary: "Returns a lookup list of identifiers",
+        summary: "Get lookup list of identifiers",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -149,7 +149,7 @@ export class IdentifierController {
     @RequirePermission(IDENTIFIER_CREATE)
     @ApiOperation({
         security: [{ identity: [] }],
-        summary: "Add identifier",
+        summary: "Create identifier",
     })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
@@ -226,7 +226,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(IDENTIFIER_TOGGLE_NOTIFICATIONS)
     @ApiOperation({
-        summary: "Toggle notifications",
+        summary: "Toggle identifier notifications",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -253,7 +253,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(IDENTIFIER_TOGGLE_PUBLIC_CONTACT)
     @ApiOperation({
-        summary: "Toggle public contact",
+        summary: "Toggle identifier public contact visibility",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -281,7 +281,7 @@ export class IdentifierController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(IDENTIFIER_PURGE)
     @ApiOperation({
-        summary: "Remove identifier",
+        summary: "Purge identifier",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

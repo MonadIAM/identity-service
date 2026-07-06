@@ -24,7 +24,8 @@ export class AuthzServerMetadataController {
     @Header("Cache-Control", "public, max-age=300")
     @ApiResponse({ status: OK, type: AuthzServerMetadataDTO })
     @ApiOperation({
-        summary: "Get OAuth authorization server metadata",
+        summary: "Get authorization server metadata",
+        description: "Authorization server metadata per RFC 8414 §3.",
         security: [],
     })
     public getAuthorizationServerMetadata(): Queries.OAuth.AuthorizationServerMetadata.Result {
