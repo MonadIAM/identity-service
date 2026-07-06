@@ -1,23 +1,22 @@
 import { ApiPropertyOptional, ApiSchema } from "@nestjs/swagger";
-import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "OAuthTokenResult" })
 export class TokenResultDTO {
-    @Expose()
+    @Validator.ExposeAs("access_token")
     @Validator.IsOptional()
     @Validator.IsString()
     @ApiPropertyOptional({ type: String })
     declare public accessToken?: string;
 
-    @Expose()
+    @Validator.ExposeAs("token_type")
     @Validator.IsOptional()
     @Validator.IsString()
     @ApiPropertyOptional({ type: String })
     declare public tokenType?: string;
 
-    @Expose()
+    @Validator.ExposeAs("expires_in")
     @Validator.IsOptional()
     @Validator.IsPositiveInt()
     @ApiPropertyOptional({ type: Number })

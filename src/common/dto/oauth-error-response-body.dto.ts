@@ -21,7 +21,7 @@ export class OAuthErrorResponseBodyDTO {
     @Expose()
     @Validator.IsPositiveInt()
     @ApiProperty({ required: true, type: Number })
-    declare public statusCode: number;
+    declare public status_code: number;
 
     @Expose()
     @Validator.IsOptional()
@@ -32,7 +32,7 @@ export class OAuthErrorResponseBodyDTO {
     @Expose()
     @Validator.IsListOrSingleString()
     @ApiProperty({ required: true, oneOf: [{ type: "array", items: { type: "string" } }, { type: "string" }] })
-    declare public errorDescription: string | string[];
+    declare public error_description: string | string[];
 
     @Expose()
     @Validator.IsArray()

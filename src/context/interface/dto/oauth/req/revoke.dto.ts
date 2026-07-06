@@ -7,6 +7,13 @@ import { Validator } from "~common/validator";
 export class RevokeBodyDTO {
     @Expose()
     @Validator.IsUUID("4")
-    @ApiProperty({ required: true, type: String, format: "uuid" })
+    @Validator.FromAlias("client_id", "client")
+    @ApiProperty({
+        required: true,
+        type: String,
+        format: "uuid",
+        name: "client_id",
+        description: "Also accepted as `client` for backward compatibility.",
+    })
     declare public client: string;
 }

@@ -8,17 +8,36 @@ import { Validator } from "~common/validator";
 export class AuthorizeQueryDTO {
     @Expose()
     @Validator.IsEnum(OAuthResponseType)
-    @ApiProperty({ required: true, enum: OAuthResponseType })
+    @Validator.FromAlias("response_type", "responseType")
+    @ApiProperty({
+        required: true,
+        enum: OAuthResponseType,
+        name: "response_type",
+        description: "Also accepted as `responseType` for backward compatibility.",
+    })
     declare public responseType: OAuthResponseType;
 
     @Expose()
     @Validator.IsUUID("4")
-    @ApiProperty({ required: true, type: String, format: "uuid" })
+    @Validator.FromAlias("client_id", "client")
+    @ApiProperty({
+        required: true,
+        type: String,
+        format: "uuid",
+        name: "client_id",
+        description: "Also accepted as `client` for backward compatibility.",
+    })
     declare public client: string;
 
     @Expose()
     @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
+    @Validator.FromAlias("redirect_uri", "redirectUri")
+    @ApiProperty({
+        required: true,
+        type: String,
+        name: "redirect_uri",
+        description: "Also accepted as `redirectUri` for backward compatibility.",
+    })
     declare public redirectUri: string;
 
     @Expose()
@@ -30,11 +49,23 @@ export class AuthorizeQueryDTO {
     @Validator.IsString()
     @Validator.Length(43, 43)
     @Validator.IsMatches(/^[A-Za-z0-9_-]{43}$/)
-    @ApiProperty({ required: true, type: String })
+    @Validator.FromAlias("code_challenge", "codeChallenge")
+    @ApiProperty({
+        required: true,
+        type: String,
+        name: "code_challenge",
+        description: "Also accepted as `codeChallenge` for backward compatibility.",
+    })
     declare public codeChallenge: string;
 
     @Expose()
     @Validator.IsEnum(CodeChallengeMethod)
-    @ApiProperty({ required: true, enum: CodeChallengeMethod })
+    @Validator.FromAlias("code_challenge_method", "codeChallengeMethod")
+    @ApiProperty({
+        required: true,
+        enum: CodeChallengeMethod,
+        name: "code_challenge_method",
+        description: "Also accepted as `codeChallengeMethod` for backward compatibility.",
+    })
     declare public codeChallengeMethod: CodeChallengeMethod;
 }

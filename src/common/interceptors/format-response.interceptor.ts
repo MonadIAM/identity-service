@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
+import { plainToInstance, instanceToPlain } from "class-transformer";
 import { isString, isArray, isNumber } from "class-validator";
 import { I18nContext, I18nService } from "nestjs-i18n";
-import { plainToInstance } from "class-transformer";
 import { Observable, from, switchMap } from "rxjs";
 import { Reflector } from "@nestjs/core";
 
@@ -72,9 +72,11 @@ export class FormatResponseInterceptor implements NestInterceptor {
                 }
               : resultData;
 
-        return plainToInstance(DTO, response, {
+        const instance = plainToInstance(DTO, response, {
             enableImplicitConversion: true,
             excludeExtraneousValues: true,
         });
+
+        return instanceToPlain(instance, { excludeExtraneousValues: true }) as T;
     }
 }

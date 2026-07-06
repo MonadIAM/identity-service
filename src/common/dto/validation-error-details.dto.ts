@@ -19,7 +19,7 @@ export class ValidationErrorDetailsDTO {
             { type: "number" },
         ],
     })
-    declare public invalidValue?: UnknownType;
+    declare public value?: UnknownType;
 
     @Expose()
     @Validator.IsString()

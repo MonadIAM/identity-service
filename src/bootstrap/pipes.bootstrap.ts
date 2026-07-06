@@ -3,16 +3,26 @@ import { INestApplication, ValidationError, ValidationPipe } from "@nestjs/commo
 import { Exception } from "~common/exceptions";
 
 export abstract class BootstrapPipes {
+    public static readonly exceptionFactory = (validationErrors: ValidationError[]): Exception => {
+        const details = this.formatValidationErrors(validationErrors);
+        return Exception.validationFailed(details);
+    };
+
+    public static readonly oauthValidationPipe = new ValidationPipe({
+        exceptionFactory: BootstrapPipes.exceptionFactory,
+        transformOptions: { excludeExtraneousValues: true },
+        forbidNonWhitelisted: true,
+        whitelist: true,
+        transform: true,
+    });
+
     public static applyGlobalPipes(application: INestApplication): void {
         application.useGlobalPipes(
             new ValidationPipe({
+                exceptionFactory: BootstrapPipes.exceptionFactory,
+                forbidNonWhitelisted: true,
                 whitelist: true,
                 transform: true,
-                forbidNonWhitelisted: true,
-                exceptionFactory: (validationErrors: ValidationError[]) => {
-                    const details = this.formatValidationErrors(validationErrors);
-                    return Exception.validationFailed(details);
-                },
             }),
         );
     }
@@ -28,7 +38,7 @@ export abstract class BootstrapPipes {
                     results.push({
                         path: currentPath,
                         constraint: constraintKey,
-                        invalidValue: error.value,
+                        value: error.value,
                         message: messageOrKey,
                         args: error.contexts ? error.contexts[constraintKey] : {},
                     });

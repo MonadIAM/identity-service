@@ -16,6 +16,7 @@ import {
 import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decorators";
 import { OAUTH_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
 import { AuthorizeQueryDTO, TokenResultDTO, TokenBodyDTO, RevokeBodyDTO } from "../dto/oauth";
 
@@ -53,7 +54,7 @@ export class OAuthController {
         security: [],
     })
     @Swagger.OAuthExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
-    public authorize(@Query() input: AuthorizeQueryDTO): Commands.OAuth.Authorize.Result {
+    public authorize(@Query(BootstrapPipes.oauthValidationPipe) input: AuthorizeQueryDTO): Commands.OAuth.Authorize.Result {
         return this.oauthCommands.authorize({ input });
     }
 
@@ -83,7 +84,7 @@ export class OAuthController {
         CONFLICT,
     )
     public token(
-        @Body() input: TokenBodyDTO,
+        @Body(BootstrapPipes.oauthValidationPipe) input: TokenBodyDTO,
         @Extract.Meta() context: Extract.Meta,
         @Tokens.Refresh() refreshToken?: string,
     ): Commands.OAuth.Token.Result {
@@ -116,7 +117,7 @@ export class OAuthController {
         CONFLICT,
     )
     public revoke(
-        @Body() input: RevokeBodyDTO,
+        @Body(BootstrapPipes.oauthValidationPipe) input: RevokeBodyDTO,
         @Extract.Meta() context: Extract.Meta,
         @Tokens.Refresh() refreshToken?: string,
     ): Commands.OAuth.Revoke.Result {

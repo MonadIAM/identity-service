@@ -6,8 +6,8 @@ import { ThrottlerException } from "@nestjs/throttler";
 import { Counter } from "prom-client";
 
 import { ExceptionMapper } from "./exception.mapper";
-import { Exception } from "./exception";
 import { ErrorCode, ErrorKind } from "./enums";
+import { Exception } from "./exception";
 
 @Catch()
 export class ExceptionFilter implements Exception.Filter.Contract {
@@ -95,11 +95,17 @@ export class ExceptionFilter implements Exception.Filter.Contract {
         if (/.*\/oauth\/.*/.test(request.routeOptions.url ?? "")) {
             const { message, code, path, statusCode, timestamp, details } = body;
             response.status(body.statusCode!).send({
-                errorDescription: message,
+                details: details?.map(({ value, constraint, message, path, args }) => ({
+                    constraint,
+                    message,
+                    value,
+                    args,
+                    path,
+                })),
+                error_description: message,
+                status_code: statusCode,
                 error: code,
-                statusCode,
                 timestamp,
-                details,
                 path,
             });
         } else {

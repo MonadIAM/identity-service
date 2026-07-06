@@ -65,22 +65,22 @@ declare global {
 
         type OAuthResponseBody = {
             /* eslint-disable prettier/prettier */
-            errorDescription: string | string[]; // human-readable message or list of messages.
-            details?: ValidationDetail[];        // Validation details, if any.
-            statusCode: number;                  // HTTP status code.
-            timestamp?: string;                  // Response creation timestamp in ISO format.
-            error: string;                       // error code (short, machine-readable).
-            path?: string;                       // Request path.
+            error_description: string | string[]; // human-readable message or list of messages.
+            details?: ValidationDetail[];         // Validation details, if any.
+            status_code: number;                  // HTTP status code.
+            timestamp?: string;                   // Response creation timestamp in ISO format.
+            error: string;                        // error code (short, machine-readable).
+            path?: string;                        // Request path.
             /* eslint-enable prettier/prettier */
         };
 
         type ValidationDetail = {
             /* eslint-disable prettier/prettier */
-            args?: UnknownObject    //
-            invalidValue?: unknown; // Field value that triggered the error
-            constraint: string;     // Name of the triggered class-validator rule
-            message: string;        // Human-readable message provided by class-validator
-            path: string;           // Full path to the field
+            args?: UnknownObject //
+            value?: unknown;     // Field value that triggered the error
+            constraint: string;  // Name of the triggered class-validator rule
+            message: string;     // Human-readable message provided by class-validator
+            path: string;        // Full path to the field
             /* eslint-enable prettier/prettier */
         };
     }

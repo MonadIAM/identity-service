@@ -66,10 +66,10 @@ export const EXCEPTION_EXAMPLES = {
         message: "Validation failed",
         details: [
             {
-                path: "code",
-                constraint: "isString",
-                invalidValue: 123,
                 message: 'Field "code" must be a string',
+                constraint: "isString",
+                path: "code",
+                value: 123,
             },
         ],
     },

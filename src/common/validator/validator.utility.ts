@@ -1,4 +1,5 @@
-import { Transform } from "class-transformer";
+import { Expose, Transform } from "class-transformer";
+import { ApiProperty } from "@nestjs/swagger";
 import { ValidateIf } from "class-validator";
 
 import { StandardValidationDecorators } from "./default-validator.utility";
@@ -68,5 +69,17 @@ export abstract class Validator extends StandardValidationDecorators {
             this.IsInt({}, label),
             this.IsPositive({}, label),
         );
+    }
+
+    public static FromAlias(...keys: string[]): PropertyDecorator {
+        return Transform(({ obj }) => keys.map((key) => obj[key]).find((value) => value !== undefined));
+    }
+
+    public static ExposeAs(wireName: string): PropertyDecorator {
+        return function applyExposeAs(target: object, propertyKey: string | symbol): void {
+            Expose({ name: wireName })(target, propertyKey);
+            Transform(({ obj }) => obj[propertyKey], { toClassOnly: true })(target, propertyKey);
+            ApiProperty({ name: wireName })(target, propertyKey);
+        };
     }
 }
