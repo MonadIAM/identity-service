@@ -75,7 +75,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
 
         const totp = new TOTP({
             label: props.actor,
-            issuer: "LIAM",
+            issuer: "MonadIAM",
             secret,
         });
 

@@ -1,4 +1,4 @@
-export * from "@liam/contracts";
+export * from "@monadiam/contracts";
 
 export enum ResponseViewType {
     /* eslint-disable prettier/prettier */

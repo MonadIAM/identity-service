@@ -1,5 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { BlacklistTopicAction } from "@liam/contracts";
+import { BlacklistTopicAction } from "@monadiam/contracts";
 
 import { AccountSubject, IdentifierType, AccountStatus, EntityType, KafkaTopic, ActionType, Client } from "~context/enums";
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";

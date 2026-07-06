@@ -1,4 +1,4 @@
-import { ListEffectivePrivilegesRequest, ListEffectivePrivilegesResponse } from "@liam/contracts";
+import { ListEffectivePrivilegesRequest, ListEffectivePrivilegesResponse } from "@monadiam/contracts";
 import { Observable } from "rxjs";
 
 declare global {

@@ -1,6 +1,6 @@
 import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
-import { RealmTopicAction } from "@liam/contracts";
+import { RealmTopicAction } from "@monadiam/contracts";
 import { lastValueFrom } from "rxjs";
 
 import { OAUTH_CLIENT_COMMANDS } from "~context/application/commands";

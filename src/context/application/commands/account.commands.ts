@@ -1,5 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccountTopicAction } from "@liam/contracts";
+import { AccountTopicAction } from "@monadiam/contracts";
 import { isEmail } from "class-validator";
 
 import { AccountSubject, IdentifierType, AccountStatus, ActionType, EntityType, KafkaTopic } from "~context/enums";

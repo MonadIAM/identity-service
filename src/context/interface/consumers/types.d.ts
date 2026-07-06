@@ -1,5 +1,5 @@
+import { RealmTopicAction } from "@monadiam/contracts";
 import { KafkaContext } from "@nestjs/microservices";
-import { RealmTopicAction } from "@liam/contracts";
 
 declare global {
     namespace Consumers {

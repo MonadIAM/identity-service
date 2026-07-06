@@ -1,4 +1,4 @@
-import { ReauthenticationTopicAction } from "@liam/contracts";
+import { ReauthenticationTopicAction } from "@monadiam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TOTP, Secret } from "otpauth";

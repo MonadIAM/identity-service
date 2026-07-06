@@ -9,7 +9,7 @@ export const OAuthClients = [
     {
         id: WEB_OAUTH_CLIENT_ID,
         realm: SYSTEM_REALM_ID,
-        name: "LIAM Web App",
+        name: "MonadIAM Web App",
         description: "Local development web client.",
         redirect_uri: "http://localhost:3000/auth/callback",
         grant_types: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],

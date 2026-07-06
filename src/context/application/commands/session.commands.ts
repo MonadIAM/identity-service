@@ -1,5 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { BlacklistTopicAction } from "@liam/contracts";
+import { BlacklistTopicAction } from "@monadiam/contracts";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 

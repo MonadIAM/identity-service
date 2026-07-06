@@ -1,11 +1,11 @@
-# identity-service
+# @MonadIAM/identity-service
 
 ----
 
 <details>
 <summary><strong>Local Deployment</strong></summary>
 
-1. Make sure the [Infra](https://github.com/Lambdius/infra) repository is already running locally.
+1. Make sure the [Infra](https://github.com/MonadIAM/infra) repository is already running locally.
 
 2. Make sure the `DOCKER_NETWORK_NAME` value in `.env` matches `monitoring-network` or your custom network.
 

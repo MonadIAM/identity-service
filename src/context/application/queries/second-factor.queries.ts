@@ -54,7 +54,7 @@ export class SecondFactorQueries implements Queries.SecondFactor.Contract {
                 const totp = new TOTP({
                     secret: Secret.fromBase32(plaintext),
                     label: props.actor,
-                    issuer: "LIAM",
+                    issuer: "MonadIAM",
                 });
 
                 result = { id: factor.id, uri: totp.toString() };
