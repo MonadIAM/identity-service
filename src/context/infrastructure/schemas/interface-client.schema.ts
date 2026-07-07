@@ -1,6 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { InterfaceClient } from "~context/domain/entities";
+import { InterfaceClient, Application } from "~context/domain/entities";
 import { TokenGrantType } from "~context/enums";
 
 export const InterfaceClientSchema = new EntitySchema<InterfaceClient>({
@@ -25,7 +25,12 @@ export const InterfaceClientSchema = new EntitySchema<InterfaceClient>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        application: { type: "uuid" },
+        application: {
+            kind: "m:1",
+            entity: () => Application,
+            deleteRule: "cascade",
+        },
+
         name: { type: "string", length: 255 },
         description: { type: "text", nullable: true },
         redirectUri: { type: "text" },

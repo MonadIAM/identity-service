@@ -1,6 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { ServiceClient } from "~context/domain/entities";
+import { ServiceClient, Application } from "~context/domain/entities";
 
 export const ServiceClientSchema = new EntitySchema<ServiceClient>({
     class: ServiceClient,
@@ -24,7 +24,12 @@ export const ServiceClientSchema = new EntitySchema<ServiceClient>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        application: { type: "uuid" },
+        application: {
+            kind: "m:1",
+            entity: () => Application,
+            deleteRule: "cascade",
+        },
+
         name: { type: "string", length: 255 },
         description: { type: "text", nullable: true },
         clientSecretHash: { type: "text" },

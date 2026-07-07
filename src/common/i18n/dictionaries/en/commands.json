@@ -67,6 +67,40 @@
     "BULK_PURGED_COUNT": "{count} OAuth clients successfully deleted.",
     "CLIENTS_NOT_FOUND": "One or more OAuth clients were not found."
   },
+  "application": {
+    "CREATED": "Application successfully created.",
+    "UPDATED": "Application successfully updated.",
+    "REVOKED": "Application successfully revoked.",
+    "BULK_REVOKED_COUNT": "{count} applications successfully revoked.",
+    "RESTORED": "Application successfully restored.",
+    "BULK_RESTORED_COUNT": "{count} applications successfully restored.",
+    "PURGED": "Application successfully deleted.",
+    "BULK_PURGED_COUNT": "{count} applications successfully deleted.",
+    "APPLICATIONS_NOT_FOUND": "One or more applications were not found."
+  },
+  "interface-client": {
+    "CREATED": "Interface client successfully created.",
+    "UPDATED": "Interface client successfully updated.",
+    "REVOKED": "Interface client successfully revoked.",
+    "BULK_REVOKED_COUNT": "{count} interface clients successfully revoked.",
+    "RESTORED": "Interface client successfully restored.",
+    "BULK_RESTORED_COUNT": "{count} interface clients successfully restored.",
+    "PURGED": "Interface client successfully deleted.",
+    "BULK_PURGED_COUNT": "{count} interface clients successfully deleted.",
+    "CLIENTS_NOT_FOUND": "One or more interface clients were not found."
+  },
+  "service-client": {
+    "CREATED": "Service client successfully created.",
+    "UPDATED": "Service client successfully updated.",
+    "SECRET_REGENERATED": "Service client secret successfully regenerated.",
+    "REVOKED": "Service client successfully revoked.",
+    "BULK_REVOKED_COUNT": "{count} service clients successfully revoked.",
+    "RESTORED": "Service client successfully restored.",
+    "BULK_RESTORED_COUNT": "{count} service clients successfully restored.",
+    "PURGED": "Service client successfully deleted.",
+    "BULK_PURGED_COUNT": "{count} service clients successfully deleted.",
+    "CLIENTS_NOT_FOUND": "One or more service clients were not found."
+  },
   "password": {
     "NO_PASSWORD_SET": "No password is set for this account.",
     "INVALID_CURRENT_PASSWORD": "The current password is invalid.",

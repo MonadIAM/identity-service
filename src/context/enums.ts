@@ -79,15 +79,18 @@ export enum ActionType {
 export enum EntityType {
     /* eslint-disable prettier/prettier */
     REAUTHENTICATION = "REAUTHENTICATION",
-    RECOVERY_CODE   = "RECOVERY_CODE",
-    SECOND_FACTOR   = "SECOND_FACTOR",
-    OAUTH_CLIENT    = "OAUTH_CLIENT",
-    MASTER_CODE     = "MASTER_CODE",
-    IDENTIFIER      = "IDENTIFIER",
-    PASSWORD        = "PASSWORD",
-    PROFILE         = "PROFILE",
-    SESSION         = "SESSION",
-    ACCOUNT         = "ACCOUNT",
+    INTERFACE_CLIENT = "INTERFACE_CLIENT",
+    SERVICE_CLIENT   = "SERVICE_CLIENT",
+    RECOVERY_CODE    = "RECOVERY_CODE",
+    SECOND_FACTOR    = "SECOND_FACTOR",
+    OAUTH_CLIENT     = "OAUTH_CLIENT",
+    APPLICATION      = "APPLICATION",
+    MASTER_CODE      = "MASTER_CODE",
+    IDENTIFIER       = "IDENTIFIER",
+    PASSWORD         = "PASSWORD",
+    PROFILE          = "PROFILE",
+    SESSION          = "SESSION",
+    ACCOUNT          = "ACCOUNT",
     /* eslint-enable prettier/prettier */
 }
 

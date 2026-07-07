@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
+import { Application } from "./application.entity";
+
 export class ServiceClient {
     private get dictionaryPath(): string {
         return "entities.service-client";
@@ -13,7 +15,7 @@ export class ServiceClient {
     public version = 1;
 
     public name: string;
-    public application: string;
+    public application: Application;
     public description?: string;
     public clientSecretHash: string;
     public allowedAddresses: string[];

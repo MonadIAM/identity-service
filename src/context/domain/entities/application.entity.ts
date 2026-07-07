@@ -1,6 +1,10 @@
+import { Collection } from "@mikro-orm/postgresql";
 import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
+
+import type { InterfaceClient } from "./interface-client.entity";
+import type { ServiceClient } from "./service-client.entity";
 
 export class Application {
     private get dictionaryPath(): string {
@@ -20,6 +24,9 @@ export class Application {
     public isSystemManaged: boolean;
     public isRealmRevoked: boolean;
     public isRevoked: boolean;
+
+    public interfaceClients = new Collection<InterfaceClient>(this);
+    public serviceClients = new Collection<ServiceClient>(this);
 
     public constructor(props: Entities.Application.ConstructorProps) {
         this.createdAt = new Date();

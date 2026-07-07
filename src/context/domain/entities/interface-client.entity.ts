@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { TokenGrantType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
+import { Application } from "./application.entity";
+
 export class InterfaceClient {
     private get dictionaryPath(): string {
         return "entities.interface-client";
@@ -14,7 +16,7 @@ export class InterfaceClient {
     public version = 1;
 
     public name: string;
-    public application: string;
+    public application: Application;
     public redirectUri: string;
     public description?: string;
     public authAddress?: string;

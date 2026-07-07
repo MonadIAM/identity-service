@@ -1,8 +1,11 @@
 export const REAUTHENTICATION_COMMANDS = Symbol("Commands.Reauthentication.Contract");
+export const INTERFACE_CLIENT_COMMANDS = Symbol("Commands.InterfaceClient.Contract");
 export const FEDERATED_AUTHN_COMMANDS = Symbol("Commands.FederatedAuthn.Contract");
+export const SERVICE_CLIENT_COMMANDS = Symbol("Commands.ServiceClient.Contract");
 export const RECOVERY_CODE_COMMANDS = Symbol("Commands.RecoveryCode.Contract");
 export const SECOND_FACTOR_COMMANDS = Symbol("Commands.SecondFactor.Contract");
 export const OAUTH_CLIENT_COMMANDS = Symbol("Commands.OAuthClient.Contract");
+export const APPLICATION_COMMANDS = Symbol("Commands.Application.Contract");
 export const MEMBERSHIP_COMMANDS = Symbol("Commands.Membership.Contract");
 export const IDENTIFIER_COMMANDS = Symbol("Commands.Identifier.Contract");
 export const PASSWORD_COMMANDS = Symbol("Commands.Password.Contract");

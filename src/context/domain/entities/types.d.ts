@@ -2,8 +2,8 @@ import { SecondFactorType, AccountSubject, IdentifierType, AccountStatus, TokenG
 
 import { PasswordHistory as PasswordHistoryEntity } from "./password-history.entity";
 import { InterfaceClient as InterfaceClientEntity } from "./interface-client.entity";
-import { RecoveryCode as RecoveryCodeEntity } from "./recovery-code.entity";
 import { ServiceClient as ServiceClientEntity } from "./service-client.entity";
+import { RecoveryCode as RecoveryCodeEntity } from "./recovery-code.entity";
 import { SecondFactor as SecondFactorEntity } from "./second-factor.entity";
 import { Application as ApplicationEntity } from "./application.entity";
 import { OAuthClient as OAuthClientEntity } from "./oauth-client.entity";
@@ -184,15 +184,15 @@ declare global {
         namespace InterfaceClient {
             type ConstructorProps = {
                 name: string;
-                application: string;
                 redirectUri: string;
+                grantTypes: TokenGrantType[];
+                application: ApplicationEntity;
                 authAddress?: string;
                 description?: string;
                 isRevoked?: boolean;
                 isSystemManaged?: boolean;
                 applicationVersion?: number;
                 isApplicationRevoked?: boolean;
-                grantTypes: TokenGrantType[];
             };
 
             type ChangeDataProps = {
@@ -208,8 +208,8 @@ declare global {
         namespace ServiceClient {
             type ConstructorProps = {
                 name: string;
-                application: string;
                 clientSecretHash: string;
+                application: ApplicationEntity;
                 isRevoked?: boolean;
                 description?: string;
                 isSystemManaged?: boolean;

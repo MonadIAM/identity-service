@@ -67,6 +67,40 @@
     "BULK_PURGED_COUNT": "{count} OAuth-клиентов успешно удалено.",
     "CLIENTS_NOT_FOUND": "Один или несколько OAuth-клиентов не найдены."
   },
+  "application": {
+    "CREATED": "Приложение успешно создано.",
+    "UPDATED": "Приложение успешно обновлено.",
+    "REVOKED": "Приложение успешно отозвано.",
+    "BULK_REVOKED_COUNT": "{count} приложений успешно отозвано.",
+    "RESTORED": "Приложение успешно восстановлено.",
+    "BULK_RESTORED_COUNT": "{count} приложений успешно восстановлено.",
+    "PURGED": "Приложение успешно удалено.",
+    "BULK_PURGED_COUNT": "{count} приложений успешно удалено.",
+    "APPLICATIONS_NOT_FOUND": "Одно или несколько приложений не найдены."
+  },
+  "interface-client": {
+    "CREATED": "Interface-клиент успешно создан.",
+    "UPDATED": "Interface-клиент успешно обновлен.",
+    "REVOKED": "Interface-клиент успешно отозван.",
+    "BULK_REVOKED_COUNT": "{count} interface-клиентов успешно отозвано.",
+    "RESTORED": "Interface-клиент успешно восстановлен.",
+    "BULK_RESTORED_COUNT": "{count} interface-клиентов успешно восстановлено.",
+    "PURGED": "Interface-клиент успешно удален.",
+    "BULK_PURGED_COUNT": "{count} interface-клиентов успешно удалено.",
+    "CLIENTS_NOT_FOUND": "Один или несколько interface-клиентов не найдены."
+  },
+  "service-client": {
+    "CREATED": "Service-клиент успешно создан.",
+    "UPDATED": "Service-клиент успешно обновлен.",
+    "SECRET_REGENERATED": "Секрет service-клиента успешно обновлен.",
+    "REVOKED": "Service-клиент успешно отозван.",
+    "BULK_REVOKED_COUNT": "{count} service-клиентов успешно отозвано.",
+    "RESTORED": "Service-клиент успешно восстановлен.",
+    "BULK_RESTORED_COUNT": "{count} service-клиентов успешно восстановлено.",
+    "PURGED": "Service-клиент успешно удален.",
+    "BULK_PURGED_COUNT": "{count} service-клиентов успешно удалено.",
+    "CLIENTS_NOT_FOUND": "Один или несколько service-клиентов не найдены."
+  },
   "password": {
     "NO_PASSWORD_SET": "Для этой учетной записи не задан пароль.",
     "INVALID_CURRENT_PASSWORD": "Текущий пароль недействителен.",

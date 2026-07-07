@@ -1,10 +1,13 @@
 import { ClassProvider } from "@nestjs/common";
 
 import { ReauthenticationCommands } from "./reauthentication.commands";
+import { InterfaceClientCommands } from "./interface-client.commands";
 import { FederatedAuthnCommands } from "./federated-authn.commands";
+import { ServiceClientCommands } from "./service-client.commands";
 import { RecoveryCodeCommands } from "./recovery-code.commands";
 import { SecondFactorCommands } from "./second-factor.commands";
 import { OAuthClientCommands } from "./oauth-client.commands";
+import { ApplicationCommands } from "./application.commands";
 import { MembershipCommands } from "./membership.commands";
 import { IdentifierCommands } from "./identifier.commands";
 import { PasswordCommands } from "./password.commands";
@@ -15,10 +18,13 @@ import { OAuthCommands } from "./oauth.commands";
 import { AuthnCommands } from "./authn.commands";
 import {
     REAUTHENTICATION_COMMANDS,
+    INTERFACE_CLIENT_COMMANDS,
     FEDERATED_AUTHN_COMMANDS,
+    SERVICE_CLIENT_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
     OAUTH_CLIENT_COMMANDS,
+    APPLICATION_COMMANDS,
     MEMBERSHIP_COMMANDS,
     IDENTIFIER_COMMANDS,
     PASSWORD_COMMANDS,
@@ -35,8 +41,16 @@ export const COMMANDS: ClassProvider[] = [
         useClass: ReauthenticationCommands,
     },
     {
+        provide: INTERFACE_CLIENT_COMMANDS,
+        useClass: InterfaceClientCommands,
+    },
+    {
         provide: FEDERATED_AUTHN_COMMANDS,
         useClass: FederatedAuthnCommands,
+    },
+    {
+        provide: SERVICE_CLIENT_COMMANDS,
+        useClass: ServiceClientCommands,
     },
     {
         provide: RECOVERY_CODE_COMMANDS,
@@ -50,6 +64,11 @@ export const COMMANDS: ClassProvider[] = [
         provide: OAUTH_CLIENT_COMMANDS,
         useClass: OAuthClientCommands,
     },
+    {
+        provide: APPLICATION_COMMANDS,
+        useClass: ApplicationCommands,
+    },
+
     {
         provide: MEMBERSHIP_COMMANDS,
         useClass: MembershipCommands,
@@ -86,10 +105,13 @@ export const COMMANDS: ClassProvider[] = [
 
 export {
     REAUTHENTICATION_COMMANDS,
+    INTERFACE_CLIENT_COMMANDS,
     FEDERATED_AUTHN_COMMANDS,
+    SERVICE_CLIENT_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
     OAUTH_CLIENT_COMMANDS,
+    APPLICATION_COMMANDS,
     MEMBERSHIP_COMMANDS,
     IDENTIFIER_COMMANDS,
     PASSWORD_COMMANDS,

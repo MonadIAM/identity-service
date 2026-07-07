@@ -3,7 +3,7 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { RealmTopicAction } from "@monadiam/contracts";
 import { lastValueFrom } from "rxjs";
 
-import { OAUTH_CLIENT_COMMANDS } from "~context/application/commands";
+import { OAUTH_CLIENT_COMMANDS, APPLICATION_COMMANDS } from "~context/application/commands";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
@@ -15,6 +15,8 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
     public constructor(
         @Inject(OAUTH_CLIENT_COMMANDS)
         private readonly oauthClientCommands: Commands.OAuthClient.ConsumerContract,
+        @Inject(APPLICATION_COMMANDS)
+        private readonly applicationCommands: Commands.Application.ConsumerContract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
@@ -24,9 +26,21 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
     }
 
     private readonly handlers: Consumers.Realm.Handlers = {
-        [RealmTopicAction.RESTORE]: (payload) => this.oauthClientCommands.restoreRealm(payload),
-        [RealmTopicAction.REVOKE]: (payload) => this.oauthClientCommands.revokeRealm(payload),
-        [RealmTopicAction.PURGE]: (payload) => this.oauthClientCommands.purgeRealm(payload),
+        [RealmTopicAction.RESTORE]: async (payload) => {
+            await Promise.all([
+                this.oauthClientCommands.restoreRealm(payload),
+                this.applicationCommands.restoreRealm(payload),
+            ]);
+        },
+        [RealmTopicAction.REVOKE]: async (payload) => {
+            await Promise.all([
+                this.oauthClientCommands.revokeRealm(payload),
+                this.applicationCommands.revokeRealm(payload),
+            ]);
+        },
+        [RealmTopicAction.PURGE]: async (payload) => {
+            await Promise.all([this.oauthClientCommands.purgeRealm(payload), this.applicationCommands.purgeRealm(payload)]);
+        },
     };
 
     @EventPattern(KafkaTopic.REALM)
