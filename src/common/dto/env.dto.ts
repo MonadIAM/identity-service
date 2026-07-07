@@ -328,6 +328,15 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public OAUTH_CLIENT_PER_REALM_LIMIT: number;
 
+    @Validator.IsPositiveInt()
+    declare public APPLICATION_PER_REALM_LIMIT: number;
+
+    @Validator.IsPositiveInt()
+    declare public INTERFACE_CLIENT_PER_APPLICATION_LIMIT: number;
+
+    @Validator.IsPositiveInt()
+    declare public SERVICE_CLIENT_PER_APPLICATION_LIMIT: number;
+
     // ---------------------------------------------------------------------------
     // OAuth Providers
     // ---------------------------------------------------------------------------

@@ -1,9 +1,12 @@
 import { ClassProvider } from "@nestjs/common";
 
 import { PasswordHistoryRepository } from "./password-history.repository";
+import { InterfaceClientRepository } from "./interface-client.repository";
+import { ServiceClientRepository } from "./service-client.repository";
 import { RecoveryCodeRepository } from "./recovery-code.repository";
 import { SecondFactorRepository } from "./second-factor.repository";
 import { OAuthClientRepository } from "./oauth-client.repository";
+import { ApplicationRepository } from "./application.repository";
 import { MasterCodeRepository } from "./master-code.repository";
 import { MembershipRepository } from "./membership.repository";
 import { IdentifierRepository } from "./identifier.repository";
@@ -15,8 +18,11 @@ import { ProfileRepository } from "./profile.repository";
 import { AccountRepository } from "./account.repository";
 import {
     PASSWORD_HISTORY_REPOSITORY,
+    INTERFACE_CLIENT_REPOSITORY,
     RECOVERY_CODE_REPOSITORY,
+    SERVICE_CLIENT_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
+    APPLICATION_REPOSITORY,
     OAUTH_CLIENT_REPOSITORY,
     MASTER_CODE_REPOSITORY,
     MEMBERSHIP_REPOSITORY,
@@ -35,6 +41,14 @@ export const REPOSITORIES: ClassProvider[] = [
         useClass: PasswordHistoryRepository,
     },
     {
+        provide: INTERFACE_CLIENT_REPOSITORY,
+        useClass: InterfaceClientRepository,
+    },
+    {
+        provide: SERVICE_CLIENT_REPOSITORY,
+        useClass: ServiceClientRepository,
+    },
+    {
         provide: RECOVERY_CODE_REPOSITORY,
         useClass: RecoveryCodeRepository,
     },
@@ -45,6 +59,10 @@ export const REPOSITORIES: ClassProvider[] = [
     {
         provide: OAUTH_CLIENT_REPOSITORY,
         useClass: OAuthClientRepository,
+    },
+    {
+        provide: APPLICATION_REPOSITORY,
+        useClass: ApplicationRepository,
     },
     {
         provide: MASTER_CODE_REPOSITORY,
@@ -86,9 +104,12 @@ export const REPOSITORIES: ClassProvider[] = [
 
 export {
     PASSWORD_HISTORY_REPOSITORY,
+    INTERFACE_CLIENT_REPOSITORY,
+    SERVICE_CLIENT_REPOSITORY,
     RECOVERY_CODE_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
     OAUTH_CLIENT_REPOSITORY,
+    APPLICATION_REPOSITORY,
     MASTER_CODE_REPOSITORY,
     MEMBERSHIP_REPOSITORY,
     IDENTIFIER_REPOSITORY,

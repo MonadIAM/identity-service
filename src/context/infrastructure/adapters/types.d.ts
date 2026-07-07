@@ -248,6 +248,93 @@ declare global {
             }
         }
 
+        namespace Application {
+            type DefaultFilters = {
+                updatedAt?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
+                name?: StringFilterDTO;
+                id?: StringFilterDTO;
+                isRealmRevoked?: boolean;
+                isRevoked?: boolean;
+                isSystemManaged?: boolean;
+            };
+
+            type ManageFilters = DefaultFilters & {
+                realm?: LinkFilterDTO;
+            };
+
+            type Filters = DefaultFilters & ManageFilters;
+
+            type Sort = {
+                updatedAt?: QueryOrder;
+                createdAt?: QueryOrder;
+                name?: QueryOrder;
+            };
+
+            interface Types {
+                Filters: Filters;
+                Sort: Sort;
+            }
+        }
+
+        namespace InterfaceClient {
+            type DefaultFilters = {
+                updatedAt?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
+                name?: StringFilterDTO;
+                id?: StringFilterDTO;
+                isApplicationRevoked?: boolean;
+                isRevoked?: boolean;
+                isSystemManaged?: boolean;
+            };
+
+            type ManageFilters = DefaultFilters & {
+                application?: LinkFilterDTO;
+            };
+
+            type Filters = DefaultFilters & ManageFilters;
+
+            type Sort = {
+                updatedAt?: QueryOrder;
+                createdAt?: QueryOrder;
+                name?: QueryOrder;
+            };
+
+            interface Types {
+                Filters: Filters;
+                Sort: Sort;
+            }
+        }
+
+        namespace ServiceClient {
+            type DefaultFilters = {
+                updatedAt?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
+                name?: StringFilterDTO;
+                id?: StringFilterDTO;
+                isApplicationRevoked?: boolean;
+                isRevoked?: boolean;
+                isSystemManaged?: boolean;
+            };
+
+            type ManageFilters = DefaultFilters & {
+                application?: LinkFilterDTO;
+            };
+
+            type Filters = DefaultFilters & ManageFilters;
+
+            type Sort = {
+                updatedAt?: QueryOrder;
+                createdAt?: QueryOrder;
+                name?: QueryOrder;
+            };
+
+            interface Types {
+                Filters: Filters;
+                Sort: Sort;
+            }
+        }
+
         namespace Membership {
             type Filters = {};
 
