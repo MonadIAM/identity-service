@@ -6,11 +6,29 @@
     "ALREADY_SUSPENDED": "Учетная запись уже заблокирована.",
     "NOT_SUSPENDED": "Учетная запись не заблокирована."
   },
+  "application": {
+    "CANNOT_UPDATE_REVOKED": "Отозванное приложение нельзя изменить.",
+    "NO_CHANGES_DETECTED": "Приложение уже соответствует переданным изменениям.",
+    "EMPTY_UPDATE_PATCH": "Тело обновления приложения пустое.",
+    "ALREADY_REVOKED": "Приложение уже отозвано.",
+    "ALREADY_ACTIVE": "Приложение уже активно.",
+    "CANNOT_PURGE_ACTIVE": "Активное приложение нельзя удалить безвозвратно.",
+    "SYSTEM_MANAGED_IMMUTABLE": "Системное приложение нельзя изменить этой операцией."
+  },
   "identifier": {
     "NOTIFICATIONS_EMAIL_ONLY": "Уведомления можно переключать только для email-идентификаторов.",
     "PUBLIC_CONTACT_NOT_APPLICABLE": "Публичная видимость контакта неприменима к этому идентификатору.",
     "PUBLIC_CONTACT_REQUIRES_VERIFICATION": "Для публичной видимости контакта требуется подтвержденный идентификатор.",
     "ALREADY_VERIFIED": "Идентификатор уже подтвержден."
+  },
+  "interface-client": {
+    "CANNOT_UPDATE_REVOKED": "Отозванный InterfaceClient нельзя изменить.",
+    "NO_CHANGES_DETECTED": "InterfaceClient уже соответствует переданным изменениям.",
+    "EMPTY_UPDATE_PATCH": "Тело обновления InterfaceClient пустое.",
+    "ALREADY_REVOKED": "InterfaceClient уже отозван.",
+    "ALREADY_ACTIVE": "InterfaceClient уже активен.",
+    "CANNOT_PURGE_ACTIVE": "Активный InterfaceClient нельзя удалить безвозвратно.",
+    "SYSTEM_MANAGED_IMMUTABLE": "Системный InterfaceClient нельзя изменить этой операцией."
   },
   "oauth-client": {
     "CANNOT_UPDATE_REVOKED": "Отозванный OAuth-клиент нельзя изменить.",
@@ -27,6 +45,15 @@
   },
   "second-factor": {
     "CONFIRM_NOT_ALLOWED": "Подтверждение второго фактора недопустимо в текущем состоянии."
+  },
+  "service-client": {
+    "CANNOT_UPDATE_REVOKED": "Отозванный ServiceClient нельзя изменить.",
+    "NO_CHANGES_DETECTED": "ServiceClient уже соответствует переданным изменениям.",
+    "EMPTY_UPDATE_PATCH": "Тело обновления ServiceClient пустое.",
+    "ALREADY_REVOKED": "ServiceClient уже отозван.",
+    "ALREADY_ACTIVE": "ServiceClient уже активен.",
+    "CANNOT_PURGE_ACTIVE": "Активный ServiceClient нельзя удалить безвозвратно.",
+    "SYSTEM_MANAGED_IMMUTABLE": "Системный ServiceClient нельзя изменить этой операцией."
   },
   "session": {
     "EXPIRED": "Сессия истекла."

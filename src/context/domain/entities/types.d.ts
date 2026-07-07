@@ -1,8 +1,11 @@
 import { SecondFactorType, AccountSubject, IdentifierType, AccountStatus, TokenGrantType } from "~context/enums";
 
 import { PasswordHistory as PasswordHistoryEntity } from "./password-history.entity";
+import { InterfaceClient as InterfaceClientEntity } from "./interface-client.entity";
 import { RecoveryCode as RecoveryCodeEntity } from "./recovery-code.entity";
+import { ServiceClient as ServiceClientEntity } from "./service-client.entity";
 import { SecondFactor as SecondFactorEntity } from "./second-factor.entity";
+import { Application as ApplicationEntity } from "./application.entity";
 import { OAuthClient as OAuthClientEntity } from "./oauth-client.entity";
 import { MasterCode as MasterCodeEntity } from "./master-code.entity";
 import { Membership as MembershipEntity } from "./membership.entity";
@@ -158,5 +161,70 @@ declare global {
         }
 
         type Membership = MembershipEntity;
+
+        namespace Application {
+            type ConstructorProps = {
+                realm: string;
+                name: string;
+                description?: string;
+                isRevoked?: boolean;
+                isRealmRevoked?: boolean;
+                isSystemManaged?: boolean;
+                realmVersion?: number;
+            };
+
+            type ChangeDataProps = {
+                description?: string;
+                name?: string;
+            };
+        }
+
+        type Application = ApplicationEntity;
+
+        namespace InterfaceClient {
+            type ConstructorProps = {
+                name: string;
+                application: string;
+                redirectUri: string;
+                authAddress?: string;
+                description?: string;
+                isRevoked?: boolean;
+                isSystemManaged?: boolean;
+                applicationVersion?: number;
+                isApplicationRevoked?: boolean;
+                grantTypes: TokenGrantType[];
+            };
+
+            type ChangeDataProps = {
+                redirectUri?: string;
+                authAddress?: string;
+                description?: string;
+                name?: string;
+            };
+        }
+
+        type InterfaceClient = InterfaceClientEntity;
+
+        namespace ServiceClient {
+            type ConstructorProps = {
+                name: string;
+                application: string;
+                clientSecretHash: string;
+                isRevoked?: boolean;
+                description?: string;
+                isSystemManaged?: boolean;
+                allowedAddresses?: string[];
+                applicationVersion?: number;
+                isApplicationRevoked?: boolean;
+            };
+
+            type ChangeDataProps = {
+                description?: string;
+                name?: string;
+                allowedAddresses?: string[];
+            };
+        }
+
+        type ServiceClient = ServiceClientEntity;
     }
 }

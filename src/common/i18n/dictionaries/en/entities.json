@@ -6,11 +6,29 @@
     "ALREADY_SUSPENDED": "The account is already suspended.",
     "NOT_SUSPENDED": "The account is not suspended."
   },
+  "application": {
+    "CANNOT_UPDATE_REVOKED": "A revoked Application cannot be updated.",
+    "NO_CHANGES_DETECTED": "The Application already matches the provided changes.",
+    "EMPTY_UPDATE_PATCH": "The Application update payload is empty.",
+    "ALREADY_REVOKED": "The Application is already revoked.",
+    "ALREADY_ACTIVE": "The Application is already active.",
+    "CANNOT_PURGE_ACTIVE": "An active Application cannot be permanently deleted.",
+    "SYSTEM_MANAGED_IMMUTABLE": "A system-managed Application cannot be modified through this operation."
+  },
   "identifier": {
     "NOTIFICATIONS_EMAIL_ONLY": "Notifications can only be toggled for email identifiers.",
     "PUBLIC_CONTACT_NOT_APPLICABLE": "Public contact visibility is not applicable to this identifier.",
     "PUBLIC_CONTACT_REQUIRES_VERIFICATION": "Public contact visibility requires a verified identifier.",
     "ALREADY_VERIFIED": "The identifier is already verified."
+  },
+  "interface-client": {
+    "CANNOT_UPDATE_REVOKED": "A revoked InterfaceClient cannot be updated.",
+    "NO_CHANGES_DETECTED": "The InterfaceClient already matches the provided changes.",
+    "EMPTY_UPDATE_PATCH": "The InterfaceClient update payload is empty.",
+    "ALREADY_REVOKED": "The InterfaceClient is already revoked.",
+    "ALREADY_ACTIVE": "The InterfaceClient is already active.",
+    "CANNOT_PURGE_ACTIVE": "An active InterfaceClient cannot be permanently deleted.",
+    "SYSTEM_MANAGED_IMMUTABLE": "A system-managed InterfaceClient cannot be modified through this operation."
   },
   "oauth-client": {
     "CANNOT_UPDATE_REVOKED": "A revoked OAuth client cannot be updated.",
@@ -27,6 +45,15 @@
   },
   "second-factor": {
     "CONFIRM_NOT_ALLOWED": "Second-factor confirmation is not allowed in the current state."
+  },
+  "service-client": {
+    "CANNOT_UPDATE_REVOKED": "A revoked ServiceClient cannot be updated.",
+    "NO_CHANGES_DETECTED": "The ServiceClient already matches the provided changes.",
+    "EMPTY_UPDATE_PATCH": "The ServiceClient update payload is empty.",
+    "ALREADY_REVOKED": "The ServiceClient is already revoked.",
+    "ALREADY_ACTIVE": "The ServiceClient is already active.",
+    "CANNOT_PURGE_ACTIVE": "An active ServiceClient cannot be permanently deleted.",
+    "SYSTEM_MANAGED_IMMUTABLE": "A system-managed ServiceClient cannot be modified through this operation."
   },
   "session": {
     "EXPIRED": "The session is expired."
