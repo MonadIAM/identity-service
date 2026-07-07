@@ -13,12 +13,12 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
+import { Extract, FormatResponse, Swagger } from "~common/decorators";
 import { OAUTH_CLIENT_COMMANDS } from "~context/application/commands";
 import { OAUTH_CLIENT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
-import { PermissionCode } from "~context/enums";
+// import { PermissionCode } from "~context/enums";
 
 import {
     GetByIdQueryDTO,
@@ -38,14 +38,14 @@ import {
     ListDTO,
 } from "../dto/oauth-client";
 
-const {
-    OAUTH_CLIENT_READ_ABSOLUTE,
-    OAUTH_CLIENT_CREATE,
-    OAUTH_CLIENT_UPDATE,
-    OAUTH_CLIENT_REVOKE,
-    OAUTH_CLIENT_RESTORE,
-    OAUTH_CLIENT_PURGE,
-} = PermissionCode;
+// const {
+//     OAUTH_CLIENT_READ_ABSOLUTE,
+//     OAUTH_CLIENT_CREATE,
+//     OAUTH_CLIENT_UPDATE,
+//     OAUTH_CLIENT_REVOKE,
+//     OAUTH_CLIENT_RESTORE,
+//     OAUTH_CLIENT_PURGE,
+// } = PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
@@ -75,7 +75,7 @@ export class OAuthClientController {
     @HttpCode(OK)
     @FormatResponse(OAuthClientDTO)
     @ApiResponse({ status: OK, type: OAuthClientDTO })
-    @RequirePermission(OAUTH_CLIENT_READ_ABSOLUTE)
+    // @RequirePermission(OAUTH_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Get OAuth client by ID",
         security: [{ identity: [] }],
@@ -97,7 +97,7 @@ export class OAuthClientController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(OAUTH_CLIENT_READ_ABSOLUTE)
+    // @RequirePermission(OAUTH_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Get paginated list of OAuth clients in realm",
         security: [{ identity: [] }],
@@ -120,7 +120,7 @@ export class OAuthClientController {
     @Post("create")
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(OAUTH_CLIENT_CREATE)
+    // @RequirePermission(OAUTH_CLIENT_CREATE)
     @ApiOperation({
         summary: "Create OAuth client",
         security: [{ identity: [] }],
@@ -147,7 +147,7 @@ export class OAuthClientController {
     @Patch("update")
     @HttpCode(OK)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(OAUTH_CLIENT_UPDATE)
+    // @RequirePermission(OAUTH_CLIENT_UPDATE)
     @ApiOperation({
         summary: "Update OAuth client",
         security: [{ identity: [] }],
@@ -175,7 +175,7 @@ export class OAuthClientController {
     @Post("revoke")
     @HttpCode(OK)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(OAUTH_CLIENT_REVOKE)
+    // @RequirePermission(OAUTH_CLIENT_REVOKE)
     @ApiOperation({
         summary: "Revoke OAuth client",
         security: [{ identity: [] }],
@@ -203,7 +203,7 @@ export class OAuthClientController {
     @Post("restore")
     @HttpCode(OK)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(OAUTH_CLIENT_RESTORE)
+    // @RequirePermission(OAUTH_CLIENT_RESTORE)
     @ApiOperation({
         summary: "Restore OAuth client",
         security: [{ identity: [] }],
@@ -231,7 +231,7 @@ export class OAuthClientController {
     @Delete("purge")
     @HttpCode(OK)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(OAUTH_CLIENT_PURGE)
+    // @RequirePermission(OAUTH_CLIENT_PURGE)
     @ApiOperation({
         summary: "Purge OAuth client",
         security: [{ identity: [] }],
