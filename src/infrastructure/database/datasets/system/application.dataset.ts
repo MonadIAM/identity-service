@@ -1,4 +1,5 @@
-export const SYSTEM_REALM_ID = "00000001-0000-4000-8000-100000000001";
+import { SYSTEM_REALM_ID } from "~context/constants";
+
 const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
 
 export const WEB_APPLICATION_ID = "00000004-0000-4000-8000-140000000001";

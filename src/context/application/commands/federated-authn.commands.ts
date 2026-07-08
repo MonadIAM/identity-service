@@ -7,6 +7,7 @@ import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SER
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { SYSTEM_REALM_ID } from "~context/constants";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -127,6 +128,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     input: {
                         userAgent: props.context.userAgent,
                         account: props.input.account,
+                        realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
                     },
@@ -176,6 +178,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     input: {
                         account: props.input.account,
                         userAgent: props.context.userAgent,
+                        realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
                     },
@@ -234,10 +237,11 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 return this.sessionService.create({
                     transaction,
                     input: {
-                        account,
                         userAgent: props.context.userAgent,
+                        realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
+                        account,
                     },
                 });
             },

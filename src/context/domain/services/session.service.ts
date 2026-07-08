@@ -60,6 +60,7 @@ export class SessionService implements Services.Session.Contract {
         const refreshToken = await this.jwtService.signRefreshToken({
             client_id: session.client,
             sub: input.account.id,
+            realms: input.realms,
             sid: session.id,
         });
 
@@ -70,6 +71,7 @@ export class SessionService implements Services.Session.Contract {
         const accessToken = await this.jwtService.signAccessToken({
             client_id: session.client,
             sub: input.account.id,
+            realms: input.realms,
             sid: session.id,
         });
 

@@ -8,10 +8,12 @@ declare namespace Extract {
         type Public = {
             account?: string;
             session?: string;
+            realms?: string[];
         };
         type Authenticated = {
             account: string;
             session: string;
+            realms: string[];
         };
     }
 }

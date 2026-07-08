@@ -8,6 +8,7 @@ import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { ErrorCode, Exception } from "~common/exceptions";
+import { SYSTEM_REALM_ID } from "~context/constants";
 import { TokenGrantType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -118,7 +119,10 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     }
 
     public async authorizationCode(props: Commands.OAuth.AuthorizationCode.Props): Commands.OAuth.AuthorizationCode.Result {
-        const client = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
+        const client = await this.interfaceClientRepository.findUniqueOrThrow({
+            options: { populate: ["application"] },
+            where: { id: props.input.client },
+        });
 
         if (client.isRevoked) {
             throw Exception.badRequest({
@@ -160,6 +164,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         return this.sessionCommands.create({
             context: props.context,
             input: {
+                realms: Array.from(new Set([SYSTEM_REALM_ID, client.application.realm])),
                 account: authorization.account,
                 client: authorization.client,
             },

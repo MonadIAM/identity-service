@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { ACCESS_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { REQUIRE_GLOBAL_PERMISSION, REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
+import { ACCESS_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { SYSTEM_REALM_ID } from "~context/constants";
 import { Exception } from "~common/exceptions";
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
-    private readonly systemRealm = "00000001-0000-4000-8000-100000000001";
     private readonly dictionaryPath = "guard.permission";
 
     public constructor(
@@ -37,8 +37,9 @@ export class PermissionGuard implements CanActivate {
         }
 
         const request = context.switchToHttp().getRequest<Req<{ Querystring: { realm?: string } }>>();
-        const realm = request.query?.realm ?? this.systemRealm;
+        const realm = request.query?.realm ?? SYSTEM_REALM_ID;
         const account = request.session?.account;
+        const realms = request.session?.realms;
 
         if (!account) {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_REQUIRED` });
@@ -48,8 +49,18 @@ export class PermissionGuard implements CanActivate {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_REQUIRED` });
         }
 
+        if (!realms?.length) {
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_SCOPE_MISSING` });
+        }
+
+        if (globalPermissions && !(realms.length === 1 && realms[0] === SYSTEM_REALM_ID)) {
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.GLOBAL_SCOPE_REQUIRES_DIRECT_LOGIN` });
+        } else if (!realms.includes(realm)) {
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_OUT_OF_SESSION_SCOPE` });
+        }
+
         const matched = await this.accessCacheService.checkPermissions({
-            globalOnly: !!globalPermissions,
+            globalOnly: Boolean(globalPermissions),
             permissions,
             account,
             realm,

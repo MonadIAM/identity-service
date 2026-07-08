@@ -23,6 +23,7 @@ declare namespace Commands {
                 input: {
                     account: string;
                     client: string;
+                    realms: string[];
                 };
             };
 

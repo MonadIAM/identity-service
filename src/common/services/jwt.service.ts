@@ -49,7 +49,7 @@ export class JWTService implements CommonServices.JWT.Contract {
     public async verifyAccess(token: string): Promise<JWTPayload> {
         try {
             const { payload } = await jwtVerify(token, createLocalJWKSet(await this.getJWKS(this.accessKey)), {
-                requiredClaims: ["client_id", "sub", "sid", "exp", "iat", "jti"],
+                requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
                 audience: this.accessAudience,
                 algorithms: [this.algorithm],
                 issuer: this.issuer,
@@ -77,7 +77,7 @@ export class JWTService implements CommonServices.JWT.Contract {
     public async verifyRefresh(token: string): Promise<JWTPayload> {
         try {
             const { payload } = await jwtVerify(token, createLocalJWKSet(await this.getJWKS(this.refreshKey)), {
-                requiredClaims: ["client_id", "sub", "sid", "exp", "iat", "jti"],
+                requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
                 audience: this.refreshAudience,
                 algorithms: [this.algorithm],
                 issuer: this.issuer,
