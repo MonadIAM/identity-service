@@ -1,13 +1,23 @@
 import { EntityManager } from "@mikro-orm/core";
 import { Seeder } from "@mikro-orm/seeder";
 
-import { RecoveryCodes, OAuthClients, Identifiers, Passwords, Accounts, Profiles } from "../datasets/system";
+import {
+    RecoveryCodes,
+    InterfaceClients,
+    Identifiers,
+    Applications,
+    Passwords,
+    Accounts,
+    Profiles,
+} from "../datasets/system";
 
 export class SystemSeeder extends Seeder {
     public async run(entityManager: EntityManager): Promise<void> {
         await entityManager.getConnection().execute(`
             TRUNCATE TABLE
-                identity.oauth_client,
+                identity.interface_client,
+                identity.service_client,
+                identity.application,
                 identity.account,
                 identity.identifier,
                 identity.master_code,
@@ -24,7 +34,8 @@ export class SystemSeeder extends Seeder {
         await entityManager.insertMany("identity.profile", Profiles);
         await entityManager.insertMany("identity.password", Passwords);
         await entityManager.insertMany("identity.identifier", Identifiers);
-        await entityManager.insertMany("identity.oauth_client", OAuthClients);
+        await entityManager.insertMany("identity.application", Applications);
+        await entityManager.insertMany("identity.interface_client", InterfaceClients);
         await entityManager.insertMany("identity.recovery_code", RecoveryCodes);
     }
 }

@@ -4,7 +4,6 @@ import { InterfaceClientService } from "./interface-client.service";
 import { ServiceClientService } from "./service-client.service";
 import { RecoveryCodeService } from "./recovery-code.service";
 import { SecondFactorService } from "./second-factor.service";
-import { OAuthClientService } from "./oauth-client.service";
 import { ApplicationService } from "./application.service";
 import { MembershipService } from "./membership.service";
 import { IdentifierService } from "./identifier.service";
@@ -17,7 +16,6 @@ import {
     INTERFACE_CLIENT_SERVICE,
     SECOND_FACTOR_SERVICE,
     SERVICE_CLIENT_SERVICE,
-    OAUTH_CLIENT_SERVICE,
     APPLICATION_SERVICE,
     MEMBERSHIP_SERVICE,
     IDENTIFIER_SERVICE,
@@ -35,10 +33,6 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
     {
         provide: SECOND_FACTOR_SERVICE,
         useClass: SecondFactorService,
-    },
-    {
-        provide: OAUTH_CLIENT_SERVICE,
-        useClass: OAuthClientService,
     },
     {
         provide: APPLICATION_SERVICE,
@@ -83,7 +77,6 @@ export {
     INTERFACE_CLIENT_SERVICE,
     SECOND_FACTOR_SERVICE,
     SERVICE_CLIENT_SERVICE,
-    OAUTH_CLIENT_SERVICE,
     APPLICATION_SERVICE,
     MEMBERSHIP_SERVICE,
     IDENTIFIER_SERVICE,

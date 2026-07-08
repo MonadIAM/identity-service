@@ -52,20 +52,9 @@
   "oauth": {
     "INVALID_AUTHORIZATION_REQUEST": "Запрос авторизации недействителен или просрочен.",
     "CLIENT_REVOKED": "OAuth-клиент отозван.",
-    "CLIENT_REALM_REVOKED": "Realm, к которому привязан OAuth-клиент, отозван.",
+    "CLIENT_APPLICATION_REVOKED": "Приложение, к которому привязан OAuth-клиент, отозвано.",
     "INVALID_GRANT": "Код авторизации недействителен, просрочен или не соответствует запросу.",
     "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента."
-  },
-  "oauth-client": {
-    "CREATED": "OAuth-клиент успешно создан.",
-    "UPDATED": "OAuth-клиент успешно обновлен.",
-    "REVOKED": "OAuth-клиент успешно отозван.",
-    "BULK_REVOKED_COUNT": "{count} OAuth-клиентов успешно отозвано.",
-    "RESTORED": "OAuth-клиент успешно восстановлен.",
-    "BULK_RESTORED_COUNT": "{count} OAuth-клиентов успешно восстановлено.",
-    "PURGED": "OAuth-клиент успешно удален.",
-    "BULK_PURGED_COUNT": "{count} OAuth-клиентов успешно удалено.",
-    "CLIENTS_NOT_FOUND": "Один или несколько OAuth-клиентов не найдены."
   },
   "application": {
     "CREATED": "Приложение успешно создано.",

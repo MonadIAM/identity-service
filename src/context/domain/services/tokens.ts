@@ -2,7 +2,6 @@ export const INTERFACE_CLIENT_SERVICE = Symbol("Services.InterfaceClient.Contrac
 export const SERVICE_CLIENT_SERVICE = Symbol("Services.ServiceClient.Contract");
 export const RECOVERY_CODE_SERVICE = Symbol("Services.RecoveryCode.Contract");
 export const SECOND_FACTOR_SERVICE = Symbol("Services.SecondFactor.Contract");
-export const OAUTH_CLIENT_SERVICE = Symbol("Services.OAuthClient.Contract");
 export const APPLICATION_SERVICE = Symbol("Services.Application.Contract");
 export const MEMBERSHIP_SERVICE = Symbol("Services.Membership.Contract");
 export const IDENTIFIER_SERVICE = Symbol("Services.Identifier.Contract");

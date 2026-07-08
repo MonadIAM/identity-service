@@ -6,7 +6,6 @@ import { FederatedAuthnCommands } from "./federated-authn.commands";
 import { ServiceClientCommands } from "./service-client.commands";
 import { RecoveryCodeCommands } from "./recovery-code.commands";
 import { SecondFactorCommands } from "./second-factor.commands";
-import { OAuthClientCommands } from "./oauth-client.commands";
 import { ApplicationCommands } from "./application.commands";
 import { MembershipCommands } from "./membership.commands";
 import { IdentifierCommands } from "./identifier.commands";
@@ -23,7 +22,6 @@ import {
     SERVICE_CLIENT_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
-    OAUTH_CLIENT_COMMANDS,
     APPLICATION_COMMANDS,
     MEMBERSHIP_COMMANDS,
     IDENTIFIER_COMMANDS,
@@ -61,14 +59,9 @@ export const COMMANDS: ClassProvider[] = [
         useClass: SecondFactorCommands,
     },
     {
-        provide: OAUTH_CLIENT_COMMANDS,
-        useClass: OAuthClientCommands,
-    },
-    {
         provide: APPLICATION_COMMANDS,
         useClass: ApplicationCommands,
     },
-
     {
         provide: MEMBERSHIP_COMMANDS,
         useClass: MembershipCommands,
@@ -110,7 +103,6 @@ export {
     SERVICE_CLIENT_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
-    OAUTH_CLIENT_COMMANDS,
     APPLICATION_COMMANDS,
     MEMBERSHIP_COMMANDS,
     IDENTIFIER_COMMANDS,

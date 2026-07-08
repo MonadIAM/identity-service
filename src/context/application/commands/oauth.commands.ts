@@ -3,8 +3,8 @@ import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 import { JWTPayload } from "jose";
 
+import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
-import { OAUTH_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { ErrorCode, Exception } from "~common/exceptions";
@@ -14,7 +14,6 @@ import { TokenGrantType } from "~context/enums";
 export class OAuthCommands implements Commands.OAuth.Contract {
     private readonly dictionaryPath = "commands.oauth";
     private readonly accessTokenTTL: number;
-    private readonly loginUrl: string;
 
     public constructor(
         private readonly configService: ConfigService,
@@ -22,19 +21,18 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         private readonly sessionCommands: Commands.Session.CommandsContract,
         @Inject(AUTHORIZATION_CACHE_SERVICE)
         private readonly authorizationCacheService: InfrastructureServices.AuthorizationCache.Contract,
-        @Inject(OAUTH_CLIENT_REPOSITORY)
-        private readonly oauthClientRepository: Repositories.OAuthClient.Contract,
+        @Inject(INTERFACE_CLIENT_REPOSITORY)
+        private readonly interfaceClientRepository: Repositories.InterfaceClient.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
         @Inject(JWT_SERVICE)
         private readonly jwtService: CommonServices.JWT.Contract,
     ) {
         this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
-        this.loginUrl = this.configService.getOrThrow<string>("AUTHORIZATION_LOGIN_URL");
     }
 
     public async authorize(props: Commands.OAuth.Authorize.Props): Commands.OAuth.Authorize.Result {
-        const client = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
+        const client = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
 
         if (client.isRevoked) {
             throw Exception.badRequest({
@@ -43,9 +41,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             });
         }
 
-        if (client.isRealmRevoked) {
+        if (client.isApplicationRevoked) {
             throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
                 code: ErrorCode.INVALID_CLIENT,
             });
         }
@@ -65,7 +63,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             client: client.id,
         });
 
-        const url = new URL(this.loginUrl);
+        const url = new URL(client.authAddress);
         url.searchParams.set("authorizationRequest", id);
 
         return { url: url.toString() };
@@ -86,7 +84,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 },
             });
         } else {
-            const client = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
+            const client = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
 
             if (client.isRevoked) {
                 throw Exception.badRequest({
@@ -95,9 +93,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 });
             }
 
-            if (client.isRealmRevoked) {
+            if (client.isApplicationRevoked) {
                 throw Exception.badRequest({
-                    messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                    messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
                     code: ErrorCode.INVALID_CLIENT,
                 });
             }
@@ -120,7 +118,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     }
 
     public async authorizationCode(props: Commands.OAuth.AuthorizationCode.Props): Commands.OAuth.AuthorizationCode.Result {
-        const client = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
+        const client = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
 
         if (client.isRevoked) {
             throw Exception.badRequest({
@@ -129,9 +127,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             });
         }
 
-        if (client.isRealmRevoked) {
+        if (client.isApplicationRevoked) {
             throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
                 code: ErrorCode.INVALID_CLIENT,
             });
         }
@@ -182,7 +180,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const { refreshToken, client, context } = props;
 
         if (refreshToken) {
-            const clientEntity = await this.oauthClientRepository.findUniqueOrThrow({ where: { id: client } });
+            const clientEntity = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: client } });
 
             if (clientEntity.isRevoked) {
                 throw Exception.badRequest({
@@ -191,9 +189,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 });
             }
 
-            if (clientEntity.isRealmRevoked) {
+            if (clientEntity.isApplicationRevoked) {
                 throw Exception.badRequest({
-                    messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
+                    messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
                     code: ErrorCode.INVALID_CLIENT,
                 });
             }

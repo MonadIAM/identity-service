@@ -2,7 +2,6 @@ import { InterfaceClientManageController } from "./manage-interface-client.contr
 import { AuthzServerMetadataController } from "./authz-server-metadata.controller";
 import { ServiceClientManageController } from "./manage-service-client.controller";
 import { ApplicationManageController } from "./manage-application.controller";
-import { OAuthClientManageController } from "./manage-oauth-client.controller";
 import { IdentifierManageController } from "./manage-identifier.controller";
 import { ChangeLogManageController } from "./manage-change-log.controller";
 import { AuditLogManageController } from "./manage-audit-log.controller";
@@ -12,7 +11,6 @@ import { InterfaceClientController } from "./interface-client.controller";
 import { SecondFactorController } from "./second-factor.controller";
 import { RecoveryCodeController } from "./recovery-code.controller";
 import { ServiceClientController } from "./service-client.controller";
-import { OAuthClientController } from "./oauth-client.controller";
 import { ApplicationController } from "./application.controller";
 import { IdentifierController } from "./identifier.controller";
 import { PasswordController } from "./password.controller";
@@ -27,7 +25,6 @@ export const HTTP_CONTROLLERS = [
     AuthzServerMetadataController,
     ServiceClientManageController,
     ApplicationManageController,
-    OAuthClientManageController,
     IdentifierManageController,
     ChangeLogManageController,
     AuditLogManageController,
@@ -37,7 +34,6 @@ export const HTTP_CONTROLLERS = [
     SecondFactorController,
     RecoveryCodeController,
     ServiceClientController,
-    OAuthClientController,
     ApplicationController,
     IdentifierController,
     PasswordController,
@@ -53,7 +49,6 @@ export {
     AuthzServerMetadataController,
     ServiceClientManageController,
     ApplicationManageController,
-    OAuthClientManageController,
     IdentifierManageController,
     ChangeLogManageController,
     AuditLogManageController,
@@ -63,7 +58,6 @@ export {
     SecondFactorController,
     RecoveryCodeController,
     ServiceClientController,
-    OAuthClientController,
     ApplicationController,
     IdentifierController,
     PasswordController,

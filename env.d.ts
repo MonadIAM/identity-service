@@ -143,10 +143,8 @@ declare global {
             // Authorization Code Flow
             // ---------------------------------------------------------------------------
 
-            AUTHORIZATION_LOGIN_URL: string;
             AUTHORIZATION_REQUEST_TTL: StringValue;
             AUTHORIZATION_CODE_TTL: StringValue;
-            OAUTH_CLIENT_PER_REALM_LIMIT: `${number}`;
             APPLICATION_PER_REALM_LIMIT: `${number}`;
             INTERFACE_CLIENT_PER_APPLICATION_LIMIT: `${number}`;
             SERVICE_CLIENT_PER_APPLICATION_LIMIT: `${number}`;

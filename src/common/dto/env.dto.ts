@@ -316,17 +316,11 @@ export class EnvironmentVariablesDTO {
     // Authorization Code Flow
     // ---------------------------------------------------------------------------
 
-    @Validator.IsString()
-    declare public AUTHORIZATION_LOGIN_URL: string;
-
     @Validator.IsMsString()
     declare public AUTHORIZATION_REQUEST_TTL: StringValue;
 
     @Validator.IsMsString()
     declare public AUTHORIZATION_CODE_TTL: StringValue;
-
-    @Validator.IsPositiveInt()
-    declare public OAUTH_CLIENT_PER_REALM_LIMIT: number;
 
     @Validator.IsPositiveInt()
     declare public APPLICATION_PER_REALM_LIMIT: number;

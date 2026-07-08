@@ -18,9 +18,9 @@ export class InterfaceClient {
     public name: string;
     public application: Application;
     public redirectUri: string;
-    public description?: string;
-    public authAddress?: string;
+    public authAddress: string;
     public grantTypes: TokenGrantType[];
+    public description?: string;
 
     public applicationVersion: number;
     public isSystemManaged: boolean;

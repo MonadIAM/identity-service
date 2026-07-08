@@ -18,9 +18,9 @@ declare global {
                     transaction: EntityManager;
                     input: {
                         description?: string;
-                        authAddress?: string;
                         application: Entities.Application;
                         redirectUri: string;
+                        authAddress: string;
                         name: string;
                     };
                 };

@@ -52,20 +52,9 @@
   "oauth": {
     "INVALID_AUTHORIZATION_REQUEST": "The authorization request is invalid or expired.",
     "CLIENT_REVOKED": "The OAuth client is revoked.",
-    "CLIENT_REALM_REVOKED": "The realm linked to this OAuth client is revoked.",
+    "CLIENT_APPLICATION_REVOKED": "The application linked to this OAuth client is revoked.",
     "INVALID_GRANT": "The authorization code is invalid, expired, or does not match the request.",
     "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client."
-  },
-  "oauth-client": {
-    "CREATED": "OAuth client successfully created.",
-    "UPDATED": "OAuth client successfully updated.",
-    "REVOKED": "OAuth client successfully revoked.",
-    "BULK_REVOKED_COUNT": "{count} OAuth clients successfully revoked.",
-    "RESTORED": "OAuth client successfully restored.",
-    "BULK_RESTORED_COUNT": "{count} OAuth clients successfully restored.",
-    "PURGED": "OAuth client successfully deleted.",
-    "BULK_PURGED_COUNT": "{count} OAuth clients successfully deleted.",
-    "CLIENTS_NOT_FOUND": "One or more OAuth clients were not found."
   },
   "application": {
     "CREATED": "Application successfully created.",

@@ -14,7 +14,7 @@ declare namespace Commands {
                 actor: string;
                 realm: string;
                 input: {
-                    authAddress?: string;
+                    authAddress: string;
                     description?: string;
                     application: string;
                     redirectUri: string;

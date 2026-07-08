@@ -9,12 +9,6 @@
     "INVALID_SCRIPT_HASH": "Redis returned an invalid Lua script hash.",
     "SCRIPT_NOT_LOADED": "Lua script is not loaded: {script}."
   },
-  "oauth-client": {
-    "REALM_LIMIT_EXCEEDED": "The OAuth client limit for this realm has been reached.",
-    "REDIRECT_URI_REQUIRED": "The redirect URI is required.",
-    "INVALID_REDIRECT_URI": "The redirect URI is invalid.",
-    "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "The redirect URI must not contain a fragment."
-  },
   "application": {
     "REALM_LIMIT_EXCEEDED": "The application limit for this realm has been reached."
   },

@@ -34,7 +34,7 @@ export const InterfaceClientSchema = new EntitySchema<InterfaceClient>({
         name: { type: "string", length: 255 },
         description: { type: "text", nullable: true },
         redirectUri: { type: "text" },
-        authAddress: { type: "text", nullable: true },
+        authAddress: { type: "text" },
         grantTypes: { type: "array", enum: true, items: () => TokenGrantType, array: true },
 
         applicationVersion: { type: "int" },

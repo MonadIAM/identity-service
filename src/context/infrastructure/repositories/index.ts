@@ -5,7 +5,6 @@ import { InterfaceClientRepository } from "./interface-client.repository";
 import { ServiceClientRepository } from "./service-client.repository";
 import { RecoveryCodeRepository } from "./recovery-code.repository";
 import { SecondFactorRepository } from "./second-factor.repository";
-import { OAuthClientRepository } from "./oauth-client.repository";
 import { ApplicationRepository } from "./application.repository";
 import { MasterCodeRepository } from "./master-code.repository";
 import { MembershipRepository } from "./membership.repository";
@@ -19,11 +18,10 @@ import { AccountRepository } from "./account.repository";
 import {
     PASSWORD_HISTORY_REPOSITORY,
     INTERFACE_CLIENT_REPOSITORY,
-    RECOVERY_CODE_REPOSITORY,
     SERVICE_CLIENT_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
+    RECOVERY_CODE_REPOSITORY,
     APPLICATION_REPOSITORY,
-    OAUTH_CLIENT_REPOSITORY,
     MASTER_CODE_REPOSITORY,
     MEMBERSHIP_REPOSITORY,
     IDENTIFIER_REPOSITORY,
@@ -55,10 +53,6 @@ export const REPOSITORIES: ClassProvider[] = [
     {
         provide: SECOND_FACTOR_REPOSITORY,
         useClass: SecondFactorRepository,
-    },
-    {
-        provide: OAUTH_CLIENT_REPOSITORY,
-        useClass: OAuthClientRepository,
     },
     {
         provide: APPLICATION_REPOSITORY,
@@ -108,7 +102,6 @@ export {
     SERVICE_CLIENT_REPOSITORY,
     RECOVERY_CODE_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
-    OAUTH_CLIENT_REPOSITORY,
     APPLICATION_REPOSITORY,
     MASTER_CODE_REPOSITORY,
     MEMBERSHIP_REPOSITORY,

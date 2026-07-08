@@ -19,10 +19,7 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
         const { transaction, input } = props;
 
         this.validateRedirectUri(input.redirectUri);
-
-        if (input.authAddress) {
-            this.validateRedirectUri(input.authAddress);
-        }
+        this.validateRedirectUri(input.authAddress);
 
         const limitExceeded = await this.interfaceClientRepository.wouldExceedApplicationLimit({
             application: input.application.id,

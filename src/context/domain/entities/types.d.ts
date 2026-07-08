@@ -6,7 +6,6 @@ import { ServiceClient as ServiceClientEntity } from "./service-client.entity";
 import { RecoveryCode as RecoveryCodeEntity } from "./recovery-code.entity";
 import { SecondFactor as SecondFactorEntity } from "./second-factor.entity";
 import { Application as ApplicationEntity } from "./application.entity";
-import { OAuthClient as OAuthClientEntity } from "./oauth-client.entity";
 import { MasterCode as MasterCodeEntity } from "./master-code.entity";
 import { Membership as MembershipEntity } from "./membership.entity";
 import { Identifier as IdentifierEntity } from "./identifier.entity";
@@ -129,28 +128,6 @@ declare global {
 
         type Session = SessionEntity;
 
-        namespace OAuthClient {
-            type ConstructorProps = {
-                grantTypes: TokenGrantType[];
-                redirectUri: string;
-                realm: string;
-                name: string;
-                description?: string;
-                isRevoked?: boolean;
-                isRealmRevoked?: boolean;
-                isSystemManaged?: boolean;
-                realmVersion?: number;
-            };
-
-            type ChangeDataProps = {
-                redirectUri?: string;
-                description?: string;
-                name?: string;
-            };
-        }
-
-        type OAuthClient = OAuthClientEntity;
-
         namespace Membership {
             type ConstructorProps = {
                 account: AccountEntity;
@@ -185,9 +162,9 @@ declare global {
             type ConstructorProps = {
                 name: string;
                 redirectUri: string;
+                authAddress: string;
                 grantTypes: TokenGrantType[];
                 application: ApplicationEntity;
-                authAddress?: string;
                 description?: string;
                 isRevoked?: boolean;
                 isSystemManaged?: boolean;

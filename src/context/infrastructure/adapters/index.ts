@@ -3,7 +3,6 @@ export { InterfaceClientAdapter } from "./interface-client.adapter";
 export { ServiceClientAdapter } from "./service-client.adapter";
 export { RecoveryCodeAdapter } from "./recovery-code.adapter";
 export { SecondFactorAdapter } from "./second-factor.adapter";
-export { OAuthClientAdapter } from "./oauth-client.adapter";
 export { ApplicationAdapter } from "./application.adapter";
 export { MasterCodeAdapter } from "./master-code.adapter";
 export { MembershipAdapter } from "./membership.adapter";

@@ -33,10 +33,9 @@ export class InterfaceClientDTO {
     declare public redirectUri: string;
 
     @Expose()
-    @Validator.IsOptional()
     @Validator.IsString()
-    @ApiProperty({ required: false, type: String })
-    declare public authAddress?: string;
+    @ApiProperty({ required: true, type: String })
+    declare public authAddress: string;
 
     @Expose()
     @Validator.IsArray()

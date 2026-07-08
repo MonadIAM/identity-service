@@ -3,7 +3,7 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { RealmTopicAction } from "@monadiam/contracts";
 import { lastValueFrom } from "rxjs";
 
-import { OAUTH_CLIENT_COMMANDS, APPLICATION_COMMANDS } from "~context/application/commands";
+import { APPLICATION_COMMANDS } from "~context/application/commands";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
@@ -13,8 +13,6 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
     private readonly logger = new Logger(RealmConsumer.name);
 
     public constructor(
-        @Inject(OAUTH_CLIENT_COMMANDS)
-        private readonly oauthClientCommands: Commands.OAuthClient.ConsumerContract,
         @Inject(APPLICATION_COMMANDS)
         private readonly applicationCommands: Commands.Application.ConsumerContract,
         @Inject(KAFKA_SERVICE)
@@ -27,19 +25,13 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
 
     private readonly handlers: Consumers.Realm.Handlers = {
         [RealmTopicAction.RESTORE]: async (payload) => {
-            await Promise.all([
-                this.oauthClientCommands.restoreRealm(payload),
-                this.applicationCommands.restoreRealm(payload),
-            ]);
+            await this.applicationCommands.restoreRealm(payload);
         },
         [RealmTopicAction.REVOKE]: async (payload) => {
-            await Promise.all([
-                this.oauthClientCommands.revokeRealm(payload),
-                this.applicationCommands.revokeRealm(payload),
-            ]);
+            await this.applicationCommands.revokeRealm(payload);
         },
         [RealmTopicAction.PURGE]: async (payload) => {
-            await Promise.all([this.oauthClientCommands.purgeRealm(payload), this.applicationCommands.purgeRealm(payload)]);
+            await this.applicationCommands.purgeRealm(payload);
         },
     };
 
