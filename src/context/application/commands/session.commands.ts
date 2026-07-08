@@ -113,13 +113,11 @@ export class SessionCommands implements Commands.Session.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
         }
 
-        const realms = payload.realms as string[];
-
         const refreshToken = await this.jwtService.signRefreshToken({
             client_id: session.client,
             sub: session.account.id,
+            realms: session.realms,
             sid: session.id,
-            realms,
         });
 
         await this.transactionalService.run({
@@ -140,7 +138,7 @@ export class SessionCommands implements Commands.Session.Contract {
             client_id: session.client,
             sub: session.account.id,
             sid: session.id,
-            realms,
+            realms: session.realms,
         });
 
         return { message: `${this.dictionaryPath}.REFRESHED`, accessToken, refreshToken };

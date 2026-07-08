@@ -16,6 +16,7 @@ export class Session {
 
     public refreshTokenHash?: string;
     public userAgent: string;
+    public realms: string[];
     public client: string;
     public ip: string;
 
@@ -32,6 +33,7 @@ export class Session {
 
         this.userAgent = props.userAgent;
         this.client = props.client;
+        this.realms = props.realms;
         this.ip = props.ip;
 
         this.account = props.account;

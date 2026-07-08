@@ -14,7 +14,7 @@ export const InterfaceClients = [
         description: "Local development web client.",
         auth_address: "http://localhost:3000/auth/login",
         redirect_uri: "http://localhost:3000/main",
-        grant_types: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],
+        grant_types: `{${TokenGrantType.AUTHORIZATION_CODE},${TokenGrantType.REFRESH_TOKEN}}`,
         application_version: 0,
         is_system_managed: true,
         is_application_revoked: false,

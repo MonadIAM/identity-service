@@ -1,15 +1,7 @@
 import { EntityManager } from "@mikro-orm/core";
 import { Seeder } from "@mikro-orm/seeder";
 
-import {
-    RecoveryCodes,
-    InterfaceClients,
-    Identifiers,
-    Applications,
-    Passwords,
-    Accounts,
-    Profiles,
-} from "../datasets/system";
+import { InterfaceClients, RecoveryCodes, Applications, Identifiers, Passwords, Accounts, Profiles } from "../datasets";
 
 export class SystemSeeder extends Seeder {
     public async run(entityManager: EntityManager): Promise<void> {

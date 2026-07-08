@@ -8,6 +8,7 @@ import { Session } from "./session.entity";
 
 function createSession(overrides?: Partial<Entities.Session.ConstructorProps>): Session {
     return new Session({
+        realms: ["00000001-0000-4000-8000-100000000001"],
         expiresAt: new Date(Date.now() + 3600000),
         userAgent: "Mozilla/5.0",
         account: {} as Account,

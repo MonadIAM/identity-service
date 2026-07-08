@@ -122,6 +122,7 @@ declare global {
                 userAgent: string;
                 expiresAt: Date;
                 client: string;
+                realms: string[];
                 ip: string;
             };
         }

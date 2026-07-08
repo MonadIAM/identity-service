@@ -17,6 +17,7 @@ export const SessionSchema = new EntitySchema<Session>({
             deleteRule: "cascade",
         },
 
+        realms: { type: "array", columnType: "text[]" },
         ip: { type: "text", columnType: "inet" },
         refreshTokenHash: { type: "text" },
         userAgent: { type: "text" },
