@@ -73,6 +73,7 @@ export class SessionCommands implements Commands.Session.Contract {
                         client: props.input.client,
                         realms: props.input.realms,
                         ip: props.context.ip,
+                        acr: props.input.acr,
                         account,
                     },
                 });
@@ -135,10 +136,12 @@ export class SessionCommands implements Commands.Session.Contract {
         });
 
         const accessToken = await this.jwtService.signAccessToken({
+            auth_time: Math.floor(session.createdAt.getTime() / 1e3),
             client_id: session.client,
             sub: session.account.id,
-            sid: session.id,
             realms: session.realms,
+            acr: session.acr,
+            sid: session.id,
         });
 
         return { message: `${this.dictionaryPath}.REFRESHED`, accessToken, refreshToken };

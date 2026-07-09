@@ -13,6 +13,7 @@ declare global {
 
             type Props = {
                 account: string;
+                acr: string;
                 ttl: number;
             };
 

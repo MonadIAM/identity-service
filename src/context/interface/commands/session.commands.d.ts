@@ -21,9 +21,10 @@ declare namespace Commands {
             type Props = {
                 context: Extract.Meta;
                 input: {
+                    realms: string[];
                     account: string;
                     client: string;
-                    realms: string[];
+                    acr: string;
                 };
             };
 

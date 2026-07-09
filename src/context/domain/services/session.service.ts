@@ -55,6 +55,7 @@ export class SessionService implements Services.Session.Contract {
             account: input.account,
             client: input.client,
             realms: input.realms,
+            acr: input.acr,
             ip: input.ip,
         });
 
@@ -74,6 +75,8 @@ export class SessionService implements Services.Session.Contract {
             sub: input.account.id,
             realms: input.realms,
             sid: session.id,
+            acr: session.acr,
+            auth_time: Math.floor(session.createdAt.getTime() / 1e3),
         });
 
         return {

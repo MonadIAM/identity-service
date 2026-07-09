@@ -14,6 +14,7 @@ function createSession(overrides?: Partial<Entities.Session.ConstructorProps>): 
         account: {} as Account,
         client: Client.WEB_DEV,
         ip: "127.0.0.1",
+        acr: "pwd",
         ...overrides,
     });
 }

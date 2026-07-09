@@ -120,9 +120,10 @@ declare global {
             type ConstructorProps = {
                 account: AccountEntity;
                 userAgent: string;
+                realms: string[];
                 expiresAt: Date;
                 client: string;
-                realms: string[];
+                acr: string;
                 ip: string;
             };
         }

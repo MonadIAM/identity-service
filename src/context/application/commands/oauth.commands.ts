@@ -167,6 +167,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 realms: Array.from(new Set([SYSTEM_REALM_ID, client.application.realm])),
                 account: authorization.account,
                 client: authorization.client,
+                acr: authorization.acr,
             },
         });
     }
@@ -232,6 +233,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         const issued = await this.authorizationCacheService.issue({
             authorizationRequest: props.authorizationRequest,
             account: props.account,
+            acr: props.acr,
         });
 
         if (issued) {

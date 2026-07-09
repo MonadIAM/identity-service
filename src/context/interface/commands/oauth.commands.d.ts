@@ -111,6 +111,7 @@ declare global {
                 type Props = {
                     authorizationRequest: string;
                     account: string;
+                    acr: string;
                 };
 
                 type Result = Promise<{

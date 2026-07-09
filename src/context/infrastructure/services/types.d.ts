@@ -40,6 +40,7 @@ declare global {
 
             type CodeMetadata = Omit<RequestMetadata, "state"> & {
                 account: string;
+                acr: string;
             };
 
             namespace IssueAttempt {
@@ -70,6 +71,7 @@ declare global {
                 type Props = {
                     authorizationRequest: string;
                     account: string;
+                    acr: string;
                 };
 
                 type Result = Promise<

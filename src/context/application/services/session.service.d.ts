@@ -26,6 +26,7 @@ declare global {
                         userAgent: string;
                         realms: string[];
                         client: string;
+                        acr: string;
                         ip: string;
                     };
                 };

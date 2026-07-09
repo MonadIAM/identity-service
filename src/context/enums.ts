@@ -58,6 +58,15 @@ export enum Client {
     WEB_DEV = "web-dev",
 }
 
+export enum AuthenticationContextClass {
+    /* eslint-disable prettier/prettier */
+    FEDERATED = "federated",
+    PASSWORD  = "pwd",
+    OTP       = "otp",
+    MFA       = "mfa",
+    /* eslint-enable prettier/prettier */
+}
+
 export enum ActionType {
     /* eslint-disable prettier/prettier */
     DEACTIVATE = "DEACTIVATE",

@@ -67,6 +67,7 @@ export class AuthorizationCacheService implements InfrastructureServices.Authori
         const payload: Scripts.IssueCode.Props = {
             account: props.account,
             ttl: this.codeTTL,
+            acr: props.acr,
         };
 
         const result: Scripts.IssueCode.Result = JSON.parse(

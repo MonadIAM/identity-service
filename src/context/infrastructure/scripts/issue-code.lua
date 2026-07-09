@@ -14,11 +14,12 @@ end
 
 local request = cjson.decode(raw)
 local code = cjson.encode({
+    codeChallengeMethod = request.codeChallengeMethod,
+    codeChallenge = request.codeChallenge,
+    redirectUri = request.redirectUri,
     account = payload.account,
     client = request.client,
-    redirectUri = request.redirectUri,
-    codeChallenge = request.codeChallenge,
-    codeChallengeMethod = request.codeChallengeMethod
+    acr = payload.acr
 })
 
 redis.call("SET", KEYS[2], code, "EX", tostring(payload.ttl))

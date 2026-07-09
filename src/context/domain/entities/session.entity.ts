@@ -19,6 +19,7 @@ export class Session {
     public realms: string[];
     public client: string;
     public ip: string;
+    public acr: string;
 
     public account: Account;
 
@@ -34,6 +35,7 @@ export class Session {
         this.userAgent = props.userAgent;
         this.client = props.client;
         this.realms = props.realms;
+        this.acr = props.acr;
         this.ip = props.ip;
 
         this.account = props.account;

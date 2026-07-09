@@ -3,10 +3,10 @@ import { TOTP, Secret } from "otpauth";
 
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
+import { AuthenticationContextClass, IdentifierType, AccountStatus } from "~context/enums";
 import { OAUTH_COMMANDS } from "~context/application/commands/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
-import { IdentifierType, AccountStatus } from "~context/enums";
 import { Exception } from "~common/exceptions";
 import {
     SECOND_FACTOR_SECRET_SERVICE,
@@ -89,6 +89,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
         const result = await this.oauthCommands.completeAuthorization({
             authorizationRequest: props.input.authorizationRequest,
             account: identifier.account.id,
+            acr: AuthenticationContextClass.PASSWORD,
         });
 
         return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED`, ...result };
@@ -159,6 +160,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
         const result = await this.oauthCommands.completeAuthorization({
             authorizationRequest: props.input.authorizationRequest,
             account: identifier.account.id,
+            acr: AuthenticationContextClass.OTP,
         });
 
         return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED`, ...result };
@@ -217,6 +219,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
         const result = await this.oauthCommands.completeAuthorization({
             authorizationRequest: cached.authorizationRequest,
             account: factor.account.id,
+            acr: AuthenticationContextClass.MFA,
         });
 
         return { message: `${this.dictionaryPath}.AUTHORIZATION_CONFIRMED`, ...result };

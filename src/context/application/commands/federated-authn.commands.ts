@@ -1,7 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { BlacklistTopicAction } from "@monadiam/contracts";
 
-import { AccountSubject, IdentifierType, AccountStatus, EntityType, KafkaTopic, ActionType, Client } from "~context/enums";
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SERVICE } from "~common/services";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
@@ -9,6 +8,16 @@ import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { SYSTEM_REALM_ID } from "~context/constants";
 import { Exception } from "~common/exceptions";
+import {
+    AuthenticationContextClass,
+    AccountSubject,
+    IdentifierType,
+    AccountStatus,
+    EntityType,
+    KafkaTopic,
+    ActionType,
+    Client,
+} from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract {
@@ -126,6 +135,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 return this.sessionService.create({
                     transaction,
                     input: {
+                        acr: AuthenticationContextClass.FEDERATED,
                         userAgent: props.context.userAgent,
                         account: props.input.account,
                         realms: [SYSTEM_REALM_ID],
@@ -164,10 +174,10 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     input: {
                         account: props.input.account,
                         identifier: {
-                            type: IdentifierType.OAUTH,
                             value: `${props.input.provider}:${props.input.providerUserId}`,
-                            provider: props.input.provider,
                             providerUserId: props.input.providerUserId,
+                            provider: props.input.provider,
+                            type: IdentifierType.OAUTH,
                             isVerified: true,
                         },
                     },
@@ -176,8 +186,9 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 return this.sessionService.create({
                     transaction,
                     input: {
-                        account: props.input.account,
+                        acr: AuthenticationContextClass.FEDERATED,
                         userAgent: props.context.userAgent,
+                        account: props.input.account,
                         realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
@@ -209,10 +220,10 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     transaction,
                     input: {
                         primaryIdentifier: {
-                            type: IdentifierType.OAUTH,
                             value: `${props.input.provider}:${props.input.providerUserId}`,
-                            provider: props.input.provider,
                             providerUserId: props.input.providerUserId,
+                            provider: props.input.provider,
+                            type: IdentifierType.OAUTH,
                             isVerified: true,
                         },
                         additionalIdentifier:
@@ -237,6 +248,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 return this.sessionService.create({
                     transaction,
                     input: {
+                        acr: AuthenticationContextClass.FEDERATED,
                         userAgent: props.context.userAgent,
                         realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
