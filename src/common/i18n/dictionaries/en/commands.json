@@ -117,6 +117,7 @@
   "session": {
     "ACCOUNT_NOT_AUTHENTICATABLE": "The account cannot create a session.",
     "INVALID_REFRESH_TOKEN": "The refresh token is invalid.",
+    "REFRESH_TOKEN_REUSE_DETECTED": "This refresh token was already rotated. The session has been revoked as a precaution.",
     "SESSION_NOT_FOUND": "The session was not found.",
     "REFRESHED": "Session refreshed.",
     "LOGOUT": "Signed out from the current session.",

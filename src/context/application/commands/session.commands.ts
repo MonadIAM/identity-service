@@ -111,7 +111,26 @@ export class SessionCommands implements Commands.Session.Contract {
         const tokenHash = this.cryptoService.hashToken(props.input.refreshToken);
 
         if (tokenHash !== session.refreshTokenHash) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
+            await this.transactionalService.run<Entities.Session[]>({
+                resource: this.resource,
+                audit: {
+                    entityType: EntityType.SESSION,
+                    actionType: ActionType.REVOKE,
+                    context: props.context,
+                    input: { session: session.id },
+                },
+                outbox: {
+                    payloadMapper: this.outboxPayloadMapper.bind(this),
+                    destinationTopic: KafkaTopic.BLACKLIST,
+                    actionType: BlacklistTopicAction.ADD,
+                },
+                execute: (transaction) => {
+                    this.sessionService.purge({ input: { sessions: [session] }, transaction });
+                    return [session];
+                },
+            });
+
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.REFRESH_TOKEN_REUSE_DETECTED` });
         }
 
         const refreshToken = await this.jwtService.signRefreshToken({
