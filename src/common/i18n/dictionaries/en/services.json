@@ -23,7 +23,15 @@
   },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "The access token is invalid or expired.",
-    "INVALID_REFRESH_TOKEN": "The refresh token is invalid."
+    "INVALID_REFRESH_TOKEN": "The refresh token is invalid.",
+    "ACCESS_TOKEN_EXPIRED": "The access token has expired.",
+    "ACCESS_TOKEN_INVALID_SIGNATURE": "The access token signature could not be verified.",
+    "ACCESS_TOKEN_INVALID_CLAIMS": "The access token \"{claim}\" claim failed validation.",
+    "ACCESS_TOKEN_MALFORMED": "The access token is malformed.",
+    "REFRESH_TOKEN_EXPIRED": "The refresh token has expired.",
+    "REFRESH_TOKEN_INVALID_SIGNATURE": "The refresh token signature could not be verified.",
+    "REFRESH_TOKEN_INVALID_CLAIMS": "The refresh token \"{claim}\" claim failed validation.",
+    "REFRESH_TOKEN_MALFORMED": "The refresh token is malformed."
   },
   "vault": {
     "REQUEST_FAILED": "Vault Transit request failed.",

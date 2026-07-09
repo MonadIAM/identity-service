@@ -172,6 +172,7 @@ declare global {
 
         namespace JWT {
             interface PrivateContract {
+                resolveVerificationFailure(error: unknown, tokenType: "ACCESS" | "REFRESH"): Failure;
                 sign(payload: JWTPayload, props: Sign.Props): Promise<string>;
             }
 
@@ -182,6 +183,12 @@ declare global {
                 verifyAccess(token: string): Promise<JWTPayload>;
                 getJWKS(name?: string): Promise<GetJWKS>;
             }
+
+            type Failure = {
+                params?: UnknownObject;
+                description: string;
+                messageKey: string;
+            };
 
             type GetJWKS = {
                 keys: JWK[];

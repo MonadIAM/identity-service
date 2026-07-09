@@ -23,7 +23,15 @@
   },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",
-    "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен."
+    "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен.",
+    "ACCESS_TOKEN_EXPIRED": "Срок действия access-токена истёк.",
+    "ACCESS_TOKEN_INVALID_SIGNATURE": "Не удалось проверить подпись access-токена.",
+    "ACCESS_TOKEN_INVALID_CLAIMS": "Проверка claim'а \"{claim}\" access-токена не пройдена.",
+    "ACCESS_TOKEN_MALFORMED": "Access-токен имеет некорректный формат.",
+    "REFRESH_TOKEN_EXPIRED": "Срок действия refresh-токена истёк.",
+    "REFRESH_TOKEN_INVALID_SIGNATURE": "Не удалось проверить подпись refresh-токена.",
+    "REFRESH_TOKEN_INVALID_CLAIMS": "Проверка claim'а \"{claim}\" refresh-токена не пройдена.",
+    "REFRESH_TOKEN_MALFORMED": "Refresh-токен имеет некорректный формат."
   },
   "vault": {
     "REQUEST_FAILED": "Запрос к Vault Transit завершился ошибкой.",

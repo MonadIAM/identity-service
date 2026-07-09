@@ -1,4 +1,4 @@
-import { base64url, createLocalJWKSet, exportJWK, importSPKI, jwtVerify, JWTPayload } from "jose";
+import { base64url, createLocalJWKSet, errors, exportJWK, importSPKI, jwtVerify, JWTPayload } from "jose";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { randomUUID } from "node:crypto";
@@ -57,13 +57,14 @@ export class JWTService implements CommonServices.JWT.Contract {
             });
 
             return payload;
-        } catch {
+        } catch (error) {
+            const { messageKey, description, params } = this.resolveVerificationFailure(error, "ACCESS");
             throw Exception.unauthorized({
-                messageKey: `${this.dictionaryPath}.INVALID_ACCESS_TOKEN`,
                 headers: {
-                    "WWW-Authenticate":
-                        'Bearer error="invalid_token", error_description="The access token is malformed, expired, or failed signature verification"',
+                    "WWW-Authenticate": `Bearer error="invalid_token", error_description="${description}"`,
                 },
+                messageKey,
+                params,
             });
         }
     }
@@ -88,8 +89,9 @@ export class JWTService implements CommonServices.JWT.Contract {
             });
 
             return payload;
-        } catch {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
+        } catch (error) {
+            const { messageKey, params } = this.resolveVerificationFailure(error, "REFRESH");
+            throw Exception.unauthorized({ messageKey, params });
         }
     }
 
@@ -136,5 +138,47 @@ export class JWTService implements CommonServices.JWT.Contract {
         const { signature } = await this.vaultTransitService.sign({ input, version, name: props.key });
 
         return `${input}.${signature}`;
+    }
+
+    public resolveVerificationFailure(error: unknown, tokenType: "ACCESS" | "REFRESH"): CommonServices.JWT.Failure {
+        const prefix = tokenType === "ACCESS" ? "ACCESS_TOKEN" : "REFRESH_TOKEN";
+        const label = tokenType === "ACCESS" ? "access" : "refresh";
+
+        switch (true) {
+            case error instanceof errors.JWTExpired:
+                return {
+                    messageKey: `${this.dictionaryPath}.${prefix}_EXPIRED`,
+                    description: `The ${label} token has expired`,
+                };
+
+            case error instanceof errors.JWSSignatureVerificationFailed:
+            case error instanceof errors.JOSEAlgNotAllowed:
+                return {
+                    messageKey: `${this.dictionaryPath}.${prefix}_INVALID_SIGNATURE`,
+                    description: `The ${label} token signature could not be verified`,
+                };
+
+            case error instanceof errors.JWTClaimValidationFailed:
+                return {
+                    messageKey: `${this.dictionaryPath}.${prefix}_INVALID_CLAIMS`,
+                    params: { claim: error.claim },
+                    description: `The ${label} token "${error.claim}" claim failed validation`,
+                };
+
+            case error instanceof errors.JWSInvalid:
+            case error instanceof errors.JWTInvalid:
+            case error instanceof errors.JWKSNoMatchingKey:
+            case error instanceof errors.JWKSMultipleMatchingKeys:
+                return {
+                    messageKey: `${this.dictionaryPath}.${prefix}_MALFORMED`,
+                    description: `The ${label} token is malformed`,
+                };
+
+            default:
+                return {
+                    messageKey: `${this.dictionaryPath}.INVALID_${prefix}`,
+                    description: `The ${label} token is invalid`,
+                };
+        }
     }
 }
