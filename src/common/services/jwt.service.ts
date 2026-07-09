@@ -60,7 +60,10 @@ export class JWTService implements CommonServices.JWT.Contract {
         } catch {
             throw Exception.unauthorized({
                 messageKey: `${this.dictionaryPath}.INVALID_ACCESS_TOKEN`,
-                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+                headers: {
+                    "WWW-Authenticate":
+                        'Bearer error="invalid_token", error_description="The access token is malformed, expired, or failed signature verification"',
+                },
             });
         }
     }

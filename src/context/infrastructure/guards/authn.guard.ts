@@ -36,7 +36,10 @@ export class AuthnGuard implements CanActivate {
             if (isBlacklisted) {
                 throw Exception.unauthorized({
                     messageKey: `${this.dictionaryPath}.SESSION_REVOKED`,
-                    headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+                    headers: {
+                        "WWW-Authenticate":
+                            'Bearer error="invalid_token", error_description="The session associated with this access token has been revoked"',
+                    },
                 });
             }
 
@@ -65,7 +68,8 @@ export class AuthnGuard implements CanActivate {
                 throw Exception.badRequest({
                     messageKey: `${this.dictionaryPath}.MALFORMED_AUTHORIZATION`,
                     headers: {
-                        "WWW-Authenticate": 'Bearer error="invalid_request"',
+                        "WWW-Authenticate":
+                            'Bearer error="invalid_request", error_description="The Authorization header is malformed; expected format: Bearer <token>"',
                     },
                 });
             }
