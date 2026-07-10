@@ -6,7 +6,7 @@ import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SER
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { SYSTEM_REALM_ID } from "~context/constants";
+import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
 import { Exception } from "~common/exceptions";
 import {
     AuthenticationContextClass,
@@ -138,6 +138,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                         acr: AuthenticationContextClass.FEDERATED,
                         userAgent: props.context.userAgent,
                         account: props.input.account,
+                        scope: DEFAULT_OAUTH_SCOPE,
                         realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
@@ -192,6 +193,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                         realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
+                        scope: DEFAULT_OAUTH_SCOPE,
                     },
                 });
             },
@@ -253,6 +255,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                         realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
+                        scope: DEFAULT_OAUTH_SCOPE,
                         account,
                     },
                 });

@@ -19,6 +19,7 @@ local code = cjson.encode({
     redirectUri = request.redirectUri,
     account = payload.account,
     client = request.client,
+    scope = request.scope,
     acr = payload.acr
 })
 

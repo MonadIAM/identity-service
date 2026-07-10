@@ -72,6 +72,7 @@ export class SessionCommands implements Commands.Session.Contract {
                         userAgent: props.context.userAgent,
                         client: props.input.client,
                         realms: props.input.realms,
+                        scope: props.input.scope,
                         ip: props.context.ip,
                         acr: props.input.acr,
                         account,

@@ -27,6 +27,7 @@ declare global {
                         redirectUri: string;
                         client: string;
                         state: string;
+                        scope?: string;
                     };
                 };
 

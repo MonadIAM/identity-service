@@ -8,7 +8,7 @@ import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { ErrorCode, Exception } from "~common/exceptions";
-import { SYSTEM_REALM_ID } from "~context/constants";
+import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
 import { TokenGrantType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -58,6 +58,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
 
         const { id } = await this.authorizationCacheService.create({
             codeChallengeMethod: props.input.codeChallengeMethod,
+            scope: props.input.scope ?? DEFAULT_OAUTH_SCOPE,
             codeChallenge: props.input.codeChallenge,
             redirectUri: props.input.redirectUri,
             state: props.input.state,
@@ -167,6 +168,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 realms: Array.from(new Set([SYSTEM_REALM_ID, client.application.realm])),
                 account: authorization.account,
                 client: authorization.client,
+                scope: authorization.scope,
                 acr: authorization.acr,
             },
         });

@@ -123,6 +123,7 @@ declare global {
                 realms: string[];
                 expiresAt: Date;
                 client: string;
+                scope: string;
                 acr: string;
                 ip: string;
             };

@@ -22,6 +22,7 @@ export const SessionSchema = new EntitySchema<Session>({
         refreshTokenHash: { type: "text" },
         userAgent: { type: "text" },
         client: { type: "text" },
+        scope: { type: "text" },
         acr: { type: "text" },
 
         expiresAt: { type: "timestamptz", length: 3 },

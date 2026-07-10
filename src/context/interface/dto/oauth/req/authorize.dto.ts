@@ -68,4 +68,16 @@ export class AuthorizeQueryDTO {
         description: "Also accepted as `codeChallengeMethod` for backward compatibility.",
     })
     declare public codeChallengeMethod: CodeChallengeMethod;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsString()
+    @Validator.IsMatches(/^[!#-\[\]-~]+(?: [!#-\[\]-~]+)*$/)
+    @ApiProperty({
+        required: false,
+        type: String,
+        example: "openid profile email",
+        description: "Space-delimited scope values (RFC 6749 §3.3). Include `openid` to enable OpenID Connect.",
+    })
+    declare public scope?: string;
 }

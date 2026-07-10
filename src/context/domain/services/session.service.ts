@@ -55,6 +55,7 @@ export class SessionService implements Services.Session.Contract {
             account: input.account,
             client: input.client,
             realms: input.realms,
+            scope: input.scope,
             acr: input.acr,
             ip: input.ip,
         });

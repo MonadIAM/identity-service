@@ -24,6 +24,7 @@ declare namespace Commands {
                     realms: string[];
                     account: string;
                     client: string;
+                    scope: string;
                     acr: string;
                 };
             };

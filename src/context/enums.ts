@@ -67,6 +67,15 @@ export enum AuthenticationContextClass {
     /* eslint-enable prettier/prettier */
 }
 
+// export enum OidcScope {
+//     /* eslint-disable prettier/prettier */
+//     OFFLINE_ACCESS = "offline_access",
+//     PROFILE        = "profile",
+//     OPENID         = "openid",
+//     EMAIL          = "email",
+//     /* eslint-enable prettier/prettier */
+// }
+
 export enum ActionType {
     /* eslint-disable prettier/prettier */
     DEACTIVATE = "DEACTIVATE",
