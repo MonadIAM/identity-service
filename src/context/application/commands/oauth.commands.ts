@@ -61,6 +61,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             scope: props.input.scope ?? DEFAULT_OAUTH_SCOPE,
             codeChallenge: props.input.codeChallenge,
             redirectUri: props.input.redirectUri,
+            nonce: props.input.nonce,
             state: props.input.state,
             client: client.id,
         });
@@ -169,6 +170,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 account: authorization.account,
                 client: authorization.client,
                 scope: authorization.scope,
+                nonce: authorization.nonce,
                 acr: authorization.acr,
             },
         });

@@ -174,6 +174,7 @@ declare global {
             interface PrivateContract {
                 resolveVerificationFailure(error: unknown, tokenType: "ACCESS" | "REFRESH"): Failure;
                 sign(payload: JWTPayload, props: Sign.Props): Promise<string>;
+                computeAtHash(accessToken: string): string;
             }
 
             interface Contract extends PrivateContract {
@@ -206,6 +207,7 @@ declare global {
 
             namespace SignIdToken {
                 type Props = {
+                    accessToken: string;
                     audience: string;
                 };
             }

@@ -73,6 +73,7 @@ export class SessionCommands implements Commands.Session.Contract {
                         client: props.input.client,
                         realms: props.input.realms,
                         scope: props.input.scope,
+                        nonce: props.input.nonce,
                         ip: props.context.ip,
                         acr: props.input.acr,
                         account,
@@ -84,6 +85,7 @@ export class SessionCommands implements Commands.Session.Contract {
         return {
             refreshToken: session.refreshToken,
             accessToken: session.accessToken,
+            idToken: session.idToken,
         };
     }
 

@@ -28,6 +28,7 @@ declare global {
                         client: string;
                         state: string;
                         scope?: string;
+                        nonce?: string;
                     };
                 };
 

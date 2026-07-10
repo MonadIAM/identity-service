@@ -1,7 +1,7 @@
 import { base64url, createLocalJWKSet, errors, exportJWK, importSPKI, jwtVerify, JWTPayload } from "jose";
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { randomUUID, createHash } from "node:crypto";
 import { ConfigService } from "@nestjs/config";
-import { randomUUID } from "node:crypto";
 import ms, { StringValue } from "ms";
 
 import { Exception } from "~common/exceptions";
@@ -100,12 +100,15 @@ export class JWTService implements CommonServices.JWT.Contract {
     }
 
     public signIdToken(payload: JWTPayload, props: CommonServices.JWT.SignIdToken.Props): Promise<string> {
-        return this.sign(payload, {
-            audience: props.audience,
-            key: this.idKey,
-            ttl: this.idTTL,
-            type: "JWT",
-        });
+        return this.sign(
+            { ...payload, at_hash: this.computeAtHash(props.accessToken) },
+            {
+                audience: props.audience,
+                key: this.idKey,
+                ttl: this.idTTL,
+                type: "JWT",
+            },
+        );
     }
 
     public async getJWKS(name = this.accessKey): Promise<CommonServices.JWT.GetJWKS> {
@@ -193,5 +196,10 @@ export class JWTService implements CommonServices.JWT.Contract {
                     description: `The ${label} token is invalid`,
                 };
         }
+    }
+
+    public computeAtHash(accessToken: string): string {
+        const digest = createHash("sha256").update(accessToken, "ascii").digest();
+        return base64url.encode(digest.subarray(0, digest.length / 2));
     }
 }

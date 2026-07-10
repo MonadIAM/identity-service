@@ -80,4 +80,14 @@ export class AuthorizeQueryDTO {
         description: "Space-delimited scope values (RFC 6749 §3.3). Include `openid` to enable OpenID Connect.",
     })
     declare public scope?: string;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsString()
+    @ApiProperty({
+        required: false,
+        type: String,
+        description: "Opaque value echoed back unchanged in the id_token's `nonce` claim (OIDC Core §2, §3.1.3.6).",
+    })
+    declare public nonce?: string;
 }

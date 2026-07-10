@@ -12,6 +12,7 @@ declare global {
                 type Tokens = {
                     refreshToken: string;
                     accessToken: string;
+                    idToken?: string;
                 };
 
                 type RevokedSession = {
@@ -29,6 +30,7 @@ declare global {
                         scope: string;
                         acr: string;
                         ip: string;
+                        nonce?: string;
                     };
                 };
 

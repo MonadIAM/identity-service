@@ -20,6 +20,7 @@ local code = cjson.encode({
     account = payload.account,
     client = request.client,
     scope = request.scope,
+    nonce = request.nonce,
     acr = payload.acr
 })
 

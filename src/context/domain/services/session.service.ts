@@ -5,6 +5,7 @@ import ms, { StringValue } from "ms";
 import { SESSION_REPOSITORY } from "~context/infrastructure/repositories";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { Session } from "~context/domain/entities";
+import { OidcScope } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionService implements Services.Session.Contract {
@@ -72,18 +73,36 @@ export class SessionService implements Services.Session.Contract {
         transaction.persist(session);
 
         const accessToken = await this.jwtService.signAccessToken({
+            auth_time: Math.floor(session.createdAt.getTime() / 1e3),
             client_id: session.client,
             sub: input.account.id,
             realms: input.realms,
-            sid: session.id,
             acr: session.acr,
-            auth_time: Math.floor(session.createdAt.getTime() / 1e3),
+            sid: session.id,
         });
+
+        let idToken: Optional<string>;
+
+        if (session.scope.split(" ").includes(OidcScope.OPENID)) {
+            idToken = await this.jwtService.signIdToken(
+                {
+                    auth_time: Math.floor(session.createdAt.getTime() / 1e3),
+                    ...(input.nonce ? { nonce: input.nonce } : {}),
+                    sub: input.account.id,
+                    acr: session.acr,
+                },
+                {
+                    audience: session.client,
+                    accessToken,
+                },
+            );
+        }
 
         return {
             revokedSessions,
             refreshToken,
             accessToken,
+            idToken,
         };
     }
 

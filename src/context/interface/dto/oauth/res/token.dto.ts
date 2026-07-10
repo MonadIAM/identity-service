@@ -21,4 +21,10 @@ export class TokenResultDTO {
     @Validator.IsPositiveInt()
     @ApiPropertyOptional({ type: Number })
     declare public expiresIn?: number;
+
+    @Validator.ExposeAs("id_token")
+    @Validator.IsOptional()
+    @Validator.IsString()
+    @ApiPropertyOptional({ type: String })
+    declare public idToken?: string;
 }

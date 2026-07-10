@@ -26,6 +26,7 @@ declare namespace Commands {
                     client: string;
                     scope: string;
                     acr: string;
+                    nonce?: string;
                 };
             };
 
