@@ -14,11 +14,13 @@ export class JWTService implements CommonServices.JWT.Contract {
 
     private readonly refreshKey: string;
     private readonly accessKey: string;
+    private readonly idKey: string;
 
     private readonly refreshAudience: string;
     private readonly accessAudience: string;
     private readonly refreshTTL: number;
     private readonly accessTTL: number;
+    private readonly idTTL: number;
     private readonly issuer: string;
 
     private readonly algorithm = "ES256";
@@ -32,6 +34,8 @@ export class JWTService implements CommonServices.JWT.Contract {
         this.accessKey = this.config.getOrThrow<string>("VAULT_TRANSIT_ACCESS_KEY");
         this.refreshTTL = ms(this.config.getOrThrow<StringValue>("JWT_REFRESH_TTL"));
         this.accessTTL = ms(this.config.getOrThrow<StringValue>("JWT_ACCESS_TTL"));
+        this.idTTL = ms(this.config.getOrThrow<StringValue>("JWT_ID_TOKEN_TTL"));
+        this.idKey = this.config.getOrThrow<string>("VAULT_TRANSIT_ID_KEY");
         this.issuer = this.config.getOrThrow<string>("JWT_ISSUER");
         this.refreshAudience = `${this.issuer}:authn`;
         this.accessAudience = `${this.issuer}:api`;
@@ -93,6 +97,15 @@ export class JWTService implements CommonServices.JWT.Contract {
             const { messageKey, params } = this.resolveVerificationFailure(error, "REFRESH");
             throw Exception.unauthorized({ messageKey, params });
         }
+    }
+
+    public signIdToken(payload: JWTPayload, props: CommonServices.JWT.SignIdToken.Props): Promise<string> {
+        return this.sign(payload, {
+            audience: props.audience,
+            key: this.idKey,
+            ttl: this.idTTL,
+            type: "JWT",
+        });
     }
 
     public async getJWKS(name = this.accessKey): Promise<CommonServices.JWT.GetJWKS> {

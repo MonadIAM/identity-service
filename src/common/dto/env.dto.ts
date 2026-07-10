@@ -267,6 +267,15 @@ export class EnvironmentVariablesDTO {
     declare public VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS: number;
 
     @Validator.IsString()
+    declare public VAULT_TRANSIT_ID_KEY: string;
+
+    @Validator.IsMsString()
+    declare public VAULT_TRANSIT_ID_ROTATION_PERIOD: StringValue;
+
+    @Validator.IsPositiveInt()
+    declare public VAULT_TRANSIT_ID_RETAIN_VERSIONS: number;
+
+    @Validator.IsString()
     declare public VAULT_TRANSIT_TOTP_KEY: string;
 
     @Validator.IsMsString()
@@ -423,6 +432,9 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsMsString()
     declare public JWT_REFRESH_TTL: StringValue;
+
+    @Validator.IsMsString()
+    declare public JWT_ID_TOKEN_TTL: StringValue;
 
     // Session
     @Validator.IsMsString()

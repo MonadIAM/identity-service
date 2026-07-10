@@ -119,6 +119,9 @@ declare global {
             VAULT_TRANSIT_REFRESH_KEY: string;
             VAULT_TRANSIT_REFRESH_ROTATION_PERIOD: StringValue;
             VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS: `${number}`;
+            VAULT_TRANSIT_ID_KEY: string;
+            VAULT_TRANSIT_ID_ROTATION_PERIOD: StringValue;
+            VAULT_TRANSIT_ID_RETAIN_VERSIONS: `${number}`;
             VAULT_TRANSIT_TOTP_KEY: string;
             VAULT_TRANSIT_TOTP_ROTATION_PERIOD: StringValue;
             VAULT_KEY_TRIM_SCHEDULE: string;
@@ -197,6 +200,7 @@ declare global {
             JWT_ISSUER: string;
             JWT_ACCESS_TTL: StringValue;
             JWT_REFRESH_TTL: StringValue;
+            JWT_ID_TOKEN_TTL: StringValue;
 
             // Session
             SESSION_EXPIRY_DAYS: StringValue;

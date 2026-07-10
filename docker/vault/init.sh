@@ -13,12 +13,19 @@ vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_ACCESS_KEY" >/dev/null 2>&1
 vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY" >/dev/null 2>&1 ||
     vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY" type=ecdsa-p256
 
+vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_ID_KEY" >/dev/null 2>&1 ||
+    vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_ID_KEY" type=ecdsa-p256
+
 vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_ACCESS_KEY/config" \
     auto_rotate_period="$VAULT_TRANSIT_ACCESS_ROTATION_PERIOD" \
     deletion_allowed=true
 
 vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_REFRESH_KEY/config" \
     auto_rotate_period="$VAULT_TRANSIT_REFRESH_ROTATION_PERIOD" \
+    deletion_allowed=true
+
+vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_ID_KEY/config" \
+    auto_rotate_period="$VAULT_TRANSIT_ID_ROTATION_PERIOD" \
     deletion_allowed=true
 
 vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY" >/dev/null 2>&1 ||
@@ -45,6 +52,7 @@ sed \
     -e "s|{{mount}}|$VAULT_TRANSIT_MOUNT|g" \
     -e "s|{{access_key}}|$VAULT_TRANSIT_ACCESS_KEY|g" \
     -e "s|{{refresh_key}}|$VAULT_TRANSIT_REFRESH_KEY|g" \
+    -e "s|{{id_key}}|$VAULT_TRANSIT_ID_KEY|g" \
     -e "s|{{totp_key}}|$VAULT_TRANSIT_TOTP_KEY|g" \
     /identity-service-policy.hcl > /tmp/identity-service-policy.hcl
 
@@ -54,6 +62,7 @@ sed \
     -e "s|{{mount}}|$VAULT_TRANSIT_MOUNT|g" \
     -e "s|{{access_key}}|$VAULT_TRANSIT_ACCESS_KEY|g" \
     -e "s|{{refresh_key}}|$VAULT_TRANSIT_REFRESH_KEY|g" \
+    -e "s|{{id_key}}|$VAULT_TRANSIT_ID_KEY|g" \
     /key-trim-policy.hcl > /tmp/key-trim-policy.hcl
 
 vault policy write vault-key-trim /tmp/key-trim-policy.hcl

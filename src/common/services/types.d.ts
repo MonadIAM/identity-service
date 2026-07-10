@@ -179,6 +179,7 @@ declare global {
             interface Contract extends PrivateContract {
                 signRefreshToken(payload: JWTPayload): Promise<string>;
                 signAccessToken(payload: JWTPayload): Promise<string>;
+                signIdToken(payload: JWTPayload, props: SignIdToken.Props): Promise<string>;
                 verifyRefresh(token: string): Promise<JWTPayload>;
                 verifyAccess(token: string): Promise<JWTPayload>;
                 getJWKS(name?: string): Promise<GetJWKS>;
@@ -200,6 +201,12 @@ declare global {
                     type: string;
                     key: string;
                     ttl: number;
+                };
+            }
+
+            namespace SignIdToken {
+                type Props = {
+                    audience: string;
                 };
             }
         }

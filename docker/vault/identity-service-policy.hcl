@@ -6,6 +6,10 @@ path "{{mount}}/keys/{{refresh_key}}" {
   capabilities = ["read"]
 }
 
+path "{{mount}}/keys/{{id_key}}" {
+  capabilities = ["read"]
+}
+
 path "{{mount}}/keys/{{totp_key}}" {
   capabilities = ["read"]
 }
@@ -15,6 +19,10 @@ path "{{mount}}/sign/{{access_key}}" {
 }
 
 path "{{mount}}/sign/{{refresh_key}}" {
+  capabilities = ["update"]
+}
+
+path "{{mount}}/sign/{{id_key}}" {
   capabilities = ["update"]
 }
 

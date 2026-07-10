@@ -6,6 +6,10 @@ path "{{mount}}/keys/{{refresh_key}}" {
   capabilities = ["read"]
 }
 
+path "{{mount}}/keys/{{id_key}}" {
+  capabilities = ["read"]
+}
+
 path "{{mount}}/keys/{{access_key}}/config" {
   capabilities = ["update"]
 }
@@ -14,11 +18,19 @@ path "{{mount}}/keys/{{refresh_key}}/config" {
   capabilities = ["update"]
 }
 
+path "{{mount}}/keys/{{id_key}}/config" {
+  capabilities = ["update"]
+}
+
 path "{{mount}}/keys/{{access_key}}/trim" {
   capabilities = ["update"]
 }
 
 path "{{mount}}/keys/{{refresh_key}}/trim" {
+  capabilities = ["update"]
+}
+
+path "{{mount}}/keys/{{id_key}}/trim" {
   capabilities = ["update"]
 }
 
