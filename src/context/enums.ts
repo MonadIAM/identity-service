@@ -70,9 +70,9 @@ export enum AuthenticationContextClass {
 export enum OidcScope {
     /* eslint-disable prettier/prettier */
     // OFFLINE_ACCESS = "offline_access",
-    // PROFILE        = "profile",
+    PROFILE        = "profile",
     OPENID         = "openid",
-    // EMAIL          = "email",
+    EMAIL          = "email",
     /* eslint-enable prettier/prettier */
 }
 

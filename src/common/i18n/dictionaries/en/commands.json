@@ -54,7 +54,8 @@
     "CLIENT_REVOKED": "The OAuth client is revoked.",
     "CLIENT_APPLICATION_REVOKED": "The application linked to this OAuth client is revoked.",
     "INVALID_GRANT": "The authorization code is invalid, expired, or does not match the request.",
-    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client."
+    "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client.",
+    "INSUFFICIENT_SCOPE": "This access token was not issued with the openid scope."
   },
   "application": {
     "CREATED": "Application successfully created.",

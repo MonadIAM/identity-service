@@ -3,4 +3,5 @@ export { RevokeBodyDTO } from "./req/revoke.dto";
 export { TokenBodyDTO } from "./req/token.dto";
 
 export { AuthzServerMetadataDTO } from "./res/authz-server-metadata.dto";
+export { UserInfoResultDTO } from "./res/user-info.dto";
 export { TokenResultDTO } from "./res/token.dto";

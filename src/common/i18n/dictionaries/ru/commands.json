@@ -54,7 +54,8 @@
     "CLIENT_REVOKED": "OAuth-клиент отозван.",
     "CLIENT_APPLICATION_REVOKED": "Приложение, к которому привязан OAuth-клиент, отозвано.",
     "INVALID_GRANT": "Код авторизации недействителен, просрочен или не соответствует запросу.",
-    "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента."
+    "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента.",
+    "INSUFFICIENT_SCOPE": "Этот access-токен выдан без scope openid."
   },
   "application": {
     "CREATED": "Приложение успешно создано.",

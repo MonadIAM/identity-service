@@ -159,6 +159,7 @@ export class SessionCommands implements Commands.Session.Contract {
 
         const accessToken = await this.jwtService.signAccessToken({
             auth_time: Math.floor(session.createdAt.getTime() / 1e3),
+            ...(session.scope ? { scope: session.scope } : {}),
             client_id: session.client,
             sub: session.account.id,
             realms: session.realms,

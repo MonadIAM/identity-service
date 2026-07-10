@@ -1,14 +1,21 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { CodeChallengeMethod, OAuthResponseType, TokenGrantType } from "~context/enums";
+import { CodeChallengeMethod, OAuthResponseType, TokenGrantType, IdentifierType, OidcScope } from "~context/enums";
+import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class OAuthQueries implements Queries.OAuth.Contract {
+    private readonly dictionaryPath = "commands.oauth";
     private readonly issuer: string;
     private readonly apiBaseUrl: URL;
 
-    public constructor(configService: ConfigService) {
+    public constructor(
+        configService: ConfigService,
+        @Inject(ACCOUNT_REPOSITORY)
+        private readonly accountRepository: Repositories.Account.Contract,
+    ) {
         this.issuer = configService.getOrThrow<string>("JWT_ISSUER");
 
         const issuerUrl = new URL(this.issuer);
@@ -28,5 +35,47 @@ export class OAuthQueries implements Queries.OAuth.Contract {
             tokenEndpointAuthMethodsSupported: ["none"],
             issuer: this.issuer,
         };
+    }
+
+    public async getUserInfo(props: Queries.OAuth.UserInfo.Props): Queries.OAuth.UserInfo.Result {
+        const scopes = props.scope.split(" ");
+
+        if (scopes.includes(OidcScope.OPENID)) {
+            const account = await this.accountRepository.findUniqueOrThrow({
+                options: { populate: ["profile", "identifiers"] },
+                where: { id: props.account },
+            });
+
+            const claims: Awaited<Queries.OAuth.UserInfo.Result> = { sub: account.id };
+
+            if (scopes.includes(OidcScope.PROFILE) && account.profile) {
+                claims.picture = account.profile.pictureUrl;
+                claims.zoneinfo = account.profile.timeZone;
+                claims.name = account.profile.displayName;
+                claims.locale = account.profile.locale;
+                claims.updatedAt = account.profile.updatedAt
+                    ? Math.floor(account.profile.updatedAt.getTime() / 1e3)
+                    : undefined;
+            }
+
+            if (scopes.includes(OidcScope.EMAIL)) {
+                const email = account.identifiers.getItems().find((identifier) => identifier.type === IdentifierType.EMAIL);
+
+                if (email) {
+                    claims.email = email.value;
+                    claims.emailVerified = email.isVerified;
+                }
+            }
+
+            return claims;
+        } else {
+            throw Exception.forbidden({
+                messageKey: `${this.dictionaryPath}.INSUFFICIENT_SCOPE`,
+                headers: {
+                    "WWW-Authenticate":
+                        'Bearer error="insufficient_scope", error_description="This access token was not issued with the openid scope"',
+                },
+            });
+        }
     }
 }

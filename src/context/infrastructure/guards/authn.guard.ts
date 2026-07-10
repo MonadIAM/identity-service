@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
+import { DEFAULT_OAUTH_SCOPE } from "~context/constants";
 import { Exception } from "~common/exceptions";
 import { JWT_SERVICE } from "~common/services";
 import { IS_PUBLIC } from "~common/decorators";
@@ -44,6 +45,7 @@ export class AuthnGuard implements CanActivate {
             }
 
             request.session = {
+                scope: (payload.scope as string) ?? DEFAULT_OAUTH_SCOPE,
                 realms: payload.realms as string[],
                 session: payload.sid as string,
                 account: payload.sub as string,

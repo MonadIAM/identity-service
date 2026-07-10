@@ -74,6 +74,7 @@ export class SessionService implements Services.Session.Contract {
 
         const accessToken = await this.jwtService.signAccessToken({
             auth_time: Math.floor(session.createdAt.getTime() / 1e3),
+            ...(session.scope ? { scope: session.scope } : {}),
             client_id: session.client,
             sub: input.account.id,
             realms: input.realms,

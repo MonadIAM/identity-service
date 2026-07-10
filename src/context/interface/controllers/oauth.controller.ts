@@ -15,10 +15,11 @@ import {
 
 import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decorators";
 import { OAUTH_COMMANDS } from "~context/application/commands";
+import { OAUTH_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
-import { AuthorizeQueryDTO, TokenResultDTO, TokenBodyDTO, RevokeBodyDTO } from "../dto/oauth";
+import { AuthorizeQueryDTO, UserInfoResultDTO, TokenResultDTO, TokenBodyDTO, RevokeBodyDTO } from "../dto/oauth";
 
 const {
     INTERNAL_SERVER_ERROR,
@@ -40,6 +41,8 @@ export class OAuthController {
     public constructor(
         @Inject(OAUTH_COMMANDS)
         private readonly oauthCommands: Commands.OAuth.ControllerContract,
+        @Inject(OAUTH_QUERIES)
+        private readonly oauthQueries: Queries.OAuth.ControllerContract,
     ) {}
 
     @Public()
@@ -126,5 +129,23 @@ export class OAuthController {
             refreshToken,
             context,
         });
+    }
+
+    @HttpCode(OK)
+    @Get("userinfo")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
+    @FormatResponse(UserInfoResultDTO)
+    @ApiOperation({
+        summary: "Get claims about the authenticated end-user",
+        description:
+            "UserInfo Endpoint per OIDC Core §5.3. Requires an access token issued with the `openid` scope; claims returned depend on which additional scopes (`profile`, `email`) were granted.",
+        security: [{ identity: [] }],
+    })
+    @Swagger.OAuthExceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
+    public getUserInfo(
+        @Extract.Session() { account, scope }: Extract.Session.Authenticated,
+    ): Queries.OAuth.UserInfo.Result {
+        return this.oauthQueries.getUserInfo({ account, scope });
     }
 }

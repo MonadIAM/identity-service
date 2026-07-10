@@ -5,6 +5,7 @@ declare global {
         namespace OAuth {
             interface ControllerContract {
                 getAuthorizationServerMetadata(): AuthorizationServerMetadata.Result;
+                getUserInfo(props: UserInfo.Props): UserInfo.Result;
             }
 
             interface Contract extends ControllerContract {}
@@ -20,6 +21,24 @@ declare global {
                     jwksURI: string;
                     issuer: string;
                 };
+            }
+
+            namespace UserInfo {
+                type Props = {
+                    account: string;
+                    scope: string;
+                };
+
+                type Result = Promise<{
+                    sub: string;
+                    name?: string;
+                    picture?: string;
+                    zoneinfo?: string;
+                    locale?: string;
+                    updatedAt?: number;
+                    email?: string;
+                    emailVerified?: boolean;
+                }>;
             }
         }
     }
