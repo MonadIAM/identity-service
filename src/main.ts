@@ -31,7 +31,11 @@ async function bootstrap(): Promise<void> {
     const version: number = configService.getOrThrow<number>("API_VERSION");
 
     application.setGlobalPrefix(`api/v${version}`, {
-        exclude: [{ path: ".well-known/oauth-authorization-server", method: RequestMethod.GET }],
+        exclude: [
+            { path: ".well-known/oauth-authorization-server", method: RequestMethod.GET },
+            { path: ".well-known/openid-configuration", method: RequestMethod.GET },
+            { path: ".well-known/jwks.json", method: RequestMethod.GET },
+        ],
     });
 
     BootstrapPipes.applyGlobalPipes(application);

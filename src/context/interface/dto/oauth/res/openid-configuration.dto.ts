@@ -1,0 +1,33 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+
+import { Validator } from "~common/validator";
+
+import { AuthzServerMetadataDTO } from "./authz-server-metadata.dto";
+
+@ApiSchema({ name: "OpenIdConfiguration" })
+export class OpenIdConfigurationDTO extends AuthzServerMetadataDTO {
+    @Validator.ExposeAs("userinfo_endpoint")
+    @Validator.IsString()
+    @ApiProperty({ type: String })
+    declare public userinfoEndpoint: string;
+
+    @Validator.ExposeAs("subject_types_supported")
+    @Validator.IsArray()
+    @ApiProperty({ type: [String], enum: ["public"] })
+    declare public subjectTypesSupported: ["public"];
+
+    @Validator.ExposeAs("id_token_signing_alg_values_supported")
+    @Validator.IsArray()
+    @ApiProperty({ type: [String], enum: ["ES256"] })
+    declare public idTokenSigningAlgValuesSupported: ["ES256"];
+
+    @Validator.ExposeAs("scopes_supported")
+    @Validator.IsArray()
+    @ApiProperty({ type: [String] })
+    declare public scopesSupported: string[];
+
+    @Validator.ExposeAs("claims_supported")
+    @Validator.IsArray()
+    @ApiProperty({ type: [String] })
+    declare public claimsSupported: string[];
+}

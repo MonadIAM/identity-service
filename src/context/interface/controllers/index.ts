@@ -1,5 +1,4 @@
 import { InterfaceClientManageController } from "./manage-interface-client.controller";
-import { AuthzServerMetadataController } from "./authz-server-metadata.controller";
 import { ServiceClientManageController } from "./manage-service-client.controller";
 import { ApplicationManageController } from "./manage-application.controller";
 import { IdentifierManageController } from "./manage-identifier.controller";
@@ -13,16 +12,15 @@ import { RecoveryCodeController } from "./recovery-code.controller";
 import { ServiceClientController } from "./service-client.controller";
 import { ApplicationController } from "./application.controller";
 import { IdentifierController } from "./identifier.controller";
+import { DiscoveryController } from "./discovery.controller";
 import { PasswordController } from "./password.controller";
 import { ProfileController } from "./profile.controller";
 import { AccountController } from "./account.controller";
 import { AuthnController } from "./authn.controller";
 import { OAuthController } from "./oauth.controller";
-import { JWKSController } from "./jwks.controller";
 
 export const HTTP_CONTROLLERS = [
     InterfaceClientManageController,
-    AuthzServerMetadataController,
     ServiceClientManageController,
     ApplicationManageController,
     IdentifierManageController,
@@ -36,17 +34,16 @@ export const HTTP_CONTROLLERS = [
     ServiceClientController,
     ApplicationController,
     IdentifierController,
+    DiscoveryController,
     PasswordController,
     ProfileController,
     AccountController,
     AuthnController,
     OAuthController,
-    JWKSController,
 ];
 
 export {
     InterfaceClientManageController,
-    AuthzServerMetadataController,
     ServiceClientManageController,
     ApplicationManageController,
     IdentifierManageController,
@@ -60,10 +57,10 @@ export {
     ServiceClientController,
     ApplicationController,
     IdentifierController,
+    DiscoveryController,
     PasswordController,
     ProfileController,
     AccountController,
     AuthnController,
     OAuthController,
-    JWKSController,
 };

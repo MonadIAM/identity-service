@@ -37,6 +37,28 @@ export class OAuthQueries implements Queries.OAuth.Contract {
         };
     }
 
+    public getOpenIdConfiguration(): Queries.OAuth.OpenIdConfiguration.Result {
+        return {
+            ...this.getAuthorizationServerMetadata(),
+            userinfoEndpoint: new URL("oauth/userinfo", this.apiBaseUrl).toString(),
+            subjectTypesSupported: ["public"],
+            idTokenSigningAlgValuesSupported: ["ES256"],
+            scopesSupported: Object.values(OidcScope),
+            claimsSupported: [
+                "email_verified",
+                "updated_at",
+                "auth_time",
+                "zoneinfo",
+                "picture",
+                "locale",
+                "email",
+                "name",
+                "acr",
+                "sub",
+            ],
+        };
+    }
+
     public async getUserInfo(props: Queries.OAuth.UserInfo.Props): Queries.OAuth.UserInfo.Result {
         const scopes = props.scope.split(" ");
 
