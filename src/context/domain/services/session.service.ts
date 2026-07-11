@@ -91,6 +91,7 @@ export class SessionService implements Services.Session.Contract {
                     ...(input.nonce ? { nonce: input.nonce } : {}),
                     sub: input.account.id,
                     acr: session.acr,
+                    sid: session.id,
                 },
                 {
                     audience: session.client,

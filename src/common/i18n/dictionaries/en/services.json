@@ -31,7 +31,11 @@
     "REFRESH_TOKEN_EXPIRED": "The refresh token has expired.",
     "REFRESH_TOKEN_INVALID_SIGNATURE": "The refresh token signature could not be verified.",
     "REFRESH_TOKEN_INVALID_CLAIMS": "The refresh token \"{claim}\" claim failed validation.",
-    "REFRESH_TOKEN_MALFORMED": "The refresh token is malformed."
+    "REFRESH_TOKEN_MALFORMED": "The refresh token is malformed.",
+    "INVALID_ID_TOKEN": "The id_token_hint is invalid.",
+    "ID_TOKEN_INVALID_SIGNATURE": "The id_token_hint signature could not be verified.",
+    "ID_TOKEN_INVALID_CLAIMS": "The id_token_hint \"{claim}\" claim failed validation.",
+    "ID_TOKEN_MALFORMED": "The id_token_hint is malformed."
   },
   "vault": {
     "REQUEST_FAILED": "Vault Transit request failed.",

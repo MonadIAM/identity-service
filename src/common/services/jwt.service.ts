@@ -4,7 +4,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { Exception } from "~common/exceptions";
+import { ErrorCode, Exception } from "~common/exceptions";
 
 import { VAULT_TRANSIT_SERVICE } from "./tokens";
 
@@ -111,6 +111,25 @@ export class JWTService implements CommonServices.JWT.Contract {
         );
     }
 
+    public async verifyIdToken(token: string): Promise<JWTPayload> {
+        try {
+            const { payload } = await jwtVerify(token, createLocalJWKSet(await this.getJWKS(this.idKey)), {
+                requiredClaims: ["sub", "sid", "aud", "exp", "iat"],
+                algorithms: [this.algorithm],
+                issuer: this.issuer,
+            });
+
+            return payload;
+        } catch (error) {
+            if (error instanceof errors.JWTExpired) {
+                return error.payload;
+            }
+
+            const { messageKey } = this.resolveVerificationFailure(error, "ID");
+            throw Exception.badRequest({ messageKey, code: ErrorCode.INVALID_REQUEST });
+        }
+    }
+
     public async getJWKS(name = this.accessKey): Promise<CommonServices.JWT.GetJWKS> {
         const key = await this.vaultTransitService.getKey({ name });
         const keys = await Promise.all(
@@ -156,9 +175,13 @@ export class JWTService implements CommonServices.JWT.Contract {
         return `${input}.${signature}`;
     }
 
-    public resolveVerificationFailure(error: unknown, tokenType: "ACCESS" | "REFRESH"): CommonServices.JWT.Failure {
-        const prefix = tokenType === "ACCESS" ? "ACCESS_TOKEN" : "REFRESH_TOKEN";
-        const label = tokenType === "ACCESS" ? "access" : "refresh";
+    public resolveVerificationFailure(error: unknown, tokenType: CommonServices.JWT.Token): CommonServices.JWT.Failure {
+        const { prefix, label } =
+            tokenType === "ACCESS"
+                ? { prefix: "ACCESS_TOKEN", label: "access" }
+                : tokenType === "REFRESH"
+                  ? { prefix: "REFRESH_TOKEN", label: "refresh" }
+                  : { prefix: "ID_TOKEN", label: "id" };
 
         switch (true) {
             case error instanceof errors.JWTExpired:

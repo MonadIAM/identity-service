@@ -11,6 +11,11 @@ export class OpenIdConfigurationDTO extends AuthzServerMetadataDTO {
     @ApiProperty({ type: String })
     declare public userinfoEndpoint: string;
 
+    @Validator.ExposeAs("end_session_endpoint")
+    @Validator.IsString()
+    @ApiProperty({ type: String })
+    declare public endSessionEndpoint: string;
+
     @Validator.ExposeAs("subject_types_supported")
     @Validator.IsArray()
     @ApiProperty({ type: [String], enum: ["public"] })

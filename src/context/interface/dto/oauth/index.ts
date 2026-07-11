@@ -1,3 +1,4 @@
+export { EndSessionQueryDTO } from "./req/end-session.dto";
 export { AuthorizeQueryDTO } from "./req/authorize.dto";
 export { RevokeBodyDTO } from "./req/revoke.dto";
 export { TokenBodyDTO } from "./req/token.dto";

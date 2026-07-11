@@ -1,3 +1,5 @@
+import { FastifyReply } from "fastify";
+
 import { OAuthResponseType, CodeChallengeMethod, TokenGrantType } from "~context/enums";
 
 declare global {
@@ -11,6 +13,7 @@ declare global {
             }
 
             interface ControllerContract {
+                endSession(props: EndSession.Props): EndSession.Result;
                 authorize(props: Authorize.Props): Authorize.Result;
                 revoke(props: Revoke.Props): Revoke.Result;
                 token(props: Token.Props): Token.Result;
@@ -96,6 +99,20 @@ declare global {
                     refreshToken?: string;
                     context: Extract.Meta;
                     client: string;
+                };
+
+                type Result = Promise<void>;
+            }
+
+            namespace EndSession {
+                type Props = {
+                    context: Extract.Meta;
+                    response: FastifyReply;
+                    input: {
+                        idTokenHint: string;
+                        postLogoutRedirectUri?: string;
+                        state?: string;
+                    };
                 };
 
                 type Result = Promise<void>;

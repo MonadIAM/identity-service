@@ -1,4 +1,5 @@
 import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { FastifyReply } from "fastify";
 import {
     UseInterceptors,
     Controller,
@@ -11,6 +12,7 @@ import {
     Body,
     Post,
     Get,
+    Res,
 } from "@nestjs/common";
 
 import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decorators";
@@ -19,7 +21,14 @@ import { OAUTH_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
-import { AuthorizeQueryDTO, UserInfoResultDTO, TokenResultDTO, TokenBodyDTO, RevokeBodyDTO } from "../dto/oauth";
+import {
+    EndSessionQueryDTO,
+    AuthorizeQueryDTO,
+    UserInfoResultDTO,
+    TokenResultDTO,
+    TokenBodyDTO,
+    RevokeBodyDTO,
+} from "../dto/oauth";
 
 const {
     INTERNAL_SERVER_ERROR,
@@ -129,6 +138,25 @@ export class OAuthController {
             refreshToken,
             context,
         });
+    }
+
+    @Public()
+    @Get("logout")
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
+    @ApiOperation({
+        summary: "End an OpenID Connect session",
+        description:
+            "RP-Initiated Logout per OpenID Connect RP-Initiated Logout 1.0 §2. Identifies the session via `id_token_hint`; redirects to `post_logout_redirect_uri` only if it matches the client's registered redirect URI.",
+        security: [],
+    })
+    @Swagger.OAuthExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
+    public endSession(
+        @Query(BootstrapPipes.oauthValidationPipe) input: EndSessionQueryDTO,
+        @Extract.Meta() context: Extract.Meta,
+        @Res({ passthrough: true }) response: FastifyReply,
+    ): Commands.OAuth.EndSession.Result {
+        return this.oauthCommands.endSession({ input, context, response });
     }
 
     @HttpCode(OK)

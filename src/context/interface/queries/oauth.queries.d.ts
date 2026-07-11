@@ -29,6 +29,7 @@ declare global {
                     idTokenSigningAlgValuesSupported: ["ES256"];
                     subjectTypesSupported: ["public"];
                     scopesSupported: OidcScope[];
+                    endSessionEndpoint: string;
                     claimsSupported: string[];
                     userinfoEndpoint: string;
                 };

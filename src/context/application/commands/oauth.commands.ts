@@ -1,4 +1,4 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, HttpStatus, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 import { JWTPayload } from "jose";
@@ -215,6 +215,32 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                     input: { refreshToken },
                     context,
                 });
+            }
+        }
+    }
+
+    public async endSession(props: Commands.OAuth.EndSession.Props): Commands.OAuth.EndSession.Result {
+        const { response, context, input } = props;
+        const payload = await this.jwtService.verifyIdToken(input.idTokenHint);
+
+        await this.sessionCommands.revoke({
+            session: payload.sid as string,
+            actor: payload.sub as string,
+            input: {},
+            context,
+        });
+
+        if (input.postLogoutRedirectUri) {
+            const client = await this.interfaceClientRepository.findUnique({ where: { id: payload.aud as string } });
+
+            if (client && client.redirectUri === input.postLogoutRedirectUri) {
+                const url = new URL(client.redirectUri);
+
+                if (input.state) {
+                    url.searchParams.set("state", input.state);
+                }
+
+                response.redirect(url.toString(), HttpStatus.FOUND);
             }
         }
     }

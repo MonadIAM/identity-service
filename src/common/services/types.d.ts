@@ -171,8 +171,10 @@ declare global {
         }
 
         namespace JWT {
+            type Token = "REFRESH" | "ACCESS" | "ID";
+
             interface PrivateContract {
-                resolveVerificationFailure(error: unknown, tokenType: "ACCESS" | "REFRESH"): Failure;
+                resolveVerificationFailure(error: unknown, tokenType: "ACCESS" | "REFRESH" | "ID"): Failure;
                 sign(payload: JWTPayload, props: Sign.Props): Promise<string>;
                 computeAtHash(accessToken: string): string;
             }
@@ -183,6 +185,7 @@ declare global {
                 signIdToken(payload: JWTPayload, props: SignIdToken.Props): Promise<string>;
                 verifyRefresh(token: string): Promise<JWTPayload>;
                 verifyAccess(token: string): Promise<JWTPayload>;
+                verifyIdToken(token: string): Promise<JWTPayload>;
                 getJWKS(name?: string): Promise<GetJWKS>;
             }
 

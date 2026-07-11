@@ -40,10 +40,11 @@ export class OAuthQueries implements Queries.OAuth.Contract {
     public getOpenIdConfiguration(): Queries.OAuth.OpenIdConfiguration.Result {
         return {
             ...this.getAuthorizationServerMetadata(),
+            endSessionEndpoint: new URL("oauth/logout", this.apiBaseUrl).toString(),
             userinfoEndpoint: new URL("oauth/userinfo", this.apiBaseUrl).toString(),
-            subjectTypesSupported: ["public"],
             idTokenSigningAlgValuesSupported: ["ES256"],
             scopesSupported: Object.values(OidcScope),
+            subjectTypesSupported: ["public"],
             claimsSupported: [
                 "email_verified",
                 "updated_at",
