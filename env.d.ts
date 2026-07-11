@@ -124,6 +124,7 @@ declare global {
             VAULT_TRANSIT_ID_RETAIN_VERSIONS: `${number}`;
             VAULT_TRANSIT_TOTP_KEY: string;
             VAULT_TRANSIT_TOTP_ROTATION_PERIOD: StringValue;
+            VAULT_TRANSIT_PAIRWISE_KEY: string;
             VAULT_KEY_TRIM_SCHEDULE: string;
             VAULT_KV_MOUNT: string;
             VAULT_KV_OAUTH_PATH: string;

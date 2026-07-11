@@ -85,13 +85,18 @@ export class SessionService implements Services.Session.Contract {
         let idToken: Optional<string>;
 
         if (session.scope.split(" ").includes(OidcScope.OPENID)) {
+            const sub = await this.jwtService.computePairwiseSubject({
+                account: input.account.id,
+                client: session.client,
+            });
+
             idToken = await this.jwtService.signIdToken(
                 {
                     auth_time: Math.floor(session.createdAt.getTime() / 1e3),
                     ...(input.nonce ? { nonce: input.nonce } : {}),
-                    sub: input.account.id,
                     acr: session.acr,
                     sid: session.id,
+                    sub,
                 },
                 {
                     audience: session.client,

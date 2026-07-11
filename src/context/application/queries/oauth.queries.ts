@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { CodeChallengeMethod, OAuthResponseType, TokenGrantType, IdentifierType, OidcScope } from "~context/enums";
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { JWT_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -15,6 +16,8 @@ export class OAuthQueries implements Queries.OAuth.Contract {
         configService: ConfigService,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
+        @Inject(JWT_SERVICE)
+        private readonly jwtService: CommonServices.JWT.Contract,
     ) {
         this.issuer = configService.getOrThrow<string>("JWT_ISSUER");
 
@@ -44,7 +47,7 @@ export class OAuthQueries implements Queries.OAuth.Contract {
             userinfoEndpoint: new URL("oauth/userinfo", this.apiBaseUrl).toString(),
             idTokenSigningAlgValuesSupported: ["ES256"],
             scopesSupported: Object.values(OidcScope),
-            subjectTypesSupported: ["public"],
+            subjectTypesSupported: ["pairwise"],
             claimsSupported: [
                 "email_verified",
                 "updated_at",
@@ -69,7 +72,8 @@ export class OAuthQueries implements Queries.OAuth.Contract {
                 where: { id: props.account },
             });
 
-            const claims: Awaited<Queries.OAuth.UserInfo.Result> = { sub: account.id };
+            const sub = await this.jwtService.computePairwiseSubject({ account: account.id, client: props.client });
+            const claims: Awaited<Queries.OAuth.UserInfo.Result> = { sub };
 
             if (scopes.includes(OidcScope.PROFILE) && account.profile) {
                 claims.picture = account.profile.pictureUrl;

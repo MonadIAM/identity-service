@@ -27,7 +27,7 @@ declare global {
             namespace OpenIdConfiguration {
                 type Result = AuthorizationServerMetadata.Result & {
                     idTokenSigningAlgValuesSupported: ["ES256"];
-                    subjectTypesSupported: ["public"];
+                    subjectTypesSupported: ["pairwise"];
                     scopesSupported: OidcScope[];
                     endSessionEndpoint: string;
                     claimsSupported: string[];
@@ -38,6 +38,7 @@ declare global {
             namespace UserInfo {
                 type Props = {
                     account: string;
+                    client: string;
                     scope: string;
                 };
 

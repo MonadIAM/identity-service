@@ -18,8 +18,8 @@ export class OpenIdConfigurationDTO extends AuthzServerMetadataDTO {
 
     @Validator.ExposeAs("subject_types_supported")
     @Validator.IsArray()
-    @ApiProperty({ type: [String], enum: ["public"] })
-    declare public subjectTypesSupported: ["public"];
+    @ApiProperty({ type: [String], enum: ["pairwise"] })
+    declare public subjectTypesSupported: ["pairwise"];
 
     @Validator.ExposeAs("id_token_signing_alg_values_supported")
     @Validator.IsArray()

@@ -15,6 +15,7 @@ export class JWTService implements CommonServices.JWT.Contract {
     private readonly refreshKey: string;
     private readonly accessKey: string;
     private readonly idKey: string;
+    private readonly pairwiseKey: string;
 
     private readonly refreshAudience: string;
     private readonly accessAudience: string;
@@ -36,6 +37,7 @@ export class JWTService implements CommonServices.JWT.Contract {
         this.accessTTL = ms(this.config.getOrThrow<StringValue>("JWT_ACCESS_TTL"));
         this.idTTL = ms(this.config.getOrThrow<StringValue>("JWT_ID_TOKEN_TTL"));
         this.idKey = this.config.getOrThrow<string>("VAULT_TRANSIT_ID_KEY");
+        this.pairwiseKey = this.config.getOrThrow<string>("VAULT_TRANSIT_PAIRWISE_KEY");
         this.issuer = this.config.getOrThrow<string>("JWT_ISSUER");
         this.refreshAudience = `${this.issuer}:authn`;
         this.accessAudience = `${this.issuer}:api`;
@@ -224,5 +226,14 @@ export class JWTService implements CommonServices.JWT.Contract {
     public computeAtHash(accessToken: string): string {
         const digest = createHash("sha256").update(accessToken, "ascii").digest();
         return base64url.encode(digest.subarray(0, digest.length / 2));
+    }
+
+    public async computePairwiseSubject(props: CommonServices.JWT.ComputePairwiseSubject.Props): Promise<string> {
+        const digest = await this.vaultTransitService.hmac({
+            input: `${props.client}:${props.account}`,
+            name: this.pairwiseKey,
+        });
+
+        return base64url.encode(Buffer.from(digest, "base64"));
     }
 }

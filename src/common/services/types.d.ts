@@ -28,6 +28,10 @@ declare global {
             signature: string;
         };
 
+        type Hmac = {
+            hmac: string;
+        };
+
         type Encrypt = {
             key_version: number;
             ciphertext: string;
@@ -94,6 +98,7 @@ declare global {
                 encrypt(props: Encrypt.Props): Encrypt.Result;
                 rewrap(props: Rewrap.Props): Rewrap.Result;
                 sign(props: Sign.Props): Sign.Result;
+                hmac(props: Hmac.Props): Hmac.Result;
             }
 
             namespace GetLatestVersion {
@@ -128,6 +133,15 @@ declare global {
                     signature: string;
                     version: number;
                 }>;
+            }
+
+            namespace Hmac {
+                type Props = {
+                    input: string;
+                    name: string;
+                };
+
+                type Result = Promise<string>;
             }
 
             namespace Encrypt {
@@ -187,6 +201,7 @@ declare global {
                 verifyAccess(token: string): Promise<JWTPayload>;
                 verifyIdToken(token: string): Promise<JWTPayload>;
                 getJWKS(name?: string): Promise<GetJWKS>;
+                computePairwiseSubject(props: ComputePairwiseSubject.Props): Promise<string>;
             }
 
             type Failure = {
@@ -212,6 +227,13 @@ declare global {
                 type Props = {
                     accessToken: string;
                     audience: string;
+                };
+            }
+
+            namespace ComputePairwiseSubject {
+                type Props = {
+                    client: string;
+                    account: string;
                 };
             }
         }

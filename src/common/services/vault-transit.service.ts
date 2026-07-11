@@ -102,6 +102,23 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
         }
     }
 
+    public async hmac(props: CommonServices.VaultTransit.Hmac.Props): CommonServices.VaultTransit.Hmac.Result {
+        const data = await this.request<Vault.Hmac>(`hmac/${encodeURIComponent(props.name)}`, {
+            method: "POST",
+            body: JSON.stringify({
+                input: Buffer.from(props.input).toString("base64"),
+                algorithm: "sha2-256",
+            }),
+        });
+
+        const match = /^vault:v(\d+):(.+)$/.exec(data.hmac);
+        if (match) {
+            return match[2];
+        } else {
+            throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.INVALID_SIGNATURE` });
+        }
+    }
+
     private async request<T>(path: string, init?: RequestInit): Promise<T> {
         try {
             const response = await fetch(`${this.url}/v1/${this.transitMount}/${path}`, {

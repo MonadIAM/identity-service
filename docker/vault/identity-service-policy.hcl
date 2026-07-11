@@ -37,3 +37,7 @@ path "{{mount}}/decrypt/{{totp_key}}" {
 path "{{mount}}/rewrap/{{totp_key}}" {
   capabilities = ["update"]
 }
+
+path "{{mount}}/hmac/{{pairwise_key}}" {
+  capabilities = ["update"]
+}

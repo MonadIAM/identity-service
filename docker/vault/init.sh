@@ -34,6 +34,9 @@ vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY" >/dev/null 2>&1 |
 vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY/config" \
     auto_rotate_period="$VAULT_TRANSIT_TOTP_ROTATION_PERIOD"
 
+vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_PAIRWISE_KEY" >/dev/null 2>&1 ||
+    vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_PAIRWISE_KEY" type=hmac
+
 vault kv get "$VAULT_KV_MOUNT/$VAULT_KV_OAUTH_PATH" >/dev/null 2>&1 ||
     vault kv put "$VAULT_KV_MOUNT/$VAULT_KV_OAUTH_PATH" \
         google_client_secret="$OAUTH_GOOGLE_CLIENT_SECRET" \
@@ -54,6 +57,7 @@ sed \
     -e "s|{{refresh_key}}|$VAULT_TRANSIT_REFRESH_KEY|g" \
     -e "s|{{id_key}}|$VAULT_TRANSIT_ID_KEY|g" \
     -e "s|{{totp_key}}|$VAULT_TRANSIT_TOTP_KEY|g" \
+    -e "s|{{pairwise_key}}|$VAULT_TRANSIT_PAIRWISE_KEY|g" \
     /identity-service-policy.hcl > /tmp/identity-service-policy.hcl
 
 vault policy write identity-service /tmp/identity-service-policy.hcl

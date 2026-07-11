@@ -10,12 +10,14 @@ declare namespace Extract {
             session?: string;
             realms?: string[];
             scope?: string;
+            client?: string;
         };
         type Authenticated = {
             realms: string[];
             account: string;
             session: string;
             scope: string;
+            client: string;
         };
     }
 }
