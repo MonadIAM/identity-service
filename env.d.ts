@@ -88,13 +88,20 @@ declare global {
             KAFKA_BROKER: string;
             KAFKA_RETRY_ATTEMPTS: `${number}`;
             KAFKA_RETRY_INITIAL_TIME: StringValue;
-            DOCKER_NETWORK_NAME: string;
             KAFKA_CONNECT_IMAGE: string;
             KAFKA_CONNECT_PORT: `${number}`;
             KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
             KAFKA_DLQ_MAX_RETRIES: `${number}`;
             KAFKA_DLQ_RETRY_BASE_DELAY: StringValue;
             KAFKA_DLQ_RETRY_JITTER: StringValue;
+
+            // ---------------------------------------------------------------------------
+            // Network
+            // ---------------------------------------------------------------------------
+
+            DOCKER_NETWORK_KAFKA: string;
+            DOCKER_NETWORK_MONITORING: string;
+            DOCKER_NETWORK_VAULT: string;
 
             // ---------------------------------------------------------------------------
             // Debezium
@@ -109,7 +116,6 @@ declare global {
             VAULT_IMAGE: string;
             VAULT_URL: string;
             VAULT_PORT: `${number}`;
-            VAULT_PUBLISHED_PORT: `${number}`;
             VAULT_ROOT_TOKEN: string;
             VAULT_TOKEN: string;
             VAULT_TRANSIT_MOUNT: string;

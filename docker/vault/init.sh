@@ -1,6 +1,17 @@
 #!/bin/sh
 set -eu
 
+echo "Waiting for Vault at $VAULT_ADDR..."
+i=0
+until vault status >/dev/null 2>&1; do
+    i=$((i + 1))
+    if [ "$i" -ge 60 ]; then
+        echo "Vault did not become ready in time ($VAULT_ADDR)" >&2
+        exit 1
+    fi
+    sleep 1
+done
+
 vault secrets list -format=json | grep -q "\"$VAULT_TRANSIT_MOUNT/\"" ||
     vault secrets enable -path="$VAULT_TRANSIT_MOUNT" transit
 
@@ -35,7 +46,7 @@ vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_TOTP_KEY/config" \
     auto_rotate_period="$VAULT_TRANSIT_TOTP_ROTATION_PERIOD"
 
 vault read "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_PAIRWISE_KEY" >/dev/null 2>&1 ||
-    vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_PAIRWISE_KEY" type=hmac
+    vault write "$VAULT_TRANSIT_MOUNT/keys/$VAULT_TRANSIT_PAIRWISE_KEY" type=hmac key_size=32
 
 vault kv get "$VAULT_KV_MOUNT/$VAULT_KV_OAUTH_PATH" >/dev/null 2>&1 ||
     vault kv put "$VAULT_KV_MOUNT/$VAULT_KV_OAUTH_PATH" \
