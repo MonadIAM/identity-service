@@ -15,6 +15,11 @@ export class AuthzServerMetadataDTO {
     @ApiProperty({ type: String })
     declare public authorizationEndpoint: string;
 
+    @Validator.ExposeAs("revocation_endpoint")
+    @Validator.IsString()
+    @ApiProperty({ type: String })
+    declare public revocationEndpoint: string;
+
     @Validator.ExposeAs("token_endpoint")
     @Validator.IsString()
     @ApiProperty({ type: String })
@@ -44,4 +49,9 @@ export class AuthzServerMetadataDTO {
     @Validator.IsArray()
     @ApiProperty({ type: [String], enum: ["none"] })
     declare public tokenEndpointAuthMethodsSupported: ["none"];
+
+    @Validator.ExposeAs("scopes_supported")
+    @Validator.IsArray()
+    @ApiProperty({ type: [String] })
+    declare public scopesSupported: string[];
 }

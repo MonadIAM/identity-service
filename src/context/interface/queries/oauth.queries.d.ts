@@ -17,7 +17,9 @@ declare global {
                     codeChallengeMethodsSupported: CodeChallengeMethod[];
                     responseTypesSupported: OAuthResponseType[];
                     grantTypesSupported: TokenGrantType[];
+                    scopesSupported: OidcScope[];
                     authorizationEndpoint: string;
+                    revocationEndpoint: string;
                     tokenEndpoint: string;
                     jwksURI: string;
                     issuer: string;
@@ -28,7 +30,6 @@ declare global {
                 type Result = AuthorizationServerMetadata.Result & {
                     idTokenSigningAlgValuesSupported: ["ES256"];
                     subjectTypesSupported: ["pairwise"];
-                    scopesSupported: OidcScope[];
                     endSessionEndpoint: string;
                     claimsSupported: string[];
                     userinfoEndpoint: string;

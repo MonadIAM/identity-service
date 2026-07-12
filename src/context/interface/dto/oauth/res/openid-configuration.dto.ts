@@ -26,11 +26,6 @@ export class OpenIdConfigurationDTO extends AuthzServerMetadataDTO {
     @ApiProperty({ type: [String], enum: ["ES256"] })
     declare public idTokenSigningAlgValuesSupported: ["ES256"];
 
-    @Validator.ExposeAs("scopes_supported")
-    @Validator.IsArray()
-    @ApiProperty({ type: [String] })
-    declare public scopesSupported: string[];
-
     @Validator.ExposeAs("claims_supported")
     @Validator.IsArray()
     @ApiProperty({ type: [String] })

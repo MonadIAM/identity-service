@@ -31,11 +31,13 @@ export class OAuthQueries implements Queries.OAuth.Contract {
         return {
             grantTypesSupported: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],
             authorizationEndpoint: new URL("oauth/authorize", this.apiBaseUrl).toString(),
+            revocationEndpoint: new URL("oauth/revoke", this.apiBaseUrl).toString(),
             jwksURI: new URL(".well-known/jwks.json", this.apiBaseUrl).toString(),
             tokenEndpoint: new URL("oauth/token", this.apiBaseUrl).toString(),
             codeChallengeMethodsSupported: [CodeChallengeMethod.S256],
             responseTypesSupported: [OAuthResponseType.CODE],
             tokenEndpointAuthMethodsSupported: ["none"],
+            scopesSupported: Object.values(OidcScope),
             issuer: this.issuer,
         };
     }
@@ -46,7 +48,6 @@ export class OAuthQueries implements Queries.OAuth.Contract {
             endSessionEndpoint: new URL("oauth/logout", this.apiBaseUrl).toString(),
             userinfoEndpoint: new URL("oauth/userinfo", this.apiBaseUrl).toString(),
             idTokenSigningAlgValuesSupported: ["ES256"],
-            scopesSupported: Object.values(OidcScope),
             subjectTypesSupported: ["pairwise"],
             claimsSupported: [
                 "email_verified",
