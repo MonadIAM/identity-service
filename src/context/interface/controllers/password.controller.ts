@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { Extract, Public, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
+import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
 import { PASSWORD_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -62,6 +62,7 @@ export class PasswordController {
     @Public()
     @HttpCode(OK)
     @Post("request/otp")
+    @SensitiveThrottle.OtpIssue()
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({
         summary: "Request password reset OTP",
@@ -75,6 +76,7 @@ export class PasswordController {
     @Public()
     @HttpCode(OK)
     @Post("reset/otp")
+    @SensitiveThrottle.OtpVerify()
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({
         summary: "Reset password by OTP",
@@ -100,6 +102,7 @@ export class PasswordController {
     @HttpCode(OK)
     @Post("reset/code")
     @FormatResponse(SuccessMessageDTO)
+    @SensitiveThrottle.HighImpactSecret()
     @ApiOperation({
         summary: "Reset password by recovery code",
         security: [],

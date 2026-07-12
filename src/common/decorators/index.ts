@@ -1,5 +1,6 @@
 export { RequireGlobalPermission } from "./require-global-permission.decorator";
 export { RequirePermission } from "./require-permission.decorator";
+export { SensitiveThrottle } from "./sensitive-throttle.decorator";
 export { SkipInterceptors } from "./skip-interceptors.decorator";
 export { Reauthentication } from "./reauthentication.decorator";
 export { FormatResponse } from "./format-response.decorator";

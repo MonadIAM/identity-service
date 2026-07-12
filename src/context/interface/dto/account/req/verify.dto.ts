@@ -8,5 +8,10 @@ export class VerifyBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
+    declare public identifier: string;
+
+    @Expose()
+    @Validator.IsString()
+    @ApiProperty({ required: true, type: String })
     declare public code: string;
 }

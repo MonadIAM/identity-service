@@ -1,8 +1,8 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Delete, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+import { Extract, FormatResponse, RequirePermission, SensitiveThrottle, Tokens, Public, Swagger } from "~common/decorators";
 import { REAUTHENTICATION_COMMANDS, SESSION_COMMANDS, AUTHN_COMMANDS } from "~context/application/commands";
-import { Extract, FormatResponse, RequirePermission, Tokens, Public, Swagger } from "~common/decorators";
 import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -59,6 +59,7 @@ export class AuthnController {
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
     @FormatResponse(AuthenticationResultDTO)
+    @SensitiveThrottle.PasswordAuth()
     @ApiOperation({
         summary: "Authenticate by password",
         security: [],
@@ -79,6 +80,7 @@ export class AuthnController {
     @Public()
     @HttpCode(OK)
     @Post("request/otp")
+    @SensitiveThrottle.OtpIssue()
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({
         summary: "Request passwordless OTP",
@@ -95,6 +97,7 @@ export class AuthnController {
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
     @FormatResponse(AuthenticationResultDTO)
+    @SensitiveThrottle.OtpVerify()
     @ApiOperation({
         summary: "Verify passwordless OTP",
         security: [],
@@ -119,6 +122,7 @@ export class AuthnController {
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
     @FormatResponse(AuthenticationResultDTO)
+    @SensitiveThrottle.TotpVerify()
     @ApiOperation({
         summary: "Verify second-factor TOTP",
         security: [],
@@ -140,6 +144,7 @@ export class AuthnController {
 
     @HttpCode(OK)
     @Post("reauthn/password")
+    @SensitiveThrottle.PasswordAuth()
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(REAUTHENTICATION_CONFIRM_PASSWORD)
     @ApiOperation({
@@ -166,6 +171,7 @@ export class AuthnController {
 
     @HttpCode(OK)
     @Post("reauthn/2fa")
+    @SensitiveThrottle.TotpVerify()
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(REAUTHENTICATION_CONFIRM_SECOND_FACTOR)
     @ApiOperation({

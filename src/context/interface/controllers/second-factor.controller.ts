@@ -13,12 +13,20 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { Extract, Public, Reauthentication, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
 import { SECOND_FACTOR_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
+import {
+    RequirePermission,
+    SensitiveThrottle,
+    Reauthentication,
+    FormatResponse,
+    Swagger,
+    Extract,
+    Public,
+} from "~common/decorators";
 
 import {
     GetQRCodeResultDTO,
@@ -183,6 +191,7 @@ export class SecondFactorController {
     @HttpCode(OK)
     @Post("reset")
     @FormatResponse(SuccessMessageDTO)
+    @SensitiveThrottle.HighImpactSecret()
     @ApiOperation({
         summary: "Reset all second factors by master code",
         security: [],

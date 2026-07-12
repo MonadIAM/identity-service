@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Body, Post, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { Extract, Public, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
+import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
 import { PermissionCode, ResponseViewType } from "~context/enums";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { ACCOUNT_QUERIES } from "~context/application/queries";
@@ -125,6 +125,7 @@ export class AccountController {
     @Public()
     @HttpCode(OK)
     @Post("resend")
+    @SensitiveThrottle.OtpIssue()
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({
         summary: "Resend verification code",
@@ -148,6 +149,7 @@ export class AccountController {
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
     @FormatResponse(VerifyResultDTO)
+    @SensitiveThrottle.OtpVerify()
     @ApiOperation({
         summary: "Verify account with OTP",
         security: [],
