@@ -1,7 +1,7 @@
 import { StringValue } from "ms";
 
+import { PasswordValidationMode, NodeEnv } from "~common/enums";
 import { Validator } from "~common/validator";
-import { NodeEnv } from "~common/enums";
 
 export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
@@ -456,6 +456,15 @@ export class EnvironmentVariablesDTO {
     declare public SESSION_MAX_ACTIVE_COUNT: number;
 
     // Password
+    @Validator.IsEnum(PasswordValidationMode)
+    declare public PASSWORD_VALIDATION_MODE: PasswordValidationMode;
+
     @Validator.IsMsString()
     declare public PASSWORD_HISTORY_CHECK_DAYS: StringValue;
+
+    @Validator.IsMsString()
+    declare public HIBP_REQUEST_TIMEOUT: StringValue;
+
+    @Validator.IsString()
+    declare public HIBP_RANGE_URL: string;
 }

@@ -2,6 +2,8 @@ import { Expose, Transform } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 import { ValidateIf } from "class-validator";
 
+import { PasswordValidationMode } from "~common/enums";
+
 import { StandardValidationDecorators } from "./default-validator.utility";
 
 export abstract class Validator extends StandardValidationDecorators {
@@ -11,6 +13,25 @@ export abstract class Validator extends StandardValidationDecorators {
                 decorator(target, propertyKey);
             }
         };
+    }
+
+    public static IsPassword(label?: string): PropertyDecorator {
+        const base = [this.IsString({}, label), this.Length(8, 64, {}, label), this.IsPrintableAscii({}, label)];
+
+        switch (process.env.PASSWORD_VALIDATION_MODE) {
+            case PasswordValidationMode.PWNED:
+                return this.compose(...base, this.IsNotPwned({}, label));
+            case PasswordValidationMode.SIMPLE:
+                return this.compose(
+                    ...base,
+                    this.HasDigit({}, label),
+                    this.HasUppercase({}, label),
+                    this.HasSpecialCharacter({}, label),
+                );
+            case PasswordValidationMode.LOCAL:
+            default:
+                return this.compose(...base, this.IsNotBlocklisted({}, label));
+        }
     }
 
     public static IsPositiveInt(label?: string): PropertyDecorator {

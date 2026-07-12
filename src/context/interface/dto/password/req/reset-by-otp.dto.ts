@@ -6,7 +6,7 @@ import { Validator } from "~common/validator";
 @ApiSchema({ name: "PasswordResetByOTPBody" })
 export class ResetByOTPBodyDTO {
     @Expose()
-    @Validator.IsString()
+    @Validator.IsPassword()
     @ApiProperty({ required: true, type: String })
     declare public password: string;
 

@@ -11,7 +11,7 @@ export class ChangeBodyDTO {
     declare public currentPassword: string;
 
     @Expose()
-    @Validator.IsString()
+    @Validator.IsPassword()
     @ApiProperty({ required: true, type: String })
     declare public newPassword: string;
 }

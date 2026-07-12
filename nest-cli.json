@@ -15,6 +15,11 @@
         "include": "bootstrap/swagger.md",
         "outDir": "dist/src",
         "watch": true
+      },
+      {
+        "include": "common/validator/data/*.txt",
+        "outDir": "dist/src",
+        "watch": true
       }
     ],
     "watchAssets": true

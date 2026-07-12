@@ -11,7 +11,7 @@ export class ResetByRecoveryCodeBodyDTO {
     declare public identifier: string;
 
     @Expose()
-    @Validator.IsString()
+    @Validator.IsPassword()
     @ApiProperty({ required: true, type: String })
     declare public password: string;
 

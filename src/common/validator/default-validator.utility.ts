@@ -30,6 +30,8 @@ import {
     Max,
 } from "class-validator";
 
+import { IsNotBlocklisted } from "./algorithms/is-not-blocklisted.validator";
+import { IsNotPwned } from "./algorithms/is-not-pwned.validator";
 import { NotEqualTo } from "./algorithms/not-equal-to.validator";
 import { IsOrdinal } from "./algorithms/is-ordinal.validator";
 import { IsMsString } from "./algorithms/is-ms-string.validator";
@@ -95,6 +97,25 @@ export abstract class StandardValidationDecorators {
 
     public static IsMatches(pattern: RegExp, options?: ValidationOptions, label?: string): PropertyDecorator {
         return (target, key) => Matches(pattern, this.wrap("MATCHES", { property: key }, options, label))(target, key);
+    }
+
+    public static IsPrintableAscii(options?: ValidationOptions, label?: string): PropertyDecorator {
+        return (target, key) =>
+            Matches(/^[\x20-\x7E]+$/, this.wrap("IS_PRINTABLE_ASCII", { property: key }, options, label))(target, key);
+    }
+
+    public static HasDigit(options?: ValidationOptions, label?: string): PropertyDecorator {
+        return (target, key) => Matches(/\d/, this.wrap("HAS_DIGIT", { property: key }, options, label))(target, key);
+    }
+
+    public static HasUppercase(options?: ValidationOptions, label?: string): PropertyDecorator {
+        return (target, key) =>
+            Matches(/[A-Z]/, this.wrap("HAS_UPPERCASE", { property: key }, options, label))(target, key);
+    }
+
+    public static HasSpecialCharacter(options?: ValidationOptions, label?: string): PropertyDecorator {
+        return (target, key) =>
+            Matches(/[^A-Za-z0-9]/, this.wrap("HAS_SPECIAL_CHARACTER", { property: key }, options, label))(target, key);
     }
 
     public static IsEmail(options?: ValidationOptions, label?: string): PropertyDecorator {
@@ -203,5 +224,15 @@ export abstract class StandardValidationDecorators {
     public static IsMsString(options?: ValidationOptions, label?: string): PropertyDecorator {
         return (target, key) =>
             IsMsString(this.wrap("IS_MS_STRING", { property: key }, options, label))(target, String(key));
+    }
+
+    public static IsNotBlocklisted(options?: ValidationOptions, label?: string): PropertyDecorator {
+        return (target, key) =>
+            IsNotBlocklisted(this.wrap("IS_NOT_BLOCKLISTED", { property: key }, options, label))(target, String(key));
+    }
+
+    public static IsNotPwned(options?: ValidationOptions, label?: string): PropertyDecorator {
+        return (target, key) =>
+            IsNotPwned(this.wrap("IS_NOT_PWNED", { property: key }, options, label))(target, String(key));
     }
 }

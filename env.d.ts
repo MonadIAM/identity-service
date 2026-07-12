@@ -216,6 +216,9 @@ declare global {
 
             // Password
             PASSWORD_HISTORY_CHECK_DAYS: StringValue;
+            PASSWORD_VALIDATION_MODE: "local" | "pwned" | "simple";
+            HIBP_REQUEST_TIMEOUT: StringValue;
+            HIBP_RANGE_URL: string;
         }
     }
 }
