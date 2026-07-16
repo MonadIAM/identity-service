@@ -116,5 +116,7 @@ export enum CleanupJob {
     /* eslint-disable prettier/prettier */
     INACTIVE_ACCOUNTS = "cleanup-inactive-accounts",
     PENDING_ACCOUNTS  = "cleanup-pending-accounts",
+    CHANGE_LOG        = "cleanup-change-log",
+    AUDIT_LOG         = "cleanup-audit-log",
     /* eslint-enable prettier/prettier */
 }

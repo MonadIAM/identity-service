@@ -1,6 +1,7 @@
 import { ThrottlerStorageRedisService } from "@nest-lab/throttler-storage-redis";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ThrottlerModule } from "@nestjs/throttler";
+import { ScheduleModule } from "@nestjs/schedule";
 import { Module, Global } from "@nestjs/common";
 import { isString } from "class-validator";
 import ms, { StringValue } from "ms";
@@ -45,6 +46,7 @@ import { I18nModule } from "./i18n";
         }),
         BullMQModule,
         I18nModule,
+        ScheduleModule.forRoot(),
     ],
     exports: [...COMMON_SERVICES, ConfigModule, I18nModule],
     providers: [...COMMON_SERVICES],

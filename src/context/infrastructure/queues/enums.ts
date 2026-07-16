@@ -1,6 +1,8 @@
 export enum BullQueue {
+    /* eslint-disable prettier/prettier */
     KAFKA_RETRY = "kafka-retry",
-    CLEANUP = "cleanup",
+    CLEANUP     = "cleanup",
+    /* eslint-enable prettier/prettier */
 }
 
 export enum BullJobName {

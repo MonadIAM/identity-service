@@ -7,18 +7,22 @@ import { SecondFactorService } from "./second-factor.service";
 import { ApplicationService } from "./application.service";
 import { MembershipService } from "./membership.service";
 import { IdentifierService } from "./identifier.service";
+import { ChangeLogService } from "./change-log.service";
+import { AuditLogService } from "./audit-log.service";
 import { PasswordService } from "./password.service";
 import { AccountService } from "./account.service";
 import { SessionService } from "./session.service";
 import { ProfileService } from "./profile.service";
 import {
-    RECOVERY_CODE_SERVICE,
     INTERFACE_CLIENT_SERVICE,
-    SECOND_FACTOR_SERVICE,
     SERVICE_CLIENT_SERVICE,
+    SECOND_FACTOR_SERVICE,
+    RECOVERY_CODE_SERVICE,
     APPLICATION_SERVICE,
     MEMBERSHIP_SERVICE,
     IDENTIFIER_SERVICE,
+    CHANGE_LOG_SERVICE,
+    AUDIT_LOG_SERVICE,
     PASSWORD_SERVICE,
     ACCOUNT_SERVICE,
     SESSION_SERVICE,
@@ -26,6 +30,14 @@ import {
 } from "./tokens";
 
 export const DOMAIN_SERVICES: ClassProvider[] = [
+    {
+        provide: INTERFACE_CLIENT_SERVICE,
+        useClass: InterfaceClientService,
+    },
+    {
+        provide: SERVICE_CLIENT_SERVICE,
+        useClass: ServiceClientService,
+    },
     {
         provide: RECOVERY_CODE_SERVICE,
         useClass: RecoveryCodeService,
@@ -39,20 +51,20 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
         useClass: ApplicationService,
     },
     {
-        provide: INTERFACE_CLIENT_SERVICE,
-        useClass: InterfaceClientService,
-    },
-    {
-        provide: SERVICE_CLIENT_SERVICE,
-        useClass: ServiceClientService,
-    },
-    {
         provide: MEMBERSHIP_SERVICE,
         useClass: MembershipService,
     },
     {
         provide: IDENTIFIER_SERVICE,
         useClass: IdentifierService,
+    },
+    {
+        provide: CHANGE_LOG_SERVICE,
+        useClass: ChangeLogService,
+    },
+    {
+        provide: AUDIT_LOG_SERVICE,
+        useClass: AuditLogService,
     },
     {
         provide: PASSWORD_SERVICE,
@@ -73,13 +85,15 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
 ];
 
 export {
-    RECOVERY_CODE_SERVICE,
     INTERFACE_CLIENT_SERVICE,
-    SECOND_FACTOR_SERVICE,
     SERVICE_CLIENT_SERVICE,
+    SECOND_FACTOR_SERVICE,
+    RECOVERY_CODE_SERVICE,
     APPLICATION_SERVICE,
     MEMBERSHIP_SERVICE,
     IDENTIFIER_SERVICE,
+    CHANGE_LOG_SERVICE,
+    AUDIT_LOG_SERVICE,
     PASSWORD_SERVICE,
     ACCOUNT_SERVICE,
     SESSION_SERVICE,

@@ -3,6 +3,7 @@ import { AccountTopicAction } from "@monadiam/contracts";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Job } from "bullmq";
 
+import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/domain/services/tokens";
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories/tokens";
 import { CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -21,6 +22,10 @@ export class CleanupProcessor extends WorkerHost {
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
+        @Inject(CHANGE_LOG_SERVICE)
+        private readonly changeLogService: Services.ChangeLog.Contract,
+        @Inject(AUDIT_LOG_SERVICE)
+        private readonly auditLogService: Services.AuditLog.Contract,
         @Inject(CLEANUP_QUEUE)
         private readonly cleanupQueue: Queues.Cleanup.Contract,
     ) {
@@ -30,6 +35,8 @@ export class CleanupProcessor extends WorkerHost {
     private readonly handlers: Record<CleanupJob, Queues.Cleanup.Handler> = {
         [CleanupJob.INACTIVE_ACCOUNTS]: (job: Job) => this.cleanupInactiveAccounts(job),
         [CleanupJob.PENDING_ACCOUNTS]: (job: Job) => this.cleanupPendingAccounts(job),
+        [CleanupJob.CHANGE_LOG]: (job: Job) => this.cleanupChangeLog(job),
+        [CleanupJob.AUDIT_LOG]: (job: Job) => this.cleanupAuditLog(job),
     };
 
     public process(job: Job): Promise<Queues.Cleanup.Result> {
@@ -123,6 +130,56 @@ export class CleanupProcessor extends WorkerHost {
             }
         } catch (error) {
             this.logger.error("Failed to clean up inactive accounts", error);
+            throw error;
+        }
+    }
+
+    private async cleanupAuditLog(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
+        const { olderThanMs, batchSize } = job.data;
+
+        const expirationDate = new Date(Date.now() - olderThanMs);
+        this.logger.log(`Cleaning up audit log entries older than ${expirationDate.toISOString()}`);
+
+        try {
+            const purged = await this.transactionalService.run({
+                resource: "AuditLog",
+                execute: (transaction) => this.auditLogService.purgeExpired({ transaction, expirationDate, batchSize }),
+            });
+
+            if (purged.length) {
+                this.logger.log(`Deleted ${purged.length} audit log entries.`);
+                return this.scheduleNextBatch(job, purged.length === batchSize);
+            } else {
+                this.logger.log("No audit log entries to clean up.");
+                return { deleted: 0, nextBatch: false };
+            }
+        } catch (error) {
+            this.logger.error("Failed to clean up audit log entries", error);
+            throw error;
+        }
+    }
+
+    private async cleanupChangeLog(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
+        const { olderThanMs, batchSize } = job.data;
+
+        const expirationDate = new Date(Date.now() - olderThanMs);
+        this.logger.log(`Cleaning up change log entries older than ${expirationDate.toISOString()}`);
+
+        try {
+            const purged = await this.transactionalService.run({
+                resource: "ChangeLog",
+                execute: (transaction) => this.changeLogService.purgeExpired({ transaction, expirationDate, batchSize }),
+            });
+
+            if (purged.length) {
+                this.logger.log(`Deleted ${purged.length} change log entries.`);
+                return this.scheduleNextBatch(job, purged.length === batchSize);
+            } else {
+                this.logger.log("No change log entries to clean up.");
+                return { deleted: 0, nextBatch: false };
+            }
+        } catch (error) {
+            this.logger.error("Failed to clean up change log entries", error);
             throw error;
         }
     }

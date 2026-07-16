@@ -397,6 +397,12 @@ export class EnvironmentVariablesDTO {
     @Validator.IsMsString()
     declare public PENDING_ACCOUNT_TTL: StringValue;
 
+    @Validator.IsMsString()
+    declare public AUDIT_LOG_RETENTION_TTL: StringValue;
+
+    @Validator.IsMsString()
+    declare public CHANGE_LOG_RETENTION_TTL: StringValue;
+
     @Validator.IsPositiveInt()
     declare public CLEANUP_BATCH_SIZE: number;
 
