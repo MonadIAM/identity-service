@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
+import { ADMIN_ACCOUNT_ID, USER_ACCOUNT_ID } from "~context/constants";
 import { IdentifierType } from "~context/enums";
-
-import { ADMIN_ACCOUNT_ID, USER_ACCOUNT_ID } from "./account.dataset";
 
 const CREATED_AT  = new Date("2026-01-01T00:00:00.000Z");
 const VERIFIED_AT = new Date("2026-01-01T00:00:00.000Z");

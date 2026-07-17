@@ -1,4 +1,4 @@
-import { ADMIN_ACCOUNT_ID, USER_ACCOUNT_ID } from "./account.dataset";
+import { ADMIN_ACCOUNT_ID, USER_ACCOUNT_ID } from "~context/constants";
 
 export const Profiles = [
     {

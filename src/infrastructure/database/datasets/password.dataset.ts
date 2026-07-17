@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { ADMIN_ACCOUNT_ID, USER_ACCOUNT_ID } from "./account.dataset";
+import { ADMIN_ACCOUNT_ID, USER_ACCOUNT_ID } from "~context/constants";
 
 const SET_AT = new Date("2026-01-01T00:00:00.000Z");
 

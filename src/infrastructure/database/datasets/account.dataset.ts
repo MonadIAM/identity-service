@@ -1,10 +1,7 @@
-/* eslint-disable prettier/prettier */
+import { ADMIN_ACCOUNT_ID, USER_ACCOUNT_ID } from "~context/constants";
 import { AccountStatus, AccountSubject } from "~context/enums";
 
 const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
-
-export const ADMIN_ACCOUNT_ID = "00000000-0000-4000-8000-000000000001";
-export const USER_ACCOUNT_ID  = "00000000-0000-4000-8000-100000000002";
 
 export const Accounts = [
     {
