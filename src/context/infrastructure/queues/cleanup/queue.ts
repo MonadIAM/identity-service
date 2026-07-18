@@ -1,8 +1,8 @@
 import { ConfigService } from "@nestjs/config";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable } from "@nestjs/common";
-import { Queue } from "bullmq";
 import ms, { StringValue } from "ms";
+import { Queue } from "bullmq";
 
 import { CleanupJob } from "~context/enums";
 

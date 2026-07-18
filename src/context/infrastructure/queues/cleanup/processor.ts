@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { AccountTopicAction } from "@monadiam/contracts";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
+import { AccountTopicAction } from "@monadiam/shared";
 import { Job } from "bullmq";
 
 import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/domain/services/tokens";

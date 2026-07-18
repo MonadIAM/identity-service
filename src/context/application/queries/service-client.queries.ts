@@ -1,5 +1,5 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
 import { FilterQuery, ObjectQuery } from "@mikro-orm/postgresql";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { SERVICE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { ServiceClient } from "~context/domain/entities";

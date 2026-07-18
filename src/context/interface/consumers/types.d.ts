@@ -1,4 +1,4 @@
-import { RealmTopicAction } from "@monadiam/contracts";
+import { RealmTopicAction } from "@monadiam/shared";
 import { KafkaContext } from "@nestjs/microservices";
 
 declare global {

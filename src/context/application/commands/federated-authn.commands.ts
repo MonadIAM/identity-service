@@ -1,12 +1,12 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { BlacklistTopicAction } from "@monadiam/contracts";
+import { BlacklistTopicAction } from "@monadiam/shared";
 
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SERVICE } from "~common/services";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
-import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 import {
     AuthenticationContextClass,

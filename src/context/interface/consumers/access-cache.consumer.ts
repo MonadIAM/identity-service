@@ -1,6 +1,6 @@
 import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
-import { InvalidationScope, KafkaTopic } from "@monadiam/contracts";
+import { InvalidationScope, KafkaTopic } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
 import { ACCESS_CACHE_SERVICE } from "~context/infrastructure/services/tokens";

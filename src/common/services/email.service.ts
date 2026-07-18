@@ -13,8 +13,8 @@ export class EmailService implements CommonServices.Email.Contract {
         this.client = new SESClient({
             region: this.config.getOrThrow<string>("AWS_REGION"),
             credentials: {
-                accessKeyId: this.config.getOrThrow<string>("AWS_ACCESS_KEY_ID"),
                 secretAccessKey: this.config.getOrThrow<string>("AWS_SECRET_ACCESS_KEY"),
+                accessKeyId: this.config.getOrThrow<string>("AWS_ACCESS_KEY_ID"),
             },
         });
     }

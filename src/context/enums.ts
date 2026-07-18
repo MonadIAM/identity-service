@@ -1,4 +1,4 @@
-export * from "@monadiam/contracts";
+export * from "@monadiam/shared";
 
 export enum ResponseViewType {
     /* eslint-disable prettier/prettier */

@@ -8,11 +8,11 @@ import { PasswordHistory } from "./password-history.entity";
 import { SecondFactor } from "./second-factor.entity";
 import { RecoveryCode } from "./recovery-code.entity";
 import { MasterCode } from "./master-code.entity";
+import { Membership } from "./membership.entity";
 import { Identifier } from "./identifier.entity";
 import { Password } from "./password.entity";
 import { Profile } from "./profile.entity";
 import { Session } from "./session.entity";
-import type { Membership } from "./membership.entity";
 
 export class Account {
     private get dictionaryPath(): string {

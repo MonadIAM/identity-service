@@ -1,5 +1,5 @@
-import { CodeChallengeMethod } from "~context/enums";
 import { LuaScript } from "~context/infrastructure/scripts";
+import { CodeChallengeMethod } from "~context/enums";
 
 declare global {
     namespace InfrastructureServices {

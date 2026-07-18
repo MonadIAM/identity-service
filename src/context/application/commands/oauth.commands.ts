@@ -5,10 +5,10 @@ import { JWTPayload } from "jose";
 
 import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
 import { SESSION_COMMANDS } from "~context/application/commands/tokens";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { ErrorCode, Exception } from "~common/exceptions";
-import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
 import { TokenGrantType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })

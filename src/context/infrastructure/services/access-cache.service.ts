@@ -4,7 +4,7 @@ import ms, { StringValue } from "ms";
 import Redis from "ioredis";
 
 import { AccessControlClient } from "~infrastructure/grpc";
-import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
+import { REDIS_CACHE_CLIENT } from "~infrastructure/redis";
 
 @Injectable()
 export class AccessCacheService implements InfrastructureServices.AccessCache.Contract {

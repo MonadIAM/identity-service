@@ -15,9 +15,9 @@ export class GoogleOAuthService implements CommonServices.GoogleOAuth.Contract {
     private readonly tokenUrl = "https://oauth2.googleapis.com/token";
 
     public constructor(private readonly configService: ConfigService) {
-        this.clientId = this.configService.getOrThrow<string>("OAUTH_GOOGLE_CLIENT_ID");
         this.clientSecret = this.configService.getOrThrow<string>("OAUTH_GOOGLE_CLIENT_SECRET");
         this.redirectUri = this.configService.getOrThrow<string>("OAUTH_GOOGLE_REDIRECT_URI");
+        this.clientId = this.configService.getOrThrow<string>("OAUTH_GOOGLE_CLIENT_ID");
     }
 
     public getAuthorizationUrl(state: string): string {

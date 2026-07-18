@@ -1,6 +1,6 @@
 import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
-import { RealmTopicAction } from "@monadiam/contracts";
+import { RealmTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
 import { APPLICATION_COMMANDS } from "~context/application/commands";

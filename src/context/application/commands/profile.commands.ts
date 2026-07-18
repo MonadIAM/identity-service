@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { ActionType, EntityType } from "~context/enums";
-import { PROFILE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { PROFILE_SERVICE } from "~context/domain/services";
+import { ActionType, EntityType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ProfileCommands implements Commands.Profile.Contract {

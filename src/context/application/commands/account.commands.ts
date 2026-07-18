@@ -1,11 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccountTopicAction } from "@monadiam/contracts";
+import { AccountTopicAction } from "@monadiam/shared";
 import { isEmail } from "class-validator";
 
 import { AccountSubject, IdentifierType, AccountStatus, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE } from "~context/domain/services";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
+import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE } from "~context/domain/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";

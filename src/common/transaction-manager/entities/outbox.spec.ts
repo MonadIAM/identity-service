@@ -1,4 +1,4 @@
-import { AccountTopicAction } from "@monadiam/contracts";
+import { AccountTopicAction } from "@monadiam/shared";
 import { describe, it, expect } from "@jest/globals";
 import { isUUID } from "class-validator";
 

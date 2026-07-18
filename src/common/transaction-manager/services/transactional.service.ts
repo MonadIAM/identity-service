@@ -1,6 +1,6 @@
 import { AnyEntity, EntityManager } from "@mikro-orm/postgresql";
-import { AuditLogTopicAction } from "@monadiam/contracts";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
+import { AuditLogTopicAction } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
 

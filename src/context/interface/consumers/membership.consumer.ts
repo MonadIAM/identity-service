@@ -1,6 +1,6 @@
 import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
-import { MembershipTopicAction } from "@monadiam/contracts";
+import { MembershipTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
 import { MEMBERSHIP_COMMANDS } from "~context/application/commands";

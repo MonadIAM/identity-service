@@ -1,7 +1,7 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
-import { EntityType, ActionType } from "~context/enums";
 import { MikroAdapter } from "~infrastructure/database/utils";
+import { EntityType, ActionType } from "~context/enums";
 import { AuditLog } from "~common/transaction-manager";
 
 export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.AuditLog.Types> {

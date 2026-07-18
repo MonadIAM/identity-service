@@ -1,7 +1,7 @@
 import { describe, it, expect } from "@jest/globals";
 
-import { Account } from "./account.entity";
 import { Password } from "./password.entity";
+import { Account } from "./account.entity";
 
 function createPassword(hash = "initial-hash"): Password {
     return new Password({

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import Redis from "ioredis";
 import ms, { StringValue } from "ms";
+import Redis from "ioredis";
 
 import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
 

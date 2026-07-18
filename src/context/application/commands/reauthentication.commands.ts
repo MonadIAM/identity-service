@@ -1,4 +1,4 @@
-import { ReauthenticationTopicAction } from "@monadiam/contracts";
+import { ReauthenticationTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TOTP, Secret } from "otpauth";
@@ -8,8 +8,8 @@ import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastru
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { HASHING_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
+import { HASHING_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })

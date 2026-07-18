@@ -33,8 +33,8 @@ import {
 import { IsNotBlocklisted } from "./algorithms/is-not-blocklisted.validator";
 import { IsNotPwned } from "./algorithms/is-not-pwned.validator";
 import { NotEqualTo } from "./algorithms/not-equal-to.validator";
-import { IsOrdinal } from "./algorithms/is-ordinal.validator";
 import { IsMsString } from "./algorithms/is-ms-string.validator";
+import { IsOrdinal } from "./algorithms/is-ordinal.validator";
 
 export abstract class StandardValidationDecorators {
     private static wrap(

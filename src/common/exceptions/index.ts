@@ -3,5 +3,5 @@ export { ExceptionMapper } from "./exception.mapper";
 export { ErrorCode, ErrorKind } from "./enums";
 export { Exception } from "./exception";
 
-export { EXCEPTION_EXAMPLES } from "./exception.examples";
 export { OAUTH_EXCEPTION_EXAMPLES } from "./oauth-exception.examples";
+export { EXCEPTION_EXAMPLES } from "./exception.examples";

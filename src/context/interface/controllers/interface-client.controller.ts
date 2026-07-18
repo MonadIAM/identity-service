@@ -21,6 +21,7 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
+    InterfaceClientDTO,
     GetByIdQueryDTO,
     GetListQueryDTO,
     RestoreQueryDTO,
@@ -34,7 +35,6 @@ import {
     RevokeBodyDTO,
     PurgeQueryDTO,
     PurgeBodyDTO,
-    InterfaceClientDTO,
     ListDTO,
 } from "../dto/interface-client";
 

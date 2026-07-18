@@ -1,6 +1,6 @@
 {
   "name": "@monadiam/identity-service",
-  "description": "",
+  "description": "Identity Service implementing an OAuth 2.0 + OIDC authorization server (PKCE, refresh rotation, federated login), session and second-factor management, with Audit and Change Log support.",
   "author": "Daniil Egorov (https://github.com/Lambdius)",
   "license": "SEE LICENSE IN LICENSE",
   "version": "0.0.1",
@@ -38,7 +38,7 @@
     ]
   },
   "dependencies": {
-    "@monadiam/contracts": "github:MonadIAM/shared#v1.0.23",
+    "@monadiam/shared": "github:MonadIAM/shared#v1.0.23",
     "@aws-sdk/client-ses": "3.1007.0",
     "@aws-sdk/client-sns": "3.1007.0",
     "@fastify/cookie": "11.0.2",
