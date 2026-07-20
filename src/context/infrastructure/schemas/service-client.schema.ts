@@ -12,6 +12,10 @@ export const ServiceClientSchema = new EntitySchema<ServiceClient>({
             name: "service_client_application_name_unique",
             properties: ["application", "name"],
         },
+        {
+            name: "service_client_application_code_unique",
+            properties: ["application", "code"],
+        },
     ],
 
     indexes: [
@@ -30,9 +34,9 @@ export const ServiceClientSchema = new EntitySchema<ServiceClient>({
             deleteRule: "cascade",
         },
 
+        code: { type: "string", length: 128 },
         name: { type: "string", length: 255 },
         description: { type: "text", nullable: true },
-        clientSecretHash: { type: "text" },
         allowedAddresses: { type: "array" },
 
         applicationVersion: { type: "int" },

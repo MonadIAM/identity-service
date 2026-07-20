@@ -82,7 +82,6 @@
   "service-client": {
     "CREATED": "Service-клиент успешно создан.",
     "UPDATED": "Service-клиент успешно обновлен.",
-    "SECRET_REGENERATED": "Секрет service-клиента успешно обновлен.",
     "REVOKED": "Service-клиент успешно отозван.",
     "BULK_REVOKED_COUNT": "{count} service-клиентов успешно отозвано.",
     "RESTORED": "Service-клиент успешно восстановлен.",

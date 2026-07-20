@@ -1593,6 +1593,16 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "code": {
+          "name": "code",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
         "name": {
           "name": "name",
           "type": "varchar(255)",
@@ -1610,15 +1620,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "mappedType": "text"
-        },
-        "client_secret_hash": {
-          "name": "client_secret_hash",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
           "mappedType": "text"
         },
         "allowed_addresses": {
@@ -1715,6 +1716,17 @@
           "columnNames": [
             "application_id",
             "name"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "service_client_application_code_unique",
+          "columnNames": [
+            "application_id",
+            "code"
           ],
           "composite": true,
           "constraint": true,

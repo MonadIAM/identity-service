@@ -50,7 +50,7 @@ export class TransactionalService {
         }
     }
 
-    public async run<T extends AnyEntity>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
+    public async run<T extends AnyEntity | AnyEntity[]>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
         try {
             const writeManager = this.writeManager.fork();
 
@@ -58,12 +58,8 @@ export class TransactionalService {
                 return writeManager.transactional(async (transaction) => {
                     const result = await params.execute(transaction);
 
-                    if (params.outbox && result) {
-                        const mapped = params.outbox.payloadMapper(result);
-                        const payloads = Array.isArray(mapped) ? mapped : [mapped];
-                        for (const payload of payloads) {
-                            transaction.persist(new Outbox({ ...params.outbox, payload }));
-                        }
+                    if (result) {
+                        this.persistOutboxEvents(params, transaction, result);
                     }
 
                     await transaction.flush();
@@ -86,12 +82,8 @@ export class TransactionalService {
 
                         const result = await params.execute(transaction);
 
-                        if (params.outbox && result) {
-                            const mapped = params.outbox.payloadMapper(result);
-                            const payloads = Array.isArray(mapped) ? mapped : [mapped];
-                            for (const payload of payloads) {
-                                transaction.persist(new Outbox({ ...params.outbox, payload }));
-                            }
+                        if (result) {
+                            this.persistOutboxEvents(params, transaction, result);
                         }
 
                         await transaction.flush();
@@ -101,6 +93,24 @@ export class TransactionalService {
             );
         } catch (error) {
             throw ExceptionMapper.fromORM(error, params.resource);
+        }
+    }
+
+    private persistOutboxEvents<T extends AnyEntity | AnyEntity[]>(
+        params: TransactionManager.Service.Run<T>,
+        transaction: EntityManager,
+        result: T,
+    ): void {
+        if (params.outbox) {
+            const entries = [params.outbox].flat();
+
+            for (const { payloadMapper, ...outboxProps } of entries) {
+                const payloads = payloadMapper ? [payloadMapper(result)].flat() : [result].flat();
+
+                for (const payload of payloads) {
+                    transaction.persist(new Outbox({ ...outboxProps, payload }));
+                }
+            }
         }
     }
 

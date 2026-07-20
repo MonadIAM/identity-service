@@ -6,8 +6,8 @@ import { Application } from "./application.entity";
 
 function createServiceClient(overrides?: Partial<Entities.ServiceClient.ConstructorProps>): ServiceClient {
     return new ServiceClient({
+        code: "billing-worker",
         name: "Billing Worker",
-        clientSecretHash: "initial-hash",
         application: {} as Application,
         ...overrides,
     });
@@ -20,12 +20,10 @@ describe("ServiceClient Entity", () => {
 
             const serviceClient = createServiceClient({
                 name: "Reporting Worker",
-                clientSecretHash: "hash-1",
                 application,
             });
 
             expect(serviceClient.name).toBe("Reporting Worker");
-            expect(serviceClient.clientSecretHash).toBe("hash-1");
             expect(serviceClient.application).toBe(application);
         });
 
@@ -174,30 +172,6 @@ describe("ServiceClient Entity", () => {
                     "NO_CHANGES_DETECTED",
                 );
             });
-        });
-    });
-
-    describe("regenerateSecret", () => {
-        it("should replace clientSecretHash and touch updatedAt", () => {
-            const serviceClient = createServiceClient({ clientSecretHash: "old-hash" });
-
-            serviceClient.regenerateSecret("new-hash");
-
-            expect(serviceClient.clientSecretHash).toBe("new-hash");
-            expect(serviceClient.updatedAt).toBeInstanceOf(Date);
-        });
-
-        it("should throw when system-managed", () => {
-            const serviceClient = createServiceClient({ isSystemManaged: true });
-
-            expect(() => serviceClient.regenerateSecret("new-hash")).toThrow("SYSTEM_MANAGED_IMMUTABLE");
-        });
-
-        it("should throw when revoked", () => {
-            const serviceClient = createServiceClient();
-            serviceClient.revoke();
-
-            expect(() => serviceClient.regenerateSecret("new-hash")).toThrow("CANNOT_UPDATE_REVOKED");
         });
     });
 

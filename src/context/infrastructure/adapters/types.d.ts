@@ -281,6 +281,7 @@ declare global {
             type DefaultFilters = {
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
+                code?: StringFilterDTO;
                 name?: StringFilterDTO;
                 id?: StringFilterDTO;
                 isApplicationRevoked?: boolean;

@@ -21,8 +21,6 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
-    RegenerateSecretQueryDTO,
-    RegenerateSecretResultDTO,
     GetByIdQueryDTO,
     GetListQueryDTO,
     RestoreQueryDTO,
@@ -36,7 +34,6 @@ import {
     RevokeBodyDTO,
     PurgeQueryDTO,
     PurgeBodyDTO,
-    CreateResultDTO,
     ServiceClientDTO,
     ListDTO,
 } from "../dto/service-client";
@@ -48,7 +45,6 @@ const {
     SERVICE_CLIENT_REVOKE,
     SERVICE_CLIENT_RESTORE,
     SERVICE_CLIENT_PURGE,
-    SERVICE_CLIENT_REGENERATE_SECRET,
 } = PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
@@ -125,7 +121,7 @@ export class ServiceClientController {
 
     @Post("create")
     @HttpCode(CREATED)
-    @FormatResponse(CreateResultDTO)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SERVICE_CLIENT_CREATE)
     @ApiOperation({
         summary: "Create service client",
@@ -176,32 +172,6 @@ export class ServiceClientController {
         @Extract.Meta() context: Extract.Meta,
     ): Commands.ServiceClient.Update.Result {
         return this.serviceClientCommands.update({ context, actor, realm, input: { client, ...body } });
-    }
-
-    @Post("regenerate-secret")
-    @HttpCode(OK)
-    @FormatResponse(RegenerateSecretResultDTO)
-    @RequirePermission(SERVICE_CLIENT_REGENERATE_SECRET)
-    @ApiOperation({
-        summary: "Regenerate service client secret",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        NOT_FOUND,
-        FORBIDDEN,
-        CONFLICT,
-    )
-    public regenerateSecret(
-        @Query() { realm, client }: RegenerateSecretQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
-        @Extract.Meta() context: Extract.Meta,
-    ): Commands.ServiceClient.RegenerateSecret.Result {
-        return this.serviceClientCommands.regenerateSecret({ context, actor, realm, input: { client } });
     }
 
     @Post("revoke")

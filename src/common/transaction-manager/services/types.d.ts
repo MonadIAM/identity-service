@@ -7,23 +7,23 @@ declare global {
         namespace Service {
             interface Contract {
                 run: {
-                    <T extends AnyEntity>(props: RunWithResult<T>): Promise<T>;
+                    <T extends AnyEntity | AnyEntity[]>(props: RunWithResult<T>): Promise<T>;
                     (props: RunVoid): Promise<void>;
                 };
                 emit(props: Emit): Promise<void>;
             }
 
-            type Outbox<T> = {
-                payloadMapper(result: T): AnyEntity | AnyEntity[];
+            type OutboxConfig<T> = {
+                payloadMapper?(result: T): AnyEntity | AnyEntity[];
                 destinationTopic: KafkaTopic;
                 metadata?: UnknownObject;
                 actionType: string;
             };
 
-            type RunWithResult<T extends AnyEntity> = {
+            type RunWithResult<T extends AnyEntity | AnyEntity[]> = {
                 execute(transaction: EntityManager): Promise<T> | T;
                 audit?: Entities.AuditLog.ConstructorProps;
-                outbox?: Outbox<T>;
+                outbox?: OutboxConfig<T> | OutboxConfig<T>[];
                 changeLog?: boolean;
                 resource?: string;
             };
@@ -45,7 +45,7 @@ declare global {
                 resource?: string;
             };
 
-            type Run<T extends AnyEntity> = RunWithResult<T> | RunVoid;
+            type Run<T extends AnyEntity | AnyEntity[]> = RunWithResult<T> | RunVoid;
         }
     }
 }

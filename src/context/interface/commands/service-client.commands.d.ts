@@ -3,7 +3,6 @@ declare namespace Commands {
         interface Contract {
             create(props: Create.Props): Create.Result;
             update(props: Update.Props): Update.Result;
-            regenerateSecret(props: RegenerateSecret.Props): RegenerateSecret.Result;
             revoke(props: Revoke.Props): Revoke.Result;
             restore(props: Restore.Props): Restore.Result;
             purge(props: Purge.Props): Purge.Result;
@@ -18,15 +17,12 @@ declare namespace Commands {
                     description?: string;
                     application: string;
                     allowedAddresses?: string[];
+                    code: string;
                     name: string;
                 };
             };
 
-            type Result = Promise<
-                MessageResult & {
-                    secret: string;
-                }
-            >;
+            type Result = Promise<MessageResult>;
         }
 
         namespace Update {
@@ -43,23 +39,6 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
-
-        namespace RegenerateSecret {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-                realm: string;
-                input: {
-                    client: string;
-                };
-            };
-
-            type Result = Promise<
-                MessageResult & {
-                    secret: string;
-                }
-            >;
         }
 
         namespace Revoke {

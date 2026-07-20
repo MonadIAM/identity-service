@@ -14,10 +14,10 @@ export class ServiceClient {
     public updatedAt?: Date;
     public version = 1;
 
+    public code: string;
     public name: string;
     public application: Application;
     public description?: string;
-    public clientSecretHash: string;
     public allowedAddresses: string[];
 
     public applicationVersion: number;
@@ -35,9 +35,9 @@ export class ServiceClient {
         this.isRevoked = props.isRevoked ?? false;
 
         this.allowedAddresses = props.allowedAddresses ?? [];
-        this.clientSecretHash = props.clientSecretHash;
         this.application = props.application;
         this.description = props.description;
+        this.code = props.code;
         this.name = props.name;
     }
 
@@ -65,19 +65,6 @@ export class ServiceClient {
         } else {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
-    }
-
-    public regenerateSecret(clientSecretHash: string): void {
-        if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
-        }
-
-        if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
-        }
-
-        this.clientSecretHash = clientSecretHash;
-        this.updatedAt = new Date();
     }
 
     public revoke(): void {

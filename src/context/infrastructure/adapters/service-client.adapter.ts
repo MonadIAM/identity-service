@@ -12,6 +12,9 @@ export class ServiceClientAdapter implements Adapters.Contract<Entities.ServiceC
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
         }
+        if (filters.code) {
+            where.code = MikroAdapter.applyStringFilter(filters.code);
+        }
         if (filters.name) {
             where.name = MikroAdapter.applyStringFilter(filters.name);
         }

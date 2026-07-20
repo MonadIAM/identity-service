@@ -35,12 +35,6 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
         props.entity.update(props.patch);
     }
 
-    public regenerateSecret(
-        props: Services.ServiceClient.RegenerateSecret.Props,
-    ): Services.ServiceClient.RegenerateSecret.Result {
-        props.entity.regenerateSecret(props.clientSecretHash);
-    }
-
     public revoke(props: Services.ServiceClient.Revoke.Props): Services.ServiceClient.Revoke.Result {
         for (const entity of props.entities) {
             entity.revoke();

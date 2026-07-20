@@ -14,7 +14,16 @@ declare namespace Commands {
             purgeRealm(props: PurgeRealm.Props): PurgeRealm.Result;
         }
 
-        interface Contract extends ControllerContract, ConsumerContract {}
+        interface PrivateContract {
+            interfaceClientOutboxPayloadMapper(
+                props: InterfaceClientOutboxPayloadMapper.Props,
+            ): InterfaceClientOutboxPayloadMapper.Result;
+            serviceClientOutboxPayloadMapper(
+                entities: ServiceClientOutboxPayloadMapper.Props,
+            ): ServiceClientOutboxPayloadMapper.Result;
+        }
+
+        interface Contract extends PrivateContract, ControllerContract, ConsumerContract {}
 
         namespace Create {
             type Props = {
@@ -109,6 +118,30 @@ declare namespace Commands {
             };
 
             type Result = Promise<void>;
+        }
+
+        namespace InterfaceClientOutboxPayloadMapper {
+            type Props = {
+                entities: Entities.Application[];
+                isRevoked: boolean;
+            };
+
+            type Result = {
+                applicationId: string;
+                realm: string;
+                isRevoked: boolean;
+                id: string;
+            }[];
+        }
+
+        namespace ServiceClientOutboxPayloadMapper {
+            type Props = Entities.Application[];
+
+            type Result = {
+                applicationId: string;
+                code: string;
+                id: string;
+            }[];
         }
     }
 }

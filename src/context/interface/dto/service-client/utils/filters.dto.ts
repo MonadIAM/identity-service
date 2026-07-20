@@ -18,6 +18,13 @@ export class DefaultFiltersDTO implements Adapters.ServiceClient.DefaultFilters 
     @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
+    public code?: StringFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => StringFilterDTO)
+    @ApiProperty({ required: false, type: StringFilterDTO })
     public name?: StringFilterDTO;
 
     @Expose()

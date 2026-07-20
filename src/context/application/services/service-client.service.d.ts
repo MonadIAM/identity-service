@@ -6,7 +6,6 @@ declare global {
             interface Contract {
                 applyApplicationRevocation(props: ApplyApplicationRevocation.Props): ApplyApplicationRevocation.Result;
                 applyApplicationRestore(props: ApplyApplicationRestore.Props): ApplyApplicationRestore.Result;
-                regenerateSecret(props: RegenerateSecret.Props): RegenerateSecret.Result;
                 restore(props: Restore.Props): Restore.Result;
                 create(props: Create.Props): Create.Result;
                 update(props: Update.Props): Update.Result;
@@ -20,8 +19,8 @@ declare global {
                     input: {
                         allowedAddresses?: string[];
                         description?: string;
-                        clientSecretHash: string;
                         application: Entities.Application;
+                        code: string;
                         name: string;
                     };
                 };
@@ -37,15 +36,6 @@ declare global {
                         description?: string;
                         name?: string;
                     };
-                };
-
-                type Result = void;
-            }
-
-            namespace RegenerateSecret {
-                type Props = {
-                    entity: Entities.ServiceClient;
-                    clientSecretHash: string;
                 };
 
                 type Result = void;

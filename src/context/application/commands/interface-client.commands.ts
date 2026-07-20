@@ -1,9 +1,10 @@
+import { InterfaceClientTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { INTERFACE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
 import { INTERFACE_CLIENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { ActionType, EntityType } from "~context/enums";
+import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -29,6 +30,16 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 entityType: EntityType.INTERFACE_CLIENT,
                 actionType: ActionType.CREATE,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: (entity) => ({
+                    applicationId: entity.application.id,
+                    realm: entity.application.realm,
+                    isRevoked: false,
+                    id: entity.id,
+                }),
+                actionType: InterfaceClientTopicAction.CREATE,
+                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
             execute: async (transaction) => {
                 const application = await this.applicationRepository.findUniqueOrThrow({
@@ -89,9 +100,21 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 actionType: ActionType.REVOKE,
                 ...props,
             },
+            outbox: {
+                payloadMapper: (entities) =>
+                    entities.map(({ id, application }) => ({
+                        applicationId: application.id,
+                        realm: application.realm,
+                        isRevoked: true,
+                        id,
+                    })),
+                actionType: InterfaceClientTopicAction.REVOKE,
+                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+            },
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    options: { populate: ["application"] },
                     transaction,
                 });
 
@@ -119,9 +142,21 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 actionType: ActionType.RESTORE,
                 ...props,
             },
+            outbox: {
+                payloadMapper: (entities) =>
+                    entities.map(({ id, application }) => ({
+                        applicationId: application.id,
+                        realm: application.realm,
+                        isRevoked: false,
+                        id,
+                    })),
+                actionType: InterfaceClientTopicAction.RESTORE,
+                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+            },
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    options: { populate: ["application"] },
                     transaction,
                 });
 
@@ -149,9 +184,21 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 actionType: ActionType.PURGE,
                 ...props,
             },
+            outbox: {
+                payloadMapper: (entities) =>
+                    entities.map(({ id, application }) => ({
+                        applicationId: application.id,
+                        realm: application.realm,
+                        isRevoked: true,
+                        id,
+                    })),
+                actionType: InterfaceClientTopicAction.PURGE,
+                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+            },
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    options: { populate: ["application"] },
                     transaction,
                 });
 

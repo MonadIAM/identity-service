@@ -1,10 +1,10 @@
+import { ServiceClientTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { SERVICE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
+import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { CRYPTO_SERVICE, HASHING_SERVICE } from "~common/services";
 import { SERVICE_CLIENT_SERVICE } from "~context/domain/services";
-import { ActionType, EntityType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -21,22 +21,24 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
         private readonly serviceClientRepository: Repositories.ServiceClient.Contract,
         @Inject(SERVICE_CLIENT_SERVICE)
         private readonly serviceClientService: Services.ServiceClient.Contract,
-        @Inject(HASHING_SERVICE)
-        private readonly hashingService: CommonServices.Hashing.Contract,
-        @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
     ) {}
 
     public async create(props: Commands.ServiceClient.Create.Props): Commands.ServiceClient.Create.Result {
-        const secret = this.cryptoService.generateToken(32);
-        const clientSecretHash = await this.hashingService.hash({ value: secret });
-
         await this.transactionalService.run<Entities.ServiceClient>({
             resource: this.resource,
             audit: {
                 entityType: EntityType.SERVICE_CLIENT,
                 actionType: ActionType.CREATE,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: (entity) => ({
+                    applicationId: entity.application.id,
+                    code: entity.code,
+                    id: entity.id,
+                }),
+                actionType: ServiceClientTopicAction.CREATE,
+                destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
             execute: async (transaction) => {
                 const application = await this.applicationRepository.findUniqueOrThrow({
@@ -49,15 +51,15 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                     input: {
                         description: props.input.description,
                         allowedAddresses: props.input.allowedAddresses,
+                        code: props.input.code,
                         name: props.input.name,
-                        clientSecretHash,
                         application,
                     },
                 });
             },
         });
 
-        return { message: `${this.dictionaryPath}.CREATED`, secret };
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async update(props: Commands.ServiceClient.Update.Props): Commands.ServiceClient.Update.Result {
@@ -88,32 +90,6 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async regenerateSecret(
-        props: Commands.ServiceClient.RegenerateSecret.Props,
-    ): Commands.ServiceClient.RegenerateSecret.Result {
-        const secret = this.cryptoService.generateToken(32);
-        const clientSecretHash = await this.hashingService.hash({ value: secret });
-
-        await this.transactionalService.run({
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.SERVICE_CLIENT,
-                actionType: ActionType.REGENERATE,
-                ...props,
-            },
-            execute: async (transaction) => {
-                const entity = await this.serviceClientRepository.findUniqueOrThrow({
-                    where: { id: props.input.client, application: { realm: props.realm } },
-                    transaction,
-                });
-
-                this.serviceClientService.regenerateSecret({ entity, clientSecretHash });
-            },
-        });
-
-        return { message: `${this.dictionaryPath}.SECRET_REGENERATED`, secret };
-    }
-
     public async revoke(props: Commands.ServiceClient.Revoke.Props): Commands.ServiceClient.Revoke.Result {
         const entities = await this.transactionalService.run<Entities.ServiceClient[]>({
             resource: this.resource,
@@ -122,9 +98,16 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 actionType: ActionType.REVOKE,
                 ...props,
             },
+            outbox: {
+                payloadMapper: (entities) =>
+                    entities.map(({ id, application, code }) => ({ applicationId: application.id, code, id })),
+                actionType: ServiceClientTopicAction.REVOKE,
+                destinationTopic: KafkaTopic.SERVICE_CLIENT,
+            },
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    options: { populate: ["application"] },
                     transaction,
                 });
 
@@ -152,9 +135,16 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 actionType: ActionType.RESTORE,
                 ...props,
             },
+            outbox: {
+                payloadMapper: (entities) =>
+                    entities.map(({ id, application, code }) => ({ applicationId: application.id, code, id })),
+                actionType: ServiceClientTopicAction.RESTORE,
+                destinationTopic: KafkaTopic.SERVICE_CLIENT,
+            },
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    options: { populate: ["application"] },
                     transaction,
                 });
 
@@ -182,9 +172,16 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 actionType: ActionType.PURGE,
                 ...props,
             },
+            outbox: {
+                payloadMapper: (entities) =>
+                    entities.map(({ id, application, code }) => ({ applicationId: application.id, code, id })),
+                actionType: ServiceClientTopicAction.PURGE,
+                destinationTopic: KafkaTopic.SERVICE_CLIENT,
+            },
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    options: { populate: ["application"] },
                     transaction,
                 });
 

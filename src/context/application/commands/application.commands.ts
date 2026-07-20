@@ -1,9 +1,10 @@
+import { InterfaceClientTopicAction, ServiceClientTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
+import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { APPLICATION_SERVICE } from "~context/domain/services";
-import { ActionType, EntityType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -83,6 +84,18 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 actionType: ActionType.REVOKE,
                 ...props,
             },
+            outbox: [
+                {
+                    payloadMapper: (entities) => this.interfaceClientOutboxPayloadMapper({ entities, isRevoked: true }),
+                    actionType: InterfaceClientTopicAction.REVOKE,
+                    destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+                },
+                {
+                    payloadMapper: this.serviceClientOutboxPayloadMapper.bind(this),
+                    actionType: ServiceClientTopicAction.REVOKE,
+                    destinationTopic: KafkaTopic.SERVICE_CLIENT,
+                },
+            ],
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: {
@@ -118,6 +131,18 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 actionType: ActionType.RESTORE,
                 ...props,
             },
+            outbox: [
+                {
+                    payloadMapper: (entities) => this.interfaceClientOutboxPayloadMapper({ entities, isRevoked: false }),
+                    actionType: InterfaceClientTopicAction.RESTORE,
+                    destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+                },
+                {
+                    payloadMapper: this.serviceClientOutboxPayloadMapper.bind(this),
+                    actionType: ServiceClientTopicAction.RESTORE,
+                    destinationTopic: KafkaTopic.SERVICE_CLIENT,
+                },
+            ],
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: {
@@ -180,8 +205,20 @@ export class ApplicationCommands implements Commands.Application.Contract {
 
     public async revokeRealm(props: Commands.Application.RevokeRealm.Props): Commands.Application.RevokeRealm.Result {
         const { version, realm } = props;
-        await this.transactionalService.run({
+        await this.transactionalService.run<Entities.Application[]>({
             resource: this.resource,
+            outbox: [
+                {
+                    payloadMapper: (entities) => this.interfaceClientOutboxPayloadMapper({ entities, isRevoked: true }),
+                    actionType: InterfaceClientTopicAction.REVOKE,
+                    destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+                },
+                {
+                    payloadMapper: this.serviceClientOutboxPayloadMapper.bind(this),
+                    actionType: ServiceClientTopicAction.REVOKE,
+                    destinationTopic: KafkaTopic.SERVICE_CLIENT,
+                },
+            ],
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: { realm },
@@ -190,14 +227,27 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 });
 
                 this.applicationService.applyRealmRevocation({ entities, version });
+                return entities;
             },
         });
     }
 
     public async restoreRealm(props: Commands.Application.RestoreRealm.Props): Commands.Application.RestoreRealm.Result {
         const { version, realm } = props;
-        await this.transactionalService.run({
+        await this.transactionalService.run<Entities.Application[]>({
             resource: this.resource,
+            outbox: [
+                {
+                    payloadMapper: (entities) => this.interfaceClientOutboxPayloadMapper({ entities, isRevoked: false }),
+                    actionType: InterfaceClientTopicAction.RESTORE,
+                    destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+                },
+                {
+                    payloadMapper: this.serviceClientOutboxPayloadMapper.bind(this),
+                    actionType: ServiceClientTopicAction.RESTORE,
+                    destinationTopic: KafkaTopic.SERVICE_CLIENT,
+                },
+            ],
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: { realm },
@@ -206,6 +256,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 });
 
                 this.applicationService.applyRealmRestore({ entities, version });
+                return entities;
             },
         });
     }
@@ -219,5 +270,32 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 this.applicationService.purgeRealm({ transaction, entities, version });
             },
         });
+    }
+
+    public interfaceClientOutboxPayloadMapper(
+        props: Commands.Application.InterfaceClientOutboxPayloadMapper.Props,
+    ): Commands.Application.InterfaceClientOutboxPayloadMapper.Result {
+        const { entities, isRevoked } = props;
+
+        return entities.flatMap((application) =>
+            application.interfaceClients.getItems().map((client) => ({
+                applicationId: application.id,
+                realm: application.realm,
+                id: client.id,
+                isRevoked,
+            })),
+        );
+    }
+
+    public serviceClientOutboxPayloadMapper(
+        entities: Commands.Application.ServiceClientOutboxPayloadMapper.Props,
+    ): Commands.Application.ServiceClientOutboxPayloadMapper.Result {
+        return entities.flatMap((application) =>
+            application.serviceClients.getItems().map((client) => ({
+                applicationId: application.id,
+                code: client.code,
+                id: client.id,
+            })),
+        );
     }
 }

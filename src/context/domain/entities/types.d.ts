@@ -187,8 +187,8 @@ declare global {
 
         namespace ServiceClient {
             type ConstructorProps = {
+                code: string;
                 name: string;
-                clientSecretHash: string;
                 application: ApplicationEntity;
                 isRevoked?: boolean;
                 description?: string;
