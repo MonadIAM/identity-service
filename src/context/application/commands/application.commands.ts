@@ -279,7 +279,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
 
         return entities.flatMap((application) =>
             application.interfaceClients.getItems().map((client) => ({
-                applicationId: application.id,
+                application: application.id,
                 realm: application.realm,
                 id: client.id,
                 isRevoked,
@@ -292,7 +292,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
     ): Commands.Application.ServiceClientOutboxPayloadMapper.Result {
         return entities.flatMap((application) =>
             application.serviceClients.getItems().map((client) => ({
-                applicationId: application.id,
+                application: application.id,
                 code: client.code,
                 id: client.id,
             })),

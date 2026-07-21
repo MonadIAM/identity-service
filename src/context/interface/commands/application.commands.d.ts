@@ -127,7 +127,7 @@ declare namespace Commands {
             };
 
             type Result = {
-                applicationId: string;
+                application: string;
                 realm: string;
                 isRevoked: boolean;
                 id: string;
@@ -138,7 +138,7 @@ declare namespace Commands {
             type Props = Entities.Application[];
 
             type Result = {
-                applicationId: string;
+                application: string;
                 code: string;
                 id: string;
             }[];

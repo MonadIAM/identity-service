@@ -33,7 +33,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             outbox: {
                 payloadMapper: (entity) => ({
-                    applicationId: entity.application.id,
+                    application: entity.application.id,
                     code: entity.code,
                     id: entity.id,
                 }),
@@ -100,7 +100,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             outbox: {
                 payloadMapper: (entities) =>
-                    entities.map(({ id, application, code }) => ({ applicationId: application.id, code, id })),
+                    entities.map(({ id, application, code }) => ({ application: application.id, code, id })),
                 actionType: ServiceClientTopicAction.REVOKE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -137,7 +137,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             outbox: {
                 payloadMapper: (entities) =>
-                    entities.map(({ id, application, code }) => ({ applicationId: application.id, code, id })),
+                    entities.map(({ id, application, code }) => ({ application: application.id, code, id })),
                 actionType: ServiceClientTopicAction.RESTORE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -174,7 +174,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             outbox: {
                 payloadMapper: (entities) =>
-                    entities.map(({ id, application, code }) => ({ applicationId: application.id, code, id })),
+                    entities.map(({ id, application, code }) => ({ application: application.id, code, id })),
                 actionType: ServiceClientTopicAction.PURGE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },

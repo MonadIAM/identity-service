@@ -33,7 +33,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             },
             outbox: {
                 payloadMapper: (entity) => ({
-                    applicationId: entity.application.id,
+                    application: entity.application.id,
                     realm: entity.application.realm,
                     isRevoked: false,
                     id: entity.id,
@@ -103,7 +103,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             outbox: {
                 payloadMapper: (entities) =>
                     entities.map(({ id, application }) => ({
-                        applicationId: application.id,
+                        application: application.id,
                         realm: application.realm,
                         isRevoked: true,
                         id,
@@ -145,7 +145,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             outbox: {
                 payloadMapper: (entities) =>
                     entities.map(({ id, application }) => ({
-                        applicationId: application.id,
+                        application: application.id,
                         realm: application.realm,
                         isRevoked: false,
                         id,
@@ -187,7 +187,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             outbox: {
                 payloadMapper: (entities) =>
                     entities.map(({ id, application }) => ({
-                        applicationId: application.id,
+                        application: application.id,
                         realm: application.realm,
                         isRevoked: true,
                         id,
