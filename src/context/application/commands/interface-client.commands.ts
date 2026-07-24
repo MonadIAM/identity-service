@@ -14,7 +14,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(APPLICATION_REPOSITORY)
         private readonly applicationRepository: Repositories.Application.Contract,
         @Inject(INTERFACE_CLIENT_REPOSITORY)
@@ -32,12 +32,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 ...props,
             },
             outbox: {
-                payloadMapper: (entity) => ({
-                    application: entity.application.id,
-                    realm: entity.application.realm,
-                    isRevoked: false,
-                    id: entity.id,
-                }),
+                payloadMapper: (entity) => this.interfaceClientPayloadMapper({ entity, isRevoked: false }),
                 actionType: InterfaceClientTopicAction.CREATE,
                 destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
@@ -101,13 +96,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) =>
-                    entities.map(({ id, application }) => ({
-                        application: application.id,
-                        realm: application.realm,
-                        isRevoked: true,
-                        id,
-                    })),
+                payloadMapper: (entities) => this.interfaceClientPayloadMapper({ entities, isRevoked: true }),
                 actionType: InterfaceClientTopicAction.REVOKE,
                 destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
@@ -143,13 +132,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) =>
-                    entities.map(({ id, application }) => ({
-                        application: application.id,
-                        realm: application.realm,
-                        isRevoked: false,
-                        id,
-                    })),
+                payloadMapper: (entities) => this.interfaceClientPayloadMapper({ entities, isRevoked: false }),
                 actionType: InterfaceClientTopicAction.RESTORE,
                 destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
@@ -185,13 +168,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) =>
-                    entities.map(({ id, application }) => ({
-                        application: application.id,
-                        realm: application.realm,
-                        isRevoked: true,
-                        id,
-                    })),
+                payloadMapper: (entities) => this.interfaceClientPayloadMapper({ entities, isRevoked: true }),
                 actionType: InterfaceClientTopicAction.PURGE,
                 destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
@@ -216,5 +193,35 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
+    }
+
+    public interfaceClientPayloadMapper(
+        props: Commands.InterfaceClient.InterfaceClientPayloadMapper.EntityProps,
+    ): Commands.InterfaceClient.InterfaceClientPayloadMapper.Result;
+    public interfaceClientPayloadMapper(
+        props: Commands.InterfaceClient.InterfaceClientPayloadMapper.EntitiesProps,
+    ): Commands.InterfaceClient.InterfaceClientPayloadMapper.Result[];
+    public interfaceClientPayloadMapper(
+        props:
+            | Commands.InterfaceClient.InterfaceClientPayloadMapper.EntityProps
+            | Commands.InterfaceClient.InterfaceClientPayloadMapper.EntitiesProps,
+    ):
+        | Commands.InterfaceClient.InterfaceClientPayloadMapper.Result
+        | Commands.InterfaceClient.InterfaceClientPayloadMapper.Result[] {
+        if ("entities" in props) {
+            return props.entities.map(({ id, application }) => ({
+                application: application.id,
+                realm: application.realm,
+                isRevoked: props.isRevoked,
+                id,
+            }));
+        }
+
+        return {
+            application: props.entity.application.id,
+            realm: props.entity.application.realm,
+            isRevoked: props.isRevoked,
+            id: props.entity.id,
+        };
     }
 }

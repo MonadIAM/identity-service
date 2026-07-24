@@ -14,7 +14,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(APPLICATION_REPOSITORY)
         private readonly applicationRepository: Repositories.Application.Contract,
         @Inject(SERVICE_CLIENT_REPOSITORY)
@@ -32,11 +32,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (entity) => ({
-                    application: entity.application.id,
-                    code: entity.code,
-                    id: entity.id,
-                }),
+                payloadMapper: (entity) => this.serviceClientPayloadMapper(entity),
                 actionType: ServiceClientTopicAction.CREATE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -99,8 +95,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) =>
-                    entities.map(({ id, application, code }) => ({ application: application.id, code, id })),
+                payloadMapper: (entities) => this.serviceClientPayloadMapper(entities),
                 actionType: ServiceClientTopicAction.REVOKE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -136,8 +131,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) =>
-                    entities.map(({ id, application, code }) => ({ application: application.id, code, id })),
+                payloadMapper: (entities) => this.serviceClientPayloadMapper(entities),
                 actionType: ServiceClientTopicAction.RESTORE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -173,8 +167,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) =>
-                    entities.map(({ id, application, code }) => ({ application: application.id, code, id })),
+                payloadMapper: (entities) => this.serviceClientPayloadMapper(entities),
                 actionType: ServiceClientTopicAction.PURGE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -198,6 +191,16 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
+        }
+    }
+
+    public serviceClientPayloadMapper(
+        props: Commands.ServiceClient.ServiceClientPayloadMapper.Props,
+    ): Commands.ServiceClient.ServiceClientPayloadMapper.Result {
+        if (Array.isArray(props)) {
+            return props.map(({ id, application, code }) => ({ application: application.id, code, id }));
+        } else {
+            return { application: props.application.id, code: props.code, id: props.id };
         }
     }
 }

@@ -4,6 +4,7 @@ declare global {
     namespace Commands {
         namespace Account {
             interface PrivateContract {
+                accountPayloadMapper(props: AccountPayloadMapper.Props): AccountPayloadMapper.Result;
                 sendOTP(props: SendOTP.Props): SendOTP.Result;
             }
 
@@ -99,6 +100,11 @@ declare global {
                 };
 
                 type Result = Promise<void>;
+            }
+
+            namespace AccountPayloadMapper {
+                type Props = Entities.Account;
+                type Result = Topics.Account.Message["payload"];
             }
         }
     }

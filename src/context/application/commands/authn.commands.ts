@@ -21,7 +21,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(OAUTH_COMMANDS)
         private readonly oauthCommands: Commands.OAuth.CommandsContract,
         @Inject(SECOND_FACTOR_REPOSITORY)

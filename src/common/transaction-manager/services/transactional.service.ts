@@ -12,7 +12,7 @@ import { AuditLog } from "../entities/audit-log.entity";
 import { Outbox } from "../entities";
 
 @Injectable()
-export class TransactionalService {
+export class TransactionalService implements TransactionManager.Service.Contract {
     private readonly serviceName: string;
 
     public constructor(
@@ -24,7 +24,7 @@ export class TransactionalService {
         this.serviceName = this.configService.getOrThrow<string>("SERVICE_NAME");
     }
 
-    public async emit(params: TransactionManager.Service.Emit): Promise<void> {
+    public async emit(params: TransactionManager.Service.Emit.Props): TransactionManager.Service.Emit.Result {
         try {
             const writeManager = this.writeManager.fork();
             const outbox = new Outbox(params);
@@ -50,57 +50,58 @@ export class TransactionalService {
         }
     }
 
-    public async run<T extends AnyEntity | AnyEntity[]>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
+    public async run<T extends AnyEntity | AnyEntity[]>(
+        params: TransactionManager.Service.Run.Props<T>,
+    ): TransactionManager.Service.Run.Result<T> {
         try {
             const writeManager = this.writeManager.fork();
 
-            if (!params.audit) {
-                return writeManager.transactional(async (transaction) => {
-                    const result = await params.execute(transaction);
+            if (params.audit) {
+                const auditEntry = new AuditLog(params.audit);
 
-                    if (result) {
-                        this.persistOutboxEvents(params, transaction, result);
-                    }
+                return await this.operationContext.run(
+                    {
+                        changeLogEnabled: params.changeLog ?? false,
+                        auditEntry: auditEntry.id,
+                    },
+                    () =>
+                        writeManager.transactional(async (transaction) => {
+                            transaction.persist(auditEntry);
+                            transaction.persist(this.buildAuditLogArchiveOutbox(auditEntry));
 
-                    await transaction.flush();
-
-                    return result;
+                            return await this.executeWithEffects({ transaction, params });
+                        }),
+                );
+            } else {
+                return await writeManager.transactional(async (transaction) => {
+                    return await this.executeWithEffects({ transaction, params });
                 });
             }
-
-            const auditEntry = new AuditLog(params.audit);
-
-            return await this.operationContext.run(
-                {
-                    changeLogEnabled: params.changeLog ?? false,
-                    auditEntry: auditEntry.id,
-                },
-                () =>
-                    writeManager.transactional(async (transaction) => {
-                        transaction.persist(auditEntry);
-                        transaction.persist(this.buildAuditLogArchiveOutbox(auditEntry));
-
-                        const result = await params.execute(transaction);
-
-                        if (result) {
-                            this.persistOutboxEvents(params, transaction, result);
-                        }
-
-                        await transaction.flush();
-
-                        return result;
-                    }),
-            );
         } catch (error) {
             throw ExceptionMapper.fromORM(error, params.resource);
         }
     }
 
-    private persistOutboxEvents<T extends AnyEntity | AnyEntity[]>(
-        params: TransactionManager.Service.Run<T>,
-        transaction: EntityManager,
-        result: T,
-    ): void {
+    public async executeWithEffects<T extends AnyEntity | AnyEntity[]>(
+        props: TransactionManager.Service.ExecuteWithEffects.Props<T>,
+    ): TransactionManager.Service.ExecuteWithEffects.Result<T> {
+        const { transaction, params } = props;
+        const result = await params.execute(transaction);
+
+        if (result) {
+            this.persistOutboxEvents({ transaction, params, result });
+        }
+
+        await transaction.flush();
+
+        return result;
+    }
+
+    public persistOutboxEvents<T extends AnyEntity | AnyEntity[]>(
+        props: TransactionManager.Service.PersistOutboxEvents.Props<T>,
+    ): TransactionManager.Service.PersistOutboxEvents.Result {
+        const { transaction, params, result } = props;
+
         if (params.outbox) {
             const entries = [params.outbox].flat();
 
@@ -114,20 +115,22 @@ export class TransactionalService {
         }
     }
 
-    private buildAuditLogArchiveOutbox(auditEntry: AuditLog): Outbox {
+    public buildAuditLogArchiveOutbox(
+        props: TransactionManager.Service.BuildAuditLogArchiveOutbox.Props,
+    ): TransactionManager.Service.BuildAuditLogArchiveOutbox.Result {
         return new Outbox({
             destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE,
             actionType: AuditLogTopicAction.ARCHIVE,
             payload: {
-                id: auditEntry.id,
+                id: props.id,
                 service: this.serviceName,
-                created_at: auditEntry.createdAt.toISOString(),
-                action_type: auditEntry.actionType,
-                entity_type: auditEntry.entityType,
-                actor: auditEntry.actor ?? null,
-                ip: auditEntry.ip ?? null,
-                user_agent: auditEntry.userAgent ?? null,
-                input: auditEntry.input ? JSON.stringify(auditEntry.input) : null,
+                created_at: props.createdAt.toISOString(),
+                action_type: props.actionType,
+                entity_type: props.entityType,
+                actor: props.actor ?? null,
+                ip: props.ip ?? null,
+                user_agent: props.userAgent ?? null,
+                input: props.input ? JSON.stringify(props.input) : null,
             },
         });
     }

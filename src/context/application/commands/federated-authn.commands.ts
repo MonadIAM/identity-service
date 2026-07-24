@@ -26,7 +26,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_SERVICE)
@@ -127,7 +127,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 ...props,
             },
             outbox: {
-                payloadMapper: ({ revokedSessions }) => revokedSessions,
+                payloadMapper: ({ revokedSessions }) => this.blacklistPayloadMapper({ revokedSessions }),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 actionType: BlacklistTopicAction.ADD,
             },
@@ -165,7 +165,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 ...props,
             },
             outbox: {
-                payloadMapper: ({ revokedSessions }) => revokedSessions,
+                payloadMapper: ({ revokedSessions }) => this.blacklistPayloadMapper({ revokedSessions }),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 actionType: BlacklistTopicAction.ADD,
             },
@@ -281,5 +281,11 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
             default:
                 throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_PROVIDER` });
         }
+    }
+
+    public blacklistPayloadMapper(
+        props: Commands.FederatedAuthn.BlacklistPayloadMapper.Props,
+    ): Commands.FederatedAuthn.BlacklistPayloadMapper.Result {
+        return props.revokedSessions;
     }
 }

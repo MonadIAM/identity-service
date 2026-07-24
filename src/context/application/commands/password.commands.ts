@@ -21,7 +21,7 @@ export class PasswordCommands implements Commands.Password.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(PASSWORD_HISTORY_REPOSITORY)
         private readonly passwordHistoryRepository: Repositories.PasswordHistory.Contract,
         @Inject(IDENTIFIER_REPOSITORY)

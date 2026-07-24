@@ -1,12 +1,23 @@
 declare namespace Commands {
     namespace InterfaceClient {
-        interface Contract {
+        interface PrivateContract {
+            interfaceClientPayloadMapper(
+                props: InterfaceClientPayloadMapper.EntityProps,
+            ): InterfaceClientPayloadMapper.Result;
+            interfaceClientPayloadMapper(
+                props: InterfaceClientPayloadMapper.EntitiesProps,
+            ): InterfaceClientPayloadMapper.Result[];
+        }
+
+        interface ControllerContract {
             create(props: Create.Props): Create.Result;
             update(props: Update.Props): Update.Result;
             revoke(props: Revoke.Props): Revoke.Result;
             restore(props: Restore.Props): Restore.Result;
             purge(props: Purge.Props): Purge.Result;
         }
+
+        interface Contract extends PrivateContract, ControllerContract {}
 
         namespace Create {
             type Props = {
@@ -79,6 +90,18 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+        }
+
+        namespace InterfaceClientPayloadMapper {
+            type EntityProps = { entity: Entities.InterfaceClient; isRevoked: boolean };
+            type EntitiesProps = { entities: Entities.InterfaceClient[]; isRevoked: boolean };
+
+            type Result = {
+                application: string;
+                realm: string;
+                isRevoked: boolean;
+                id: string;
+            };
         }
     }
 }

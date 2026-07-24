@@ -14,7 +14,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(APPLICATION_REPOSITORY)
         private readonly applicationRepository: Repositories.Application.Contract,
         @Inject(APPLICATION_SERVICE)

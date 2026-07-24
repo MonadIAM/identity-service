@@ -13,7 +13,7 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
         @Inject(RECOVERY_CODE_SERVICE)

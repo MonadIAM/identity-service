@@ -19,6 +19,7 @@ declare namespace Commands {
             };
 
         interface PrivateContract {
+            blacklistPayloadMapper(props: BlacklistPayloadMapper.Props): BlacklistPayloadMapper.Result;
             authenticateExisting(props: AuthenticateExisting.Props): AuthenticateExisting.Result;
             attachToExisting(props: AttachToExisting.Props): AttachToExisting.Result;
             resolveProvider(props: ResolveProvider.Props): ResolveProvider.Result;
@@ -94,6 +95,11 @@ declare namespace Commands {
             };
 
             type Result = globalThis.FederatedAuthn.ResolveProvider;
+        }
+
+        namespace BlacklistPayloadMapper {
+            type Props = { revokedSessions: Services.Session.Create.RevokedSession[] };
+            type Result = Topics.Blacklist.Message["payload"][];
         }
     }
 }

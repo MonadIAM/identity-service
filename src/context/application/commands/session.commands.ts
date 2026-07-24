@@ -18,7 +18,7 @@ export class SessionCommands implements Commands.Session.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(SESSION_REPOSITORY)
         private readonly sessionRepository: Repositories.Session.Contract,
         @Inject(ACCOUNT_REPOSITORY)
@@ -46,7 +46,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 input: props.input,
             },
             outbox: {
-                payloadMapper: ({ revokedSessions }) => revokedSessions,
+                payloadMapper: ({ revokedSessions }) => this.outboxPayloadMapper({ revokedSessions }),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 actionType: BlacklistTopicAction.ADD,
             },
@@ -259,11 +259,15 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public outboxPayloadMapper(
-        sessions: Commands.Session.OutboxPayloadMapper.Props,
+        props: Commands.Session.OutboxPayloadMapper.Props,
     ): Commands.Session.OutboxPayloadMapper.Result {
-        return sessions.map(({ id, lastRefreshedAt }) => ({
-            expiresAt: Math.round(lastRefreshedAt.getTime() + this.sessionTTL * 1e3),
-            session: id,
-        }));
+        if (Array.isArray(props)) {
+            return props.map(({ id, lastRefreshedAt }) => ({
+                expiresAt: Math.round(lastRefreshedAt.getTime() + this.sessionTTL * 1e3),
+                session: id,
+            }));
+        } else {
+            return props.revokedSessions;
+        }
     }
 }

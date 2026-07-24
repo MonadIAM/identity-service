@@ -17,7 +17,7 @@ export class AccountCommands implements Commands.Account.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.Contract,
         @Inject(ACCOUNT_REPOSITORY)
@@ -42,7 +42,7 @@ export class AccountCommands implements Commands.Account.Contract {
         const hashedPassword = await this.hashingService.hash({ value: props.input.password });
         const type = isEmail(props.input.identifier) ? IdentifierType.EMAIL : IdentifierType.PHONE;
 
-        const account = await this.transactionalService.run<Entities.Account>({
+        const account = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 actionType: ActionType.SIGN_UP,
@@ -111,7 +111,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (account) => ({ account: account.id }),
+                payloadMapper: (account) => this.accountPayloadMapper(account),
                 actionType: AccountTopicAction.CREATE,
                 destinationTopic: KafkaTopic.ACCOUNT,
             },
@@ -227,5 +227,11 @@ export class AccountCommands implements Commands.Account.Contract {
                 body: `Your verification code: ${otp}`,
             });
         }
+    }
+
+    public accountPayloadMapper(
+        props: Commands.Account.AccountPayloadMapper.Props,
+    ): Commands.Account.AccountPayloadMapper.Result {
+        return { account: props.id };
     }
 }

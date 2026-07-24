@@ -1,12 +1,18 @@
 declare namespace Commands {
     namespace ServiceClient {
-        interface Contract {
+        interface PrivateContract {
+            serviceClientPayloadMapper(props: ServiceClientPayloadMapper.Props): ServiceClientPayloadMapper.Result;
+        }
+
+        interface ControllerContract {
             create(props: Create.Props): Create.Result;
             update(props: Update.Props): Update.Result;
             revoke(props: Revoke.Props): Revoke.Result;
             restore(props: Restore.Props): Restore.Result;
             purge(props: Purge.Props): Purge.Result;
         }
+
+        interface Contract extends PrivateContract, ControllerContract {}
 
         namespace Create {
             type Props = {
@@ -78,6 +84,12 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+        }
+
+        namespace ServiceClientPayloadMapper {
+            type Props = Entities.ServiceClient | Entities.ServiceClient[];
+
+            type Result = Topics.ServiceClient.Message["payload"] | Topics.ServiceClient.Message["payload"][];
         }
     }
 }

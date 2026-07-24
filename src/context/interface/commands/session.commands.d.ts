@@ -66,7 +66,11 @@ declare namespace Commands {
         }
 
         namespace OutboxPayloadMapper {
-            type Props = Entities.Session[];
+            type Props =
+                | {
+                      revokedSessions: Services.Session.Create.RevokedSession[];
+                  }
+                | Entities.Session[];
 
             type Result = Services.Session.Create.RevokedSession[];
         }
