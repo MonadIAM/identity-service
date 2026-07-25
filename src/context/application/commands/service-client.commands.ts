@@ -32,7 +32,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (entity) => this.serviceClientPayloadMapper(entity),
+                payloadMapper: this.serviceClientPayloadMapper.bind(this),
                 actionType: ServiceClientTopicAction.CREATE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -95,7 +95,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) => this.serviceClientPayloadMapper(entities),
+                payloadMapper: this.serviceClientPayloadMapper.bind(this),
                 actionType: ServiceClientTopicAction.REVOKE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -131,7 +131,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) => this.serviceClientPayloadMapper(entities),
+                payloadMapper: this.serviceClientPayloadMapper.bind(this),
                 actionType: ServiceClientTopicAction.RESTORE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },
@@ -167,7 +167,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) => this.serviceClientPayloadMapper(entities),
+                payloadMapper: this.serviceClientPayloadMapper.bind(this),
                 actionType: ServiceClientTopicAction.PURGE,
                 destinationTopic: KafkaTopic.SERVICE_CLIENT,
             },

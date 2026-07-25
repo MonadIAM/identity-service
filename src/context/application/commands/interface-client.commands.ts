@@ -24,7 +24,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     ) {}
 
     public async create(props: Commands.InterfaceClient.Create.Props): Commands.InterfaceClient.Create.Result {
-        await this.transactionalService.run<Entities.InterfaceClient>({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.INTERFACE_CLIENT,
@@ -32,7 +32,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 ...props,
             },
             outbox: {
-                payloadMapper: (entity) => this.interfaceClientPayloadMapper({ entity, isRevoked: false }),
+                payloadMapper: this.interfaceClientPayloadMapper.bind(this),
                 actionType: InterfaceClientTopicAction.CREATE,
                 destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
@@ -42,7 +42,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                     transaction,
                 });
 
-                return this.interfaceClientService.create({
+                const entity = await this.interfaceClientService.create({
                     transaction,
                     input: {
                         description: props.input.description,
@@ -52,6 +52,8 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                         application,
                     },
                 });
+
+                return { entities: [entity], isRevoked: false };
             },
         });
 
@@ -88,7 +90,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public async revoke(props: Commands.InterfaceClient.Revoke.Props): Commands.InterfaceClient.Revoke.Result {
-        const entities = await this.transactionalService.run<Entities.InterfaceClient[]>({
+        const { entities } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.INTERFACE_CLIENT,
@@ -96,7 +98,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) => this.interfaceClientPayloadMapper({ entities, isRevoked: true }),
+                payloadMapper: this.interfaceClientPayloadMapper.bind(this),
                 actionType: InterfaceClientTopicAction.REVOKE,
                 destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
@@ -112,7 +114,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 }
 
                 this.interfaceClientService.revoke({ entities });
-                return entities;
+                return { entities, isRevoked: true };
             },
         });
 
@@ -124,7 +126,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public async restore(props: Commands.InterfaceClient.Restore.Props): Commands.InterfaceClient.Restore.Result {
-        const entities = await this.transactionalService.run<Entities.InterfaceClient[]>({
+        const { entities } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.INTERFACE_CLIENT,
@@ -132,7 +134,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) => this.interfaceClientPayloadMapper({ entities, isRevoked: false }),
+                payloadMapper: this.interfaceClientPayloadMapper.bind(this),
                 actionType: InterfaceClientTopicAction.RESTORE,
                 destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
@@ -148,7 +150,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 }
 
                 this.interfaceClientService.restore({ entities });
-                return entities;
+                return { entities, isRevoked: false };
             },
         });
 
@@ -160,7 +162,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public async purge(props: Commands.InterfaceClient.Purge.Props): Commands.InterfaceClient.Purge.Result {
-        const entities = await this.transactionalService.run<Entities.InterfaceClient[]>({
+        const { entities } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.INTERFACE_CLIENT,
@@ -168,7 +170,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 ...props,
             },
             outbox: {
-                payloadMapper: (entities) => this.interfaceClientPayloadMapper({ entities, isRevoked: true }),
+                payloadMapper: this.interfaceClientPayloadMapper.bind(this),
                 actionType: InterfaceClientTopicAction.PURGE,
                 destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
@@ -184,7 +186,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 }
 
                 this.interfaceClientService.purge({ transaction, entities });
-                return entities;
+                return { entities, isRevoked: true };
             },
         });
 
@@ -196,32 +198,13 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public interfaceClientPayloadMapper(
-        props: Commands.InterfaceClient.InterfaceClientPayloadMapper.EntityProps,
-    ): Commands.InterfaceClient.InterfaceClientPayloadMapper.Result;
-    public interfaceClientPayloadMapper(
-        props: Commands.InterfaceClient.InterfaceClientPayloadMapper.EntitiesProps,
-    ): Commands.InterfaceClient.InterfaceClientPayloadMapper.Result[];
-    public interfaceClientPayloadMapper(
-        props:
-            | Commands.InterfaceClient.InterfaceClientPayloadMapper.EntityProps
-            | Commands.InterfaceClient.InterfaceClientPayloadMapper.EntitiesProps,
-    ):
-        | Commands.InterfaceClient.InterfaceClientPayloadMapper.Result
-        | Commands.InterfaceClient.InterfaceClientPayloadMapper.Result[] {
-        if ("entities" in props) {
-            return props.entities.map(({ id, application }) => ({
-                application: application.id,
-                realm: application.realm,
-                isRevoked: props.isRevoked,
-                id,
-            }));
-        }
-
-        return {
-            application: props.entity.application.id,
-            realm: props.entity.application.realm,
+        props: Commands.InterfaceClient.InterfaceClientPayloadMapper.Props,
+    ): Commands.InterfaceClient.InterfaceClientPayloadMapper.Result {
+        return props.entities.map(({ id, application }) => ({
+            application: application.id,
             isRevoked: props.isRevoked,
-            id: props.entity.id,
-        };
+            realm: application.realm,
+            id,
+        }));
     }
 }

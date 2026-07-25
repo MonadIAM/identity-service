@@ -111,7 +111,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: (account) => this.accountPayloadMapper(account),
+                payloadMapper: this.accountPayloadMapper.bind(this),
                 actionType: AccountTopicAction.CREATE,
                 destinationTopic: KafkaTopic.ACCOUNT,
             },

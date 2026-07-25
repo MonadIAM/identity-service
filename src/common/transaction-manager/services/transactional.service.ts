@@ -122,15 +122,15 @@ export class TransactionalService implements TransactionManager.Service.Contract
             destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE,
             actionType: AuditLogTopicAction.ARCHIVE,
             payload: {
-                id: props.id,
-                service: this.serviceName,
+                input: props.input ? JSON.stringify(props.input) : null,
                 created_at: props.createdAt.toISOString(),
+                user_agent: props.userAgent ?? null,
                 action_type: props.actionType,
                 entity_type: props.entityType,
-                actor: props.actor ?? null,
+                service: this.serviceName,
                 ip: props.ip ?? null,
-                user_agent: props.userAgent ?? null,
-                input: props.input ? JSON.stringify(props.input) : null,
+                actor: props.actor,
+                id: props.id,
             },
         });
     }

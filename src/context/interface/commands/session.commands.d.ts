@@ -6,7 +6,7 @@ declare namespace Commands {
         }
 
         interface PrivateContract {
-            outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
+            blacklistPayloadMapper(props: BlacklistPayloadMapper.Props): BlacklistPayloadMapper.Result;
         }
 
         interface CommandsContract {
@@ -65,7 +65,7 @@ declare namespace Commands {
             type Result = Promise<MessageResult>;
         }
 
-        namespace OutboxPayloadMapper {
+        namespace BlacklistPayloadMapper {
             type Props =
                 | {
                       revokedSessions: Services.Session.Create.RevokedSession[];

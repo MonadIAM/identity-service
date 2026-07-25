@@ -97,9 +97,9 @@ export class CleanupProcessor extends WorkerHost {
             >({
                 resource: this.resource,
                 outbox: {
+                    payloadMapper: ({ purged }) => purged.map(({ id }) => ({ account: id })),
                     destinationTopic: KafkaTopic.ACCOUNT,
                     actionType: AccountTopicAction.PURGE,
-                    payloadMapper: ({ purged }) => purged.map(({ id }) => ({ account: id })),
                 },
                 execute: async (transaction) => {
                     const fetched = await this.accountRepository.findExpiredInactive({

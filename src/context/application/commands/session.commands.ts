@@ -46,7 +46,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 input: props.input,
             },
             outbox: {
-                payloadMapper: ({ revokedSessions }) => this.outboxPayloadMapper({ revokedSessions }),
+                payloadMapper: this.blacklistPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 actionType: BlacklistTopicAction.ADD,
             },
@@ -123,7 +123,7 @@ export class SessionCommands implements Commands.Session.Contract {
                     input: { session: session.id },
                 },
                 outbox: {
-                    payloadMapper: this.outboxPayloadMapper.bind(this),
+                    payloadMapper: this.blacklistPayloadMapper.bind(this),
                     destinationTopic: KafkaTopic.BLACKLIST,
                     actionType: BlacklistTopicAction.ADD,
                 },
@@ -180,7 +180,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: this.outboxPayloadMapper.bind(this),
+                payloadMapper: this.blacklistPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 actionType: BlacklistTopicAction.ADD,
             },
@@ -233,7 +233,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 ...props,
             },
             outbox: {
-                payloadMapper: this.outboxPayloadMapper.bind(this),
+                payloadMapper: this.blacklistPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 actionType: BlacklistTopicAction.ADD,
             },
@@ -258,9 +258,9 @@ export class SessionCommands implements Commands.Session.Contract {
         return { message: `${this.dictionaryPath}.REVOKED_ALL` };
     }
 
-    public outboxPayloadMapper(
-        props: Commands.Session.OutboxPayloadMapper.Props,
-    ): Commands.Session.OutboxPayloadMapper.Result {
+    public blacklistPayloadMapper(
+        props: Commands.Session.BlacklistPayloadMapper.Props,
+    ): Commands.Session.BlacklistPayloadMapper.Result {
         if (Array.isArray(props)) {
             return props.map(({ id, lastRefreshedAt }) => ({
                 expiresAt: Math.round(lastRefreshedAt.getTime() + this.sessionTTL * 1e3),

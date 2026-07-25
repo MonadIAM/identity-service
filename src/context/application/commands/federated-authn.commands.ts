@@ -127,7 +127,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 ...props,
             },
             outbox: {
-                payloadMapper: ({ revokedSessions }) => this.blacklistPayloadMapper({ revokedSessions }),
+                payloadMapper: this.blacklistPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 actionType: BlacklistTopicAction.ADD,
             },
@@ -165,7 +165,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 ...props,
             },
             outbox: {
-                payloadMapper: ({ revokedSessions }) => this.blacklistPayloadMapper({ revokedSessions }),
+                payloadMapper: this.blacklistPayloadMapper.bind(this),
                 destinationTopic: KafkaTopic.BLACKLIST,
                 actionType: BlacklistTopicAction.ADD,
             },

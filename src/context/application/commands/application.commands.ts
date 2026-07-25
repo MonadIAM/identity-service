@@ -77,7 +77,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
 
     public async revoke(props: Commands.Application.Revoke.Props): Commands.Application.Revoke.Result {
         const { realm, input } = props;
-        const entities = await this.transactionalService.run<Entities.Application[]>({
+        const { entities } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.APPLICATION,
@@ -86,7 +86,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
             },
             outbox: [
                 {
-                    payloadMapper: (entities) => this.interfaceClientOutboxPayloadMapper({ entities, isRevoked: true }),
+                    payloadMapper: this.interfaceClientOutboxPayloadMapper.bind(this),
                     actionType: InterfaceClientTopicAction.REVOKE,
                     destinationTopic: KafkaTopic.INTERFACE_CLIENT,
                 },
@@ -112,7 +112,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                     this.applicationService.revoke({ entities });
                 }
 
-                return entities;
+                return { entities, isRevoked: true };
             },
         });
 
@@ -124,7 +124,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async restore(props: Commands.Application.Restore.Props): Commands.Application.Restore.Result {
-        const entities = await this.transactionalService.run<Entities.Application[]>({
+        const { entities } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.APPLICATION,
@@ -133,7 +133,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
             },
             outbox: [
                 {
-                    payloadMapper: (entities) => this.interfaceClientOutboxPayloadMapper({ entities, isRevoked: false }),
+                    payloadMapper: this.interfaceClientOutboxPayloadMapper.bind(this),
                     actionType: InterfaceClientTopicAction.RESTORE,
                     destinationTopic: KafkaTopic.INTERFACE_CLIENT,
                 },
@@ -159,7 +159,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                     this.applicationService.restore({ entities });
                 }
 
-                return entities;
+                return { entities, isRevoked: false };
             },
         });
 
@@ -205,11 +205,11 @@ export class ApplicationCommands implements Commands.Application.Contract {
 
     public async revokeRealm(props: Commands.Application.RevokeRealm.Props): Commands.Application.RevokeRealm.Result {
         const { version, realm } = props;
-        await this.transactionalService.run<Entities.Application[]>({
+        await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities) => this.interfaceClientOutboxPayloadMapper({ entities, isRevoked: true }),
+                    payloadMapper: this.interfaceClientOutboxPayloadMapper.bind(this),
                     actionType: InterfaceClientTopicAction.REVOKE,
                     destinationTopic: KafkaTopic.INTERFACE_CLIENT,
                 },
@@ -227,18 +227,18 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 });
 
                 this.applicationService.applyRealmRevocation({ entities, version });
-                return entities;
+                return { entities, isRevoked: true };
             },
         });
     }
 
     public async restoreRealm(props: Commands.Application.RestoreRealm.Props): Commands.Application.RestoreRealm.Result {
         const { version, realm } = props;
-        await this.transactionalService.run<Entities.Application[]>({
+        await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities) => this.interfaceClientOutboxPayloadMapper({ entities, isRevoked: false }),
+                    payloadMapper: this.interfaceClientOutboxPayloadMapper.bind(this),
                     actionType: InterfaceClientTopicAction.RESTORE,
                     destinationTopic: KafkaTopic.INTERFACE_CLIENT,
                 },
@@ -256,7 +256,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 });
 
                 this.applicationService.applyRealmRestore({ entities, version });
-                return entities;
+                return { entities, isRevoked: false };
             },
         });
     }
@@ -288,9 +288,9 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public serviceClientOutboxPayloadMapper(
-        entities: Commands.Application.ServiceClientOutboxPayloadMapper.Props,
+        props: Commands.Application.ServiceClientOutboxPayloadMapper.Props,
     ): Commands.Application.ServiceClientOutboxPayloadMapper.Result {
-        return entities.flatMap((application) =>
+        return props.entities.flatMap((application) =>
             application.serviceClients.getItems().map((client) => ({
                 application: application.id,
                 code: client.code,

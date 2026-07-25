@@ -135,7 +135,9 @@ declare namespace Commands {
         }
 
         namespace ServiceClientOutboxPayloadMapper {
-            type Props = Entities.Application[];
+            type Props = {
+                entities: Entities.Application[];
+            };
 
             type Result = {
                 application: string;
