@@ -51,7 +51,7 @@ declare global {
             namespace Emit {
                 type Props = {
                     [D in keyof OutboxPayloadMap]: {
-                        audit?: Entities.AuditLog.ConstructorProps;
+                        audit?: SystemEntities.AuditLog.ConstructorProps;
                         payload: OutboxPayloadMap[D];
                         metadata?: UnknownObject;
                         destinationTopic: D;
@@ -66,7 +66,7 @@ declare global {
             namespace Run {
                 type ResultProps<T extends AnyEntity | AnyEntity[]> = {
                     execute(transaction: EntityManager): Promise<T> | T;
-                    audit?: Entities.AuditLog.ConstructorProps;
+                    audit?: SystemEntities.AuditLog.ConstructorProps;
                     outbox?: OutboxConfig<T> | OutboxConfig<T>[];
                     changeLog?: boolean;
                     resource?: string;
@@ -74,7 +74,7 @@ declare global {
 
                 type VoidProps = {
                     execute(transaction: EntityManager): Promise<void> | void;
-                    audit?: Entities.AuditLog.ConstructorProps;
+                    audit?: SystemEntities.AuditLog.ConstructorProps;
                     changeLog?: never;
                     resource?: string;
                     outbox?: never;
@@ -105,9 +105,9 @@ declare global {
             }
 
             namespace BuildAuditLogArchiveOutbox {
-                type Props = Entities.AuditLog;
+                type Props = SystemEntities.AuditLog;
 
-                type Result = Entities.Outbox;
+                type Result = SystemEntities.Outbox;
             }
         }
     }

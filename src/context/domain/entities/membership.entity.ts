@@ -1,12 +1,10 @@
-import { Account } from "./account.entity";
-
-export class Membership {
+export class Membership implements Entities.Membership.Contract {
     public invitedBy: string;
     public createdAt: Date;
     public joinedAt: Date;
     public realm: string;
 
-    public account: Account;
+    public account: Entities.Account;
 
     public constructor(props: Entities.Membership.ConstructorProps) {
         this.createdAt = new Date();

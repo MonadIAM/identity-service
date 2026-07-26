@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 import { SecondFactorType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
-import { Account } from "./account.entity";
-
-export class SecondFactor {
+export class SecondFactor implements Entities.SecondFactor.Contract {
     private get dictionaryPath(): string {
         return "entities.second-factor";
     }
@@ -18,7 +16,7 @@ export class SecondFactor {
     public secret: string;
     public name: string;
 
-    public account: Account;
+    public account: Entities.Account;
 
     public constructor(props: Entities.SecondFactor.ConstructorProps) {
         this.createdAt = new Date();

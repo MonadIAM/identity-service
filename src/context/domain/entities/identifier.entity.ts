@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 import { IdentifierType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
-import { Account } from "./account.entity";
-
-export class Identifier {
+export class Identifier implements Entities.Identifier.Contract {
     private get dictionaryPath(): string {
         return "entities.identifier";
     }
@@ -25,7 +23,7 @@ export class Identifier {
     public isPublicContact: boolean;
     public receiveNotifications: boolean;
 
-    public account: Account;
+    public account: Entities.Account;
 
     public constructor(props: Entities.Identifier.ConstructorProps) {
         this.createdAt = new Date();

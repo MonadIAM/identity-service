@@ -1,8 +1,6 @@
 import { Exception } from "~common/exceptions";
 
-import { Account } from "./account.entity";
-
-export class Profile {
+export class Profile implements Entities.Profile.Contract {
     private get dictionaryPath(): string {
         return "entities.profile";
     }
@@ -14,7 +12,7 @@ export class Profile {
     public timeZone?: string;
     public locale?: string;
 
-    public account: Account;
+    public account: Entities.Account;
 
     public constructor(props: Entities.Profile.ConstructorProps) {
         this.displayName = props.displayName;

@@ -2,9 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
-import { Application } from "./application.entity";
-
-export class ServiceClient {
+export class ServiceClient implements Entities.ServiceClient.Contract {
     private get dictionaryPath(): string {
         return "entities.service-client";
     }
@@ -12,11 +10,11 @@ export class ServiceClient {
     public id: string;
     public createdAt: Date;
     public updatedAt?: Date;
-    public version = 1;
+    public version: number = 1;
 
     public code: string;
     public name: string;
-    public application: Application;
+    public application: Entities.Application;
     public description?: string;
     public allowedAddresses: string[];
 

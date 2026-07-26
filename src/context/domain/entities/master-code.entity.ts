@@ -1,10 +1,8 @@
-import { Account } from "./account.entity";
-
-export class MasterCode {
+export class MasterCode implements Entities.MasterCode.Contract {
     public hash: string;
     public createdAt: Date;
 
-    public account: Account;
+    public account: Entities.Account;
 
     public constructor(props: Entities.MasterCode.ConstructorProps) {
         this.createdAt = new Date();

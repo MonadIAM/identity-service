@@ -3,10 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
-import type { InterfaceClient } from "./interface-client.entity";
-import type { ServiceClient } from "./service-client.entity";
-
-export class Application {
+export class Application implements Entities.Application.Contract {
     private get dictionaryPath(): string {
         return "entities.application";
     }
@@ -14,7 +11,7 @@ export class Application {
     public id: string;
     public createdAt: Date;
     public updatedAt?: Date;
-    public version = 1;
+    public version: number = 1;
 
     public description?: string;
     public realm: string;
@@ -25,8 +22,8 @@ export class Application {
     public isRealmRevoked: boolean;
     public isRevoked: boolean;
 
-    public interfaceClients = new Collection<InterfaceClient>(this);
-    public serviceClients = new Collection<ServiceClient>(this);
+    public interfaceClients = new Collection<Entities.InterfaceClient>(this);
+    public serviceClients = new Collection<Entities.ServiceClient>(this);
 
     public constructor(props: Entities.Application.ConstructorProps) {
         this.createdAt = new Date();

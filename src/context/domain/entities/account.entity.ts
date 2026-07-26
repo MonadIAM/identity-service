@@ -4,17 +4,7 @@ import { randomUUID } from "node:crypto";
 import { AccountSubject, AccountStatus } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
-import { PasswordHistory } from "./password-history.entity";
-import { SecondFactor } from "./second-factor.entity";
-import { RecoveryCode } from "./recovery-code.entity";
-import { MasterCode } from "./master-code.entity";
-import { Membership } from "./membership.entity";
-import { Identifier } from "./identifier.entity";
-import { Password } from "./password.entity";
-import { Profile } from "./profile.entity";
-import { Session } from "./session.entity";
-
-export class Account {
+export class Account implements Entities.Account.Contract {
     private get dictionaryPath(): string {
         return "entities.account";
     }
@@ -23,22 +13,22 @@ export class Account {
     public createdAt: Date;
     public updatedAt?: Date;
     public lastActiveAt?: Date;
-    public version = 1;
+    public version: number = 1;
 
     public is2FAEnforced: boolean;
     public subject: AccountSubject;
     public status: AccountStatus;
 
-    public profile?: Profile;
-    public password?: Password;
-    public masterCode?: MasterCode;
+    public profile?: Entities.Profile;
+    public password?: Entities.Password;
+    public masterCode?: Entities.MasterCode;
 
-    public sessions = new Collection<Session>(this);
-    public identifiers = new Collection<Identifier>(this);
-    public secondFactors = new Collection<SecondFactor>(this);
-    public recoveryCodes = new Collection<RecoveryCode>(this);
-    public passwordHistory = new Collection<PasswordHistory>(this);
-    public memberships = new Collection<Membership>(this);
+    public sessions = new Collection<Entities.Session>(this);
+    public identifiers = new Collection<Entities.Identifier>(this);
+    public secondFactors = new Collection<Entities.SecondFactor>(this);
+    public recoveryCodes = new Collection<Entities.RecoveryCode>(this);
+    public passwordHistory = new Collection<Entities.PasswordHistory>(this);
+    public memberships = new Collection<Entities.Membership>(this);
 
     public constructor(props: Entities.Account.ConstructorProps) {
         this.createdAt = new Date();

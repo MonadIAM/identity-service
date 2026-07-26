@@ -8,7 +8,7 @@ const BASE_CONTEXT: Extract.Meta = {
     ip: "127.0.0.1",
 };
 
-function createAuditLog(overrides?: Partial<Entities.AuditLog.ConstructorProps>): AuditLog {
+function createAuditLog(overrides?: Partial<SystemEntities.AuditLog.ConstructorProps>): AuditLog {
     return new AuditLog({
         actionType: "SIGN_UP_ACCOUNT",
         entityType: "ACCOUNT",

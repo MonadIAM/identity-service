@@ -2,9 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
-import { Account } from "./account.entity";
-
-export class Session {
+export class Session implements Entities.Session.Contract {
     private get dictionaryPath(): string {
         return "entities.session";
     }
@@ -22,7 +20,7 @@ export class Session {
     public ip: string;
     public acr: string;
 
-    public account: Account;
+    public account: Entities.Account;
 
     public constructor(props: Entities.Session.ConstructorProps) {
         const now = new Date();

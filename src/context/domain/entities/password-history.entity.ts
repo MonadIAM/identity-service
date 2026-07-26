@@ -1,15 +1,13 @@
 import { randomUUID } from "node:crypto";
 
-import { Account } from "./account.entity";
-
-export class PasswordHistory {
+export class PasswordHistory implements Entities.PasswordHistory.Contract {
     public id: string;
     public setAt: Date;
 
     public version: number;
     public hash: string;
 
-    public account: Account;
+    public account: Entities.Account;
 
     public constructor(props: Entities.PasswordHistory.ConstructorProps) {
         this.setAt = new Date();

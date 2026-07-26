@@ -1,15 +1,13 @@
 import { randomUUID } from "node:crypto";
 
-import { Account } from "./account.entity";
-
-export class RecoveryCode {
+export class RecoveryCode implements Entities.RecoveryCode.Contract {
     public id: string;
     public createdAt: Date;
     public usedAt?: Date;
 
     public hash: string;
 
-    public account: Account;
+    public account: Entities.Account;
 
     public constructor(props: Entities.RecoveryCode.ConstructorProps) {
         this.createdAt = new Date();
