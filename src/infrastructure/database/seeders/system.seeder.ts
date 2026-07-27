@@ -1,10 +1,9 @@
-import { EntityManager } from "@mikro-orm/core";
 import { Seeder } from "@mikro-orm/seeder";
 
 import { InterfaceClients, RecoveryCodes, Applications, Identifiers, Passwords, Accounts, Profiles } from "../datasets";
 
 export class SystemSeeder extends Seeder {
-    public async run(entityManager: EntityManager): Promise<void> {
+    public async run(entityManager: ORM.EntityManager): Promise<void> {
         await entityManager.getConnection().execute(`
             TRUNCATE TABLE
                 identity.interface_client,

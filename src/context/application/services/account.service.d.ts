@@ -1,5 +1,3 @@
-import { EntityManager } from "@mikro-orm/postgresql";
-
 import { AccountStatus, AccountSubject } from "~context/enums";
 
 declare global {
@@ -17,7 +15,7 @@ declare global {
 
             namespace Create {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         additionalIdentifier?: Omit<Entities.Identifier.ConstructorProps, "account">;
                         primaryIdentifier: Omit<Entities.Identifier.ConstructorProps, "account">;
@@ -33,7 +31,7 @@ declare global {
 
             namespace Deactivate {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         sessions: Entities.Session[];
                         account: Entities.Account;
@@ -45,7 +43,7 @@ declare global {
 
             namespace Suspend {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         sessions: Entities.Session[];
                         account: Entities.Account;
@@ -57,7 +55,7 @@ declare global {
 
             namespace Purge {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         account: Entities.Account;
                         reason?: string;

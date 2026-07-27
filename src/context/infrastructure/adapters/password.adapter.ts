@@ -1,13 +1,13 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 
 export class PasswordAdapter implements Adapters.Contract<Entities.Password, Adapters.Password.Types> {
     public buildWhereORM(
         _filters: Adapters.Password.Filters,
-        basic: ObjectQuery<Entities.Password> = {},
-    ): ObjectQuery<Entities.Password> {
-        const where: ObjectQuery<Entities.Password> = basic;
+        basic: ORM.ObjectQuery<Entities.Password> = {},
+    ): ORM.ObjectQuery<Entities.Password> {
+        const where: ORM.ObjectQuery<Entities.Password> = basic;
 
         return where;
     }
@@ -15,8 +15,8 @@ export class PasswordAdapter implements Adapters.Contract<Entities.Password, Ada
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Password.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.Password, P, F> = {},
-    ): FindOptions<Entities.Password, P, F> {
+        basic: ORM.FindOptions<Entities.Password, P, F> = {},
+    ): ORM.FindOptions<Entities.Password, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.Password>(sort, { setAt: QueryOrder.ASC }),

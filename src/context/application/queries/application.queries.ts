@@ -1,5 +1,4 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { FilterQuery } from "@mikro-orm/postgresql";
 
 import { APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicLinkOperator } from "~infrastructure/database";
@@ -14,7 +13,7 @@ export class ApplicationQueries implements Queries.Application.Contract {
     ) {}
 
     public findUnique(props: Queries.Application.FindUnique.Props): Queries.Application.FindUnique.Result {
-        const where: FilterQuery<Application> = { id: props.application };
+        const where: ORM.FilterQuery<Application> = { id: props.application };
 
         if (props.mode === QueryMode.DEFAULT) {
             where.realm = props.realm;

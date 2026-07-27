@@ -1,13 +1,13 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 
 export class SecondFactorAdapter implements Adapters.Contract<Entities.SecondFactor, Adapters.SecondFactor.Types> {
     public buildWhereORM(
         _filters: Adapters.SecondFactor.Filters,
-        basic: ObjectQuery<Entities.SecondFactor> = {},
-    ): ObjectQuery<Entities.SecondFactor> {
-        const where: ObjectQuery<Entities.SecondFactor> = basic;
+        basic: ORM.ObjectQuery<Entities.SecondFactor> = {},
+    ): ORM.ObjectQuery<Entities.SecondFactor> {
+        const where: ORM.ObjectQuery<Entities.SecondFactor> = basic;
 
         return where;
     }
@@ -15,8 +15,8 @@ export class SecondFactorAdapter implements Adapters.Contract<Entities.SecondFac
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.SecondFactor.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.SecondFactor, P, F> = {},
-    ): FindOptions<Entities.SecondFactor, P, F> {
+        basic: ORM.FindOptions<Entities.SecondFactor, P, F> = {},
+    ): ORM.FindOptions<Entities.SecondFactor, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.SecondFactor>(sort, { createdAt: QueryOrder.ASC }),

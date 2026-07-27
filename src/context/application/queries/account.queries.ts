@@ -1,5 +1,4 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { FilterQuery } from "@mikro-orm/postgresql";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicLinkOperator } from "~infrastructure/database";
@@ -26,7 +25,7 @@ export class AccountQueries implements Queries.Account.Contract {
     }
 
     public findUnique(props: Queries.Account.FindUnique.Props): Queries.Account.FindUnique.Result {
-        const where: FilterQuery<Account> = { id: props.account };
+        const where: ORM.FilterQuery<Account> = { id: props.account };
 
         if (props.mode === QueryMode.DEFAULT) {
             where.memberships = { realm: props.realm };

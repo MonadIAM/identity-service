@@ -1,4 +1,3 @@
-import { FilterQuery, ObjectQuery } from "@mikro-orm/postgresql";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
@@ -13,7 +12,7 @@ export class InterfaceClientQueries implements Queries.InterfaceClient.Contract 
     ) {}
 
     public findUnique(props: Queries.InterfaceClient.FindUnique.Props): Queries.InterfaceClient.FindUnique.Result {
-        const where: FilterQuery<InterfaceClient> = { id: props.client };
+        const where: ORM.FilterQuery<InterfaceClient> = { id: props.client };
 
         if (props.mode === QueryMode.DEFAULT) {
             where.application = { id: props.application, realm: props.realm };
@@ -23,7 +22,7 @@ export class InterfaceClientQueries implements Queries.InterfaceClient.Contract 
     }
 
     public findMany(props: Queries.InterfaceClient.FindMany.Props): Queries.InterfaceClient.FindMany.Result {
-        const prefilter: ObjectQuery<InterfaceClient> = {};
+        const prefilter: ORM.ObjectQuery<InterfaceClient> = {};
 
         if (props.mode === QueryMode.DEFAULT) {
             prefilter.application = { id: props.application, realm: props.realm };

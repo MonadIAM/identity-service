@@ -1,13 +1,13 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 
 export class RecoveryCodeAdapter implements Adapters.Contract<Entities.RecoveryCode, Adapters.RecoveryCode.Types> {
     public buildWhereORM(
         _filters: Adapters.RecoveryCode.Filters,
-        basic: ObjectQuery<Entities.RecoveryCode> = {},
-    ): ObjectQuery<Entities.RecoveryCode> {
-        const where: ObjectQuery<Entities.RecoveryCode> = basic;
+        basic: ORM.ObjectQuery<Entities.RecoveryCode> = {},
+    ): ORM.ObjectQuery<Entities.RecoveryCode> {
+        const where: ORM.ObjectQuery<Entities.RecoveryCode> = basic;
 
         return where;
     }
@@ -15,8 +15,8 @@ export class RecoveryCodeAdapter implements Adapters.Contract<Entities.RecoveryC
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.RecoveryCode.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.RecoveryCode, P, F> = {},
-    ): FindOptions<Entities.RecoveryCode, P, F> {
+        basic: ORM.FindOptions<Entities.RecoveryCode, P, F> = {},
+    ): ORM.FindOptions<Entities.RecoveryCode, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.RecoveryCode>(sort, { createdAt: QueryOrder.ASC }),

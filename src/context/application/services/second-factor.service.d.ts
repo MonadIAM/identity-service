@@ -1,5 +1,3 @@
-import { EntityManager } from "@mikro-orm/postgresql";
-
 import { SecondFactorType } from "~context/enums";
 
 declare global {
@@ -15,7 +13,7 @@ declare global {
 
             namespace Create {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         account: Entities.Account;
                         type: SecondFactorType;
@@ -29,7 +27,7 @@ declare global {
 
             namespace Verify {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         factor: Entities.SecondFactor;
                         masterCodeHash: string;
@@ -41,7 +39,7 @@ declare global {
 
             namespace Rewrap {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         factor: Entities.SecondFactor;
                         secret: string;
@@ -53,7 +51,7 @@ declare global {
 
             namespace Purge {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         factors: Entities.SecondFactor[];
                         target: string;
@@ -65,7 +63,7 @@ declare global {
 
             namespace Reset {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         account: Entities.Account;
                     };

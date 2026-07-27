@@ -1,5 +1,3 @@
-import { Collection } from "@mikro-orm/postgresql";
-
 import { AccountSubject, AccountStatus } from "~context/enums";
 
 declare global {
@@ -22,12 +20,12 @@ declare global {
                 password?: Password;
                 masterCode?: Entities.MasterCode;
 
-                sessions: Collection<Entities.Session>;
-                secondFactors: Collection<Entities.SecondFactor>;
-                recoveryCodes: Collection<Entities.RecoveryCode>;
-                passwordHistory: Collection<Entities.PasswordHistory>;
-                identifiers: Collection<Entities.Identifier>;
-                memberships: Collection<Entities.Membership>;
+                sessions: ORM.Collection<Entities.Session>;
+                secondFactors: ORM.Collection<Entities.SecondFactor>;
+                recoveryCodes: ORM.Collection<Entities.RecoveryCode>;
+                passwordHistory: ORM.Collection<Entities.PasswordHistory>;
+                identifiers: ORM.Collection<Entities.Identifier>;
+                memberships: ORM.Collection<Entities.Membership>;
 
                 assignRelations(props: AssignRelations): void;
                 deactivate(): void;

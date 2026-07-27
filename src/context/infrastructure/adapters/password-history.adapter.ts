@@ -1,13 +1,13 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 
 export class PasswordHistoryAdapter implements Adapters.Contract<Entities.PasswordHistory, Adapters.PasswordHistory.Types> {
     public buildWhereORM(
         _filters: Adapters.PasswordHistory.Filters,
-        basic: ObjectQuery<Entities.PasswordHistory> = {},
-    ): ObjectQuery<Entities.PasswordHistory> {
-        const where: ObjectQuery<Entities.PasswordHistory> = basic;
+        basic: ORM.ObjectQuery<Entities.PasswordHistory> = {},
+    ): ORM.ObjectQuery<Entities.PasswordHistory> {
+        const where: ORM.ObjectQuery<Entities.PasswordHistory> = basic;
 
         return where;
     }
@@ -15,8 +15,8 @@ export class PasswordHistoryAdapter implements Adapters.Contract<Entities.Passwo
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.PasswordHistory.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.PasswordHistory, P, F> = {},
-    ): FindOptions<Entities.PasswordHistory, P, F> {
+        basic: ORM.FindOptions<Entities.PasswordHistory, P, F> = {},
+    ): ORM.FindOptions<Entities.PasswordHistory, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.PasswordHistory>(sort, { setAt: QueryOrder.ASC }),

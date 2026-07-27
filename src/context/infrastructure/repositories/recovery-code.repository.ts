@@ -1,5 +1,4 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 
 import { RecoveryCodeAdapter } from "~context/infrastructure/adapters";
@@ -17,7 +16,7 @@ export class RecoveryCodeRepository
 {
     public constructor(
         @InjectEntityManager("read")
-        protected readonly readManager: EntityManager,
+        protected readonly readManager: ORM.EntityManager,
     ) {
         super();
     }

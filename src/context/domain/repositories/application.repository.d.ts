@@ -1,20 +1,16 @@
-import { EntityManager } from "@mikro-orm/postgresql";
+declare namespace Repositories {
+    namespace Application {
+        interface Contract extends Repositories.Base.Contract<Entities.Application, Adapters.Application.Types> {
+            wouldExceedRealmLimit(props: WouldExceedRealmLimit.Props): WouldExceedRealmLimit.Result;
+        }
 
-declare global {
-    namespace Repositories {
-        namespace Application {
-            interface Contract extends Repositories.Base.Contract<Entities.Application, Adapters.Application.Types> {
-                wouldExceedRealmLimit(props: WouldExceedRealmLimit.Props): WouldExceedRealmLimit.Result;
-            }
+        namespace WouldExceedRealmLimit {
+            type Props = {
+                transaction: ORM.EntityManager;
+                realm: string;
+            };
 
-            namespace WouldExceedRealmLimit {
-                type Props = {
-                    transaction: EntityManager;
-                    realm: string;
-                };
-
-                type Result = Promise<boolean>;
-            }
+            type Result = Promise<boolean>;
         }
     }
 }

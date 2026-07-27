@@ -1,36 +1,32 @@
-import { EntityManager } from "@mikro-orm/postgresql";
+declare namespace Services {
+    namespace RecoveryCode {
+        interface Contract {
+            regenerate(props: Regenerate.Props): Regenerate.Result;
+            generate(props: Generate.Props): Generate.Result;
+        }
 
-declare global {
-    namespace Services {
-        namespace RecoveryCode {
-            interface Contract {
-                regenerate(props: Regenerate.Props): Regenerate.Result;
-                generate(props: Generate.Props): Generate.Result;
-            }
-
-            namespace Regenerate {
-                type Props = {
-                    transaction: EntityManager;
-                    input: {
-                        account: Entities.Account;
-                        hashes: string[];
-                    };
+        namespace Regenerate {
+            type Props = {
+                transaction: ORM.EntityManager;
+                input: {
+                    account: Entities.Account;
+                    hashes: string[];
                 };
+            };
 
-                type Result = void;
-            }
+            type Result = void;
+        }
 
-            namespace Generate {
-                type Props = {
-                    transaction: EntityManager;
-                    input: {
-                        account: Entities.Account;
-                        hashes: string[];
-                    };
+        namespace Generate {
+            type Props = {
+                transaction: ORM.EntityManager;
+                input: {
+                    account: Entities.Account;
+                    hashes: string[];
                 };
+            };
 
-                type Result = void;
-            }
+            type Result = void;
         }
     }
 }

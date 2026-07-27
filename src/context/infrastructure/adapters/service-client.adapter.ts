@@ -1,13 +1,13 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 
 export class ServiceClientAdapter implements Adapters.Contract<Entities.ServiceClient, Adapters.ServiceClient.Types> {
     public buildWhereORM(
         filters: Adapters.ServiceClient.Filters,
-        basic: ObjectQuery<Entities.ServiceClient> = {},
-    ): ObjectQuery<Entities.ServiceClient> {
-        const where: ObjectQuery<Entities.ServiceClient> = basic;
+        basic: ORM.ObjectQuery<Entities.ServiceClient> = {},
+    ): ORM.ObjectQuery<Entities.ServiceClient> {
+        const where: ORM.ObjectQuery<Entities.ServiceClient> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -43,8 +43,8 @@ export class ServiceClientAdapter implements Adapters.Contract<Entities.ServiceC
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.ServiceClient.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.ServiceClient, P, F> = {},
-    ): FindOptions<Entities.ServiceClient, P, F> {
+        basic: ORM.FindOptions<Entities.ServiceClient, P, F> = {},
+    ): ORM.FindOptions<Entities.ServiceClient, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.ServiceClient>(sort, { createdAt: QueryOrder.ASC }),

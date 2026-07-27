@@ -1,4 +1,4 @@
-import { FilterQuery, FindOptions, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
@@ -13,10 +13,10 @@ declare global {
             buildOptionsORM<P extends string, F extends string>(
                 sort: A["Sort"],
                 pagination: Pagination,
-                options?: FindOptions<E, P, F>,
-            ): FindOptions<E, P, F>;
+                options?: ORM.FindOptions<E, P, F>,
+            ): ORM.FindOptions<E, P, F>;
 
-            buildWhereORM(filters: A["Filters"], basic?: FilterQuery<E>): FilterQuery<E>;
+            buildWhereORM(filters: A["Filters"], basic?: ORM.FilterQuery<E>): ORM.FilterQuery<E>;
         }
 
         namespace Account {

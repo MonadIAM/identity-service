@@ -1,4 +1,4 @@
-import { Collection } from "@mikro-orm/postgresql";
+import { Collection } from "@mikro-orm/core";
 import { randomUUID } from "node:crypto";
 
 import { AccountSubject, AccountStatus } from "~context/enums";

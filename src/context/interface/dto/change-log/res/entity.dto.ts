@@ -1,4 +1,4 @@
-import { ChangeSetType, UnknownType } from "@mikro-orm/postgresql";
+import { ChangeSetType } from "@mikro-orm/postgresql";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
@@ -33,8 +33,12 @@ export class ChangeLogDTO {
     declare public entity: string;
 
     @Expose()
-    @ApiProperty({ required: true, type: UnknownType })
-    declare public delta: UnknownType;
+    @ApiProperty({
+        type: Object,
+        required: true,
+        additionalProperties: true,
+    })
+    declare public delta: ORM.UnknownType;
 
     @Expose()
     @Validator.IsDate()

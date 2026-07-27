@@ -1,4 +1,3 @@
-import { AnyEntity, EntityManager } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { AuditLogTopicAction } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
@@ -17,7 +16,7 @@ export class TransactionalService implements TransactionManager.Service.Contract
 
     public constructor(
         @InjectEntityManager("write")
-        private readonly writeManager: EntityManager,
+        private readonly writeManager: ORM.EntityManager,
         private readonly operationContext: OperationContext,
         private readonly configService: ConfigService,
     ) {
@@ -50,7 +49,7 @@ export class TransactionalService implements TransactionManager.Service.Contract
         }
     }
 
-    public async run<T extends AnyEntity | AnyEntity[]>(
+    public async run<T extends ORM.AnyEntity | ORM.AnyEntity[]>(
         params: TransactionManager.Service.Run.Props<T>,
     ): TransactionManager.Service.Run.Result<T> {
         try {
@@ -82,7 +81,7 @@ export class TransactionalService implements TransactionManager.Service.Contract
         }
     }
 
-    public async executeWithEffects<T extends AnyEntity | AnyEntity[]>(
+    public async executeWithEffects<T extends ORM.AnyEntity | ORM.AnyEntity[]>(
         props: TransactionManager.Service.ExecuteWithEffects.Props<T>,
     ): TransactionManager.Service.ExecuteWithEffects.Result<T> {
         const { transaction, params } = props;
@@ -97,7 +96,7 @@ export class TransactionalService implements TransactionManager.Service.Contract
         return result;
     }
 
-    public persistOutboxEvents<T extends AnyEntity | AnyEntity[]>(
+    public persistOutboxEvents<T extends ORM.AnyEntity | ORM.AnyEntity[]>(
         props: TransactionManager.Service.PersistOutboxEvents.Props<T>,
     ): TransactionManager.Service.PersistOutboxEvents.Result {
         const { transaction, params, result } = props;

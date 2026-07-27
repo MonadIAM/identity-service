@@ -1,5 +1,4 @@
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
-import { UnknownType } from "@mikro-orm/postgresql";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
@@ -19,7 +18,7 @@ export class ValidationErrorDetailsDTO {
             { type: "number" },
         ],
     })
-    declare public value?: UnknownType;
+    declare public value?: ORM.UnknownType;
 
     @Expose()
     @Validator.IsString()

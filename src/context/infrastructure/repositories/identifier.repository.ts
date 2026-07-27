@@ -1,4 +1,4 @@
-import { EntityManager, raw } from "@mikro-orm/postgresql";
+import { raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
@@ -17,7 +17,7 @@ export class IdentifierRepository
 {
     public constructor(
         @InjectEntityManager("read")
-        protected readonly readManager: EntityManager,
+        protected readonly readManager: ORM.EntityManager,
     ) {
         super();
     }

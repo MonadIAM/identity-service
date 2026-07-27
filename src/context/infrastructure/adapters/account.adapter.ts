@@ -1,4 +1,4 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { AccountSubject, AccountStatus, IdentifierType } from "~context/enums";
 import { MikroAdapter } from "~infrastructure/database/utils";
@@ -6,9 +6,9 @@ import { MikroAdapter } from "~infrastructure/database/utils";
 export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapters.Account.Types> {
     public buildWhereORM(
         filters: Adapters.Account.Filters,
-        basic: ObjectQuery<Entities.Account> = {},
-    ): ObjectQuery<Entities.Account> {
-        const where: ObjectQuery<Entities.Account> = basic;
+        basic: ORM.ObjectQuery<Entities.Account> = {},
+    ): ORM.ObjectQuery<Entities.Account> {
+        const where: ORM.ObjectQuery<Entities.Account> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -68,8 +68,8 @@ export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapt
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Account.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.Account, P, F> = {},
-    ): FindOptions<Entities.Account, P, F> {
+        basic: ORM.FindOptions<Entities.Account, P, F> = {},
+    ): ORM.FindOptions<Entities.Account, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.Account>(sort, { createdAt: QueryOrder.ASC }),
