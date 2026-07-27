@@ -1,20 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { ReauthenticationCommands } from "./reauthentication.commands";
-import { InterfaceClientCommands } from "./interface-client.commands";
-import { FederatedAuthnCommands } from "./federated-authn.commands";
-import { ServiceClientCommands } from "./service-client.commands";
-import { RecoveryCodeCommands } from "./recovery-code.commands";
-import { SecondFactorCommands } from "./second-factor.commands";
-import { ApplicationCommands } from "./application.commands";
-import { MembershipCommands } from "./membership.commands";
-import { IdentifierCommands } from "./identifier.commands";
-import { PasswordCommands } from "./password.commands";
-import { AccountCommands } from "./account.commands";
-import { ProfileCommands } from "./profile.commands";
-import { SessionCommands } from "./session.commands";
-import { OAuthCommands } from "./oauth.commands";
-import { AuthnCommands } from "./authn.commands";
 import {
     REAUTHENTICATION_COMMANDS,
     INTERFACE_CLIENT_COMMANDS,
@@ -31,7 +16,23 @@ import {
     SESSION_COMMANDS,
     OAUTH_COMMANDS,
     AUTHN_COMMANDS,
-} from "./tokens";
+} from "~context/interface/commands";
+
+import { ReauthenticationCommands } from "./reauthentication.commands";
+import { InterfaceClientCommands } from "./interface-client.commands";
+import { FederatedAuthnCommands } from "./federated-authn.commands";
+import { ServiceClientCommands } from "./service-client.commands";
+import { RecoveryCodeCommands } from "./recovery-code.commands";
+import { SecondFactorCommands } from "./second-factor.commands";
+import { ApplicationCommands } from "./application.commands";
+import { MembershipCommands } from "./membership.commands";
+import { IdentifierCommands } from "./identifier.commands";
+import { PasswordCommands } from "./password.commands";
+import { AccountCommands } from "./account.commands";
+import { ProfileCommands } from "./profile.commands";
+import { SessionCommands } from "./session.commands";
+import { OAuthCommands } from "./oauth.commands";
+import { AuthnCommands } from "./authn.commands";
 
 export const COMMANDS: ClassProvider[] = [
     {
@@ -95,21 +96,3 @@ export const COMMANDS: ClassProvider[] = [
         useClass: AuthnCommands,
     },
 ];
-
-export {
-    REAUTHENTICATION_COMMANDS,
-    INTERFACE_CLIENT_COMMANDS,
-    FEDERATED_AUTHN_COMMANDS,
-    SERVICE_CLIENT_COMMANDS,
-    RECOVERY_CODE_COMMANDS,
-    SECOND_FACTOR_COMMANDS,
-    APPLICATION_COMMANDS,
-    MEMBERSHIP_COMMANDS,
-    IDENTIFIER_COMMANDS,
-    PASSWORD_COMMANDS,
-    ACCOUNT_COMMANDS,
-    PROFILE_COMMANDS,
-    SESSION_COMMANDS,
-    OAUTH_COMMANDS,
-    AUTHN_COMMANDS,
-};

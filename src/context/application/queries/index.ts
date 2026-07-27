@@ -1,16 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { InterfaceClientQueries } from "./interface-client.queries";
-import { ServiceClientQueries } from "./service-client.queries";
-import { RecoveryCodeQueries } from "./recovery-code.queries";
-import { SecondFactorQueries } from "./second-factor.queries";
-import { ApplicationQueries } from "./application.queries";
-import { IdentifierQueries } from "./identifier.queries";
-import { ChangeLogQueries } from "./change-log.queries";
-import { AuditLogQueries } from "./audit-log.queries";
-import { AccountQueries } from "./account.queries";
-import { SessionQueries } from "./session.queries";
-import { OAuthQueries } from "./oauth.queries";
 import {
     INTERFACE_CLIENT_QUERIES,
     SERVICE_CLIENT_QUERIES,
@@ -23,7 +12,19 @@ import {
     ACCOUNT_QUERIES,
     SESSION_QUERIES,
     OAUTH_QUERIES,
-} from "./tokens";
+} from "~context/interface/queries";
+
+import { InterfaceClientQueries } from "./interface-client.queries";
+import { ServiceClientQueries } from "./service-client.queries";
+import { RecoveryCodeQueries } from "./recovery-code.queries";
+import { SecondFactorQueries } from "./second-factor.queries";
+import { ApplicationQueries } from "./application.queries";
+import { IdentifierQueries } from "./identifier.queries";
+import { ChangeLogQueries } from "./change-log.queries";
+import { AuditLogQueries } from "./audit-log.queries";
+import { AccountQueries } from "./account.queries";
+import { SessionQueries } from "./session.queries";
+import { OAuthQueries } from "./oauth.queries";
 
 export const QUERIES: ClassProvider[] = [
     {
@@ -71,17 +72,3 @@ export const QUERIES: ClassProvider[] = [
         useClass: OAuthQueries,
     },
 ];
-
-export {
-    INTERFACE_CLIENT_QUERIES,
-    SERVICE_CLIENT_QUERIES,
-    RECOVERY_CODE_QUERIES,
-    SECOND_FACTOR_QUERIES,
-    APPLICATION_QUERIES,
-    IDENTIFIER_QUERIES,
-    CHANGE_LOG_QUERIES,
-    AUDIT_LOG_QUERIES,
-    ACCOUNT_QUERIES,
-    SESSION_QUERIES,
-    OAUTH_QUERIES,
-};

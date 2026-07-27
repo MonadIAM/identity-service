@@ -1,13 +1,14 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
-import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { ActionType, EntityType, SecondFactorType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
-import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
+
+import { SECOND_FACTOR_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorCommands implements Commands.SecondFactor.Contract {

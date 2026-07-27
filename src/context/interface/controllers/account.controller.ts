@@ -3,11 +3,11 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
 import { PermissionCode, ResponseViewType } from "~context/enums";
-import { ACCOUNT_COMMANDS } from "~context/application/commands";
-import { ACCOUNT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 
+import { ACCOUNT_COMMANDS } from "../commands";
+import { ACCOUNT_QUERIES } from "../queries";
 import {
     GetListQueryDTO,
     GetByIdQueryDTO,

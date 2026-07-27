@@ -1,6 +1,6 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { Account, Identifier, Password, Profile } from "~context/domain/entities";
+import { Account, Identifier, Password, Profile } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountService implements Services.Account.Contract {

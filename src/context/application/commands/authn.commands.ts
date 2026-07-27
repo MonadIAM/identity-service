@@ -1,18 +1,19 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
-import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
+import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/domain/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { AuthenticationContextClass, IdentifierType, AccountStatus } from "~context/enums";
-import { OAUTH_COMMANDS } from "~context/application/commands/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
+import { OAUTH_COMMANDS } from "~context/interface/commands";
 import { Exception } from "~common/exceptions";
 import {
     SECOND_FACTOR_SECRET_SERVICE,
     PENDING_2FA_CACHE_SERVICE,
     OTP_CACHE_SERVICE,
 } from "~context/infrastructure/services";
+
+import { SECOND_FACTOR_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthnCommands implements Commands.Authn.Contract {

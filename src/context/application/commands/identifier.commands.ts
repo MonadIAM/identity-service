@@ -1,12 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
+import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/domain/repositories";
 import { CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { IdentifierType, ActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { IDENTIFIER_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
+
+import { IDENTIFIER_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierCommands implements Commands.Identifier.Contract {

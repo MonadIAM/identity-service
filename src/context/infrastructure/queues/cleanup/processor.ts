@@ -3,10 +3,10 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { AccountTopicAction } from "@monadiam/shared";
 import { Job } from "bullmq";
 
-import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/domain/services/tokens";
-import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories/tokens";
+import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/application/services";
 import { CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 
 import { CLEANUP_QUEUE } from "../tokens";
 import { BullQueue } from "../enums";

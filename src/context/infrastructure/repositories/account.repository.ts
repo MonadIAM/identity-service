@@ -2,10 +2,11 @@ import { raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { AccountAdapter } from "~context/infrastructure/adapters";
 import { ExceptionMapper } from "~common/exceptions";
 import { Account } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { AccountAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRepository

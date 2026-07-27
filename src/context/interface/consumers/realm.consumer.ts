@@ -3,10 +3,11 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { RealmTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
-import { APPLICATION_COMMANDS } from "~context/application/commands";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
+
+import { APPLICATION_COMMANDS } from "../commands";
 
 @Controller()
 export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {

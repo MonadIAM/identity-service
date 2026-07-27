@@ -3,12 +3,13 @@ import { BlacklistTopicAction } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 import { EntityType, KafkaTopic, ActionType, AccountStatus } from "~context/enums";
-import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
+
+import { ACCOUNT_SERVICE, SESSION_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionCommands implements Commands.Session.Contract {

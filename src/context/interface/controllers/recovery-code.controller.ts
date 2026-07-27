@@ -2,12 +2,12 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Post
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Reauthentication, Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
-import { RECOVERY_CODE_COMMANDS } from "~context/application/commands";
-import { RECOVERY_CODE_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { RegenerateResultDTO, StatusResultDTO } from "../dto/recovery-code";
+import { RECOVERY_CODE_COMMANDS } from "../commands";
+import { RECOVERY_CODE_QUERIES } from "../queries";
 
 const { RECOVERY_CODE_READ_STATUS, RECOVERY_CODE_REGENERATE } = PermissionCode;
 const {

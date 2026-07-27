@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { PasswordHistoryAdapter } from "~context/infrastructure/adapters";
 import { PasswordHistory } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { PasswordHistoryAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PasswordHistoryRepository

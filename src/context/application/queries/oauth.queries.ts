@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { CodeChallengeMethod, OAuthResponseType, TokenGrantType, IdentifierType, OidcScope } from "~context/enums";
-import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 import { JWT_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 

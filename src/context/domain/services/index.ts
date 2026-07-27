@@ -1,18 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { InterfaceClientService } from "./interface-client.service";
-import { ServiceClientService } from "./service-client.service";
-import { RecoveryCodeService } from "./recovery-code.service";
-import { SecondFactorService } from "./second-factor.service";
-import { ApplicationService } from "./application.service";
-import { MembershipService } from "./membership.service";
-import { IdentifierService } from "./identifier.service";
-import { ChangeLogService } from "./change-log.service";
-import { AuditLogService } from "./audit-log.service";
-import { PasswordService } from "./password.service";
-import { AccountService } from "./account.service";
-import { SessionService } from "./session.service";
-import { ProfileService } from "./profile.service";
 import {
     INTERFACE_CLIENT_SERVICE,
     SERVICE_CLIENT_SERVICE,
@@ -27,7 +14,21 @@ import {
     ACCOUNT_SERVICE,
     SESSION_SERVICE,
     PROFILE_SERVICE,
-} from "./tokens";
+} from "~context/application/services";
+
+import { InterfaceClientService } from "./interface-client.service";
+import { ServiceClientService } from "./service-client.service";
+import { RecoveryCodeService } from "./recovery-code.service";
+import { SecondFactorService } from "./second-factor.service";
+import { ApplicationService } from "./application.service";
+import { MembershipService } from "./membership.service";
+import { IdentifierService } from "./identifier.service";
+import { ChangeLogService } from "./change-log.service";
+import { AuditLogService } from "./audit-log.service";
+import { PasswordService } from "./password.service";
+import { AccountService } from "./account.service";
+import { SessionService } from "./session.service";
+import { ProfileService } from "./profile.service";
 
 export const DOMAIN_SERVICES: ClassProvider[] = [
     {
@@ -83,19 +84,3 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
         useClass: ProfileService,
     },
 ];
-
-export {
-    INTERFACE_CLIENT_SERVICE,
-    SERVICE_CLIENT_SERVICE,
-    SECOND_FACTOR_SERVICE,
-    RECOVERY_CODE_SERVICE,
-    APPLICATION_SERVICE,
-    MEMBERSHIP_SERVICE,
-    IDENTIFIER_SERVICE,
-    CHANGE_LOG_SERVICE,
-    AUDIT_LOG_SERVICE,
-    PASSWORD_SERVICE,
-    ACCOUNT_SERVICE,
-    SESSION_SERVICE,
-    PROFILE_SERVICE,
-};

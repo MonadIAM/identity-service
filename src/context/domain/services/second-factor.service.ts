@@ -1,6 +1,6 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { MasterCode, SecondFactor } from "~context/domain/entities";
+import { MasterCode, SecondFactor } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorService implements Services.SecondFactor.Contract {

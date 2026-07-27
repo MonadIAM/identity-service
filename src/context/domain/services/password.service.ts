@@ -1,6 +1,6 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { PasswordHistory } from "~context/domain/entities";
+import { PasswordHistory } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PasswordService implements Services.Password.Contract {

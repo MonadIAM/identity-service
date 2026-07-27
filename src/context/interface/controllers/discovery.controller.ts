@@ -2,9 +2,9 @@ import { Controller, HttpStatus, HttpCode, Header, Inject, Get } from "@nestjs/c
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { FormatResponse, Public, Swagger } from "~common/decorators";
-import { OAUTH_QUERIES } from "~context/application/queries";
 import { JWT_SERVICE } from "~common/services";
 
+import { OAUTH_QUERIES } from "../queries";
 import { AuthzServerMetadataDTO, OpenIdConfigurationDTO } from "../dto/oauth";
 
 const { INTERNAL_SERVER_ERROR, OK } = HttpStatus;

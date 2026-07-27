@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { SERVICE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
+import { SERVICE_CLIENT_REPOSITORY } from "~context/domain/repositories";
 import { ServiceClient } from "~context/domain/entities";
 import { QueryMode } from "~context/enums";
 

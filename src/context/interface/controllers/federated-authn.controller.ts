@@ -1,10 +1,10 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Query, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { FEDERATED_AUTHN_COMMANDS } from "~context/application/commands";
 import { Extract, Public, Swagger } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 
+import { FEDERATED_AUTHN_COMMANDS } from "../commands";
 import { FederatedAuthorizeQueryDTO, FederatedCallbackQueryDTO } from "../dto/federated-authn";
 
 const {

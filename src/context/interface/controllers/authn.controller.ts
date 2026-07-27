@@ -2,14 +2,14 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Dele
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, RequirePermission, SensitiveThrottle, Tokens, Public, Swagger } from "~common/decorators";
-import { REAUTHENTICATION_COMMANDS, SESSION_COMMANDS, AUTHN_COMMANDS } from "~context/application/commands";
-import { SESSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
+import { REAUTHENTICATION_COMMANDS, SESSION_COMMANDS, AUTHN_COMMANDS } from "../commands";
 import { BySecondFactorBodyDTO, ByPasswordBodyDTO } from "../dto/reauthentication";
 import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
+import { SESSION_QUERIES } from "../queries";
 import {
     VerifySecondFactorBodyDTO,
     AuthenticationResultDTO,

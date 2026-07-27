@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { MasterCodeAdapter } from "~context/infrastructure/adapters";
 import { MasterCode } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { MasterCodeAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class MasterCodeRepository

@@ -2,10 +2,11 @@ import { raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { IdentifierAdapter } from "~context/infrastructure/adapters";
 import { Identifier } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
+
+import { IdentifierAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierRepository

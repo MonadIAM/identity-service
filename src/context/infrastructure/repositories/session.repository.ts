@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { SessionAdapter } from "~context/infrastructure/adapters";
 import { Session } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { SessionAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionRepository

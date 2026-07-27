@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
+import { APPLICATION_REPOSITORY } from "~context/domain/repositories";
 import { PublicLinkOperator } from "~infrastructure/database";
 import { Application } from "~context/domain/entities";
 import { QueryMode } from "~context/enums";

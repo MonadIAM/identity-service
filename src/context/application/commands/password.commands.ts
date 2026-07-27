@@ -1,17 +1,14 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+import { PASSWORD_HISTORY_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { IdentifierType, ActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { PASSWORD_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
-import {
-    PASSWORD_HISTORY_REPOSITORY,
-    IDENTIFIER_REPOSITORY,
-    ACCOUNT_REPOSITORY,
-} from "~context/infrastructure/repositories";
+
+import { PASSWORD_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PasswordCommands implements Commands.Password.Contract {

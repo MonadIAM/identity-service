@@ -2,11 +2,11 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Patch 
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
-import { PROFILE_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
+import { PROFILE_COMMANDS } from "../commands";
 import { UpdateBodyDTO } from "../dto/profile";
 
 const { PROFILE_UPDATE } = PermissionCode;

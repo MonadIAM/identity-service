@@ -1,11 +1,12 @@
 import { ServiceClientTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { SERVICE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
+import { SERVICE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/domain/repositories";
 import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { SERVICE_CLIENT_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
+
+import { SERVICE_CLIENT_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ServiceClientCommands implements Commands.ServiceClient.Contract {

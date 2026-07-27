@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { ProfileAdapter } from "~context/infrastructure/adapters";
 import { Profile } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { ProfileAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ProfileRepository

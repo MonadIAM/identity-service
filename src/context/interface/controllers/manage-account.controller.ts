@@ -2,11 +2,11 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body,
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
-import { ACCOUNT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { ManageGetListQueryDTO, ManageGetListBodyDTO, ManageGetByIdQueryDTO, AccountDTO, ListDTO } from "../dto/account";
+import { ACCOUNT_QUERIES } from "../queries";
 
 const {
     INTERNAL_SERVER_ERROR,

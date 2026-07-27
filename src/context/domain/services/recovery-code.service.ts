@@ -1,6 +1,6 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { RecoveryCode } from "~context/domain/entities";
+import { RecoveryCode } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeService implements Services.RecoveryCode.Contract {

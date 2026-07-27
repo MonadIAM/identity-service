@@ -16,11 +16,11 @@ import {
 } from "@nestjs/common";
 
 import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decorators";
-import { OAUTH_COMMANDS } from "~context/application/commands";
-import { OAUTH_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
+import { OAUTH_COMMANDS } from "../commands";
+import { OAUTH_QUERIES } from "../queries";
 import {
     EndSessionQueryDTO,
     AuthorizeQueryDTO,

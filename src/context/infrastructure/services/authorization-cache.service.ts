@@ -3,12 +3,12 @@ import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 import Redis from "ioredis";
 
-import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
-import { LuaScript } from "~context/infrastructure/scripts";
+import { REDIS_CACHE_CLIENT } from "~infrastructure/redis";
 import { CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { SCRIPT_EXECUTOR_SERVICE } from "./tokens";
+import { LuaScript } from "../scripts";
 
 @Injectable()
 export class AuthorizationCacheService implements InfrastructureServices.AuthorizationCache.Contract {

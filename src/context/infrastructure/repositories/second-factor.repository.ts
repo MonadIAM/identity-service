@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { SecondFactorAdapter } from "~context/infrastructure/adapters";
 import { SecondFactor } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { SecondFactorAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorRepository

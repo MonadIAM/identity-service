@@ -2,10 +2,11 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
-import { SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
+import { SECOND_FACTOR_REPOSITORY } from "~context/domain/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
+
+import { SECOND_FACTOR_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorQueries implements Queries.SecondFactor.Contract {

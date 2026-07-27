@@ -2,12 +2,12 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post }
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
-import { PASSWORD_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import { ResetByRecoveryCodeBodyDTO, ResetByOTPBodyDTO, RequestOTPBodyDTO, ChangeBodyDTO } from "../dto/password";
+import { PASSWORD_COMMANDS } from "../commands";
 
 const { PASSWORD_CHANGE } = PermissionCode;
 const {

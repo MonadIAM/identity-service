@@ -2,10 +2,11 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { ServiceClientAdapter } from "~context/infrastructure/adapters";
 import { ServiceClient } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
+
+import { ServiceClientAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ServiceClientRepository

@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { MembershipAdapter } from "~context/infrastructure/adapters";
 import { Membership } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { MembershipAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class MembershipRepository

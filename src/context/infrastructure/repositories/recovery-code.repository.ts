@@ -1,10 +1,11 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { RecoveryCodeAdapter } from "~context/infrastructure/adapters";
 import { RecoveryCode } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
+
+import { RecoveryCodeAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeRepository

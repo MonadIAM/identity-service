@@ -1,20 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { PasswordHistoryRepository } from "./password-history.repository";
-import { InterfaceClientRepository } from "./interface-client.repository";
-import { ServiceClientRepository } from "./service-client.repository";
-import { RecoveryCodeRepository } from "./recovery-code.repository";
-import { SecondFactorRepository } from "./second-factor.repository";
-import { ApplicationRepository } from "./application.repository";
-import { MasterCodeRepository } from "./master-code.repository";
-import { MembershipRepository } from "./membership.repository";
-import { IdentifierRepository } from "./identifier.repository";
-import { ChangeLogRepository } from "./change-log.repository";
-import { AuditLogRepository } from "./audit-log.repository";
-import { PasswordRepository } from "./password.repository";
-import { SessionRepository } from "./session.repository";
-import { ProfileRepository } from "./profile.repository";
-import { AccountRepository } from "./account.repository";
 import {
     PASSWORD_HISTORY_REPOSITORY,
     INTERFACE_CLIENT_REPOSITORY,
@@ -31,7 +16,23 @@ import {
     SESSION_REPOSITORY,
     PROFILE_REPOSITORY,
     ACCOUNT_REPOSITORY,
-} from "./tokens";
+} from "~context/domain/repositories";
+
+import { PasswordHistoryRepository } from "./password-history.repository";
+import { InterfaceClientRepository } from "./interface-client.repository";
+import { ServiceClientRepository } from "./service-client.repository";
+import { RecoveryCodeRepository } from "./recovery-code.repository";
+import { SecondFactorRepository } from "./second-factor.repository";
+import { ApplicationRepository } from "./application.repository";
+import { MasterCodeRepository } from "./master-code.repository";
+import { MembershipRepository } from "./membership.repository";
+import { IdentifierRepository } from "./identifier.repository";
+import { ChangeLogRepository } from "./change-log.repository";
+import { AuditLogRepository } from "./audit-log.repository";
+import { PasswordRepository } from "./password.repository";
+import { SessionRepository } from "./session.repository";
+import { ProfileRepository } from "./profile.repository";
+import { AccountRepository } from "./account.repository";
 
 export const REPOSITORIES: ClassProvider[] = [
     {
@@ -95,21 +96,3 @@ export const REPOSITORIES: ClassProvider[] = [
         useClass: AccountRepository,
     },
 ];
-
-export {
-    PASSWORD_HISTORY_REPOSITORY,
-    INTERFACE_CLIENT_REPOSITORY,
-    SERVICE_CLIENT_REPOSITORY,
-    RECOVERY_CODE_REPOSITORY,
-    SECOND_FACTOR_REPOSITORY,
-    APPLICATION_REPOSITORY,
-    MASTER_CODE_REPOSITORY,
-    MEMBERSHIP_REPOSITORY,
-    IDENTIFIER_REPOSITORY,
-    CHANGE_LOG_REPOSITORY,
-    AUDIT_LOG_REPOSITORY,
-    PASSWORD_REPOSITORY,
-    SESSION_REPOSITORY,
-    PROFILE_REPOSITORY,
-    ACCOUNT_REPOSITORY,
-};

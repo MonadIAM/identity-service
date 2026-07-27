@@ -1,10 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common";
 import Redis from "ioredis";
 
-import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
-import { LuaScript } from "~context/infrastructure/scripts";
+import { REDIS_CACHE_CLIENT } from "~infrastructure/redis";
 
 import { SCRIPT_LOADER_SERVICE } from "./tokens";
+import { LuaScript } from "../scripts";
 
 @Injectable()
 export class ScriptExecutorService implements InfrastructureServices.ScriptExecutor.Contract {
