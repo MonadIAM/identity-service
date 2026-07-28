@@ -32,11 +32,9 @@ export class InterfaceClientRepository
     ): Repositories.InterfaceClient.WouldExceedApplicationLimit.Result {
         try {
             const { transaction, application } = props;
-            const knex = transaction.getKnex();
+            const total = await transaction.count(InterfaceClient, { application });
 
-            const [{ total }] = await knex("identity.interface_client").where({ application }).count("id as total");
-
-            return Number(total) + 1 > this.applicationLimit;
+            return total + 1 > this.applicationLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

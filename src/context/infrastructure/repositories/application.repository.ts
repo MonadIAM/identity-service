@@ -32,11 +32,9 @@ export class ApplicationRepository
     ): Repositories.Application.WouldExceedRealmLimit.Result {
         try {
             const { transaction, realm } = props;
-            const knex = transaction.getKnex();
+            const total = await transaction.count(Application, { realm });
 
-            const [{ total }] = await knex("identity.application").where({ realm }).count("id as total");
-
-            return Number(total) + 1 > this.realmLimit;
+            return total + 1 > this.realmLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

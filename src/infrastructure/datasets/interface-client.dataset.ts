@@ -6,7 +6,7 @@ const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
 
 export const WEB_INTERFACE_CLIENT_ID = "00000003-0000-4000-8000-130000000001";
 
-export const InterfaceClients = [
+const dataset = [
     {
         id: WEB_INTERFACE_CLIENT_ID,
         application_id: WEB_APPLICATION_ID,
@@ -24,3 +24,8 @@ export const InterfaceClients = [
         version: 1,
     },
 ];
+
+export const InterfaceClients = {
+    name: "interface_client",
+    postgresql: dataset,
+};

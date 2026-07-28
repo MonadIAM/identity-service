@@ -3,7 +3,7 @@ import { AccountStatus, AccountSubject } from "~context/enums";
 
 const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
 
-export const Accounts = [
+const dataset = [
     {
         id: ADMIN_ACCOUNT_ID,
         subject: AccountSubject.HUMAN,
@@ -23,3 +23,8 @@ export const Accounts = [
         version: 1,
     },
 ];
+
+export const Accounts = {
+    name: "account",
+    postgresql: dataset,
+};

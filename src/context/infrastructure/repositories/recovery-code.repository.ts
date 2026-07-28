@@ -1,5 +1,6 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { raw } from "@mikro-orm/postgresql";
 
 import { RecoveryCode } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
@@ -26,14 +27,12 @@ export class RecoveryCodeRepository
         try {
             const { account } = props;
             const entityManager = this.readManager.fork();
-            const knex = entityManager.getKnex();
 
-            const [{ total, used }] = await knex("identity.recovery_code")
-                .where("account_id", account)
-                .select(
-                    knex.raw("COUNT(*)::int AS total"),
-                    knex.raw("COUNT(*) FILTER (WHERE used_at IS NOT NULL)::int AS used"),
-                );
+            const { total, used } = await entityManager
+                .createQueryBuilder(RecoveryCode, "rc")
+                .select([raw("COUNT(*)::int AS total"), raw("COUNT(*) FILTER (WHERE used_at IS NOT NULL)::int AS used")])
+                .where({ account })
+                .execute("get");
 
             return {
                 remaining: Number(total) - Number(used),

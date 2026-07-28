@@ -1,6 +1,6 @@
-import { raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { raw } from "@mikro-orm/postgresql";
 
 import { Identifier } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
@@ -59,15 +59,14 @@ export class IdentifierRepository
         try {
             const { transaction, identifier, account } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
 
-            const [{ remaining }] = await knex("identity.identifier")
-                .where("account_id", account)
-                .andWhere("id", "!=", identifier)
-                .andWhere("is_verified", true)
-                .select(knex.raw("COUNT(*)::int AS remaining"));
+            const remaining = await entityManager.count(Identifier, {
+                account,
+                id: { $ne: identifier },
+                isVerified: true,
+            });
 
-            return Number(remaining) === 0;
+            return remaining === 0;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

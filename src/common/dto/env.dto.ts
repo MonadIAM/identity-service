@@ -1,4 +1,4 @@
-import { StringValue } from "ms";
+import { type StringValue } from "ms";
 
 import { PasswordValidationMode, NodeEnv } from "~common/enums";
 import { Validator } from "~common/validator";

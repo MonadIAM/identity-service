@@ -5,7 +5,7 @@ import { IdentifierType } from "~context/enums";
 const CREATED_AT  = new Date("2026-01-01T00:00:00.000Z");
 const VERIFIED_AT = new Date("2026-01-01T00:00:00.000Z");
 
-export const Identifiers = [
+const dataset = [
     {
         id: "00000001-0000-4000-8000-100000000001",
         type: IdentifierType.EMAIL,
@@ -35,3 +35,8 @@ export const Identifiers = [
         last_used_at: null,
     },
 ];
+
+export const Identifiers = {
+    name: "identifier",
+    postgresql: dataset,
+};

@@ -4,7 +4,7 @@ const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
 
 export const WEB_APPLICATION_ID = "00000004-0000-4000-8000-140000000001";
 
-export const Applications = [
+const dataset = [
     {
         id: WEB_APPLICATION_ID,
         realm: SYSTEM_REALM_ID,
@@ -19,3 +19,8 @@ export const Applications = [
         version: 1,
     },
 ];
+
+export const Applications = {
+    name: "application",
+    postgresql: dataset,
+};

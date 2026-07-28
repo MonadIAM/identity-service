@@ -23,7 +23,7 @@ const USER_RECOVERY_CODE_7_HASH = "$argon2id$v=19$m=19456,t=2,p=1$92JwMZwwcg7Pdh
 const USER_RECOVERY_CODE_8_HASH = "$argon2id$v=19$m=19456,t=2,p=1$YKmXaetPzM8bYLq2ND04uw$/t3glrAUrPYMJTG35z2Qn418Ibpx6VR+9s9rcB83+6s";
 // "27E6-4F3F", "36A6-5214", "FBBE-C584", "1BBC-EB91", "C0EC-BBAE", "40A3-8BFC", "AB67-D15D", "428D-3738"
 
-export const RecoveryCodes = [
+const dataset = [
     {
         id: "00000002-0000-4000-8000-100000000001",
         account_id: ADMIN_ACCOUNT_ID,
@@ -137,3 +137,8 @@ export const RecoveryCodes = [
         created_at: CREATED_AT,
     },
 ];
+
+export const RecoveryCodes = {
+    name: "recovery_code",
+    postgresql: dataset,
+};

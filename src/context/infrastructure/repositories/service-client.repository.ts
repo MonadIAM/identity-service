@@ -32,11 +32,9 @@ export class ServiceClientRepository
     ): Repositories.ServiceClient.WouldExceedApplicationLimit.Result {
         try {
             const { transaction, application } = props;
-            const knex = transaction.getKnex();
+            const total = await transaction.count(ServiceClient, { application });
 
-            const [{ total }] = await knex("identity.service_client").where({ application }).count("id as total");
-
-            return Number(total) + 1 > this.applicationLimit;
+            return total + 1 > this.applicationLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

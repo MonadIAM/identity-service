@@ -1,7 +1,8 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { LockMode } from "@mikro-orm/postgresql";
 
-import { Session } from "~context/domain/entities";
+import { Session, Account } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
 import { SessionAdapter } from "../adapters";
@@ -23,20 +24,17 @@ export class SessionRepository
 
     public async lockByAccount(props: Repositories.Session.LockByAccount.Props): Promise<Entities.Session[]> {
         const { transaction, account } = props;
-        const rows = await transaction
-            .getKnex()
-            .with("locked_account", (builder) => {
-                builder.select("id").from("identity.account").where("id", account).forUpdate();
-            })
-            .select("session.*")
-            .from("identity.session as session")
-            .join("locked_account", "session.account_id", "locked_account.id")
-            .orderBy([
-                { column: "session.last_refreshed_at", order: "asc" },
-                { column: "session.created_at", order: "asc" },
-                { column: "session.id", order: "asc" },
-            ]);
 
-        return rows.map((row) => transaction.map(Session, row));
+        const locked = await transaction.findOne(Account, { id: account }, { lockMode: LockMode.PESSIMISTIC_WRITE });
+
+        if (locked) {
+            return transaction.find(
+                Session,
+                { account },
+                { orderBy: [{ lastRefreshedAt: "asc" }, { createdAt: "asc" }, { id: "asc" }] },
+            );
+        } else {
+            return [];
+        }
     }
 }

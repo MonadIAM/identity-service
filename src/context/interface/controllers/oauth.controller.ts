@@ -1,5 +1,5 @@
 import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { FastifyReply } from "fastify";
+import { type FastifyReply } from "fastify";
 import {
     UseInterceptors,
     Controller,
