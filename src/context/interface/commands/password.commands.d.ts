@@ -1,6 +1,6 @@
 declare namespace Commands {
     namespace Password {
-        interface PrivateContract {
+        interface InternalContract {
             findMatchingRecoveryCode(props: FindMatchingRecoveryCode.Props): FindMatchingRecoveryCode.Result;
             checkPasswordHistory(props: CheckPasswordHistory.Props): CheckPasswordHistory.Result;
         }
@@ -12,7 +12,7 @@ declare namespace Commands {
             change(props: Change.Props): Change.Result;
         }
 
-        interface Contract extends PrivateContract, ControllerContract {}
+        interface Contract extends InternalContract, ControllerContract {}
 
         namespace ResetByRecoveryCode {
             type Props = {

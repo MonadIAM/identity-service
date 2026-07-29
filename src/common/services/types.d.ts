@@ -187,13 +187,13 @@ declare global {
         namespace JWT {
             type Token = "REFRESH" | "ACCESS" | "ID";
 
-            interface PrivateContract {
+            interface InternalContract {
                 resolveVerificationFailure(error: unknown, tokenType: "ACCESS" | "REFRESH" | "ID"): Failure;
                 sign(payload: JWTPayload, props: Sign.Props): Promise<string>;
                 computeAtHash(accessToken: string): string;
             }
 
-            interface Contract extends PrivateContract {
+            interface Contract extends InternalContract {
                 signRefreshToken(payload: JWTPayload): Promise<string>;
                 signAccessToken(payload: JWTPayload): Promise<string>;
                 signIdToken(payload: JWTPayload, props: SignIdToken.Props): Promise<string>;

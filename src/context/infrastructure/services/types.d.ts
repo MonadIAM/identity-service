@@ -17,7 +17,7 @@ declare global {
         }
 
         namespace AuthorizationCache {
-            interface PrivateContract {
+            interface InternalContract {
                 issueAttempt(props: IssueAttempt.Props): IssueAttempt.Result;
             }
 
@@ -28,7 +28,7 @@ declare global {
                 get(props: Get.Props): Get.Result;
             }
 
-            interface Contract extends PublicContract, PrivateContract {}
+            interface Contract extends PublicContract, InternalContract {}
 
             type RequestMetadata = {
                 codeChallengeMethod: CodeChallengeMethod.S256;
@@ -120,11 +120,11 @@ declare global {
         }
 
         namespace AccessCache {
-            interface PrivateContract {
+            interface InternalContract {
                 resolveVersionedKey(props: ResolveVersionedKey.Props): ResolveVersionedKey.Result;
             }
 
-            interface Contract extends PrivateContract {
+            interface Contract extends InternalContract {
                 checkPermissions(props: CheckPermissions.Props): CheckPermissions.Result;
                 deleteAccount(props: DeleteAccount.Props): DeleteAccount.Result;
                 deleteRealm(props: DeleteRealm.Props): DeleteRealm.Result;

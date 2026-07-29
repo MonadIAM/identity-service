@@ -152,8 +152,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         });
 
         if (
-            !authorization ||
-            authorization.client !== client.id ||
+            authorization?.client !== client.id ||
             authorization.redirectUri !== props.input.redirectUri ||
             !this.cryptoService.verifyCodeChallenge(props.input.codeVerifier, authorization.codeChallenge)
         ) {
@@ -233,7 +232,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         if (input.postLogoutRedirectUri) {
             const client = await this.interfaceClientRepository.findUnique({ where: { id: payload.aud as string } });
 
-            if (client && client.redirectUri === input.postLogoutRedirectUri) {
+            if (client?.redirectUri === input.postLogoutRedirectUri) {
                 const url = new URL(client.redirectUri);
 
                 if (input.state) {

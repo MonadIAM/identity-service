@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class SecondFactorAdapter implements Adapters.Contract<Entities.SecondFactor, Adapters.SecondFactor.Types> {
     public buildWhereORM(
@@ -19,8 +19,8 @@ export class SecondFactorAdapter implements Adapters.Contract<Entities.SecondFac
     ): ORM.FindOptions<Entities.SecondFactor, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.SecondFactor>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.SecondFactor>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

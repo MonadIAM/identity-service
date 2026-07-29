@@ -3,7 +3,7 @@ import { IdentifierType } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Account {
-            interface PrivateContract {
+            interface InternalContract {
                 accountPayloadMapper(props: AccountPayloadMapper.Props): AccountPayloadMapper.Result;
                 sendOTP(props: SendOTP.Props): SendOTP.Result;
             }
@@ -17,7 +17,7 @@ declare global {
                 resend(props: Resend.Props): Resend.Result;
             }
 
-            interface Contract extends PrivateContract, ControllerContract {}
+            interface Contract extends InternalContract, ControllerContract {}
 
             namespace Deactivate {
                 type Props = {

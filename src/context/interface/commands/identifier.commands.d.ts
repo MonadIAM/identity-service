@@ -3,7 +3,7 @@ import { IdentifierType } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Identifier {
-            interface PrivateContract {
+            interface InternalContract {
                 sendOTP(props: SendOTP.Props): SendOTP.Result;
             }
 
@@ -16,7 +16,7 @@ declare global {
                 purge(props: Purge.Props): Purge.Result;
             }
 
-            interface Contract extends PrivateContract, ControllerContract {}
+            interface Contract extends InternalContract, ControllerContract {}
 
             namespace Create {
                 type Props = {

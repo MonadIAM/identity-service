@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class MembershipAdapter implements Adapters.Contract<Entities.Membership, Adapters.Membership.Types> {
     public buildWhereORM(
@@ -19,8 +19,8 @@ export class MembershipAdapter implements Adapters.Contract<Entities.Membership,
     ): ORM.FindOptions<Entities.Membership, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.Membership>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.Membership>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

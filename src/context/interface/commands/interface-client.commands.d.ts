@@ -1,6 +1,6 @@
 declare namespace Commands {
     namespace InterfaceClient {
-        interface PrivateContract {
+        interface InternalContract {
             interfaceClientPayloadMapper(props: InterfaceClientPayloadMapper.Props): InterfaceClientPayloadMapper.Result;
         }
 
@@ -12,7 +12,7 @@ declare namespace Commands {
             purge(props: Purge.Props): Purge.Result;
         }
 
-        interface Contract extends PrivateContract, ControllerContract {}
+        interface Contract extends InternalContract, ControllerContract {}
 
         namespace Create {
             type Props = {

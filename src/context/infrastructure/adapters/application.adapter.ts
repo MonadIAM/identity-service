@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class ApplicationAdapter implements Adapters.Contract<Entities.Application, Adapters.Application.Types> {
     public buildWhereORM(
@@ -10,13 +10,13 @@ export class ApplicationAdapter implements Adapters.Contract<Entities.Applicatio
         const where: ORM.ObjectQuery<Entities.Application> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.name) {
-            where.name = MikroAdapter.applyStringFilter(filters.name);
+            where.name = ORMAdapter.applyStringFilter(filters.name);
         }
         if (filters.realm) {
-            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+            where.realm = ORMAdapter.applyStringFilter(filters.realm);
         }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = filters.isRevoked;
@@ -28,10 +28,10 @@ export class ApplicationAdapter implements Adapters.Contract<Entities.Applicatio
             where.isSystemManaged = filters.isSystemManaged;
         }
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
         if (filters.updatedAt) {
-            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+            where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
 
         return where;
@@ -44,8 +44,8 @@ export class ApplicationAdapter implements Adapters.Contract<Entities.Applicatio
     ): ORM.FindOptions<Entities.Application, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.Application>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.Application>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

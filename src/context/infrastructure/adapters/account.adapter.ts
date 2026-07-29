@@ -1,7 +1,7 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { AccountSubject, AccountStatus, IdentifierType } from "~context/enums";
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapters.Account.Types> {
     public buildWhereORM(
@@ -11,28 +11,28 @@ export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapt
         const where: ORM.ObjectQuery<Entities.Account> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.subject) {
-            where.subject = MikroAdapter.applyStringFilter<AccountSubject>(filters.subject);
+            where.subject = ORMAdapter.applyStringFilter<AccountSubject>(filters.subject);
         }
         if (filters.status) {
-            where.status = MikroAdapter.applyStringFilter<AccountStatus>(filters.status);
+            where.status = ORMAdapter.applyStringFilter<AccountStatus>(filters.status);
         }
 
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
         if (filters.updatedAt) {
-            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+            where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
 
         if (filters.realm) {
-            where.memberships = { realm: MikroAdapter.applyStringFilter(filters.realm) };
+            where.memberships = { realm: ORMAdapter.applyStringFilter(filters.realm) };
         }
 
         if (filters.name) {
-            where.profile = { displayName: MikroAdapter.applyStringFilter(filters.name) };
+            where.profile = { displayName: ORMAdapter.applyStringFilter(filters.name) };
         }
 
         if (filters.email && filters.phone) {
@@ -40,25 +40,25 @@ export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapt
                 {
                     identifiers: {
                         type: IdentifierType.EMAIL,
-                        value: MikroAdapter.applyStringFilter(filters.email),
+                        value: ORMAdapter.applyStringFilter(filters.email),
                     },
                 },
                 {
                     identifiers: {
                         type: IdentifierType.PHONE,
-                        value: MikroAdapter.applyStringFilter(filters.phone),
+                        value: ORMAdapter.applyStringFilter(filters.phone),
                     },
                 },
             ];
         } else if (filters.email) {
             where.identifiers = {
                 type: IdentifierType.EMAIL,
-                value: MikroAdapter.applyStringFilter(filters.email),
+                value: ORMAdapter.applyStringFilter(filters.email),
             };
         } else if (filters.phone) {
             where.identifiers = {
                 type: IdentifierType.PHONE,
-                value: MikroAdapter.applyStringFilter(filters.phone),
+                value: ORMAdapter.applyStringFilter(filters.phone),
             };
         }
 
@@ -72,8 +72,8 @@ export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapt
     ): ORM.FindOptions<Entities.Account, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.Account>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.Account>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

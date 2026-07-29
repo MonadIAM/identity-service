@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class MasterCodeAdapter implements Adapters.Contract<Entities.MasterCode, Adapters.MasterCode.Types> {
     public buildWhereORM(
@@ -19,8 +19,8 @@ export class MasterCodeAdapter implements Adapters.Contract<Entities.MasterCode,
     ): ORM.FindOptions<Entities.MasterCode, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.MasterCode>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.MasterCode>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

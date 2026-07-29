@@ -14,7 +14,7 @@ declare namespace Commands {
             purgeRealm(props: PurgeRealm.Props): PurgeRealm.Result;
         }
 
-        interface PrivateContract {
+        interface InternalContract {
             interfaceClientOutboxPayloadMapper(
                 props: InterfaceClientOutboxPayloadMapper.Props,
             ): InterfaceClientOutboxPayloadMapper.Result;
@@ -23,7 +23,7 @@ declare namespace Commands {
             ): ServiceClientOutboxPayloadMapper.Result;
         }
 
-        interface Contract extends PrivateContract, ControllerContract, ConsumerContract {}
+        interface Contract extends InternalContract, ControllerContract, ConsumerContract {}
 
         namespace Create {
             type Props = {

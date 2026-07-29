@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class RecoveryCodeAdapter implements Adapters.Contract<Entities.RecoveryCode, Adapters.RecoveryCode.Types> {
     public buildWhereORM(
@@ -19,8 +19,8 @@ export class RecoveryCodeAdapter implements Adapters.Contract<Entities.RecoveryC
     ): ORM.FindOptions<Entities.RecoveryCode, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.RecoveryCode>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.RecoveryCode>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

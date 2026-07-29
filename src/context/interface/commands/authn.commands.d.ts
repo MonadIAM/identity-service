@@ -1,6 +1,6 @@
 declare namespace Commands {
     namespace Authn {
-        interface PrivateContract {
+        interface InternalContract {
             assertCanAuthenticate(props: AssertCanAuthenticate.Props): AssertCanAuthenticate.Result;
         }
 
@@ -11,7 +11,7 @@ declare namespace Commands {
             password(props: Password.Props): Password.Result;
         }
 
-        interface Contract extends PrivateContract, ControllerContract {}
+        interface Contract extends InternalContract, ControllerContract {}
 
         namespace Password {
             type Props = {

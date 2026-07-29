@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class PasswordHistoryAdapter implements Adapters.Contract<Entities.PasswordHistory, Adapters.PasswordHistory.Types> {
     public buildWhereORM(
@@ -19,8 +19,8 @@ export class PasswordHistoryAdapter implements Adapters.Contract<Entities.Passwo
     ): ORM.FindOptions<Entities.PasswordHistory, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.PasswordHistory>(sort, { setAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.PasswordHistory>(sort, { setAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

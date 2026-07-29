@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class SessionAdapter implements Adapters.Contract<Entities.Session, Adapters.Session.Types> {
     public buildWhereORM(
@@ -19,8 +19,8 @@ export class SessionAdapter implements Adapters.Contract<Entities.Session, Adapt
     ): ORM.FindOptions<Entities.Session, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.Session>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.Session>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

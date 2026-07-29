@@ -18,7 +18,7 @@ declare namespace Commands {
                 recoveryCodes?: string[];
             };
 
-        interface PrivateContract {
+        interface InternalContract {
             blacklistPayloadMapper(props: BlacklistPayloadMapper.Props): BlacklistPayloadMapper.Result;
             authenticateExisting(props: AuthenticateExisting.Props): AuthenticateExisting.Result;
             attachToExisting(props: AttachToExisting.Props): AttachToExisting.Result;
@@ -31,7 +31,7 @@ declare namespace Commands {
             callback(props: Callback.Props): Callback.Result;
         }
 
-        interface Contract extends PrivateContract, ControllerContract {}
+        interface Contract extends InternalContract, ControllerContract {}
 
         namespace Authorize {
             type Props = {

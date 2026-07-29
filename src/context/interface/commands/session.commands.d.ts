@@ -5,7 +5,7 @@ declare namespace Commands {
             revoke(props: Revoke.Props): Revoke.Result;
         }
 
-        interface PrivateContract {
+        interface InternalContract {
             blacklistPayloadMapper(props: BlacklistPayloadMapper.Props): BlacklistPayloadMapper.Result;
         }
 
@@ -15,7 +15,7 @@ declare namespace Commands {
             revoke(props: Revoke.Props): Revoke.Result;
         }
 
-        interface Contract extends PrivateContract, CommandsContract, ControllerContract {}
+        interface Contract extends InternalContract, CommandsContract, ControllerContract {}
 
         namespace Create {
             type Props = {
