@@ -1,5 +1,5 @@
-import { Options as ArgonOptions } from "argon2";
 import { JWTPayload, JWK } from "jose";
+import { HashOptions } from "argon2";
 
 declare global {
     namespace Vault {
@@ -49,7 +49,7 @@ declare global {
 
     namespace CommonServices {
         namespace Hashing {
-            type Options = ArgonOptions & { raw?: false };
+            type Options = HashOptions;
 
             interface Contract {
                 verifyAndUpgrade(props: VerifyAndUpgrade.Props): Promise<VerifyAndUpgrade.Result>;

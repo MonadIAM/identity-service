@@ -1,38 +1,53 @@
-declare namespace Repositories {
-    namespace Account {
-        interface Contract extends Repositories.Base.Contract<Entities.Account, Adapters.Account.Types> {
-            findExpiredInactive(props: FindExpiredInactive.Props): FindExpiredInactive.Result;
-            findExpiredPending(props: FindExpiredPending.Props): FindExpiredPending.Result;
-            getLookupList(props: GetLookupList.Props): GetLookupList.Result;
-        }
+import { AccountStatus } from "~context/enums";
 
-        namespace GetLookupList {
-            type Props = {
-                pagination: Pagination;
-                term: string;
-            };
+declare global {
+    namespace Repositories {
+        namespace Account {
+            interface Contract extends Repositories.Base.Contract<Entities.Account, Adapters.Account.Types> {
+                findExpiredInactive(props: FindExpiredInactive.Props): FindExpiredInactive.Result;
+                findExpiredPending(props: FindExpiredPending.Props): FindExpiredPending.Result;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+            }
 
-            type Result = Promise<[Entities.Account[], number]>;
-        }
+            namespace GetLookupList {
+                type Row = {
+                    id: string;
+                    status: AccountStatus;
+                    displayName: string;
+                    identifier: string | null;
+                };
 
-        namespace FindExpiredPending {
-            type Props = {
-                expirationDate: Date;
-                batchSize: number;
-                transaction?: ORM.EntityManager;
-            };
+                type CountRow = {
+                    total: string;
+                };
 
-            type Result = Promise<Entities.Account[]>;
-        }
+                type Props = {
+                    pagination: Pagination;
+                    term: string;
+                };
 
-        namespace FindExpiredInactive {
-            type Props = {
-                expirationDate: Date;
-                batchSize: number;
-                transaction?: ORM.EntityManager;
-            };
+                type Result = Promise<[Row[], number]>;
+            }
 
-            type Result = Promise<Entities.Account[]>;
+            namespace FindExpiredPending {
+                type Props = {
+                    expirationDate: Date;
+                    batchSize: number;
+                    transaction?: ORM.EntityManager;
+                };
+
+                type Result = Promise<Entities.Account[]>;
+            }
+
+            namespace FindExpiredInactive {
+                type Props = {
+                    expirationDate: Date;
+                    batchSize: number;
+                    transaction?: ORM.EntityManager;
+                };
+
+                type Result = Promise<Entities.Account[]>;
+            }
         }
     }
 }

@@ -25,6 +25,10 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
             expression:
                 'CREATE INDEX "identifier_value_trgm_idx" ON "identity"."identifier" USING gin ("value" gin_trgm_ops)',
         },
+        {
+            name: "identifier_account_id_idx",
+            properties: ["account"],
+        },
     ],
 
     properties: {

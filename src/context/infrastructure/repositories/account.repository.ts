@@ -2,6 +2,7 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { raw } from "@mikro-orm/postgresql";
 
+import { knex } from "~infrastructure/database/utils";
 import { ExceptionMapper } from "~common/exceptions";
 import { Account } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
@@ -31,24 +32,50 @@ export class AccountRepository
             const { pagination, term } = props;
             const entityManager = this.readManager.fork();
 
-            let builder = entityManager
-                .createQueryBuilder(Account, "a")
-                .select(["a.id", "a.status"])
-                .leftJoinAndSelect("a.profile", "p")
-                .leftJoin("a.identifiers", "i")
-                .groupBy(["a.id", "p.account"])
+            // NOTE[SQL-01]: see NOTES.md#SQL-01
+            let dataQuery = knex
+                .select({ id: "a.id", status: "a.status", displayName: "p.display_name", identifier: "i.value" })
+                .from({ a: "identity.account" })
+                .leftJoin({ p: "identity.profile" }, "p.account_id", "a.id")
+                .joinRaw(
+                    "LEFT JOIN LATERAL (SELECT value FROM identity.identifier WHERE account_id = a.id AND value % ? ORDER BY similarity(value, ?) DESC LIMIT 1) i ON true",
+                    [term, term],
+                )
                 .limit(pagination.elementsPerPage)
                 .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
 
+            let countQuery = knex
+                .from({ a: "identity.account" })
+                .leftJoin({ p: "identity.profile" }, "p.account_id", "a.id");
+
             if (term) {
-                builder = builder.andWhere("p.display_name % ? OR i.value % ?", [term, term]).orderBy({
-                    [raw("GREATEST(similarity(p.display_name, ?), MAX(similarity(i.value, ?)))", [term, term])]: "DESC",
-                });
+                dataQuery = dataQuery
+                    .whereRaw("p.display_name % ? OR i.value IS NOT NULL", [term])
+                    .orderByRaw("GREATEST(similarity(p.display_name, ?), COALESCE(similarity(i.value, ?), 0)) DESC", [
+                        term,
+                        term,
+                    ]);
+                countQuery = countQuery.whereRaw(
+                    "p.display_name % ? OR EXISTS (SELECT 1 FROM identity.identifier WHERE account_id = a.id AND value % ?)",
+                    [term, term],
+                );
             } else {
-                builder = builder.orderBy({ "p.displayName": "ASC" });
+                dataQuery = dataQuery.orderBy("p.display_name", "asc");
             }
 
-            return await builder.getResultAndCount();
+            const dataSQL = dataQuery.toSQL();
+            const countSQL = countQuery.count("a.id as total").toSQL();
+
+            const [rows, countRow] = await Promise.all([
+                entityManager.execute<Repositories.Account.GetLookupList.Row[]>(dataSQL.sql, [...dataSQL.bindings], "all"),
+                entityManager.execute<Repositories.Account.GetLookupList.CountRow>(
+                    countSQL.sql,
+                    [...countSQL.bindings],
+                    "get",
+                ),
+            ]);
+
+            return [rows, Number(countRow?.total ?? 0)];
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
