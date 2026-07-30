@@ -25,12 +25,8 @@ prune:
 	docker system prune -f
 
 # Development
-deps:
-	npm i --allow-git=all --strict-peer-deps=false
 lint:
 	npm run lint
-lint-fix:
-	npm run lint:fix
 knip:
 	npm run knip
 aws:
@@ -53,6 +49,6 @@ seed-demo:
 
 # Test
 test:
-	npx jest --config ./jest.unit.config.ts
+	NODE_OPTIONS=--experimental-vm-modules npx jest --config ./jest.unit.config.ts
 coverage:
-	npx jest --config ./jest.unit.config.ts --coverage
+	NODE_OPTIONS=--experimental-vm-modules npx jest --config ./jest.unit.config.ts --coverage
