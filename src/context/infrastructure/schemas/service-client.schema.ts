@@ -34,8 +34,8 @@ export const ServiceClientSchema = new EntitySchema<ServiceClient>({
             deleteRule: "cascade",
         },
 
-        code: { type: "string", length: 128 },
-        name: { type: "string", length: 255 },
+        code: { type: "text" },
+        name: { type: "text" },
         description: { type: "text", nullable: true },
         allowedAddresses: { type: "array" },
 

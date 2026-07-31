@@ -34,7 +34,7 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        type: { enum: true, items: () => IdentifierType },
+        type: { enum: true, items: () => IdentifierType, nativeEnumName: "identifier_type" },
         value: { type: "text" },
 
         provider: { type: "text", nullable: true },

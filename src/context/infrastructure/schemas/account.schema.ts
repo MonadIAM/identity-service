@@ -22,9 +22,9 @@ export const AccountSchema = new EntitySchema<Account>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        subject: { enum: true, items: () => AccountSubject },
-        status: { enum: true, items: () => AccountStatus },
-        is2FAEnforced: { type: "boolean" },
+        subject: { enum: true, items: () => AccountSubject, nativeEnumName: "account_subject" },
+        status: { enum: true, items: () => AccountStatus, nativeEnumName: "account_status" },
+        is2FAEnforced: { type: "boolean", fieldName: "is_2fa_enforced" },
 
         masterCode: {
             kind: "1:1",

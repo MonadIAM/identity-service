@@ -21,6 +21,7 @@ export class UpdateBodyDTO {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsString()
+    @Validator.MaxLength(128)
     @ApiProperty({ required: false, type: String })
     declare public name?: string;
 

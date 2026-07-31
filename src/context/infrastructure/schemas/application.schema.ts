@@ -25,7 +25,7 @@ export const ApplicationSchema = new EntitySchema<Application>({
         id: { primary: true, type: "uuid" },
 
         realm: { type: "uuid" },
-        name: { type: "string", length: 255 },
+        name: { type: "text" },
         description: { type: "text", nullable: true },
 
         realmVersion: { type: "int" },

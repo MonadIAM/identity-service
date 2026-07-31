@@ -43,8 +43,8 @@
           "enumItems": [],
           "mappedType": "uuid"
         },
-        "is2faenforced": {
-          "name": "is2faenforced",
+        "is_2fa_enforced": {
+          "name": "is_2fa_enforced",
           "type": "boolean",
           "unsigned": false,
           "autoincrement": false,
@@ -79,7 +79,7 @@
         },
         "status": {
           "name": "status",
-          "type": "text",
+          "type": "identity.account_status",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -97,11 +97,12 @@
             "PENDING",
             "ACTIVE"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "account_status"
         },
         "subject": {
           "name": "subject",
-          "type": "text",
+          "type": "identity.account_subject",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -118,7 +119,8 @@
             "SYSTEM",
             "HUMAN"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "account_subject"
         },
         "updated_at": {
           "name": "updated_at",
@@ -167,20 +169,7 @@
           "unique": true
         }
       ],
-      "checks": [
-        {
-          "name": "account_status_check",
-          "expression": "\"status\" in ('DEACTIVATED', 'SUSPENDED', 'PENDING', 'ACTIVE')",
-          "definition": "check (\"status\" in ('DEACTIVATED', 'SUSPENDED', 'PENDING', 'ACTIVE'))",
-          "columnName": "status"
-        },
-        {
-          "name": "account_subject_check",
-          "expression": "\"subject\" in ('SERVICE', 'SYSTEM', 'HUMAN')",
-          "definition": "check (\"subject\" in ('SERVICE', 'SYSTEM', 'HUMAN'))",
-          "columnName": "subject"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {},
       "comment": null
@@ -293,20 +282,20 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "realm": {
           "name": "realm",
@@ -574,7 +563,7 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "identity.identifier_type",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -591,7 +580,8 @@
             "phone",
             "oauth"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "identifier_type"
         },
         "value": {
           "name": "value",
@@ -681,14 +671,7 @@
           "expression": "CREATE INDEX \"identifier_value_trgm_idx\" ON \"identity\".\"identifier\" USING gin (\"value\" gin_trgm_ops)"
         }
       ],
-      "checks": [
-        {
-          "name": "identifier_type_check",
-          "expression": "\"type\" in ('email', 'phone', 'oauth')",
-          "definition": "check (\"type\" in ('email', 'phone', 'oauth'))",
-          "columnName": "type"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {
         "identifier_account_id_foreign": {
@@ -885,20 +868,20 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "redirect_uri": {
           "name": "redirect_uri",
@@ -1476,37 +1459,37 @@
         },
         "display_name": {
           "name": "display_name",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "locale": {
           "name": "locale",
-          "type": "varchar(16)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": 16,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "picture_url": {
           "name": "picture_url",
@@ -1527,20 +1510,20 @@
         },
         "time_zone": {
           "name": "time_zone",
-          "type": "varchar(64)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": 64,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "updated_at": {
           "name": "updated_at",
@@ -1805,20 +1788,20 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(128)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": 128,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "secret": {
           "name": "secret",
@@ -1839,7 +1822,7 @@
         },
         "type": {
           "name": "type",
-          "type": "text",
+          "type": "identity.second_factor_type",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -1854,7 +1837,8 @@
           "enumItems": [
             "totp"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "second_factor_type"
         }
       },
       "indexes": [
@@ -1880,14 +1864,7 @@
           "unique": true
         }
       ],
-      "checks": [
-        {
-          "name": "second_factor_type_check",
-          "expression": "\"type\" in ('totp')",
-          "definition": "check (\"type\" in ('totp'))",
-          "columnName": "type"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {
         "second_factor_account_id_foreign": {
@@ -1962,20 +1939,20 @@
         },
         "code": {
           "name": "code",
-          "type": "varchar(128)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 128,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "created_at": {
           "name": "created_at",
@@ -2081,20 +2058,20 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "updated_at": {
           "name": "updated_at",
@@ -2540,20 +2517,20 @@
         },
         "ip": {
           "name": "ip",
-          "type": "varchar(45)",
+          "type": "inet",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": 45,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "unknown"
         },
         "user_agent": {
           "name": "user_agent",
@@ -2927,5 +2904,41 @@
     }
   ],
   "views": [],
-  "nativeEnums": {}
+  "nativeEnums": {
+    "identity.account_status": {
+      "name": "account_status",
+      "schema": "identity",
+      "items": [
+        "DEACTIVATED",
+        "SUSPENDED",
+        "PENDING",
+        "ACTIVE"
+      ]
+    },
+    "identity.account_subject": {
+      "name": "account_subject",
+      "schema": "identity",
+      "items": [
+        "SERVICE",
+        "SYSTEM",
+        "HUMAN"
+      ]
+    },
+    "identity.identifier_type": {
+      "name": "identifier_type",
+      "schema": "identity",
+      "items": [
+        "email",
+        "phone",
+        "oauth"
+      ]
+    },
+    "identity.second_factor_type": {
+      "name": "second_factor_type",
+      "schema": "identity",
+      "items": [
+        "totp"
+      ]
+    }
+  }
 }

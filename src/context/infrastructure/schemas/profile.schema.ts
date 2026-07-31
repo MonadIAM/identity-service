@@ -25,9 +25,9 @@ export const ProfileSchema = new EntitySchema<Profile>({
             owner: true,
         },
 
-        displayName: { type: "string", length: 255 },
-        locale: { type: "string", length: 16, nullable: true },
-        timeZone: { type: "string", length: 64, nullable: true },
+        displayName: { type: "text" },
+        locale: { type: "text", nullable: true },
+        timeZone: { type: "text", nullable: true },
         pictureUrl: { type: "text", nullable: true },
 
         updatedAt: { type: "timestamptz", length: 3, nullable: true },

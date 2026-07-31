@@ -25,9 +25,9 @@ export const SecondFactorSchema = new EntitySchema<SecondFactor>({
             deleteRule: "cascade",
         },
 
-        type: { enum: true, items: () => SecondFactorType },
+        type: { enum: true, items: () => SecondFactorType, nativeEnumName: "second_factor_type" },
         secret: { type: "text" },
-        name: { type: "string", length: 128, nullable: true },
+        name: { type: "text", nullable: true },
 
         confirmedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },

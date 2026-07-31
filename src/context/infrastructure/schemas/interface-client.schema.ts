@@ -31,7 +31,7 @@ export const InterfaceClientSchema = new EntitySchema<InterfaceClient>({
             deleteRule: "cascade",
         },
 
-        name: { type: "string", length: 255 },
+        name: { type: "text" },
         description: { type: "text", nullable: true },
         redirectUri: { type: "text" },
         authAddress: { type: "text" },
