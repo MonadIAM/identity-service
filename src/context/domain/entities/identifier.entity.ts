@@ -21,7 +21,6 @@ export class Identifier implements Entities.Identifier.Contract {
 
     public isVerified: boolean;
     public isPublicContact: boolean;
-    public receiveNotifications: boolean;
 
     public account: Entities.Account;
 
@@ -31,7 +30,6 @@ export class Identifier implements Entities.Identifier.Contract {
 
         this.isVerified = false;
         this.isPublicContact = false;
-        this.receiveNotifications = false;
 
         this.type = props.type;
         this.value = props.value;
@@ -42,19 +40,11 @@ export class Identifier implements Entities.Identifier.Contract {
         this.account = props.account;
     }
 
-    public toggleNotifications(): void {
-        if (this.type === IdentifierType.EMAIL) {
-            this.receiveNotifications = !this.receiveNotifications;
-        } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NOTIFICATIONS_EMAIL_ONLY` });
-        }
-    }
-
     public togglePublicContact(): void {
         if (this.type === IdentifierType.OAUTH) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.PUBLIC_CONTACT_NOT_APPLICABLE` });
         } else if (this.isVerified) {
-            this.receiveNotifications = !this.receiveNotifications;
+            this.isPublicContact = !this.isPublicContact;
         } else {
             throw Exception.invariantViolation({
                 messageKey: `${this.dictionaryPath}.PUBLIC_CONTACT_REQUIRES_VERIFICATION`,

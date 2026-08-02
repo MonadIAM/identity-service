@@ -32,9 +32,6 @@ export class IdentifierAdapter {
         if (filters.isPublicContact !== undefined) {
             where.isPublicContact = { $eq: filters.isPublicContact };
         }
-        if (filters.receiveNotifications !== undefined) {
-            where.receiveNotifications = { $eq: filters.receiveNotifications };
-        }
 
         if (filters.createdAt) {
             where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);

@@ -1,6 +1,7 @@
 declare namespace Commands {
     namespace Authn {
         interface InternalContract {
+            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
             assertCanAuthenticate(props: AssertCanAuthenticate.Props): AssertCanAuthenticate.Result;
         }
 
@@ -65,6 +66,15 @@ declare namespace Commands {
         namespace AssertCanAuthenticate {
             type Props = Entities.Account;
             type Result = void;
+        }
+
+        namespace NotificationPayloadMapper {
+            type Props = {
+                account: string;
+                otp: string;
+            };
+
+            type Result = Topics.Notification.Message["payload"];
         }
     }
 }

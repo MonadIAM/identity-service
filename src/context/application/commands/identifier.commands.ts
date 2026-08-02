@@ -1,10 +1,17 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import {
+    NotificationTopicAction,
+    NotificationContentKind,
+    NotificationCategory,
+    PlatformService,
+    MessageTemplate,
+} from "@monadiam/shared";
 
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/domain/repositories";
-import { CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
-import { IdentifierType, ActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
+import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { IDENTIFIER_SERVICE } from "../services";
@@ -27,15 +34,18 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
-        @Inject(EMAIL_SERVICE)
-        private readonly emailService: CommonServices.Email.Contract,
-        @Inject(SMS_SERVICE)
-        private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
     public async create(props: Commands.Identifier.Create.Props): Commands.Identifier.Create.Result {
-        const identifier = await this.transactionalService.run({
+        const otp = this.cryptoService.generateOTP();
+
+        const identifier = await this.transactionalService.run<Entities.Identifier>({
             resource: this.resource,
+            outbox: {
+                payloadMapper: () => this.notificationPayloadMapper({ account: props.actor, otp }),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.IDENTIFIER,
                 actionType: ActionType.CREATE,
@@ -60,10 +70,10 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
             },
         });
 
-        await this.sendOTP({
-            identifier: identifier.id,
-            value: props.input.identifier,
-            type: props.input.type,
+        await this.otpCacheService.set({
+            purpose: "identifier",
+            value: identifier.id,
+            key: otp,
         });
 
         return { message: `${this.dictionaryPath}.CREATED` };
@@ -81,10 +91,19 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
             throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
         }
 
-        await this.sendOTP({
-            identifier: identifier.id,
-            value: identifier.value,
-            type: identifier.type,
+        const otp = this.cryptoService.generateOTP();
+
+        await this.otpCacheService.set({
+            purpose: "identifier",
+            value: identifier.id,
+            key: otp,
+        });
+
+        await this.transactionalService.emit({
+            payload: this.notificationPayloadMapper({ account: props.actor, otp }),
+            actionType: NotificationTopicAction.CREATE,
+            destinationTopic: KafkaTopic.NOTIFICATION,
+            resource: this.resource,
         });
 
         return { message: `${this.dictionaryPath}.CODE_RESENT` };
@@ -122,32 +141,6 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         });
 
         return { message: `${this.dictionaryPath}.VERIFIED` };
-    }
-
-    public async toggleNotifications(
-        props: Commands.Identifier.ToggleNotifications.Props,
-    ): Commands.Identifier.ToggleNotifications.Result {
-        await this.transactionalService.run({
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.IDENTIFIER,
-                actionType: ActionType.UPDATE,
-                ...props,
-            },
-            execute: async (transaction) => {
-                const identifier = await this.identifierRepository.findUniqueOrThrow({
-                    where: {
-                        id: props.input.identifier,
-                        account: props.actor,
-                    },
-                    transaction,
-                });
-
-                this.identifierService.toggleNotifications({ input: { identifier } });
-            },
-        });
-
-        return { message: `${this.dictionaryPath}.NOTIFICATIONS_TOGGLED` };
     }
 
     public async togglePublicContact(
@@ -204,27 +197,17 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         return { message: `${this.dictionaryPath}.PURGED` };
     }
 
-    public async sendOTP(props: Commands.Identifier.SendOTP.Props): Commands.Identifier.SendOTP.Result {
-        const { identifier, value, type } = props;
-        const otp = this.cryptoService.generateOTP();
-
-        await this.otpCacheService.set({
-            purpose: "identifier",
-            value: identifier,
-            key: otp,
-        });
-
-        if (type === IdentifierType.EMAIL) {
-            await this.emailService.send({
-                to: value,
-                subject: "Verify your identifier",
-                html: `Your verification code: ${otp}`,
-            });
-        } else {
-            await this.smsService.send({
-                to: value,
-                body: `Your verification code: ${otp}`,
-            });
-        }
+    public notificationPayloadMapper(
+        props: Commands.Identifier.NotificationPayloadMapper.Props,
+    ): Commands.Identifier.NotificationPayloadMapper.Result {
+        return {
+            template: MessageTemplate.IDENTIFIER_VERIFICATION_OTP,
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            params: { otp: props.otp },
+            recipient: props.account,
+            language: "en",
+        };
     }
 }

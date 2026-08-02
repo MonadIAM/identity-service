@@ -372,22 +372,6 @@ export class EnvironmentVariablesDTO {
     declare public OAUTH_GITHUB_REDIRECT_URI: string;
 
     // ---------------------------------------------------------------------------
-    // AWS (SES/SNS)
-    // ---------------------------------------------------------------------------
-
-    @Validator.IsString()
-    declare public AWS_REGION: string;
-
-    @Validator.IsString()
-    declare public AWS_ACCESS_KEY_ID: string;
-
-    @Validator.IsString()
-    declare public AWS_SECRET_ACCESS_KEY: string;
-
-    @Validator.IsString()
-    declare public EMAIL_FROM: string;
-
-    // ---------------------------------------------------------------------------
     // BullMQ - cleanup
     // ---------------------------------------------------------------------------
 

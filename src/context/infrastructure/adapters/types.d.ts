@@ -100,7 +100,6 @@ declare global {
                 email?: StringFilterDTO;
                 phone?: StringFilterDTO;
                 id?: StringFilterDTO;
-                receiveNotifications?: boolean;
                 isPublicContact?: boolean;
                 isVerified?: boolean;
             };

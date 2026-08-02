@@ -32,7 +32,6 @@ describe("Identifier Entity", () => {
 
             expect(identifier.isVerified).toBe(false);
             expect(identifier.isPublicContact).toBe(false);
-            expect(identifier.receiveNotifications).toBe(false);
         });
 
         it("should auto-generate id and createdAt", () => {
@@ -80,24 +79,6 @@ describe("Identifier Entity", () => {
         });
     });
 
-    describe("toggleNotifications", () => {
-        it("should toggle receiveNotifications for email identifier", () => {
-            const identifier = createIdentifier({ type: IdentifierType.EMAIL });
-
-            identifier.toggleNotifications();
-            expect(identifier.receiveNotifications).toBe(true);
-
-            identifier.toggleNotifications();
-            expect(identifier.receiveNotifications).toBe(false);
-        });
-
-        it("should throw for non-email identifier", () => {
-            const identifier = createIdentifier({ type: IdentifierType.PHONE });
-
-            expect(() => identifier.toggleNotifications()).toThrow("NOTIFICATIONS_EMAIL_ONLY");
-        });
-    });
-
     describe("togglePublicContact", () => {
         it("should throw for oauth identifier", () => {
             const identifier = createIdentifier({ type: IdentifierType.OAUTH });
@@ -115,10 +96,10 @@ describe("Identifier Entity", () => {
             const identifier = createIdentifier({ type: IdentifierType.EMAIL });
             identifier.verify();
 
-            const before = identifier.receiveNotifications;
+            const before = identifier.isPublicContact;
             identifier.togglePublicContact();
 
-            expect(identifier.receiveNotifications).toBe(!before);
+            expect(identifier.isPublicContact).toBe(!before);
         });
     });
 });

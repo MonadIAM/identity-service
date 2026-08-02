@@ -24,6 +24,7 @@ declare global {
             type OutboxPayloadMap = {
                 [KafkaTopic.REAUTHENTICATION]: Topics.Reauthentication.Message["payload"];
                 [KafkaTopic.SERVICE_CLIENT]: Topics.ServiceClient.Message["payload"];
+                [KafkaTopic.NOTIFICATION]: Topics.Notification.Message["payload"];
                 [KafkaTopic.BLACKLIST]: Topics.Blacklist.Message["payload"];
                 [KafkaTopic.ACCOUNT]: Topics.Account.Message["payload"];
             };

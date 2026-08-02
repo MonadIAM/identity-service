@@ -238,29 +238,6 @@ declare global {
             }
         }
 
-        namespace Email {
-            interface Contract {
-                send(props: Send): Promise<void>;
-            }
-
-            type Send = {
-                subject: string;
-                html: string;
-                to: string;
-            };
-        }
-
-        namespace SMS {
-            interface Contract {
-                send(props: Send): Promise<void>;
-            }
-
-            type Send = {
-                body: string;
-                to: string;
-            };
-        }
-
         namespace GoogleOAuth {
             interface Contract {
                 fetchProfile(accessToken: string): Promise<Profile>;

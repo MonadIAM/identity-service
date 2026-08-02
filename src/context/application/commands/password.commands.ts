@@ -1,11 +1,18 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import {
+    NotificationTopicAction,
+    NotificationContentKind,
+    NotificationCategory,
+    PlatformService,
+    MessageTemplate,
+} from "@monadiam/shared";
 
 import { PASSWORD_HISTORY_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
-import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
-import { IdentifierType, ActionType, EntityType } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
+import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { PASSWORD_SERVICE } from "../services";
@@ -33,10 +40,6 @@ export class PasswordCommands implements Commands.Password.Contract {
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
-        @Inject(EMAIL_SERVICE)
-        private readonly emailService: CommonServices.Email.Contract,
-        @Inject(SMS_SERVICE)
-        private readonly smsService: CommonServices.SMS.Contract,
         private readonly configService: ConfigService,
     ) {
         this.historyCheckDays = this.configService.getOrThrow<number>("PASSWORD_HISTORY_CHECK_DAYS");
@@ -99,18 +102,12 @@ export class PasswordCommands implements Commands.Password.Contract {
                 value: identifier.account.id,
             });
 
-            if (identifier.type === IdentifierType.EMAIL) {
-                await this.emailService.send({
-                    to: identifier.value,
-                    subject: "Password reset code",
-                    html: `Your reset code: ${otp}`,
-                });
-            } else {
-                await this.smsService.send({
-                    to: identifier.value,
-                    body: `Your reset code: ${otp}`,
-                });
-            }
+            await this.transactionalService.emit({
+                payload: this.notificationPayloadMapper({ account: identifier.account.id, otp }),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+                resource: this.resource,
+            });
         }
 
         return { message: `${this.dictionaryPath}.RESET_CODE_SENT` };
@@ -238,5 +235,19 @@ export class PasswordCommands implements Commands.Password.Contract {
         );
 
         return results.find(({ isValid }) => isValid)?.entry ?? null;
+    }
+
+    public notificationPayloadMapper(
+        props: Commands.Password.NotificationPayloadMapper.Props,
+    ): Commands.Password.NotificationPayloadMapper.Result {
+        return {
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            template: MessageTemplate.RESET_PASSWORD_OTP,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            params: { otp: props.otp },
+            recipient: props.account,
+            language: "en",
+        };
     }
 }

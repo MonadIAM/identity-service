@@ -3,6 +3,4 @@ export const GOOGLE_OAUTH_SERVICE = Symbol("Services.GoogleOAuth.Contract");
 export const GITHUB_OAUTH_SERVICE = Symbol("Services.GitHubOAuth.Contract");
 export const HASHING_SERVICE = Symbol("Services.Hashing.Contract");
 export const CRYPTO_SERVICE = Symbol("Services.Crypto.Contract");
-export const EMAIL_SERVICE = Symbol("Services.Email.Contract");
-export const SMS_SERVICE = Symbol("Services.SMS.Contract");
 export const JWT_SERVICE = Symbol("Services.JWT.Contract");

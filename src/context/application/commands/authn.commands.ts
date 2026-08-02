@@ -1,9 +1,16 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
+import {
+    NotificationTopicAction,
+    NotificationContentKind,
+    NotificationCategory,
+    PlatformService,
+    MessageTemplate,
+} from "@monadiam/shared";
 
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/domain/repositories";
-import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
-import { AuthenticationContextClass, IdentifierType, AccountStatus } from "~context/enums";
+import { AuthenticationContextClass, AccountStatus, KafkaTopic } from "~context/enums";
+import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { OAUTH_COMMANDS } from "~context/interface/commands";
 import { Exception } from "~common/exceptions";
@@ -41,10 +48,6 @@ export class AuthnCommands implements Commands.Authn.Contract {
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
-        @Inject(EMAIL_SERVICE)
-        private readonly emailService: CommonServices.Email.Contract,
-        @Inject(SMS_SERVICE)
-        private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
     public async password(props: Commands.Authn.Password.Props): Commands.Authn.Password.Result {
@@ -120,18 +123,12 @@ export class AuthnCommands implements Commands.Authn.Contract {
             key: otp,
         });
 
-        if (identifier.type === IdentifierType.EMAIL) {
-            await this.emailService.send({
-                to: identifier.value,
-                subject: "Sign-in code",
-                html: `Your sign-in code: ${otp}`,
-            });
-        } else {
-            await this.smsService.send({
-                to: identifier.value,
-                body: `Your sign-in code: ${otp}`,
-            });
-        }
+        await this.transactionalService.emit({
+            payload: this.notificationPayloadMapper({ account: identifier.account.id, otp }),
+            actionType: NotificationTopicAction.CREATE,
+            destinationTopic: KafkaTopic.NOTIFICATION,
+            resource: this.resource,
+        });
 
         return { message: `${this.dictionaryPath}.OTP_SENT` };
     }
@@ -236,5 +233,19 @@ export class AuthnCommands implements Commands.Authn.Contract {
         if (props.status === AccountStatus.PENDING) {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_VERIFIED` });
         }
+    }
+
+    public notificationPayloadMapper(
+        props: Commands.Authn.NotificationPayloadMapper.Props,
+    ): Commands.Authn.NotificationPayloadMapper.Result {
+        return {
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            template: MessageTemplate.LOGIN_OTP,
+            params: { otp: props.otp },
+            recipient: props.account,
+            language: "en",
+        };
     }
 }

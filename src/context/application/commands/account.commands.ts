@@ -1,12 +1,19 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccountTopicAction } from "@monadiam/shared";
 import { isEmail } from "class-validator";
+import {
+    NotificationTopicAction,
+    NotificationContentKind,
+    NotificationCategory,
+    AccountTopicAction,
+    PlatformService,
+    MessageTemplate,
+} from "@monadiam/shared";
 
 import { AccountSubject, IdentifierType, AccountStatus, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { HASHING_SERVICE, CRYPTO_SERVICE, EMAIL_SERVICE, SMS_SERVICE } from "~common/services";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/domain/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE } from "../services";
@@ -33,18 +40,21 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
-        @Inject(EMAIL_SERVICE)
-        private readonly emailService: CommonServices.Email.Contract,
-        @Inject(SMS_SERVICE)
-        private readonly smsService: CommonServices.SMS.Contract,
     ) {}
 
     public async signup(props: Commands.Account.Signup.Props): Commands.Account.Signup.Result {
         const hashedPassword = await this.hashingService.hash({ value: props.input.password });
         const type = isEmail(props.input.identifier) ? IdentifierType.EMAIL : IdentifierType.PHONE;
 
-        const account = await this.transactionalService.run({
+        const otp = this.cryptoService.generateOTP();
+
+        const account = await this.transactionalService.run<Entities.Account>({
             resource: this.resource,
+            outbox: {
+                payloadMapper: (result) => this.notificationPayloadMapper({ account: result.id, otp }),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 actionType: ActionType.SIGN_UP,
                 entityType: EntityType.ACCOUNT,
@@ -64,10 +74,10 @@ export class AccountCommands implements Commands.Account.Contract {
             },
         });
 
-        await this.sendOTP({
-            value: props.input.identifier,
-            account: account.id,
-            type,
+        await this.otpCacheService.set({
+            purpose: "verification",
+            value: account.id,
+            key: otp,
         });
 
         return { message: `${this.dictionaryPath}.SIGNED_UP` };
@@ -82,10 +92,19 @@ export class AccountCommands implements Commands.Account.Contract {
             throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
         }
 
-        await this.sendOTP({
-            account: identifier.account.id,
-            value: identifier.value,
-            type: identifier.type,
+        const otp = this.cryptoService.generateOTP();
+
+        await this.otpCacheService.set({
+            value: identifier.account.id,
+            purpose: "verification",
+            key: otp,
+        });
+
+        await this.transactionalService.emit({
+            payload: this.notificationPayloadMapper({ account: identifier.account.id, otp }),
+            actionType: NotificationTopicAction.CREATE,
+            destinationTopic: KafkaTopic.NOTIFICATION,
+            resource: this.resource,
         });
 
         return { message: `${this.dictionaryPath}.CODE_RESENT` };
@@ -106,15 +125,15 @@ export class AccountCommands implements Commands.Account.Contract {
 
         await this.transactionalService.run<Entities.Account>({
             resource: this.resource,
-            audit: {
-                entityType: EntityType.ACCOUNT,
-                actionType: ActionType.VERIFY,
-                ...props,
-            },
             outbox: {
                 payloadMapper: this.accountPayloadMapper.bind(this),
                 actionType: AccountTopicAction.CREATE,
                 destinationTopic: KafkaTopic.ACCOUNT,
+            },
+            audit: {
+                entityType: EntityType.ACCOUNT,
+                actionType: ActionType.VERIFY,
+                ...props,
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
@@ -208,26 +227,18 @@ export class AccountCommands implements Commands.Account.Contract {
         return { message: `${this.dictionaryPath}.RESTORED` };
     }
 
-    public async sendOTP(props: Commands.Account.SendOTP.Props): Commands.Account.SendOTP.Result {
-        const otp = this.cryptoService.generateOTP();
-        await this.otpCacheService.set({
-            purpose: "verification",
-            value: props.account,
-            key: otp,
-        });
-
-        if (props.type === IdentifierType.EMAIL) {
-            await this.emailService.send({
-                html: `Your verification code: ${otp}`,
-                subject: "Verify your account",
-                to: props.value,
-            });
-        } else {
-            await this.smsService.send({
-                to: props.value,
-                body: `Your verification code: ${otp}`,
-            });
-        }
+    public notificationPayloadMapper(
+        props: Commands.Account.NotificationPayloadMapper.Props,
+    ): Commands.Account.NotificationPayloadMapper.Result {
+        return {
+            template: MessageTemplate.ACCOUNT_VERIFICATION_OTP,
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            params: { otp: props.otp },
+            recipient: props.account,
+            language: "en",
+        };
     }
 
     public accountPayloadMapper(

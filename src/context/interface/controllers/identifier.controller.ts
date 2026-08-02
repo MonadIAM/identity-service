@@ -21,7 +21,6 @@ import { PermissionCode } from "~context/enums";
 import { IDENTIFIER_COMMANDS } from "../commands";
 import { IDENTIFIER_QUERIES } from "../queries";
 import {
-    ToggleNotificationsBodyDTO,
     TogglePublicContactBodyDTO,
     GetLookupListQueryDTO,
     GetLookupListBodyDTO,
@@ -39,7 +38,6 @@ import {
 
 const {
     IDENTIFIER_TOGGLE_PUBLIC_CONTACT,
-    IDENTIFIER_TOGGLE_NOTIFICATIONS,
     IDENTIFIER_READ_PERSONAL,
     IDENTIFIER_CREATE,
     IDENTIFIER_RESEND,
@@ -219,33 +217,6 @@ export class IdentifierController {
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Identifier.Verify.Result {
         return this.identifierCommands.verify({ context, actor, input });
-    }
-
-    @HttpCode(OK)
-    @Patch("toggle/notifications")
-    @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(IDENTIFIER_TOGGLE_NOTIFICATIONS)
-    @ApiOperation({
-        summary: "Toggle identifier notifications",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        BAD_REQUEST,
-        NOT_FOUND,
-        FORBIDDEN,
-        CONFLICT,
-    )
-    public toggleNotifications(
-        @Body() input: ToggleNotificationsBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
-        @Extract.Meta() context: Extract.Meta,
-    ): Commands.Identifier.ToggleNotifications.Result {
-        return this.identifierCommands.toggleNotifications({ context, actor, input });
     }
 
     @HttpCode(OK)

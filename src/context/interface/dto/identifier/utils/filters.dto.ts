@@ -47,12 +47,6 @@ export class DefaultFiltersDTO implements Adapters.Identifier.DefaultFilters {
     public isPublicContact?: boolean;
 
     @Expose()
-    @Validator.IsBoolean()
-    @Validator.IsOptional()
-    @ApiProperty({ required: false, type: Boolean })
-    public receiveNotifications?: boolean;
-
-    @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
     @Type(() => OrdinalFilterDTO)

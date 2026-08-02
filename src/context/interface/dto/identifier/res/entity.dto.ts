@@ -33,11 +33,6 @@ export class IdentifierDTO {
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    declare public receiveNotifications: boolean;
-
-    @Expose()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: true, type: Boolean })
     declare public isPublicContact: boolean;
 
     @Expose()

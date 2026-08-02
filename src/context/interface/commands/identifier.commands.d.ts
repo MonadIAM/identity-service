@@ -4,12 +4,11 @@ declare global {
     namespace Commands {
         namespace Identifier {
             interface InternalContract {
-                sendOTP(props: SendOTP.Props): SendOTP.Result;
+                notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
             }
 
             interface ControllerContract {
-                toggleNotifications(props: ToggleNotifications.Props): ToggleNotifications.Result;
-                togglePublicContact(props: TogglePublicContact.Props): ToggleNotifications.Result;
+                togglePublicContact(props: TogglePublicContact.Props): TogglePublicContact.Result;
                 verify(props: Verify.Props): Verify.Result;
                 create(props: Create.Props): Create.Result;
                 resend(props: Resend.Props): Resend.Pesult;
@@ -66,18 +65,6 @@ declare global {
                 type Result = Promise<MessageResult>;
             }
 
-            namespace ToggleNotifications {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        identifier: string;
-                    };
-                };
-
-                type Result = Promise<MessageResult>;
-            }
-
             namespace TogglePublicContact {
                 type Props = {
                     context: Extract.Meta;
@@ -90,14 +77,13 @@ declare global {
                 type Result = Promise<MessageResult>;
             }
 
-            namespace SendOTP {
+            namespace NotificationPayloadMapper {
                 type Props = {
-                    identifier: string;
-                    type: IdentifierType;
-                    value: string;
+                    account: string;
+                    otp: string;
                 };
 
-                type Result = Promise<void>;
+                type Result = Topics.Notification.Message["payload"];
             }
         }
     }

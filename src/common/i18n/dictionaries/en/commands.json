@@ -38,7 +38,6 @@
     "CODE_RESENT": "Verification code successfully resent.",
     "INVALID_OR_EXPIRED_CODE": "The verification code is invalid or expired.",
     "VERIFIED": "Identifier successfully verified.",
-    "NOTIFICATIONS_TOGGLED": "Identifier notifications successfully toggled.",
     "PUBLIC_CONTACT_TOGGLED": "Identifier public contact visibility successfully toggled.",
     "PURGED": "Identifier successfully deleted."
   },

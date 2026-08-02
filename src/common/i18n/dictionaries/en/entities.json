@@ -16,7 +16,6 @@
     "SYSTEM_MANAGED_IMMUTABLE": "A system-managed Application cannot be modified through this operation."
   },
   "identifier": {
-    "NOTIFICATIONS_EMAIL_ONLY": "Notifications can only be toggled for email identifiers.",
     "PUBLIC_CONTACT_NOT_APPLICABLE": "Public contact visibility is not applicable to this identifier.",
     "PUBLIC_CONTACT_REQUIRES_VERIFICATION": "Public contact visibility requires a verified identifier.",
     "ALREADY_VERIFIED": "The identifier is already verified."

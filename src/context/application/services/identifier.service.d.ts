@@ -1,7 +1,6 @@
 declare namespace Services {
     namespace Identifier {
         interface Contract {
-            toggleNotifications(props: ToggleNotifications.Props): ToggleNotifications.Result;
             togglePublicContact(props: TogglePublicContact.Props): TogglePublicContact.Result;
             create(props: Create.Props): Create.Result;
             verify(props: Verify.Props): Verify.Result;
@@ -36,16 +35,6 @@ declare namespace Services {
         namespace Verify {
             type Props = {
                 transaction: ORM.EntityManager;
-                input: {
-                    identifier: Entities.Identifier;
-                };
-            };
-
-            type Result = void;
-        }
-
-        namespace ToggleNotifications {
-            type Props = {
                 input: {
                     identifier: Entities.Identifier;
                 };

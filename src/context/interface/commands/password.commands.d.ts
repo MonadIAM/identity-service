@@ -1,6 +1,7 @@
 declare namespace Commands {
     namespace Password {
         interface InternalContract {
+            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
             findMatchingRecoveryCode(props: FindMatchingRecoveryCode.Props): FindMatchingRecoveryCode.Result;
             checkPasswordHistory(props: CheckPasswordHistory.Props): CheckPasswordHistory.Result;
         }
@@ -78,6 +79,15 @@ declare namespace Commands {
             };
 
             type Result = Promise<Nullable<Entities.RecoveryCode>>;
+        }
+
+        namespace NotificationPayloadMapper {
+            type Props = {
+                account: string;
+                otp: string;
+            };
+
+            type Result = Topics.Notification.Message["payload"];
         }
     }
 }

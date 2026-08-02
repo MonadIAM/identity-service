@@ -42,7 +42,6 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
 
         isVerified: { type: "boolean" },
         isPublicContact: { type: "boolean" },
-        receiveNotifications: { type: "boolean" },
 
         account: {
             kind: "m:1",

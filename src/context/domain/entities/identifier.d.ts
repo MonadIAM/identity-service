@@ -19,11 +19,9 @@ declare global {
 
                 isVerified: boolean;
                 isPublicContact: boolean;
-                receiveNotifications: boolean;
 
                 account: Entities.Account;
 
-                toggleNotifications(): void;
                 togglePublicContact(): void;
                 verify(): void;
             }

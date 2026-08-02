@@ -34,13 +34,6 @@ export class IdentifierService implements Services.Identifier.Contract {
         input.identifier.verify();
     }
 
-    public toggleNotifications(
-        props: Services.Identifier.ToggleNotifications.Props,
-    ): Services.Identifier.ToggleNotifications.Result {
-        const { input } = props;
-        input.identifier.toggleNotifications();
-    }
-
     public togglePublicContact(
         props: Services.Identifier.TogglePublicContact.Props,
     ): Services.Identifier.TogglePublicContact.Result {

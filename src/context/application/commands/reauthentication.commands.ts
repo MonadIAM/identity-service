@@ -59,15 +59,15 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
         }
 
         await this.transactionalService.emit({
-            resource: this.resource,
+            payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
+            destinationTopic: KafkaTopic.REAUTHENTICATION,
+            actionType: ReauthenticationTopicAction.GRANT,
             audit: {
                 entityType: EntityType.SESSION,
                 actionType: ActionType.GRANT,
                 ...props,
             },
-            destinationTopic: KafkaTopic.REAUTHENTICATION,
-            actionType: ReauthenticationTopicAction.GRANT,
-            payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
+            resource: this.resource,
         });
 
         return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
@@ -76,8 +76,20 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
     public async bySecondFactor(
         props: Commands.Reauthentication.BySecondFactor.Props,
     ): Commands.Reauthentication.BySecondFactor.Result {
+        const expiresAt = Date.now() + this.ttl * 1e3;
+
         await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: () => ({ session: props.session, expiresAt }),
+                destinationTopic: KafkaTopic.REAUTHENTICATION,
+                actionType: ReauthenticationTopicAction.GRANT,
+            },
+            audit: {
+                entityType: EntityType.SESSION,
+                actionType: ActionType.GRANT,
+                ...props,
+            },
             execute: async (transaction) => {
                 const factor = await this.secondFactorRepository.findUnique({
                     where: {
@@ -105,18 +117,6 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
                     this.secondFactorService.rewrap({ input: { factor, secret: ciphertext }, transaction });
                 }
             },
-        });
-
-        await this.transactionalService.emit({
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.SESSION,
-                actionType: ActionType.GRANT,
-                ...props,
-            },
-            destinationTopic: KafkaTopic.REAUTHENTICATION,
-            actionType: ReauthenticationTopicAction.GRANT,
-            payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
         });
 
         return { message: `${this.dictionaryPath}.REAUTHENTICATED` };

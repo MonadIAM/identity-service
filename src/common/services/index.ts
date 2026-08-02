@@ -5,8 +5,6 @@ import { GoogleOAuthService } from "./google-oauth.service";
 import { GitHubOAuthService } from "./github-oauth.service";
 import { HashingService } from "./hashing.service";
 import { CryptoService } from "./crypto.service";
-import { EmailService } from "./email.service";
-import { SMSService } from "./sms.service";
 import { JWTService } from "./jwt.service";
 import {
     VAULT_TRANSIT_SERVICE,
@@ -14,8 +12,6 @@ import {
     GITHUB_OAUTH_SERVICE,
     HASHING_SERVICE,
     CRYPTO_SERVICE,
-    EMAIL_SERVICE,
-    SMS_SERVICE,
     JWT_SERVICE,
 } from "./tokens";
 
@@ -41,26 +37,9 @@ export const COMMON_SERVICES: ClassProvider[] = [
         useClass: CryptoService,
     },
     {
-        provide: EMAIL_SERVICE,
-        useClass: EmailService,
-    },
-    {
-        provide: SMS_SERVICE,
-        useClass: SMSService,
-    },
-    {
         provide: JWT_SERVICE,
         useClass: JWTService,
     },
 ];
 
-export {
-    VAULT_TRANSIT_SERVICE,
-    GOOGLE_OAUTH_SERVICE,
-    GITHUB_OAUTH_SERVICE,
-    HASHING_SERVICE,
-    CRYPTO_SERVICE,
-    EMAIL_SERVICE,
-    SMS_SERVICE,
-    JWT_SERVICE,
-};
+export { VAULT_TRANSIT_SERVICE, GOOGLE_OAUTH_SERVICE, GITHUB_OAUTH_SERVICE, HASHING_SERVICE, CRYPTO_SERVICE, JWT_SERVICE };
