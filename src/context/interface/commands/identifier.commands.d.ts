@@ -5,6 +5,9 @@ declare global {
         namespace Identifier {
             interface InternalContract {
                 notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
+                identifierPurgedPayloadMapper(
+                    props: IdentifierPurgedPayloadMapper.Props,
+                ): IdentifierPurgedPayloadMapper.Result;
             }
 
             interface ControllerContract {
@@ -83,7 +86,15 @@ declare global {
                     otp: string;
                 };
 
-                type Result = Topics.Notification.Message["payload"];
+                type Result = Topics.Notification.CreateMessage["payload"];
+            }
+
+            namespace IdentifierPurgedPayloadMapper {
+                type Props = {
+                    account: string;
+                };
+
+                type Result = Topics.Notification.CreateMessage["payload"];
             }
         }
     }

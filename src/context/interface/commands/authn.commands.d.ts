@@ -74,7 +74,7 @@ declare namespace Commands {
                 otp: string;
             };
 
-            type Result = Topics.Notification.Message["payload"];
+            type Result = Topics.Notification.CreateMessage["payload"];
         }
     }
 }

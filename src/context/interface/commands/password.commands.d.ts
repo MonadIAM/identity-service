@@ -1,9 +1,16 @@
 declare namespace Commands {
     namespace Password {
         interface InternalContract {
+            passwordChangedPayloadMapper(props: PasswordChangedPayloadMapper.Props): PasswordChangedPayloadMapper.Result;
             notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
             findMatchingRecoveryCode(props: FindMatchingRecoveryCode.Props): FindMatchingRecoveryCode.Result;
             checkPasswordHistory(props: CheckPasswordHistory.Props): CheckPasswordHistory.Result;
+            passwordChangedViaRecoveryCodePayloadMapper(
+                props: PasswordChangedViaRecoveryCodePayloadMapper.Props,
+            ): PasswordChangedViaRecoveryCodePayloadMapper.Result;
+            passwordChangedViaOtpPayloadMapper(
+                props: PasswordChangedViaOtpPayloadMapper.Props,
+            ): PasswordChangedViaOtpPayloadMapper.Result;
         }
 
         interface ControllerContract {
@@ -87,7 +94,31 @@ declare namespace Commands {
                 otp: string;
             };
 
-            type Result = Topics.Notification.Message["payload"];
+            type Result = Topics.Notification.CreateMessage["payload"];
+        }
+
+        namespace PasswordChangedPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+        }
+
+        namespace PasswordChangedViaOtpPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+        }
+
+        namespace PasswordChangedViaRecoveryCodePayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
         }
     }
 }

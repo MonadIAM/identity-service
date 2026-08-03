@@ -46,12 +46,17 @@ export class PasswordCommands implements Commands.Password.Contract {
     }
 
     public async change(props: Commands.Password.Change.Props): Commands.Password.Change.Result {
-        return await this.transactionalService.run({
+        return await this.transactionalService.run<MessageResult>({
             resource: this.resource,
             audit: {
                 entityType: EntityType.PASSWORD,
                 actionType: ActionType.UPDATE,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: this.passwordChangedPayloadMapper.bind(this, { account: props.actor }),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
@@ -130,6 +135,11 @@ export class PasswordCommands implements Commands.Password.Contract {
                 actionType: ActionType.RESET,
                 ...props,
             },
+            outbox: {
+                payloadMapper: this.passwordChangedViaOtpPayloadMapper.bind(this, { account: cachedAccount }),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             execute: async (transaction) => {
                 await this.checkPasswordHistory({ account: cachedAccount, password: props.input.password });
 
@@ -158,12 +168,12 @@ export class PasswordCommands implements Commands.Password.Contract {
     public async resetByRecoveryCode(
         props: Commands.Password.ResetByRecoveryCode.Props,
     ): Commands.Password.ResetByRecoveryCode.Result {
-        const identifier = await this.identifierRepository.findUniqueOrThrow({
+        const { account } = await this.identifierRepository.findUniqueOrThrow({
             options: { populate: ["account.password", "account.recoveryCodes"] },
             where: { value: props.input.identifier },
         });
 
-        const recoveryCodes = identifier.account.recoveryCodes.getItems().filter(({ usedAt }) => !usedAt);
+        const recoveryCodes = account.recoveryCodes.getItems().filter(({ usedAt }) => !usedAt);
 
         const matched = await this.findMatchingRecoveryCode({ plaintext: props.input.code, codes: recoveryCodes });
 
@@ -171,27 +181,32 @@ export class PasswordCommands implements Commands.Password.Contract {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_RECOVERY_CODE` });
         }
 
-        return this.transactionalService.run({
+        return this.transactionalService.run<MessageResult>({
             resource: this.resource,
             audit: {
                 entityType: EntityType.PASSWORD,
                 actionType: ActionType.RESET,
                 ...props,
             },
+            outbox: {
+                payloadMapper: this.passwordChangedViaRecoveryCodePayloadMapper.bind(this, { account: account.id }),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             execute: async (transaction) => {
-                await this.checkPasswordHistory({ account: identifier.account.id, password: props.input.password });
+                await this.checkPasswordHistory({ account: account.id, password: props.input.password });
 
                 const newHash = await this.hashingService.hash({ value: props.input.password });
 
-                if (!identifier.account.password) {
+                if (!account.password) {
                     throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_PASSWORD_SET` });
                 }
 
-                transaction.merge(identifier.account);
+                transaction.merge(account);
                 matched.use();
 
                 this.passwordService.rotate({
-                    input: { password: identifier.account.password, newHash },
+                    input: { password: account.password, newHash },
                     transaction,
                 });
 
@@ -235,6 +250,45 @@ export class PasswordCommands implements Commands.Password.Contract {
         );
 
         return results.find(({ isValid }) => isValid)?.entry ?? null;
+    }
+
+    public passwordChangedPayloadMapper(
+        props: Commands.Password.PasswordChangedPayloadMapper.Props,
+    ): Commands.Password.PasswordChangedPayloadMapper.Result {
+        return {
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            template: MessageTemplate.PASSWORD_CHANGED,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            recipient: props.account,
+            language: "en",
+        };
+    }
+
+    public passwordChangedViaOtpPayloadMapper(
+        props: Commands.Password.PasswordChangedViaOtpPayloadMapper.Props,
+    ): Commands.Password.PasswordChangedViaOtpPayloadMapper.Result {
+        return {
+            template: MessageTemplate.PASSWORD_CHANGED_VIA_OTP,
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            recipient: props.account,
+            language: "en",
+        };
+    }
+
+    public passwordChangedViaRecoveryCodePayloadMapper(
+        props: Commands.Password.PasswordChangedViaRecoveryCodePayloadMapper.Props,
+    ): Commands.Password.PasswordChangedViaRecoveryCodePayloadMapper.Result {
+        return {
+            template: MessageTemplate.PASSWORD_CHANGED_VIA_RECOVERY_CODE,
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            recipient: props.account,
+            language: "en",
+        };
     }
 
     public notificationPayloadMapper(

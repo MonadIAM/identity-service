@@ -1,5 +1,14 @@
 declare namespace Commands {
     namespace SecondFactor {
+        interface InternalContract {
+            secondFactorEnabledPayloadMapper(
+                props: SecondFactorEnabledPayloadMapper.Props,
+            ): SecondFactorEnabledPayloadMapper.Result;
+            secondFactorResetPayloadMapper(
+                props: SecondFactorResetPayloadMapper.Props,
+            ): SecondFactorResetPayloadMapper.Result;
+        }
+
         interface ControllerContract {
             create(props: Create.Props): Create.Result;
             verify(props: Verify.Props): Verify.Result;
@@ -7,7 +16,7 @@ declare namespace Commands {
             reset(props: Reset.Props): Reset.Result;
         }
 
-        interface Contract extends ControllerContract {}
+        interface Contract extends InternalContract, ControllerContract {}
 
         namespace Create {
             type Props = {
@@ -63,6 +72,22 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+        }
+
+        namespace SecondFactorEnabledPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+        }
+
+        namespace SecondFactorResetPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
         }
     }
 }

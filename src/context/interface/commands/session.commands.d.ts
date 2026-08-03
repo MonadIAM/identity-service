@@ -6,6 +6,7 @@ declare namespace Commands {
         }
 
         interface InternalContract {
+            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
             blacklistPayloadMapper(props: BlacklistPayloadMapper.Props): BlacklistPayloadMapper.Result;
         }
 
@@ -63,6 +64,14 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+        }
+
+        namespace NotificationPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
         }
 
         namespace BlacklistPayloadMapper {

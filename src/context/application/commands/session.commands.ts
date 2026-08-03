@@ -1,7 +1,14 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { BlacklistTopicAction } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
+import {
+    NotificationContentKind,
+    NotificationTopicAction,
+    NotificationCategory,
+    BlacklistTopicAction,
+    PlatformService,
+    MessageTemplate,
+} from "@monadiam/shared";
 
 import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 import { EntityType, KafkaTopic, ActionType, AccountStatus } from "~context/enums";
@@ -46,11 +53,18 @@ export class SessionCommands implements Commands.Session.Contract {
                 context: props.context,
                 input: props.input,
             },
-            outbox: {
-                payloadMapper: this.blacklistPayloadMapper.bind(this),
-                destinationTopic: KafkaTopic.BLACKLIST,
-                actionType: BlacklistTopicAction.ADD,
-            },
+            outbox: [
+                {
+                    payloadMapper: this.blacklistPayloadMapper.bind(this),
+                    destinationTopic: KafkaTopic.BLACKLIST,
+                    actionType: BlacklistTopicAction.ADD,
+                },
+                {
+                    payloadMapper: this.notificationPayloadMapper.bind(this, { account: props.input.account }),
+                    destinationTopic: KafkaTopic.NOTIFICATION,
+                    actionType: NotificationTopicAction.CREATE,
+                },
+            ],
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     where: { id: props.input.account },
@@ -257,6 +271,19 @@ export class SessionCommands implements Commands.Session.Contract {
         });
 
         return { message: `${this.dictionaryPath}.REVOKED_ALL` };
+    }
+
+    public notificationPayloadMapper(
+        props: Commands.Session.NotificationPayloadMapper.Props,
+    ): Commands.Session.NotificationPayloadMapper.Result {
+        return {
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            template: MessageTemplate.LOGIN_ALERT,
+            recipient: props.account,
+            language: "en",
+        };
     }
 
     public blacklistPayloadMapper(

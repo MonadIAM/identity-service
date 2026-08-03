@@ -1,10 +1,14 @@
 declare namespace Commands {
     namespace RecoveryCode {
+        interface InternalContract {
+            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
+        }
+
         interface ControllerContract {
             regenerate(props: Regenerate.Props): Regenerate.Result;
         }
 
-        interface Contract extends ControllerContract {}
+        interface Contract extends InternalContract, ControllerContract {}
 
         namespace Regenerate {
             type Props = {
@@ -17,6 +21,14 @@ declare namespace Commands {
                     codes: string[];
                 }
             >;
+        }
+
+        namespace NotificationPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
         }
     }
 }

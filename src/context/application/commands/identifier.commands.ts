@@ -170,12 +170,17 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     }
 
     public async purge(props: Commands.Identifier.Purge.Props): Commands.Identifier.Purge.Result {
-        await this.transactionalService.run({
+        await this.transactionalService.run<Entities.Identifier>({
             resource: this.resource,
             audit: {
                 entityType: EntityType.IDENTIFIER,
                 actionType: ActionType.PURGE,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: this.identifierPurgedPayloadMapper.bind(this, { account: props.actor }),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: async (transaction) => {
                 const identifier = await this.identifierRepository.findUniqueOrThrow({
@@ -191,10 +196,25 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                     input: { identifier, account: props.actor },
                     transaction,
                 });
+
+                return identifier;
             },
         });
 
         return { message: `${this.dictionaryPath}.PURGED` };
+    }
+
+    public identifierPurgedPayloadMapper(
+        props: Commands.Identifier.IdentifierPurgedPayloadMapper.Props,
+    ): Commands.Identifier.IdentifierPurgedPayloadMapper.Result {
+        return {
+            sourceService: PlatformService.IDENTITY_SERVICE,
+            template: MessageTemplate.IDENTIFIER_PURGED,
+            category: NotificationCategory.SECURITY,
+            kind: NotificationContentKind.TEMPLATE,
+            recipient: props.account,
+            language: "en",
+        };
     }
 
     public notificationPayloadMapper(
