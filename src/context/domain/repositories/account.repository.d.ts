@@ -3,10 +3,38 @@ import { AccountStatus } from "~context/enums";
 declare global {
     namespace Repositories {
         namespace Account {
-            interface Contract extends Repositories.Base.Contract<Entities.Account, Adapters.Account.Types> {
-                findExpiredInactive(props: FindExpiredInactive.Props): FindExpiredInactive.Result;
-                findExpiredPending(props: FindExpiredPending.Props): FindExpiredPending.Result;
-                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+            interface Contract extends PublicContract {}
+
+            interface PublicContract extends Repositories.Base.Contract<Entities.Account, Adapters.Account.Types> {
+                findExpiredInactive: FindExpiredInactive.Signature;
+                findExpiredPending: FindExpiredPending.Signature;
+                getLookupList: GetLookupList.Signature;
+            }
+
+            interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "getLookupList" | "findMany"> {}
+
+            namespace FindExpiredInactive {
+                type Props = {
+                    expirationDate: Date;
+                    batchSize: number;
+                    transaction?: ORM.EntityManager;
+                };
+
+                type Result = Promise<Entities.Account[]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace FindExpiredPending {
+                type Props = {
+                    expirationDate: Date;
+                    batchSize: number;
+                    transaction?: ORM.EntityManager;
+                };
+
+                type Result = Promise<Entities.Account[]>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace GetLookupList {
@@ -14,7 +42,7 @@ declare global {
                     id: string;
                     status: AccountStatus;
                     displayName: string;
-                    identifier: string | null;
+                    identifier: Nullable<string>;
                 };
 
                 type CountRow = {
@@ -27,26 +55,8 @@ declare global {
                 };
 
                 type Result = Promise<[Row[], number]>;
-            }
 
-            namespace FindExpiredPending {
-                type Props = {
-                    expirationDate: Date;
-                    batchSize: number;
-                    transaction?: ORM.EntityManager;
-                };
-
-                type Result = Promise<Entities.Account[]>;
-            }
-
-            namespace FindExpiredInactive {
-                type Props = {
-                    expirationDate: Date;
-                    batchSize: number;
-                    transaction?: ORM.EntityManager;
-                };
-
-                type Result = Promise<Entities.Account[]>;
+                type Signature = (props: Props) => Result;
             }
         }
     }

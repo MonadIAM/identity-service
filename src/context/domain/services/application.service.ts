@@ -11,7 +11,7 @@ export class ApplicationService implements Services.Application.Contract {
 
     public constructor(
         @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.Contract,
+        private readonly applicationRepository: Repositories.Application.PublicContract,
     ) {}
 
     public async create(props: Services.Application.Create.Props): Services.Application.Create.Result {

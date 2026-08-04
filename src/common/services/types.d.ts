@@ -48,57 +48,21 @@ declare global {
     }
 
     namespace CommonServices {
-        namespace Hashing {
-            type Options = HashOptions;
-
-            interface Contract {
-                verifyAndUpgrade(props: VerifyAndUpgrade.Props): Promise<VerifyAndUpgrade.Result>;
-                verify(props: Verify): Promise<boolean>;
-                hash(props: Hash): Promise<string>;
-            }
-
-            type Hash = {
-                value: string;
-            };
-
-            type Verify = {
-                storedHash: string;
-                value: string;
-            };
-
-            namespace VerifyAndUpgrade {
-                type Props = {
-                    storedHash: string;
-                    value: string;
-                };
-
-                type Result = {
-                    upgradedHash?: string;
-                    isValid: boolean;
-                };
-            }
-        }
-
-        namespace Crypto {
-            interface Contract {
-                generateRecoveryCodes(count?: number): string[];
-                generateToken(bytes?: number): string;
-                generateOTP(length?: number): string;
-                hashToken(token: string): string;
-                verifyCodeChallenge(verifier: string, challenge: string): boolean;
-                generateRecoveryCode(): string;
-            }
-        }
-
         namespace VaultTransit {
+            type KeyVersion = {
+                publicKey: string;
+                createdAt: string;
+                version: number;
+            };
+
             interface Contract {
-                getLatestVersion(props: GetLatestVersion.Props): GetLatestVersion.Result;
-                getKey(props: GetKey.Props): GetKey.Result;
-                decrypt(props: Decrypt.Props): Decrypt.Result;
-                encrypt(props: Encrypt.Props): Encrypt.Result;
-                rewrap(props: Rewrap.Props): Rewrap.Result;
-                sign(props: Sign.Props): Sign.Result;
-                hmac(props: Hmac.Props): Hmac.Result;
+                getLatestVersion: GetLatestVersion.Signature;
+                decrypt: Decrypt.Signature;
+                encrypt: Encrypt.Signature;
+                getKey: GetKey.Signature;
+                rewrap: Rewrap.Signature;
+                sign: Sign.Signature;
+                hmac: Hmac.Signature;
             }
 
             namespace GetLatestVersion {
@@ -107,6 +71,8 @@ declare global {
                 };
 
                 type Result = Promise<number>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace GetKey {
@@ -120,6 +86,8 @@ declare global {
                     name: string;
                     type: string;
                 }>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Sign {
@@ -133,6 +101,8 @@ declare global {
                     signature: string;
                     version: number;
                 }>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Hmac {
@@ -142,6 +112,8 @@ declare global {
                 };
 
                 type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Encrypt {
@@ -154,6 +126,8 @@ declare global {
                     ciphertext: string;
                     version: number;
                 }>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Decrypt {
@@ -163,6 +137,8 @@ declare global {
                 };
 
                 type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Rewrap {
@@ -175,13 +151,122 @@ declare global {
                     ciphertext: string;
                     version: number;
                 }>;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
+
+        namespace Hashing {
+            type Options = HashOptions;
+
+            interface Contract {
+                verifyAndUpgrade: VerifyAndUpgrade.Signature;
+                verify: Verify.Signature;
+                hash: Hash.Signature;
             }
 
-            type KeyVersion = {
-                publicKey: string;
-                createdAt: string;
-                version: number;
-            };
+            namespace VerifyAndUpgrade {
+                type Props = {
+                    storedHash: string;
+                    value: string;
+                };
+
+                type Result = Promise<{
+                    upgradedHash?: string;
+                    isValid: boolean;
+                }>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Verify {
+                type Props = {
+                    storedHash: string;
+                    value: string;
+                };
+
+                type Result = Promise<boolean>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Hash {
+                type Props = {
+                    value: string;
+                };
+
+                type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
+
+        namespace Crypto {
+            interface Contract {
+                generateRecoveryCodes: GenerateRecoveryCodes.Signature;
+                generateRecoveryCode: GenerateRecoveryCode.Signature;
+                verifyCodeChallenge: VerifyCodeChallenge.Signature;
+                generateToken: GenerateToken.Signature;
+                generateOTP: GenerateOTP.Signature;
+                hashToken: HashToken.Signature;
+            }
+
+            namespace GenerateRecoveryCodes {
+                type Props = {
+                    count?: number;
+                };
+
+                type Result = string[];
+
+                type Signature = (props?: Props) => Result;
+            }
+
+            namespace GenerateRecoveryCode {
+                type Result = string;
+
+                type Signature = () => Result;
+            }
+
+            namespace VerifyCodeChallenge {
+                type Props = {
+                    challenge: string;
+                    verifier: string;
+                };
+
+                type Result = boolean;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace GenerateToken {
+                type Props = {
+                    bytes?: number;
+                };
+
+                type Result = string;
+
+                type Signature = (props?: Props) => Result;
+            }
+
+            namespace GenerateOTP {
+                type Props = {
+                    length?: number;
+                };
+
+                type Result = string;
+
+                type Signature = (props?: Props) => Result;
+            }
+
+            namespace HashToken {
+                type Props = {
+                    token: string;
+                };
+
+                type Result = string;
+
+                type Signature = (props: Props) => Result;
+            }
         }
 
         namespace JWT {
@@ -194,14 +279,14 @@ declare global {
             }
 
             interface Contract extends InternalContract {
+                computePairwiseSubject(props: ComputePairwiseSubject.Props): Promise<string>;
+                signIdToken(payload: JWTPayload, props: SignIdToken.Props): Promise<string>;
                 signRefreshToken(payload: JWTPayload): Promise<string>;
                 signAccessToken(payload: JWTPayload): Promise<string>;
-                signIdToken(payload: JWTPayload, props: SignIdToken.Props): Promise<string>;
                 verifyRefresh(token: string): Promise<JWTPayload>;
-                verifyAccess(token: string): Promise<JWTPayload>;
                 verifyIdToken(token: string): Promise<JWTPayload>;
+                verifyAccess(token: string): Promise<JWTPayload>;
                 getJWKS(name?: string): Promise<GetJWKS>;
-                computePairwiseSubject(props: ComputePairwiseSubject.Props): Promise<string>;
             }
 
             type Failure = {

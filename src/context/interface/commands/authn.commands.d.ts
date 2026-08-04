@@ -1,18 +1,77 @@
 declare namespace Commands {
     namespace Authn {
+        interface Contract extends InternalContract, ControllerContract {}
+
         interface InternalContract {
-            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
-            assertCanAuthenticate(props: AssertCanAuthenticate.Props): AssertCanAuthenticate.Result;
+            notificationPayloadMapper: NotificationPayloadMapper.Signature;
+            assertCanAuthenticate: AssertCanAuthenticate.Signature;
+        }
+
+        namespace NotificationPayloadMapper {
+            type Props = {
+                account: string;
+                otp: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace AssertCanAuthenticate {
+            type Props = Entities.Account;
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         interface ControllerContract {
-            verifySecondFactor(props: VerifySecondFactor.Props): VerifySecondFactor.Result;
-            requestOTP(props: RequestOTP.Props): RequestOTP.Result;
-            verifyOTP(props: VerifyOTP.Props): VerifyOTP.Result;
-            password(props: Password.Props): Password.Result;
+            verifySecondFactor: VerifySecondFactor.Signature;
+            requestOTP: RequestOTP.Signature;
+            verifyOTP: VerifyOTP.Signature;
+            password: Password.Signature;
         }
 
-        interface Contract extends InternalContract, ControllerContract {}
+        namespace VerifySecondFactor {
+            type Props = {
+                token?: string;
+                input: {
+                    code: string;
+                    id: string;
+                };
+            };
+
+            type Result = Promise<MessageResult & Awaited<Commands.OAuth.CompleteAuthorization.Result>>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace RequestOTP {
+            type Props = {
+                input: {
+                    authorizationRequest: string;
+                    identifier: string;
+                };
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace VerifyOTP {
+            type Props = {
+                input: {
+                    authorizationRequest: string;
+                    code: string;
+                };
+            };
+
+            type Result = Promise<MessageResult & Awaited<Commands.OAuth.CompleteAuthorization.Result>>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         namespace Password {
             type Props = {
@@ -27,54 +86,8 @@ declare namespace Commands {
                 MessageResult &
                     (Awaited<Commands.OAuth.CompleteAuthorization.Result> | { pendingToken: string; requires2FA: true })
             >;
-        }
 
-        namespace RequestOTP {
-            type Props = {
-                input: {
-                    authorizationRequest: string;
-                    identifier: string;
-                };
-            };
-
-            type Result = Promise<MessageResult>;
-        }
-
-        namespace VerifyOTP {
-            type Props = {
-                input: {
-                    authorizationRequest: string;
-                    code: string;
-                };
-            };
-
-            type Result = Promise<MessageResult & Awaited<Commands.OAuth.CompleteAuthorization.Result>>;
-        }
-
-        namespace VerifySecondFactor {
-            type Props = {
-                token?: string;
-                input: {
-                    code: string;
-                    id: string;
-                };
-            };
-
-            type Result = Promise<MessageResult & Awaited<Commands.OAuth.CompleteAuthorization.Result>>;
-        }
-
-        namespace AssertCanAuthenticate {
-            type Props = Entities.Account;
-            type Result = void;
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = {
-                account: string;
-                otp: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
+            type Signature = (props: Props) => Result;
         }
     }
 }

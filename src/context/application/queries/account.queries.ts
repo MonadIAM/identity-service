@@ -14,7 +14,7 @@ export class AccountQueries implements Queries.Account.Contract {
 
     public constructor(
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.QueryContract,
     ) {}
 
     public findMe(props: Queries.Account.FindMe.Props): Queries.Account.FindMe.Result {

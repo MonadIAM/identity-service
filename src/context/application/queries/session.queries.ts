@@ -6,7 +6,7 @@ import { SESSION_REPOSITORY } from "~context/domain/repositories";
 export class SessionQueries implements Queries.Session.Contract {
     public constructor(
         @Inject(SESSION_REPOSITORY)
-        private readonly sessionRepository: Repositories.Session.Contract,
+        private readonly sessionRepository: Repositories.Session.QueryContract,
     ) {}
 
     public getCurrent(props: Queries.Session.GetCurrent.Props): Queries.Session.GetCurrent.Result {

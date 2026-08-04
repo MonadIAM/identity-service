@@ -1,5 +1,9 @@
 declare namespace Repositories {
     namespace SecondFactor {
-        interface Contract extends Repositories.Base.Contract<Entities.SecondFactor, Adapters.SecondFactor.Types> {}
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<Entities.SecondFactor, Adapters.SecondFactor.Types> {}
+
+        interface QueryContract extends Pick<PublicContract, "findUnique" | "findMany"> {}
     }
 }

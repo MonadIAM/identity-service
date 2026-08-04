@@ -1,29 +1,103 @@
 declare namespace Commands {
     namespace Application {
-        interface ControllerContract {
-            create(props: Create.Props): Create.Result;
-            update(props: Update.Props): Update.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            restore(props: Restore.Props): Restore.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends InternalContract, ControllerContract, ConsumerContract {}
+
+        interface InternalContract {
+            interfaceClientOutboxPayloadMapper: InterfaceClientOutboxPayloadMapper.Signature;
+            serviceClientOutboxPayloadMapper: ServiceClientOutboxPayloadMapper.Signature;
+        }
+
+        namespace InterfaceClientOutboxPayloadMapper {
+            type Props = {
+                entities: Entities.Application[];
+                isRevoked: boolean;
+            };
+
+            type Result = {
+                application: string;
+                realm: string;
+                isRevoked: boolean;
+                id: string;
+            }[];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ServiceClientOutboxPayloadMapper {
+            type Props = {
+                entities: Entities.Application[];
+            };
+
+            type Result = {
+                application: string;
+                code: string;
+                id: string;
+            }[];
+
+            type Signature = (props: Props) => Result;
         }
 
         interface ConsumerContract {
-            revokeRealm(props: RevokeRealm.Props): RevokeRealm.Result;
-            restoreRealm(props: RestoreRealm.Props): RestoreRealm.Result;
-            purgeRealm(props: PurgeRealm.Props): PurgeRealm.Result;
+            restoreRealm: RestoreRealm.Signature;
+            revokeRealm: RevokeRealm.Signature;
+            purgeRealm: PurgeRealm.Signature;
         }
 
-        interface InternalContract {
-            interfaceClientOutboxPayloadMapper(
-                props: InterfaceClientOutboxPayloadMapper.Props,
-            ): InterfaceClientOutboxPayloadMapper.Result;
-            serviceClientOutboxPayloadMapper(
-                entities: ServiceClientOutboxPayloadMapper.Props,
-            ): ServiceClientOutboxPayloadMapper.Result;
+        namespace RestoreRealm {
+            type Props = {
+                version: number;
+                realm: string;
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        interface Contract extends InternalContract, ControllerContract, ConsumerContract {}
+        namespace RevokeRealm {
+            type Props = {
+                version: number;
+                realm: string;
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace PurgeRealm {
+            type Props = {
+                version: number;
+                realm: string;
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        interface ControllerContract {
+            restore: Restore.Signature;
+            create: Create.Signature;
+            update: Update.Signature;
+            revoke: Revoke.Signature;
+            purge: Purge.Signature;
+        }
+
+        namespace Restore {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                realm: string;
+                input: {
+                    applications: string[];
+                };
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         namespace Create {
             type Props = {
@@ -37,6 +111,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Update {
@@ -52,6 +128,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
@@ -65,19 +143,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace Restore {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-                realm: string;
-                input: {
-                    applications: string[];
-                };
-            };
-
-            type Result = Promise<MessageResult>;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -91,59 +158,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace RevokeRealm {
-            type Props = {
-                version: number;
-                realm: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace RestoreRealm {
-            type Props = {
-                version: number;
-                realm: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace PurgeRealm {
-            type Props = {
-                version: number;
-                realm: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace InterfaceClientOutboxPayloadMapper {
-            type Props = {
-                entities: Entities.Application[];
-                isRevoked: boolean;
-            };
-
-            type Result = {
-                application: string;
-                realm: string;
-                isRevoked: boolean;
-                id: string;
-            }[];
-        }
-
-        namespace ServiceClientOutboxPayloadMapper {
-            type Props = {
-                entities: Entities.Application[];
-            };
-
-            type Result = {
-                application: string;
-                code: string;
-                id: string;
-            }[];
+            type Signature = (props: Props) => Result;
         }
     }
 }

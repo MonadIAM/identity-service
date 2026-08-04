@@ -1,18 +1,10 @@
 declare namespace Queries {
     namespace SecondFactor {
-        interface ControllerContract {
-            getQRCode(props: GetQRCode.Props): GetQRCode.Result;
-            findMany(props: FindMany.Props): FindMany.Result;
-        }
-
         interface Contract extends ControllerContract {}
 
-        namespace FindMany {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Promise<[Entities.SecondFactor[], number]>;
+        interface ControllerContract {
+            getQRCode: GetQRCode.Signature;
+            findMany: FindMany.Signature;
         }
 
         namespace GetQRCode {
@@ -25,6 +17,18 @@ declare namespace Queries {
                 id: string;
                 uri: string;
             }>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace FindMany {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Promise<[Entities.SecondFactor[], number]>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

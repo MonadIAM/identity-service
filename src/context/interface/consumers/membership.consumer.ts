@@ -15,7 +15,7 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
 
     public constructor(
         @Inject(MEMBERSHIP_COMMANDS)
-        private readonly membershipCommands: Commands.Membership.Contract,
+        private readonly membershipCommands: Commands.Membership.ControllerContract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}

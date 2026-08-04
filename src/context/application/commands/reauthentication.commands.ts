@@ -23,13 +23,13 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(SECOND_FACTOR_REPOSITORY)
-        private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
+        private readonly secondFactorRepository: Repositories.SecondFactor.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(SECOND_FACTOR_SERVICE)
-        private readonly secondFactorService: Services.SecondFactor.Contract,
+        private readonly secondFactorService: Services.SecondFactor.CommandContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
         protected readonly configService: ConfigService,

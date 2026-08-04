@@ -1,7 +1,9 @@
 declare namespace Services {
     namespace Profile {
-        interface Contract {
-            update(props: Update.Props): Update.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            update: Update.Signature;
         }
 
         namespace Update {
@@ -13,6 +15,8 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

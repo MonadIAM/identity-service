@@ -32,7 +32,7 @@ const { IDENTIFIER_READ_ABSOLUTE } = PermissionCode;
 export class IdentifierManageController {
     public constructor(
         @Inject(IDENTIFIER_QUERIES)
-        private readonly identifierQueries: Queries.Identifier.Contract,
+        private readonly identifierQueries: Queries.Identifier.ControllerContract,
     ) {}
 
     @Get()

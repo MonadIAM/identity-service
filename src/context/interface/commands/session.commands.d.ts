@@ -1,22 +1,69 @@
 declare namespace Commands {
     namespace Session {
-        interface ControllerContract {
-            revokeAll(props: RevokeAll.Props): RevokeAll.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-        }
+        interface Contract extends InternalContract, PublicContract {}
 
         interface InternalContract {
-            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
-            blacklistPayloadMapper(props: BlacklistPayloadMapper.Props): BlacklistPayloadMapper.Result;
+            notificationPayloadMapper: NotificationPayloadMapper.Signature;
+            blacklistPayloadMapper: BlacklistPayloadMapper.Signature;
         }
 
-        interface CommandsContract {
-            refresh(props: Refresh.Props): Refresh.Result;
-            create(props: Create.Props): Create.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
+        namespace NotificationPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
         }
 
-        interface Contract extends InternalContract, CommandsContract, ControllerContract {}
+        namespace BlacklistPayloadMapper {
+            type Props =
+                | {
+                      revokedSessions: Services.Session.Create.RevokedSession[];
+                  }
+                | Entities.Session[];
+
+            type Result = Services.Session.Create.RevokedSession[];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        interface PublicContract {
+            revokeAll: RevokeAll.Signature;
+            refresh: Refresh.Signature;
+            create: Create.Signature;
+            revoke: Revoke.Signature;
+        }
+
+        interface CommandsContract extends Pick<PublicContract, "refresh" | "create" | "revoke"> {}
+
+        interface ControllerContract extends Pick<PublicContract, "revokeAll" | "revoke"> {}
+
+        namespace RevokeAll {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Refresh {
+            type Props = {
+                context: Extract.Meta;
+                input: {
+                    client: string;
+                    refreshToken?: string;
+                };
+            };
+
+            type Result = Promise<MessageResult & Services.Session.Create.Tokens>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         namespace Create {
             type Props = {
@@ -32,18 +79,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<Services.Session.Create.Tokens>;
-        }
 
-        namespace Refresh {
-            type Props = {
-                context: Extract.Meta;
-                input: {
-                    client: string;
-                    refreshToken?: string;
-                };
-            };
-
-            type Result = Promise<MessageResult & Services.Session.Create.Tokens>;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
@@ -55,33 +92,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace RevokeAll {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-            };
-
-            type Result = Promise<MessageResult>;
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-        }
-
-        namespace BlacklistPayloadMapper {
-            type Props =
-                | {
-                      revokedSessions: Services.Session.Create.RevokedSession[];
-                  }
-                | Entities.Session[];
-
-            type Result = Services.Session.Create.RevokedSession[];
+            type Signature = (props: Props) => Result;
         }
     }
 }

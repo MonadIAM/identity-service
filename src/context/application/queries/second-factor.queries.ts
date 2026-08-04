@@ -17,11 +17,11 @@ export class SecondFactorQueries implements Queries.SecondFactor.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(SECOND_FACTOR_REPOSITORY)
-        private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
+        private readonly secondFactorRepository: Repositories.SecondFactor.QueryContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
         @Inject(SECOND_FACTOR_SERVICE)
-        private readonly secondFactorService: Services.SecondFactor.Contract,
+        private readonly secondFactorService: Services.SecondFactor.QueryContract,
     ) {}
 
     public findMany(props: Queries.SecondFactor.FindMany.Props): Queries.SecondFactor.FindMany.Result {

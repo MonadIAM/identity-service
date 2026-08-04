@@ -1,13 +1,47 @@
 declare namespace Services {
     namespace ServiceClient {
-        interface Contract {
-            applyApplicationRevocation(props: ApplyApplicationRevocation.Props): ApplyApplicationRevocation.Result;
-            applyApplicationRestore(props: ApplyApplicationRestore.Props): ApplyApplicationRestore.Result;
-            restore(props: Restore.Props): Restore.Result;
-            create(props: Create.Props): Create.Result;
-            update(props: Update.Props): Update.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            applyApplicationRevocation: ApplyApplicationRevocation.Signature;
+            applyApplicationRestore: ApplyApplicationRestore.Signature;
+            restore: Restore.Signature;
+            create: Create.Signature;
+            update: Update.Signature;
+            revoke: Revoke.Signature;
+            purge: Purge.Signature;
+        }
+
+        namespace ApplyApplicationRevocation {
+            type Props = {
+                entities: Entities.ServiceClient[];
+                version: number;
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ApplyApplicationRestore {
+            type Props = {
+                entities: Entities.ServiceClient[];
+                version: number;
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Restore {
+            type Props = {
+                entities: Entities.ServiceClient[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Create {
@@ -23,6 +57,8 @@ declare namespace Services {
             };
 
             type Result = Promise<Entities.ServiceClient>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Update {
@@ -36,6 +72,8 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
@@ -44,14 +82,8 @@ declare namespace Services {
             };
 
             type Result = void;
-        }
 
-        namespace Restore {
-            type Props = {
-                entities: Entities.ServiceClient[];
-            };
-
-            type Result = void;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -61,24 +93,8 @@ declare namespace Services {
             };
 
             type Result = void;
-        }
 
-        namespace ApplyApplicationRevocation {
-            type Props = {
-                entities: Entities.ServiceClient[];
-                version: number;
-            };
-
-            type Result = void;
-        }
-
-        namespace ApplyApplicationRestore {
-            type Props = {
-                entities: Entities.ServiceClient[];
-                version: number;
-            };
-
-            type Result = void;
+            type Signature = (props: Props) => Result;
         }
     }
 }

@@ -11,7 +11,7 @@ export class IdentifierService implements Services.Identifier.Contract {
 
     public constructor(
         @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.Contract,
+        private readonly identifierRepository: Repositories.Identifier.PublicContract,
     ) {}
 
     public create(props: Services.Identifier.Create.Props): Services.Identifier.Create.Result {

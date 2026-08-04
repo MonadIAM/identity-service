@@ -13,7 +13,7 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
 
     public constructor(
         @Inject(INTERFACE_CLIENT_REPOSITORY)
-        private readonly interfaceClientRepository: Repositories.InterfaceClient.Contract,
+        private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
     ) {}
 
     public async create(props: Services.InterfaceClient.Create.Props): Services.InterfaceClient.Create.Result {

@@ -9,7 +9,7 @@ export class MembershipService implements Services.Membership.Contract {
 
     public constructor(
         @Inject(MEMBERSHIP_REPOSITORY)
-        private readonly membershipRepository: Repositories.Membership.Contract,
+        private readonly membershipRepository: Repositories.Membership.PublicContract,
     ) {}
 
     public async create(props: Services.Membership.Create.Props): Services.Membership.Create.Result {

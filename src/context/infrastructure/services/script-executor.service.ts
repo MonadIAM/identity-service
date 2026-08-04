@@ -15,7 +15,10 @@ export class ScriptExecutorService implements InfrastructureServices.ScriptExecu
         private readonly scriptLoaderService: InfrastructureServices.ScriptLoader.Contract,
     ) {}
 
-    public async execute<T>(script: LuaScript, args: string[], keys: string[] = []): Promise<T> {
+    public async execute<T>(
+        props: InfrastructureServices.ScriptExecutor.Execute.Props,
+    ): InfrastructureServices.ScriptExecutor.Execute.Result<T> {
+        const { script, args, keys = [] } = props;
         try {
             return await this.evalsha<T>(script, keys, args);
         } catch (error) {

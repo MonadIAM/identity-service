@@ -1,8 +1,12 @@
 declare namespace Repositories {
     namespace RecoveryCode {
-        interface Contract extends Repositories.Base.Contract<Entities.RecoveryCode, Adapters.RecoveryCode.Types> {
-            getStatus(props: GetStatus.Props): GetStatus.Result;
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<Entities.RecoveryCode, Adapters.RecoveryCode.Types> {
+            getStatus: GetStatus.Signature;
         }
+
+        interface QueryContract extends Pick<PublicContract, "getStatus"> {}
 
         namespace GetStatus {
             type Props = {
@@ -15,6 +19,8 @@ declare namespace Repositories {
                 total: number;
                 used: number;
             }>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

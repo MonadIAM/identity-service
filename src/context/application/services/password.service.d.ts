@@ -1,8 +1,10 @@
 declare namespace Services {
     namespace Password {
-        interface Contract {
-            rotate(props: Rotate.Props): Rotate.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            rotate: Rotate.Signature;
+            purge: Purge.Signature;
         }
 
         namespace Rotate {
@@ -15,6 +17,8 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -26,6 +30,8 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

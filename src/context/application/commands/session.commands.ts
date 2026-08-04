@@ -28,13 +28,13 @@ export class SessionCommands implements Commands.Session.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(SESSION_REPOSITORY)
-        private readonly sessionRepository: Repositories.Session.Contract,
+        private readonly sessionRepository: Repositories.Session.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(ACCOUNT_SERVICE)
-        private readonly accountService: Services.Account.Contract,
+        private readonly accountService: Services.Account.CommandContract,
         @Inject(SESSION_SERVICE)
-        private readonly sessionService: Services.Session.Contract,
+        private readonly sessionService: Services.Session.CommandContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
         @Inject(JWT_SERVICE)
@@ -126,7 +126,7 @@ export class SessionCommands implements Commands.Session.Contract {
 
         session.isExpired();
 
-        const tokenHash = this.cryptoService.hashToken(props.input.refreshToken);
+        const tokenHash = this.cryptoService.hashToken({ token: props.input.refreshToken });
 
         if (tokenHash !== session.refreshTokenHash) {
             await this.transactionalService.run<Entities.Session[]>({
@@ -168,7 +168,7 @@ export class SessionCommands implements Commands.Session.Contract {
             },
             execute: (transaction) => {
                 transaction.merge(session);
-                session.refresh(this.cryptoService.hashToken(refreshToken));
+                session.refresh(this.cryptoService.hashToken({ token: refreshToken }));
             },
         });
 
@@ -205,7 +205,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 if ("refreshToken" in props.input) {
                     const session = await this.sessionRepository.findUnique({
                         where: {
-                            refreshTokenHash: this.cryptoService.hashToken(props.input.refreshToken),
+                            refreshTokenHash: this.cryptoService.hashToken({ token: props.input.refreshToken }),
                             account: props.actor,
                         },
                         transaction,

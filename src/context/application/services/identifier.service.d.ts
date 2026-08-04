@@ -1,10 +1,24 @@
 declare namespace Services {
     namespace Identifier {
-        interface Contract {
-            togglePublicContact(props: TogglePublicContact.Props): TogglePublicContact.Result;
-            create(props: Create.Props): Create.Result;
-            verify(props: Verify.Props): Verify.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            togglePublicContact: TogglePublicContact.Signature;
+            create: Create.Signature;
+            verify: Verify.Signature;
+            purge: Purge.Signature;
+        }
+
+        namespace TogglePublicContact {
+            type Props = {
+                input: {
+                    identifier: Entities.Identifier;
+                };
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Create {
@@ -17,6 +31,21 @@ declare namespace Services {
             };
 
             type Result = Entities.Identifier;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Verify {
+            type Props = {
+                transaction: ORM.EntityManager;
+                input: {
+                    identifier: Entities.Identifier;
+                };
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -30,27 +59,8 @@ declare namespace Services {
             };
 
             type Result = Promise<void>;
-        }
 
-        namespace Verify {
-            type Props = {
-                transaction: ORM.EntityManager;
-                input: {
-                    identifier: Entities.Identifier;
-                };
-            };
-
-            type Result = void;
-        }
-
-        namespace TogglePublicContact {
-            type Props = {
-                input: {
-                    identifier: Entities.Identifier;
-                };
-            };
-
-            type Result = void;
+            type Signature = (props: Props) => Result;
         }
     }
 }

@@ -3,14 +3,69 @@ import { AccountStatus, AccountSubject } from "~context/enums";
 declare global {
     namespace Services {
         namespace Account {
-            interface Contract {
-                deactivate(props: Deactivate.Props): Deactivate.Result;
-                unsuspend(props: Unsuspend.Props): Unsuspend.Result;
-                suspend(props: Suspend.Props): Suspend.Result;
-                restore(props: Restore.Props): Restore.Result;
-                create(props: Create.Props): Create.Result;
-                verify(props: Verify.Props): Verify.Result;
-                purge(props: Purge.Props): Purge.Result;
+            interface Contract extends CommandContract {}
+
+            interface CommandContract {
+                deactivate: Deactivate.Signature;
+                unsuspend: Unsuspend.Signature;
+                suspend: Suspend.Signature;
+                restore: Restore.Signature;
+                create: Create.Signature;
+                verify: Verify.Signature;
+                purge: Purge.Signature;
+            }
+
+            namespace Deactivate {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    input: {
+                        sessions: Entities.Session[];
+                        account: Entities.Account;
+                    };
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Unsuspend {
+                type Props = {
+                    input: {
+                        account: Entities.Account;
+                        reason?: string;
+                    };
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Restore {
+                type Props = {
+                    input: {
+                        account: Entities.Account;
+                    };
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Suspend {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    input: {
+                        sessions: Entities.Session[];
+                        account: Entities.Account;
+                    };
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Create {
@@ -27,30 +82,20 @@ declare global {
                 };
 
                 type Result = Entities.Account;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace Deactivate {
+            namespace Verify {
                 type Props = {
-                    transaction: ORM.EntityManager;
                     input: {
-                        sessions: Entities.Session[];
                         account: Entities.Account;
                     };
                 };
 
                 type Result = void;
-            }
 
-            namespace Suspend {
-                type Props = {
-                    transaction: ORM.EntityManager;
-                    input: {
-                        sessions: Entities.Session[];
-                        account: Entities.Account;
-                    };
-                };
-
-                type Result = void;
+                type Signature = (props: Props) => Result;
             }
 
             namespace Purge {
@@ -63,37 +108,8 @@ declare global {
                 };
 
                 type Result = void;
-            }
 
-            namespace Verify {
-                type Props = {
-                    input: {
-                        account: Entities.Account;
-                    };
-                };
-
-                type Result = void;
-            }
-
-            namespace Unsuspend {
-                type Props = {
-                    input: {
-                        account: Entities.Account;
-                        reason?: string;
-                    };
-                };
-
-                type Result = void;
-            }
-
-            namespace Restore {
-                type Props = {
-                    input: {
-                        account: Entities.Account;
-                    };
-                };
-
-                type Result = void;
+                type Signature = (props: Props) => Result;
             }
         }
     }

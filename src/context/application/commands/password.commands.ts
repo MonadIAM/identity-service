@@ -27,13 +27,13 @@ export class PasswordCommands implements Commands.Password.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(PASSWORD_HISTORY_REPOSITORY)
-        private readonly passwordHistoryRepository: Repositories.PasswordHistory.Contract,
+        private readonly passwordHistoryRepository: Repositories.PasswordHistory.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.Contract,
+        private readonly identifierRepository: Repositories.Identifier.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(PASSWORD_SERVICE)
-        private readonly passwordService: Services.Password.Contract,
+        private readonly passwordService: Services.Password.CommandContract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
         @Inject(HASHING_SERVICE)

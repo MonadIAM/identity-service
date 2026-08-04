@@ -8,7 +8,7 @@ import { QueryMode } from "~context/enums";
 export class InterfaceClientQueries implements Queries.InterfaceClient.Contract {
     public constructor(
         @Inject(INTERFACE_CLIENT_REPOSITORY)
-        private readonly interfaceClientRepository: Repositories.InterfaceClient.Contract,
+        private readonly interfaceClientRepository: Repositories.InterfaceClient.QueryContract,
     ) {}
 
     public findUnique(props: Queries.InterfaceClient.FindUnique.Props): Queries.InterfaceClient.FindUnique.Result {

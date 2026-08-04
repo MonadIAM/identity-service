@@ -3,13 +3,13 @@ import { CodeChallengeMethod, OAuthResponseType, TokenGrantType, OidcScope } fro
 declare global {
     namespace Queries {
         namespace OAuth {
-            interface ControllerContract {
-                getAuthorizationServerMetadata(): AuthorizationServerMetadata.Result;
-                getOpenIdConfiguration(): OpenIdConfiguration.Result;
-                getUserInfo(props: UserInfo.Props): UserInfo.Result;
-            }
-
             interface Contract extends ControllerContract {}
+
+            interface ControllerContract {
+                getAuthorizationServerMetadata: AuthorizationServerMetadata.Signature;
+                getOpenIdConfiguration: OpenIdConfiguration.Signature;
+                getUserInfo: UserInfo.Signature;
+            }
 
             namespace AuthorizationServerMetadata {
                 type Result = {
@@ -24,6 +24,8 @@ declare global {
                     jwksURI: string;
                     issuer: string;
                 };
+
+                type Signature = () => Result;
             }
 
             namespace OpenIdConfiguration {
@@ -34,6 +36,8 @@ declare global {
                     claimsSupported: string[];
                     userinfoEndpoint: string;
                 };
+
+                type Signature = () => Result;
             }
 
             namespace UserInfo {
@@ -53,6 +57,8 @@ declare global {
                     email?: string;
                     emailVerified?: boolean;
                 }>;
+
+                type Signature = (props: Props) => Result;
             }
         }
     }

@@ -13,9 +13,9 @@ export class MembershipCommands implements Commands.Membership.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(MEMBERSHIP_SERVICE)
-        private readonly membershipService: Services.Membership.Contract,
+        private readonly membershipService: Services.Membership.CommandContract,
     ) {}
 
     public async grant(props: Commands.Membership.Grant.Props): Commands.Membership.Grant.Result {

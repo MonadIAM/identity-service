@@ -17,9 +17,9 @@ export class ApplicationCommands implements Commands.Application.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.Contract,
+        private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(APPLICATION_SERVICE)
-        private readonly applicationService: Services.Application.Contract,
+        private readonly applicationService: Services.Application.CommandContract,
     ) {}
 
     public async create(props: Commands.Application.Create.Props): Commands.Application.Create.Result {

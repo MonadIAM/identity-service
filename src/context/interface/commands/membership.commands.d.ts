@@ -1,8 +1,23 @@
 declare namespace Commands {
     namespace Membership {
-        interface Contract {
-            revoke(props: Revoke.Props): Revoke.Result;
-            grant(props: Grant.Props): Grant.Result;
+        interface Contract extends ControllerContract {}
+
+        interface ControllerContract {
+            revoke: Revoke.Signature;
+            grant: Grant.Signature;
+        }
+
+        namespace Revoke {
+            type Props = {
+                input: {
+                    account: string;
+                    realm: string;
+                };
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Grant {
@@ -16,17 +31,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<void>;
-        }
 
-        namespace Revoke {
-            type Props = {
-                input: {
-                    account: string;
-                    realm: string;
-                };
-            };
-
-            type Result = Promise<void>;
+            type Signature = (props: Props) => Result;
         }
     }
 }

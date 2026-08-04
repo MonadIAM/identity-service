@@ -66,7 +66,7 @@ const {
 export class ServiceClientController {
     public constructor(
         @Inject(SERVICE_CLIENT_COMMANDS)
-        private readonly serviceClientCommands: Commands.ServiceClient.Contract,
+        private readonly serviceClientCommands: Commands.ServiceClient.ControllerContract,
         @Inject(SERVICE_CLIENT_QUERIES)
         private readonly serviceClientQueries: Queries.ServiceClient.ControllerContract,
     ) {}

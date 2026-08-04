@@ -1,8 +1,15 @@
 declare namespace Repositories {
     namespace InterfaceClient {
-        interface Contract extends Repositories.Base.Contract<Entities.InterfaceClient, Adapters.InterfaceClient.Types> {
-            wouldExceedApplicationLimit(props: WouldExceedApplicationLimit.Props): WouldExceedApplicationLimit.Result;
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<
+            Entities.InterfaceClient,
+            Adapters.InterfaceClient.Types
+        > {
+            wouldExceedApplicationLimit: WouldExceedApplicationLimit.Signature;
         }
+
+        interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
 
         namespace WouldExceedApplicationLimit {
             type Props = {
@@ -11,6 +18,8 @@ declare namespace Repositories {
             };
 
             type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

@@ -1,26 +1,85 @@
 declare namespace Commands {
     namespace Password {
+        interface Contract extends InternalContract, ControllerContract {}
+
         interface InternalContract {
-            passwordChangedPayloadMapper(props: PasswordChangedPayloadMapper.Props): PasswordChangedPayloadMapper.Result;
-            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
-            findMatchingRecoveryCode(props: FindMatchingRecoveryCode.Props): FindMatchingRecoveryCode.Result;
-            checkPasswordHistory(props: CheckPasswordHistory.Props): CheckPasswordHistory.Result;
-            passwordChangedViaRecoveryCodePayloadMapper(
-                props: PasswordChangedViaRecoveryCodePayloadMapper.Props,
-            ): PasswordChangedViaRecoveryCodePayloadMapper.Result;
-            passwordChangedViaOtpPayloadMapper(
-                props: PasswordChangedViaOtpPayloadMapper.Props,
-            ): PasswordChangedViaOtpPayloadMapper.Result;
+            passwordChangedViaRecoveryCodePayloadMapper: PasswordChangedViaRecoveryCodePayloadMapper.Signature;
+            passwordChangedViaOtpPayloadMapper: PasswordChangedViaOtpPayloadMapper.Signature;
+            passwordChangedPayloadMapper: PasswordChangedPayloadMapper.Signature;
+            notificationPayloadMapper: NotificationPayloadMapper.Signature;
+            findMatchingRecoveryCode: FindMatchingRecoveryCode.Signature;
+            checkPasswordHistory: CheckPasswordHistory.Signature;
+        }
+
+        namespace PasswordChangedViaRecoveryCodePayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace PasswordChangedViaOtpPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace PasswordChangedPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace NotificationPayloadMapper {
+            type Props = {
+                account: string;
+                otp: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace FindMatchingRecoveryCode {
+            type Props = {
+                codes: Entities.RecoveryCode[];
+                plaintext: string;
+            };
+
+            type Result = Promise<Nullable<Entities.RecoveryCode>>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace CheckPasswordHistory {
+            type Props = {
+                password: string;
+                account: string;
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
         interface ControllerContract {
-            resetByRecoveryCode(props: ResetByRecoveryCode.Props): ResetByRecoveryCode.Result;
-            requestOTP(props: RequestOTP.Props): RequestOTP.Result;
-            resetByOTP(props: ResetByOTP.Props): ResetByOTP.Result;
-            change(props: Change.Props): Change.Result;
+            resetByRecoveryCode: ResetByRecoveryCode.Signature;
+            requestOTP: RequestOTP.Signature;
+            resetByOTP: ResetByOTP.Signature;
+            change: Change.Signature;
         }
-
-        interface Contract extends InternalContract, ControllerContract {}
 
         namespace ResetByRecoveryCode {
             type Props = {
@@ -33,6 +92,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace RequestOTP {
@@ -43,6 +104,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace ResetByOTP {
@@ -55,6 +118,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Change {
@@ -68,57 +133,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace CheckPasswordHistory {
-            type Props = {
-                password: string;
-                account: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace FindMatchingRecoveryCode {
-            type Props = {
-                codes: Entities.RecoveryCode[];
-                plaintext: string;
-            };
-
-            type Result = Promise<Nullable<Entities.RecoveryCode>>;
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = {
-                account: string;
-                otp: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-        }
-
-        namespace PasswordChangedPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-        }
-
-        namespace PasswordChangedViaOtpPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-        }
-
-        namespace PasswordChangedViaRecoveryCodePayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
+            type Signature = (props: Props) => Result;
         }
     }
 }

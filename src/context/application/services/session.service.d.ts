@@ -1,8 +1,10 @@
 declare namespace Services {
     namespace Session {
-        interface Contract {
-            create(props: Create.Props): Create.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            create: Create.Signature;
+            purge: Purge.Signature;
         }
 
         namespace Create {
@@ -32,6 +34,8 @@ declare namespace Services {
             };
 
             type Result = Promise<Tokens & { revokedSessions: RevokedSession[] }>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -43,6 +47,8 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

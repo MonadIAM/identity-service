@@ -9,7 +9,7 @@ import { QueryMode } from "~context/enums";
 export class ApplicationQueries implements Queries.Application.Contract {
     public constructor(
         @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.Contract,
+        private readonly applicationRepository: Repositories.Application.QueryContract,
     ) {}
 
     public findUnique(props: Queries.Application.FindUnique.Props): Queries.Application.FindUnique.Result {

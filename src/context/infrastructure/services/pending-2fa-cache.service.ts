@@ -17,18 +17,25 @@ export class Pending2FACacheService implements InfrastructureServices.Pending2FA
         this.ttl = ms(this.configService.getOrThrow<StringValue>("PENDING_2FA_TTL")) / 1e3;
     }
 
-    public async set({ token, metadata }: InfrastructureServices.Pending2FACache.Set): Promise<void> {
+    public async set(
+        props: InfrastructureServices.Pending2FACache.Set.Props,
+    ): InfrastructureServices.Pending2FACache.Set.Result {
+        const { token, metadata } = props;
         await this.redis.set(`${this.namespace}:${token}`, JSON.stringify(metadata), "EX", this.ttl);
     }
 
     public async get(
-        props: InfrastructureServices.Pending2FACache.Get,
-    ): Promise<Nullable<InfrastructureServices.Pending2FACache.Metadata>> {
-        const raw = await this.redis.get(`${this.namespace}:${props.token}`);
+        props: InfrastructureServices.Pending2FACache.Get.Props,
+    ): InfrastructureServices.Pending2FACache.Get.Result {
+        const { token } = props;
+        const raw = await this.redis.get(`${this.namespace}:${token}`);
         return raw ? JSON.parse(raw) : null;
     }
 
-    public async delete({ token }: InfrastructureServices.Pending2FACache.Delete): Promise<void> {
+    public async delete(
+        props: InfrastructureServices.Pending2FACache.Delete.Props,
+    ): InfrastructureServices.Pending2FACache.Delete.Result {
+        const { token } = props;
         await this.redis.unlink(`${this.namespace}:${token}`);
     }
 }

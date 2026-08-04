@@ -23,9 +23,9 @@ export class CleanupProcessor extends WorkerHost {
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
         @Inject(CHANGE_LOG_SERVICE)
-        private readonly changeLogService: Services.ChangeLog.Contract,
+        private readonly changeLogService: Services.ChangeLog.ProcessorContract,
         @Inject(AUDIT_LOG_SERVICE)
-        private readonly auditLogService: Services.AuditLog.Contract,
+        private readonly auditLogService: Services.AuditLog.ProcessorContract,
         @Inject(CLEANUP_QUEUE)
         private readonly cleanupQueue: Queues.Cleanup.Contract,
     ) {

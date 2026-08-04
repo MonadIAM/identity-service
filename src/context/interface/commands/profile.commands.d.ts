@@ -1,10 +1,10 @@
 declare namespace Commands {
     namespace Profile {
-        interface ControllerContract {
-            update(props: Update.Props): Update.Result;
-        }
-
         interface Contract extends ControllerContract {}
+
+        interface ControllerContract {
+            update: Update.Signature;
+        }
 
         namespace Update {
             type Props = {
@@ -14,6 +14,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

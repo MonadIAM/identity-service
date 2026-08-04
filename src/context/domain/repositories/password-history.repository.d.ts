@@ -1,5 +1,10 @@
 declare namespace Repositories {
     namespace PasswordHistory {
-        interface Contract extends Repositories.Base.Contract<Entities.PasswordHistory, Adapters.PasswordHistory.Types> {}
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<
+            Entities.PasswordHistory,
+            Adapters.PasswordHistory.Types
+        > {}
     }
 }

@@ -22,7 +22,7 @@ export class SessionRepository
         super();
     }
 
-    public async lockByAccount(props: Repositories.Session.LockByAccount.Props): Promise<Entities.Session[]> {
+    public async lockByAccount(props: Repositories.Session.LockByAccount.Props): Repositories.Session.LockByAccount.Result {
         const { transaction, account } = props;
 
         const locked = await transaction.findOne(Account, { id: account }, { lockMode: LockMode.PESSIMISTIC_WRITE });

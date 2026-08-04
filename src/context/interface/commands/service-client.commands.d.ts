@@ -1,18 +1,41 @@
 declare namespace Commands {
     namespace ServiceClient {
+        interface Contract extends InternalContract, ControllerContract {}
+
         interface InternalContract {
-            serviceClientPayloadMapper(props: ServiceClientPayloadMapper.Props): ServiceClientPayloadMapper.Result;
+            serviceClientPayloadMapper: ServiceClientPayloadMapper.Signature;
+        }
+
+        namespace ServiceClientPayloadMapper {
+            type Props = Entities.ServiceClient | Entities.ServiceClient[];
+
+            type Result = Topics.ServiceClient.Message["payload"] | Topics.ServiceClient.Message["payload"][];
+
+            type Signature = (props: Props) => Result;
         }
 
         interface ControllerContract {
-            create(props: Create.Props): Create.Result;
-            update(props: Update.Props): Update.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            restore(props: Restore.Props): Restore.Result;
-            purge(props: Purge.Props): Purge.Result;
+            restore: Restore.Signature;
+            create: Create.Signature;
+            update: Update.Signature;
+            revoke: Revoke.Signature;
+            purge: Purge.Signature;
         }
 
-        interface Contract extends InternalContract, ControllerContract {}
+        namespace Restore {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                realm: string;
+                input: {
+                    clients: string[];
+                };
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         namespace Create {
             type Props = {
@@ -29,6 +52,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Update {
@@ -45,6 +70,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
@@ -58,19 +85,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace Restore {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-                realm: string;
-                input: {
-                    clients: string[];
-                };
-            };
-
-            type Result = Promise<MessageResult>;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -84,12 +100,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace ServiceClientPayloadMapper {
-            type Props = Entities.ServiceClient | Entities.ServiceClient[];
-
-            type Result = Topics.ServiceClient.Message["payload"] | Topics.ServiceClient.Message["payload"][];
+            type Signature = (props: Props) => Result;
         }
     }
 }

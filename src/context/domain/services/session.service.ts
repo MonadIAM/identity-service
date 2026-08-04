@@ -21,7 +21,7 @@ export class SessionService implements Services.Session.Contract {
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
         @Inject(SESSION_REPOSITORY)
-        private readonly sessionRepository: Repositories.Session.Contract,
+        private readonly sessionRepository: Repositories.Session.PublicContract,
     ) {
         this.sessionExpiryDays = ms(this.configService.getOrThrow<StringValue>("SESSION_EXPIRY_DAYS")) / 1e3;
         this.accessTokenMaxTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
@@ -69,7 +69,7 @@ export class SessionService implements Services.Session.Contract {
             sid: session.id,
         });
 
-        session.refresh(this.cryptoService.hashToken(refreshToken));
+        session.refresh(this.cryptoService.hashToken({ token: refreshToken }));
 
         transaction.persist(session);
 

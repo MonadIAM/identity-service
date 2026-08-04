@@ -18,20 +18,77 @@ declare namespace Commands {
                 recoveryCodes?: string[];
             };
 
+        interface Contract extends InternalContract, ControllerContract {}
+
         interface InternalContract {
-            blacklistPayloadMapper(props: BlacklistPayloadMapper.Props): BlacklistPayloadMapper.Result;
-            authenticateExisting(props: AuthenticateExisting.Props): AuthenticateExisting.Result;
-            attachToExisting(props: AttachToExisting.Props): AttachToExisting.Result;
-            resolveProvider(props: ResolveProvider.Props): ResolveProvider.Result;
-            provision(props: Provision.Props): Provision.Result;
+            blacklistPayloadMapper: BlacklistPayloadMapper.Signature;
+            authenticateExisting: AuthenticateExisting.Signature;
+            attachToExisting: AttachToExisting.Signature;
+            resolveProvider: ResolveProvider.Signature;
+            provision: Provision.Signature;
+        }
+
+        namespace BlacklistPayloadMapper {
+            type Props = {
+                revokedSessions: Services.Session.Create.RevokedSession[];
+            };
+
+            type Result = Topics.Blacklist.Message["payload"][];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace AuthenticateExisting {
+            type Props = {
+                context: Extract.Meta;
+                input: {
+                    account: Entities.Account;
+                };
+            };
+
+            type Result = Promise<AuthnResult>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace AttachToExisting {
+            type Props = {
+                context: Extract.Meta;
+                input: Identity & {
+                    account: Entities.Account;
+                };
+            };
+
+            type Result = Promise<AuthnResult>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ResolveProvider {
+            type Props = {
+                provider: string;
+            };
+
+            type Result = globalThis.FederatedAuthn.ResolveProvider;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Provision {
+            type Props = {
+                context: Extract.Meta;
+                input: Identity;
+            };
+
+            type Result = Promise<AuthnResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         interface ControllerContract {
-            authorize(props: Authorize.Props): Authorize.Result;
-            callback(props: Callback.Props): Callback.Result;
+            authorize: Authorize.Signature;
+            callback: Callback.Signature;
         }
-
-        interface Contract extends InternalContract, ControllerContract {}
 
         namespace Authorize {
             type Props = {
@@ -43,6 +100,8 @@ declare namespace Commands {
             type Result = Promise<{
                 url: string;
             }>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Callback {
@@ -56,50 +115,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<AuthnResult>;
-        }
 
-        namespace AuthenticateExisting {
-            type Props = {
-                context: Extract.Meta;
-                input: {
-                    account: Entities.Account;
-                };
-            };
-
-            type Result = Promise<AuthnResult>;
-        }
-
-        namespace AttachToExisting {
-            type Props = {
-                context: Extract.Meta;
-                input: Identity & {
-                    account: Entities.Account;
-                };
-            };
-
-            type Result = Promise<AuthnResult>;
-        }
-
-        namespace Provision {
-            type Props = {
-                context: Extract.Meta;
-                input: Identity;
-            };
-
-            type Result = Promise<AuthnResult>;
-        }
-
-        namespace ResolveProvider {
-            type Props = {
-                provider: string;
-            };
-
-            type Result = globalThis.FederatedAuthn.ResolveProvider;
-        }
-
-        namespace BlacklistPayloadMapper {
-            type Props = { revokedSessions: Services.Session.Create.RevokedSession[] };
-            type Result = Topics.Blacklist.Message["payload"][];
+            type Signature = (props: Props) => Result;
         }
     }
 }

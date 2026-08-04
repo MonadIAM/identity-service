@@ -71,11 +71,11 @@ export class AuthorizationCacheService implements InfrastructureServices.Authori
         };
 
         const result: Scripts.IssueCode.Result = JSON.parse(
-            await this.scriptExecutorService.execute<string>(
-                LuaScript.ISSUE_CODE,
-                [JSON.stringify(payload)],
-                [`${this.REQUEST_NAMESPACE}:${props.authorizationRequest}`, `${this.CODE_NAMESPACE}:${code}`],
-            ),
+            await this.scriptExecutorService.execute<string>({
+                script: LuaScript.ISSUE_CODE,
+                args: [JSON.stringify(payload)],
+                keys: [`${this.REQUEST_NAMESPACE}:${props.authorizationRequest}`, `${this.CODE_NAMESPACE}:${code}`],
+            }),
         );
 
         if (result.status === "collision") {

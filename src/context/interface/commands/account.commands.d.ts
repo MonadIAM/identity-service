@@ -1,20 +1,39 @@
 declare namespace Commands {
     namespace Account {
+        interface Contract extends InternalContract, ControllerContract {}
+
         interface InternalContract {
-            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
-            accountPayloadMapper(props: AccountPayloadMapper.Props): AccountPayloadMapper.Result;
+            notificationPayloadMapper: NotificationPayloadMapper.Signature;
+            accountPayloadMapper: AccountPayloadMapper.Signature;
+        }
+
+        namespace NotificationPayloadMapper {
+            type Props = {
+                account: string;
+                otp: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace AccountPayloadMapper {
+            type Props = Entities.Account;
+
+            type Result = Topics.Account.Message["payload"];
+
+            type Signature = (props: Props) => Result;
         }
 
         interface ControllerContract {
-            deactivate(props: Deactivate.Props): Deactivate.Result;
-            suspend(props: Suspend.Props): Suspend.Result;
-            restore(props: Restore.Props): Restore.Result;
-            signup(props: Signup.Props): Signup.Result;
-            verify(props: Verify.Props): Verify.Result;
-            resend(props: Resend.Props): Resend.Result;
+            deactivate: Deactivate.Signature;
+            suspend: Suspend.Signature;
+            restore: Restore.Signature;
+            signup: Signup.Signature;
+            verify: Verify.Signature;
+            resend: Resend.Signature;
         }
-
-        interface Contract extends InternalContract, ControllerContract {}
 
         namespace Deactivate {
             type Props = {
@@ -23,6 +42,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Suspend {
@@ -36,6 +57,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Restore {
@@ -49,6 +72,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Signup {
@@ -62,6 +87,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Verify {
@@ -77,6 +104,8 @@ declare namespace Commands {
                     codes: string[];
                 }
             >;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Resend {
@@ -87,20 +116,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace AccountPayloadMapper {
-            type Props = Entities.Account;
-            type Result = Topics.Account.Message["payload"];
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = {
-                account: string;
-                otp: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
+            type Signature = (props: Props) => Result;
         }
     }
 }

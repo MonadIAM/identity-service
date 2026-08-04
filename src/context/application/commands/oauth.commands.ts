@@ -23,7 +23,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         @Inject(AUTHORIZATION_CACHE_SERVICE)
         private readonly authorizationCacheService: InfrastructureServices.AuthorizationCache.Contract,
         @Inject(INTERFACE_CLIENT_REPOSITORY)
-        private readonly interfaceClientRepository: Repositories.InterfaceClient.Contract,
+        private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.Contract,
         @Inject(JWT_SERVICE)
@@ -154,7 +154,10 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         if (
             authorization?.client !== client.id ||
             authorization.redirectUri !== props.input.redirectUri ||
-            !this.cryptoService.verifyCodeChallenge(props.input.codeVerifier, authorization.codeChallenge)
+            !this.cryptoService.verifyCodeChallenge({
+                challenge: authorization.codeChallenge,
+                verifier: props.input.codeVerifier,
+            })
         ) {
             throw Exception.badRequest({
                 messageKey: `${this.dictionaryPath}.INVALID_GRANT`,

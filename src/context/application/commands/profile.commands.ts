@@ -15,9 +15,9 @@ export class ProfileCommands implements Commands.Profile.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(PROFILE_SERVICE)
-        private readonly profileService: Services.Profile.Contract,
+        private readonly profileService: Services.Profile.CommandContract,
     ) {}
 
     public async update(props: Commands.Profile.Update.Props): Commands.Profile.Update.Result {

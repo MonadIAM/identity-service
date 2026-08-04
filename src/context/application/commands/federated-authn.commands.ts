@@ -29,15 +29,15 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.Contract,
-        @Inject(ACCOUNT_SERVICE)
-        private readonly accountService: Services.Account.Contract,
-        @Inject(IDENTIFIER_SERVICE)
-        private readonly identifierService: Services.Identifier.Contract,
+        private readonly identifierRepository: Repositories.Identifier.PublicContract,
         @Inject(RECOVERY_CODE_SERVICE)
-        private readonly recoveryCodeService: Services.RecoveryCode.Contract,
+        private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
+        @Inject(IDENTIFIER_SERVICE)
+        private readonly identifierService: Services.Identifier.CommandContract,
         @Inject(SESSION_SERVICE)
-        private readonly sessionService: Services.Session.Contract,
+        private readonly sessionService: Services.Session.CommandContract,
+        @Inject(ACCOUNT_SERVICE)
+        private readonly accountService: Services.Account.CommandContract,
         @Inject(OAUTH_STATE_CACHE_SERVICE)
         private readonly oauthStateCacheService: InfrastructureServices.OAuthStateCache.Contract,
         @Inject(GOOGLE_OAUTH_SERVICE)

@@ -11,7 +11,7 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
 
     public constructor(
         @Inject(SERVICE_CLIENT_REPOSITORY)
-        private readonly serviceClientRepository: Repositories.ServiceClient.Contract,
+        private readonly serviceClientRepository: Repositories.ServiceClient.PublicContract,
     ) {}
 
     public async create(props: Services.ServiceClient.Create.Props): Services.ServiceClient.Create.Result {

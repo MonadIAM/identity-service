@@ -26,13 +26,13 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(SECOND_FACTOR_REPOSITORY)
-        private readonly secondFactorRepository: Repositories.SecondFactor.Contract,
+        private readonly secondFactorRepository: Repositories.SecondFactor.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.Contract,
+        private readonly identifierRepository: Repositories.Identifier.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(SECOND_FACTOR_SERVICE)
-        private readonly secondFactorService: Services.SecondFactor.Contract,
+        private readonly secondFactorService: Services.SecondFactor.CommandContract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)

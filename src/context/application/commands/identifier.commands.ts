@@ -25,11 +25,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.Contract,
+        private readonly identifierRepository: Repositories.Identifier.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(IDENTIFIER_SERVICE)
-        private readonly identifierService: Services.Identifier.Contract,
+        private readonly identifierService: Services.Identifier.CommandContract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
         @Inject(CRYPTO_SERVICE)
@@ -79,7 +79,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async resend(props: Commands.Identifier.Resend.Props): Commands.Identifier.Resend.Pesult {
+    public async resend(props: Commands.Identifier.Resend.Props): Commands.Identifier.Resend.Result {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             where: {
                 value: props.input.identifier,

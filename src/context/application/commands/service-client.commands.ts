@@ -16,12 +16,12 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.Contract,
         @Inject(SERVICE_CLIENT_REPOSITORY)
-        private readonly serviceClientRepository: Repositories.ServiceClient.Contract,
+        private readonly serviceClientRepository: Repositories.ServiceClient.PublicContract,
+        @Inject(APPLICATION_REPOSITORY)
+        private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(SERVICE_CLIENT_SERVICE)
-        private readonly serviceClientService: Services.ServiceClient.Contract,
+        private readonly serviceClientService: Services.ServiceClient.CommandContract,
     ) {}
 
     public async create(props: Commands.ServiceClient.Create.Props): Commands.ServiceClient.Create.Result {

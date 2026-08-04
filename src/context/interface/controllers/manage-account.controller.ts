@@ -26,7 +26,7 @@ const { ACCOUNT_READ_ABSOLUTE } = PermissionCode;
 export class AccountManageController {
     public constructor(
         @Inject(ACCOUNT_QUERIES)
-        private readonly accountQueries: Queries.Account.Contract,
+        private readonly accountQueries: Queries.Account.ControllerContract,
     ) {}
 
     @Get()

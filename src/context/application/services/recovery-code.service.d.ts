@@ -1,8 +1,10 @@
 declare namespace Services {
     namespace RecoveryCode {
-        interface Contract {
-            regenerate(props: Regenerate.Props): Regenerate.Result;
-            generate(props: Generate.Props): Generate.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            regenerate: Regenerate.Signature;
+            generate: Generate.Signature;
         }
 
         namespace Regenerate {
@@ -15,6 +17,8 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Generate {
@@ -27,6 +31,8 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

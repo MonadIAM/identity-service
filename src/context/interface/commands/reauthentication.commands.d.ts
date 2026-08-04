@@ -1,23 +1,10 @@
 declare namespace Commands {
     namespace Reauthentication {
-        interface ControllerContract {
-            bySecondFactor(props: BySecondFactor.Props): BySecondFactor.Result;
-            byPassword(props: ByPassword.Props): ByPassword.Result;
-        }
-
         interface Contract extends ControllerContract {}
 
-        namespace ByPassword {
-            type Props = {
-                context: Extract.Meta;
-                session: string;
-                actor: string;
-                input: {
-                    password: string;
-                };
-            };
-
-            type Result = Promise<MessageResult>;
+        interface ControllerContract {
+            bySecondFactor: BySecondFactor.Signature;
+            byPassword: ByPassword.Signature;
         }
 
         namespace BySecondFactor {
@@ -31,6 +18,23 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ByPassword {
+            type Props = {
+                context: Extract.Meta;
+                session: string;
+                actor: string;
+                input: {
+                    password: string;
+                };
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

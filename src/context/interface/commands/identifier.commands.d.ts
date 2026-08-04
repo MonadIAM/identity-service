@@ -3,69 +3,40 @@ import { IdentifierType } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Identifier {
+            interface Contract extends InternalContract, ControllerContract {}
+
             interface InternalContract {
-                notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
-                identifierPurgedPayloadMapper(
-                    props: IdentifierPurgedPayloadMapper.Props,
-                ): IdentifierPurgedPayloadMapper.Result;
+                identifierPurgedPayloadMapper: IdentifierPurgedPayloadMapper.Signature;
+                notificationPayloadMapper: NotificationPayloadMapper.Signature;
+            }
+
+            namespace IdentifierPurgedPayloadMapper {
+                type Props = {
+                    account: string;
+                };
+
+                type Result = Topics.Notification.CreateMessage["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace NotificationPayloadMapper {
+                type Props = {
+                    account: string;
+                    otp: string;
+                };
+
+                type Result = Topics.Notification.CreateMessage["payload"];
+
+                type Signature = (props: Props) => Result;
             }
 
             interface ControllerContract {
-                togglePublicContact(props: TogglePublicContact.Props): TogglePublicContact.Result;
-                verify(props: Verify.Props): Verify.Result;
-                create(props: Create.Props): Create.Result;
-                resend(props: Resend.Props): Resend.Pesult;
-                purge(props: Purge.Props): Purge.Result;
-            }
-
-            interface Contract extends InternalContract, ControllerContract {}
-
-            namespace Create {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        type: IdentifierType;
-                        identifier: string;
-                    };
-                };
-
-                type Result = Promise<MessageResult>;
-            }
-
-            namespace Resend {
-                type Props = {
-                    actor: string;
-                    input: {
-                        identifier: string;
-                    };
-                };
-
-                type Pesult = Promise<MessageResult>;
-            }
-
-            namespace Verify {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        code: string;
-                    };
-                };
-
-                type Result = Promise<MessageResult>;
-            }
-
-            namespace Purge {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        identifier: string;
-                    };
-                };
-
-                type Result = Promise<MessageResult>;
+                togglePublicContact: TogglePublicContact.Signature;
+                verify: Verify.Signature;
+                create: Create.Signature;
+                resend: Resend.Signature;
+                purge: Purge.Signature;
             }
 
             namespace TogglePublicContact {
@@ -78,23 +49,64 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace NotificationPayloadMapper {
+            namespace Create {
                 type Props = {
-                    account: string;
-                    otp: string;
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        type: IdentifierType;
+                        identifier: string;
+                    };
                 };
 
-                type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace IdentifierPurgedPayloadMapper {
+            namespace Resend {
                 type Props = {
-                    account: string;
+                    actor: string;
+                    input: {
+                        identifier: string;
+                    };
                 };
 
-                type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Verify {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        code: string;
+                    };
+                };
+
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Purge {
+                type Props = {
+                    context: Extract.Meta;
+                    actor: string;
+                    input: {
+                        identifier: string;
+                    };
+                };
+
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
         }
     }

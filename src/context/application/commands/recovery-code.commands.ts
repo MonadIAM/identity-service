@@ -23,9 +23,9 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(RECOVERY_CODE_SERVICE)
-        private readonly recoveryCodeService: Services.RecoveryCode.Contract,
+        private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.Contract,
         @Inject(CRYPTO_SERVICE)

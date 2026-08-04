@@ -1,11 +1,11 @@
 declare namespace Queries {
     namespace AuditLog {
-        interface ControllerContract {
-            findUnique(props: FindUnique.Props): FindUnique.Result;
-            findMany(props: FindMany.Props): FindMany.Result;
-        }
-
         interface Contract extends ControllerContract {}
+
+        interface ControllerContract {
+            findUnique: FindUnique.Signature;
+            findMany: FindMany.Signature;
+        }
 
         namespace FindUnique {
             type Props = {
@@ -13,6 +13,8 @@ declare namespace Queries {
             };
 
             type Result = Promise<SystemEntities.AuditLog>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace FindMany {
@@ -23,6 +25,8 @@ declare namespace Queries {
             };
 
             type Result = Promise<[SystemEntities.AuditLog[], number]>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

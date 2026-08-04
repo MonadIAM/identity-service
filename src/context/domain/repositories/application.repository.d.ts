@@ -1,8 +1,12 @@
 declare namespace Repositories {
     namespace Application {
-        interface Contract extends Repositories.Base.Contract<Entities.Application, Adapters.Application.Types> {
-            wouldExceedRealmLimit(props: WouldExceedRealmLimit.Props): WouldExceedRealmLimit.Result;
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<Entities.Application, Adapters.Application.Types> {
+            wouldExceedRealmLimit: WouldExceedRealmLimit.Signature;
         }
+
+        interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
 
         namespace WouldExceedRealmLimit {
             type Props = {
@@ -11,6 +15,8 @@ declare namespace Repositories {
             };
 
             type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

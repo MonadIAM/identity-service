@@ -3,13 +3,19 @@ import { SecondFactorType } from "~context/enums";
 declare global {
     namespace Services {
         namespace SecondFactor {
-            interface Contract {
-                create(props: Create.Props): Create.Result;
-                rewrap(props: Rewrap.Props): Rewrap.Result;
-                verify(props: Verify.Props): Verify.Result;
-                purge(props: Purge.Props): Purge.Result;
-                reset(props: Reset.Props): Reset.Result;
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                create: Create.Signature;
+                rewrap: Rewrap.Signature;
+                verify: Verify.Signature;
+                purge: Purge.Signature;
+                reset: Reset.Signature;
             }
+
+            interface QueryContract extends Pick<PublicContract, "rewrap"> {}
+
+            interface CommandContract extends PublicContract {}
 
             namespace Create {
                 type Props = {
@@ -23,6 +29,8 @@ declare global {
                 };
 
                 type Result = Entities.SecondFactor;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Verify {
@@ -35,6 +43,8 @@ declare global {
                 };
 
                 type Result = void;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Rewrap {
@@ -47,6 +57,8 @@ declare global {
                 };
 
                 type Result = void;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Purge {
@@ -59,6 +71,8 @@ declare global {
                 };
 
                 type Result = void;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Reset {
@@ -70,6 +84,8 @@ declare global {
                 };
 
                 type Result = void;
+
+                type Signature = (props: Props) => Result;
             }
         }
     }

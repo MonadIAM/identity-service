@@ -1,22 +1,38 @@
 declare namespace Commands {
     namespace SecondFactor {
+        interface Contract extends InternalContract, ControllerContract {}
+
         interface InternalContract {
-            secondFactorEnabledPayloadMapper(
-                props: SecondFactorEnabledPayloadMapper.Props,
-            ): SecondFactorEnabledPayloadMapper.Result;
-            secondFactorResetPayloadMapper(
-                props: SecondFactorResetPayloadMapper.Props,
-            ): SecondFactorResetPayloadMapper.Result;
+            secondFactorEnabledPayloadMapper: SecondFactorEnabledPayloadMapper.Signature;
+            secondFactorResetPayloadMapper: SecondFactorResetPayloadMapper.Signature;
+        }
+
+        namespace SecondFactorEnabledPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace SecondFactorResetPayloadMapper {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
         }
 
         interface ControllerContract {
-            create(props: Create.Props): Create.Result;
-            verify(props: Verify.Props): Verify.Result;
-            purge(props: Purge.Props): Purge.Result;
-            reset(props: Reset.Props): Reset.Result;
+            create: Create.Signature;
+            verify: Verify.Signature;
+            reset: Reset.Signature;
+            purge: Purge.Signature;
         }
-
-        interface Contract extends InternalContract, ControllerContract {}
 
         namespace Create {
             type Props = {
@@ -31,6 +47,8 @@ declare namespace Commands {
                 uri: string;
                 id: string;
             }>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Verify {
@@ -48,18 +66,8 @@ declare namespace Commands {
                     code?: string;
                 }
             >;
-        }
 
-        namespace Purge {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    factor: string;
-                };
-            };
-
-            type Result = Promise<MessageResult>;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Reset {
@@ -72,22 +80,22 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace SecondFactorEnabledPayloadMapper {
+        namespace Purge {
             type Props = {
-                account: string;
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    factor: string;
+                };
             };
 
-            type Result = Topics.Notification.CreateMessage["payload"];
-        }
+            type Result = Promise<MessageResult>;
 
-        namespace SecondFactorResetPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
+            type Signature = (props: Props) => Result;
         }
     }
 }

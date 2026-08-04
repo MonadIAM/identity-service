@@ -1,8 +1,10 @@
 declare namespace Services {
     namespace Membership {
-        interface Contract {
-            create(props: Create.Props): Create.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            create: Create.Signature;
+            revoke: Revoke.Signature;
         }
 
         namespace Create {
@@ -17,6 +19,8 @@ declare namespace Services {
             };
 
             type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
@@ -29,6 +33,8 @@ declare namespace Services {
             };
 
             type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

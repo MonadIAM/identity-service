@@ -188,7 +188,7 @@ export class IdentifierController {
     public resend(
         @Body() input: ResendBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Authenticated,
-    ): Commands.Identifier.Resend.Pesult {
+    ): Commands.Identifier.Resend.Result {
         return this.identifierCommands.resend({ actor, input });
     }
 

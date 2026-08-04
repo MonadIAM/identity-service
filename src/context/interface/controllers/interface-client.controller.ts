@@ -66,7 +66,7 @@ const {
 export class InterfaceClientController {
     public constructor(
         @Inject(INTERFACE_CLIENT_COMMANDS)
-        private readonly interfaceClientCommands: Commands.InterfaceClient.Contract,
+        private readonly interfaceClientCommands: Commands.InterfaceClient.ControllerContract,
         @Inject(INTERFACE_CLIENT_QUERIES)
         private readonly interfaceClientQueries: Queries.InterfaceClient.ControllerContract,
     ) {}

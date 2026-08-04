@@ -27,13 +27,13 @@ export class AccountCommands implements Commands.Account.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.Contract,
+        private readonly identifierRepository: Repositories.Identifier.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.Contract,
-        @Inject(ACCOUNT_SERVICE)
-        private readonly accountService: Services.Account.Contract,
+        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(RECOVERY_CODE_SERVICE)
-        private readonly recoveryCodeService: Services.RecoveryCode.Contract,
+        private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
+        @Inject(ACCOUNT_SERVICE)
+        private readonly accountService: Services.Account.CommandContract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
         @Inject(HASHING_SERVICE)

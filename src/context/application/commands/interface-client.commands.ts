@@ -16,12 +16,12 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.Contract,
         @Inject(INTERFACE_CLIENT_REPOSITORY)
-        private readonly interfaceClientRepository: Repositories.InterfaceClient.Contract,
+        private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
+        @Inject(APPLICATION_REPOSITORY)
+        private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(INTERFACE_CLIENT_SERVICE)
-        private readonly interfaceClientService: Services.InterfaceClient.Contract,
+        private readonly interfaceClientService: Services.InterfaceClient.CommandContract,
     ) {}
 
     public async create(props: Commands.InterfaceClient.Create.Props): Commands.InterfaceClient.Create.Result {

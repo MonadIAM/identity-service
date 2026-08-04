@@ -10,22 +10,24 @@ export class HashingService implements CommonServices.Hashing.Contract {
         this.options = this.buildArgon2Options();
     }
 
-    public hash({ value }: CommonServices.Hashing.Hash): Promise<string> {
+    public hash(props: CommonServices.Hashing.Hash.Props): CommonServices.Hashing.Hash.Result {
+        const { value } = props;
         return hash(value, this.options);
     }
 
-    public async verify({ value, storedHash }: CommonServices.Hashing.Verify): Promise<boolean> {
+    public async verify(props: CommonServices.Hashing.Verify.Props): CommonServices.Hashing.Verify.Result {
         try {
+            const { value, storedHash } = props;
             return await verify(storedHash, value);
         } catch {
             return false;
         }
     }
 
-    public async verifyAndUpgrade({
-        value,
-        storedHash,
-    }: CommonServices.Hashing.VerifyAndUpgrade.Props): Promise<CommonServices.Hashing.VerifyAndUpgrade.Result> {
+    public async verifyAndUpgrade(
+        props: CommonServices.Hashing.VerifyAndUpgrade.Props,
+    ): CommonServices.Hashing.VerifyAndUpgrade.Result {
+        const { storedHash, value } = props;
         const isValid = await this.verify({ value, storedHash });
 
         if (!isValid) {
