@@ -11,9 +11,9 @@ import { MikroOrmConfig } from "./database.config";
         MikroOrmModule.forRootAsync({
             contextName: "write",
             imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (config: ConfigService) => ({
-                ...MikroOrmConfig.buildOptions({ kind: "write", config }),
+            inject: [MikroOrmConfig, ConfigService],
+            useFactory: (orm: MikroOrmConfig, config: ConfigService) => ({
+                ...orm.buildOptions({ kind: "write", config }),
                 registerRequestContext: false,
                 autoLoadEntities: true,
             }),
@@ -22,18 +22,18 @@ import { MikroOrmConfig } from "./database.config";
         MikroOrmModule.forRootAsync({
             contextName: "read",
             imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (config: ConfigService) => {
+            inject: [MikroOrmConfig, ConfigService],
+            useFactory: (orm: MikroOrmConfig, config: ConfigService) => {
                 const cqrsEnabled = config.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
                 if (cqrsEnabled) {
                     return {
-                        ...MikroOrmConfig.buildOptions({ kind: "read", config }),
+                        ...orm.buildOptions({ kind: "read", config }),
                         registerRequestContext: false,
                         autoLoadEntities: true,
                     };
                 } else {
                     return {
-                        ...MikroOrmConfig.buildOptions({ kind: "write", config }),
+                        ...orm.buildOptions({ kind: "write", config }),
                         registerRequestContext: false,
                         autoLoadEntities: true,
                     };
@@ -41,5 +41,7 @@ import { MikroOrmConfig } from "./database.config";
             },
         }),
     ],
+    providers: [MikroOrmConfig],
+    exports: [MikroOrmConfig],
 })
 export class DatabaseModule {}
