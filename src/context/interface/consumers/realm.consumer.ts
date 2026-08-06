@@ -37,7 +37,10 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
     };
 
     @EventPattern(KafkaTopic.REALM)
-    public async handle(@Payload() message: Consumers.Realm.Message, @Ctx() context: KafkaContext): Promise<void> {
+    public async handle(
+        @Payload() message: Consumers.Realm.Message,
+        @Ctx() context: KafkaContext,
+    ): Consumers.Realm.Handle.Result {
         try {
             const handler = this.handlers[message.actionType];
             if (handler) {

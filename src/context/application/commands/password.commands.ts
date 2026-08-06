@@ -35,11 +35,11 @@ export class PasswordCommands implements Commands.Password.Contract {
         @Inject(PASSWORD_SERVICE)
         private readonly passwordService: Services.Password.CommandContract,
         @Inject(OTP_CACHE_SERVICE)
-        private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
+        private readonly otpCacheService: InfrastructureServices.OTPCache.PublicContract,
         @Inject(HASHING_SERVICE)
-        private readonly hashingService: CommonServices.Hashing.Contract,
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
         private readonly configService: ConfigService,
     ) {
         this.historyCheckDays = this.configService.getOrThrow<number>("PASSWORD_HISTORY_CHECK_DAYS");

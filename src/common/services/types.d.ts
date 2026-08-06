@@ -55,7 +55,9 @@ declare global {
                 version: number;
             };
 
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 getLatestVersion: GetLatestVersion.Signature;
                 decrypt: Decrypt.Signature;
                 encrypt: Encrypt.Signature;
@@ -75,6 +77,31 @@ declare global {
                 type Signature = (props: Props) => Result;
             }
 
+            namespace Decrypt {
+                type Props = {
+                    ciphertext: string;
+                    name: string;
+                };
+
+                type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Encrypt {
+                type Props = {
+                    plaintext: string;
+                    name: string;
+                };
+
+                type Result = Promise<{
+                    ciphertext: string;
+                    version: number;
+                }>;
+
+                type Signature = (props: Props) => Result;
+            }
+
             namespace GetKey {
                 type Props = {
                     name: string;
@@ -85,6 +112,20 @@ declare global {
                     latestVersion: number;
                     name: string;
                     type: string;
+                }>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Rewrap {
+                type Props = {
+                    ciphertext: string;
+                    name: string;
+                };
+
+                type Result = Promise<{
+                    ciphertext: string;
+                    version: number;
                 }>;
 
                 type Signature = (props: Props) => Result;
@@ -115,51 +156,14 @@ declare global {
 
                 type Signature = (props: Props) => Result;
             }
-
-            namespace Encrypt {
-                type Props = {
-                    plaintext: string;
-                    name: string;
-                };
-
-                type Result = Promise<{
-                    ciphertext: string;
-                    version: number;
-                }>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Decrypt {
-                type Props = {
-                    ciphertext: string;
-                    name: string;
-                };
-
-                type Result = Promise<string>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Rewrap {
-                type Props = {
-                    ciphertext: string;
-                    name: string;
-                };
-
-                type Result = Promise<{
-                    ciphertext: string;
-                    version: number;
-                }>;
-
-                type Signature = (props: Props) => Result;
-            }
         }
 
         namespace Hashing {
             type Options = HashOptions;
 
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 verifyAndUpgrade: VerifyAndUpgrade.Signature;
                 verify: Verify.Signature;
                 hash: Hash.Signature;
@@ -202,7 +206,9 @@ declare global {
         }
 
         namespace Crypto {
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 generateRecoveryCodes: GenerateRecoveryCodes.Signature;
                 generateRecoveryCode: GenerateRecoveryCode.Signature;
                 verifyCodeChallenge: VerifyCodeChallenge.Signature;
@@ -270,49 +276,53 @@ declare global {
         }
 
         namespace JWT {
-            type Token = "REFRESH" | "ACCESS" | "ID";
+            interface Contract extends InternalContract, PublicContract {}
 
             interface InternalContract {
-                resolveVerificationFailure(error: unknown, tokenType: "ACCESS" | "REFRESH" | "ID"): Failure;
-                sign(payload: JWTPayload, props: Sign.Props): Promise<string>;
-                computeAtHash(accessToken: string): string;
+                resolveVerificationFailure: ResolveVerificationFailure.Signature;
+                sign: Sign.Signature;
             }
 
-            interface Contract extends InternalContract {
-                computePairwiseSubject(props: ComputePairwiseSubject.Props): Promise<string>;
-                signIdToken(payload: JWTPayload, props: SignIdToken.Props): Promise<string>;
-                signRefreshToken(payload: JWTPayload): Promise<string>;
-                signAccessToken(payload: JWTPayload): Promise<string>;
-                verifyRefresh(token: string): Promise<JWTPayload>;
-                verifyIdToken(token: string): Promise<JWTPayload>;
-                verifyAccess(token: string): Promise<JWTPayload>;
-                getJWKS(name?: string): Promise<GetJWKS>;
+            namespace ResolveVerificationFailure {
+                type Props = {
+                    tokenType: "REFRESH" | "ACCESS" | "ID";
+                    error: unknown;
+                };
+
+                type Result = {
+                    params?: UnknownObject;
+                    description: string;
+                    messageKey: string;
+                };
+
+                type Signature = (props: Props) => Result;
             }
-
-            type Failure = {
-                params?: UnknownObject;
-                description: string;
-                messageKey: string;
-            };
-
-            type GetJWKS = {
-                keys: JWK[];
-            };
 
             namespace Sign {
                 type Props = {
-                    audience: string;
-                    type: string;
-                    key: string;
-                    ttl: number;
+                    payload: JWTPayload;
+                    props: {
+                        audience: string;
+                        type: string;
+                        key: string;
+                        ttl: number;
+                    };
                 };
+
+                type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace SignIdToken {
-                type Props = {
-                    accessToken: string;
-                    audience: string;
-                };
+            interface PublicContract {
+                computePairwiseSubject: ComputePairwiseSubject.Signature;
+                signRefreshToken: SignRefreshToken.Signature;
+                signAccessToken: SignAccessToken.Signature;
+                verifyRefresh: VerifyToken.Signature;
+                verifyIdToken: VerifyToken.Signature;
+                verifyAccess: VerifyToken.Signature;
+                signIdToken: SignIdToken.Signature;
+                getJWKS: GetJWKS.Signature;
             }
 
             namespace ComputePairwiseSubject {
@@ -320,11 +330,71 @@ declare global {
                     client: string;
                     account: string;
                 };
+
+                type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace SignRefreshToken {
+                type Props = {
+                    payload: JWTPayload;
+                };
+
+                type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace SignAccessToken {
+                type Props = {
+                    payload: JWTPayload;
+                };
+
+                type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace SignIdToken {
+                type Props = {
+                    payload: JWTPayload;
+                    props: {
+                        accessToken: string;
+                        audience: string;
+                    };
+                };
+
+                type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace VerifyToken {
+                type Props = {
+                    token: string;
+                };
+
+                type Result = Promise<JWTPayload>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace GetJWKS {
+                type Props = string;
+
+                type Result = Promise<{
+                    keys: JWK[];
+                }>;
+
+                type Signature = (props?: Props) => Result;
             }
         }
 
         namespace GoogleOAuth {
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 fetchProfile(accessToken: string): Promise<Profile>;
                 exchangeCode(code: string): Promise<TokenResponse>;
                 getAuthorizationUrl(state: string): string;
@@ -349,7 +419,9 @@ declare global {
         }
 
         namespace GitHubOAuth {
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 fetchProfile(accessToken: string): Promise<Profile>;
                 exchangeCode(code: string): Promise<TokenResponse>;
                 getAuthorizationUrl(state: string): string;

@@ -28,33 +28,45 @@ export class CleanupScheduler {
 
     @Cron(CronExpression.EVERY_HOUR)
     public async schedulePendingAccountsCleanup(): Promise<void> {
-        await this.cleanupQueue.schedule(CleanupJob.PENDING_ACCOUNTS, {
-            olderThanMs: ms(this.pendingAccountTTL),
-            batchSize: this.batchSize,
+        await this.cleanupQueue.schedule({
+            job: CleanupJob.PENDING_ACCOUNTS,
+            data: {
+                olderThanMs: ms(this.pendingAccountTTL),
+                batchSize: this.batchSize,
+            },
         });
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_1AM)
     public async scheduleInactiveAccountsCleanup(): Promise<void> {
-        await this.cleanupQueue.schedule(CleanupJob.INACTIVE_ACCOUNTS, {
-            olderThanMs: ms(this.inactiveAccountTTL),
-            batchSize: this.batchSize,
+        await this.cleanupQueue.schedule({
+            job: CleanupJob.INACTIVE_ACCOUNTS,
+            data: {
+                olderThanMs: ms(this.inactiveAccountTTL),
+                batchSize: this.batchSize,
+            },
         });
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_2AM)
     public async scheduleAuditLogCleanup(): Promise<void> {
-        await this.cleanupQueue.schedule(CleanupJob.AUDIT_LOG, {
-            olderThanMs: ms(this.auditLogRetentionTTL),
-            batchSize: this.batchSize,
+        await this.cleanupQueue.schedule({
+            job: CleanupJob.AUDIT_LOG,
+            data: {
+                olderThanMs: ms(this.auditLogRetentionTTL),
+                batchSize: this.batchSize,
+            },
         });
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_3AM)
     public async scheduleChangeLogCleanup(): Promise<void> {
-        await this.cleanupQueue.schedule(CleanupJob.CHANGE_LOG, {
-            olderThanMs: ms(this.changeLogRetentionTTL),
-            batchSize: this.batchSize,
+        await this.cleanupQueue.schedule({
+            job: CleanupJob.CHANGE_LOG,
+            data: {
+                olderThanMs: ms(this.changeLogRetentionTTL),
+                batchSize: this.batchSize,
+            },
         });
     }
 }

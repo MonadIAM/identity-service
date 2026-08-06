@@ -36,9 +36,9 @@ export class SessionCommands implements Commands.Session.Contract {
         @Inject(SESSION_SERVICE)
         private readonly sessionService: Services.Session.CommandContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
         @Inject(JWT_SERVICE)
-        private readonly jwtService: CommonServices.JWT.Contract,
+        private readonly jwtService: CommonServices.JWT.PublicContract,
         protected readonly configService: ConfigService,
     ) {
         this.sessionTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
@@ -109,7 +109,7 @@ export class SessionCommands implements Commands.Session.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
         }
 
-        const payload = await this.jwtService.verifyRefresh(props.input.refreshToken);
+        const payload = await this.jwtService.verifyRefresh({ token: props.input.refreshToken });
 
         const session = await this.sessionRepository.findUnique({
             where: { id: payload.sid as string },
@@ -152,10 +152,12 @@ export class SessionCommands implements Commands.Session.Contract {
         }
 
         const refreshToken = await this.jwtService.signRefreshToken({
-            client_id: session.client,
-            sub: session.account.id,
-            realms: session.realms,
-            sid: session.id,
+            payload: {
+                client_id: session.client,
+                sub: session.account.id,
+                realms: session.realms,
+                sid: session.id,
+            },
         });
 
         await this.transactionalService.run({
@@ -173,13 +175,15 @@ export class SessionCommands implements Commands.Session.Contract {
         });
 
         const accessToken = await this.jwtService.signAccessToken({
-            auth_time: Math.floor(session.createdAt.getTime() / 1e3),
-            ...(session.scope ? { scope: session.scope } : {}),
-            client_id: session.client,
-            sub: session.account.id,
-            realms: session.realms,
-            acr: session.acr,
-            sid: session.id,
+            payload: {
+                auth_time: Math.floor(session.createdAt.getTime() / 1e3),
+                ...(session.scope ? { scope: session.scope } : {}),
+                client_id: session.client,
+                sub: session.account.id,
+                realms: session.realms,
+                acr: session.acr,
+                sid: session.id,
+            },
         });
 
         return { message: `${this.dictionaryPath}.REFRESHED`, accessToken, refreshToken };

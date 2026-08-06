@@ -16,7 +16,7 @@ export class DiscoveryController {
         @Inject(OAUTH_QUERIES)
         private readonly oauthQueries: Queries.OAuth.ControllerContract,
         @Inject(JWT_SERVICE)
-        private readonly jwtService: CommonServices.JWT.Contract,
+        private readonly jwtService: CommonServices.JWT.PublicContract,
     ) {}
 
     @Public()
@@ -65,7 +65,7 @@ export class DiscoveryController {
             "Publishes verification keys as a JWK Set (RFC 7517), using JWA algorithm identifiers (RFC 7518, ES256) for keys used in JWS-signed tokens (RFC 7515).",
         security: [],
     })
-    public getJWKS(): Promise<CommonServices.JWT.GetJWKS> {
+    public getJWKS(): CommonServices.JWT.GetJWKS.Result {
         return this.jwtService.getJWKS();
     }
 }

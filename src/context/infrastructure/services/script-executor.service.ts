@@ -4,8 +4,6 @@ import Redis from "ioredis";
 import { REDIS_CACHE_CLIENT } from "~infrastructure/redis";
 
 import { SCRIPT_LOADER_SERVICE } from "./tokens";
-import { LuaScript } from "../scripts";
-
 @Injectable()
 export class ScriptExecutorService implements InfrastructureServices.ScriptExecutor.Contract {
     public constructor(
@@ -20,18 +18,26 @@ export class ScriptExecutorService implements InfrastructureServices.ScriptExecu
     ): InfrastructureServices.ScriptExecutor.Execute.Result<T> {
         const { script, args, keys = [] } = props;
         try {
-            return await this.evalsha<T>(script, keys, args);
+            return await this.evalsha<T>({ script, keys, args });
         } catch (error) {
             if (error instanceof Error && error.message.includes("NOSCRIPT")) {
                 await this.scriptLoaderService.reload(script);
-                return this.evalsha<T>(script, keys, args);
+                return await this.evalsha<T>({ script, keys, args });
             } else {
                 throw error;
             }
         }
     }
 
-    private evalsha<T>(script: LuaScript, keys: string[], args: string[]): Promise<T> {
-        return this.redis.evalsha(this.scriptLoaderService.getHash(script), keys.length, ...keys, ...args) as Promise<T>;
+    public evalsha<T>(
+        props: InfrastructureServices.ScriptExecutor.Evalsha.Props,
+    ): InfrastructureServices.ScriptExecutor.Evalsha.Result<T> {
+        const { script, args, keys } = props;
+        return this.redis.evalsha(
+            this.scriptLoaderService.getHash(script),
+            keys.length,
+            ...keys,
+            ...args,
+        ) as InfrastructureServices.ScriptExecutor.Evalsha.Result<T>;
     }
 }

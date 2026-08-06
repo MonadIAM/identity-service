@@ -31,9 +31,9 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         @Inject(IDENTIFIER_SERVICE)
         private readonly identifierService: Services.Identifier.CommandContract,
         @Inject(OTP_CACHE_SERVICE)
-        private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
+        private readonly otpCacheService: InfrastructureServices.OTPCache.PublicContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
     ) {}
 
     public async create(props: Commands.Identifier.Create.Props): Commands.Identifier.Create.Result {

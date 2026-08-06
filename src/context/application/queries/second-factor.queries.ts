@@ -19,7 +19,7 @@ export class SecondFactorQueries implements Queries.SecondFactor.Contract {
         @Inject(SECOND_FACTOR_REPOSITORY)
         private readonly secondFactorRepository: Repositories.SecondFactor.QueryContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
-        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
         @Inject(SECOND_FACTOR_SERVICE)
         private readonly secondFactorService: Services.SecondFactor.QueryContract,
     ) {}

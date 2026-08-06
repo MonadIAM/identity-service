@@ -1,4 +1,4 @@
-import { base64url, createLocalJWKSet, errors, exportJWK, importSPKI, jwtVerify, JWTPayload } from "jose";
+import { base64url, createLocalJWKSet, errors, exportJWK, importSPKI, jwtVerify } from "jose";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { randomUUID, createHash } from "node:crypto";
 import { ConfigService } from "@nestjs/config";
@@ -43,18 +43,83 @@ export class JWTService implements CommonServices.JWT.Contract {
         this.accessAudience = `${this.issuer}:api`;
     }
 
-    public signAccessToken(payload: JWTPayload): Promise<string> {
-        return this.sign(payload, {
-            audience: this.accessAudience,
-            key: this.accessKey,
-            ttl: this.accessTTL,
-            type: "at+jwt",
+    public async computePairwiseSubject(
+        props: CommonServices.JWT.ComputePairwiseSubject.Props,
+    ): CommonServices.JWT.ComputePairwiseSubject.Result {
+        const digest = await this.vaultTransitService.hmac({
+            input: `${props.client}:${props.account}`,
+            name: this.pairwiseKey,
+        });
+
+        return base64url.encode(Buffer.from(digest, "base64"));
+    }
+
+    public signRefreshToken(props: CommonServices.JWT.SignRefreshToken.Props): CommonServices.JWT.SignRefreshToken.Result {
+        return this.sign({
+            payload: props.payload,
+            props: {
+                audience: this.refreshAudience,
+                key: this.refreshKey,
+                ttl: this.refreshTTL,
+                type: "rt+jwt",
+            },
         });
     }
 
-    public async verifyAccess(token: string): Promise<JWTPayload> {
+    public signAccessToken(props: CommonServices.JWT.SignAccessToken.Props): CommonServices.JWT.SignAccessToken.Result {
+        return this.sign({
+            payload: props.payload,
+            props: {
+                audience: this.accessAudience,
+                key: this.accessKey,
+                ttl: this.accessTTL,
+                type: "at+jwt",
+            },
+        });
+    }
+
+    public signIdToken(props: CommonServices.JWT.SignIdToken.Props): CommonServices.JWT.SignIdToken.Result {
+        const {
+            props: { accessToken, audience },
+            payload,
+        } = props;
+
+        const digest = createHash("sha256").update(accessToken, "ascii").digest();
+
+        return this.sign({
+            payload: {
+                at_hash: base64url.encode(digest.subarray(0, digest.length / 2)),
+                ...payload,
+            },
+            props: {
+                key: this.idKey,
+                ttl: this.idTTL,
+                type: "JWT",
+                audience,
+            },
+        });
+    }
+
+    public async verifyRefresh(props: CommonServices.JWT.VerifyToken.Props): CommonServices.JWT.VerifyToken.Result {
         try {
-            const { payload } = await jwtVerify(token, createLocalJWKSet(await this.getJWKS(this.accessKey)), {
+            const { payload } = await jwtVerify(props.token, createLocalJWKSet(await this.getJWKS(this.refreshKey)), {
+                requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
+                audience: this.refreshAudience,
+                algorithms: [this.algorithm],
+                issuer: this.issuer,
+                typ: "rt+jwt",
+            });
+
+            return payload;
+        } catch (error) {
+            const { messageKey, params } = this.resolveVerificationFailure({ tokenType: "REFRESH", error });
+            throw Exception.unauthorized({ messageKey, params });
+        }
+    }
+
+    public async verifyAccess(props: CommonServices.JWT.VerifyToken.Props): CommonServices.JWT.VerifyToken.Result {
+        try {
+            const { payload } = await jwtVerify(props.token, createLocalJWKSet(await this.getJWKS(this.accessKey)), {
                 requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
                 audience: this.accessAudience,
                 algorithms: [this.algorithm],
@@ -64,7 +129,7 @@ export class JWTService implements CommonServices.JWT.Contract {
 
             return payload;
         } catch (error) {
-            const { messageKey, description, params } = this.resolveVerificationFailure(error, "ACCESS");
+            const { messageKey, description, params } = this.resolveVerificationFailure({ tokenType: "ACCESS", error });
             throw Exception.unauthorized({
                 headers: {
                     "WWW-Authenticate": `Bearer error="invalid_token", error_description="${description}"`,
@@ -75,47 +140,9 @@ export class JWTService implements CommonServices.JWT.Contract {
         }
     }
 
-    public signRefreshToken(payload: JWTPayload): Promise<string> {
-        return this.sign(payload, {
-            audience: this.refreshAudience,
-            key: this.refreshKey,
-            ttl: this.refreshTTL,
-            type: "rt+jwt",
-        });
-    }
-
-    public async verifyRefresh(token: string): Promise<JWTPayload> {
+    public async verifyIdToken(props: CommonServices.JWT.VerifyToken.Props): CommonServices.JWT.VerifyToken.Result {
         try {
-            const { payload } = await jwtVerify(token, createLocalJWKSet(await this.getJWKS(this.refreshKey)), {
-                requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
-                audience: this.refreshAudience,
-                algorithms: [this.algorithm],
-                issuer: this.issuer,
-                typ: "rt+jwt",
-            });
-
-            return payload;
-        } catch (error) {
-            const { messageKey, params } = this.resolveVerificationFailure(error, "REFRESH");
-            throw Exception.unauthorized({ messageKey, params });
-        }
-    }
-
-    public signIdToken(payload: JWTPayload, props: CommonServices.JWT.SignIdToken.Props): Promise<string> {
-        return this.sign(
-            { ...payload, at_hash: this.computeAtHash(props.accessToken) },
-            {
-                audience: props.audience,
-                key: this.idKey,
-                ttl: this.idTTL,
-                type: "JWT",
-            },
-        );
-    }
-
-    public async verifyIdToken(token: string): Promise<JWTPayload> {
-        try {
-            const { payload } = await jwtVerify(token, createLocalJWKSet(await this.getJWKS(this.idKey)), {
+            const { payload } = await jwtVerify(props.token, createLocalJWKSet(await this.getJWKS(this.idKey)), {
                 requiredClaims: ["sub", "sid", "aud", "exp", "iat"],
                 algorithms: [this.algorithm],
                 issuer: this.issuer,
@@ -127,12 +154,13 @@ export class JWTService implements CommonServices.JWT.Contract {
                 return error.payload;
             }
 
-            const { messageKey } = this.resolveVerificationFailure(error, "ID");
+            const { messageKey } = this.resolveVerificationFailure({ tokenType: "ID", error });
             throw Exception.badRequest({ messageKey, code: ErrorCode.INVALID_REQUEST });
         }
     }
 
-    public async getJWKS(name = this.accessKey): Promise<CommonServices.JWT.GetJWKS> {
+    public async getJWKS(props?: CommonServices.JWT.GetJWKS.Props): CommonServices.JWT.GetJWKS.Result {
+        const name = props ?? this.accessKey;
         const key = await this.vaultTransitService.getKey({ name });
         const keys = await Promise.all(
             key.versions.map(async ({ publicKey, version }) => ({
@@ -146,38 +174,10 @@ export class JWTService implements CommonServices.JWT.Contract {
         return { keys };
     }
 
-    public async sign(payload: JWTPayload, props: CommonServices.JWT.Sign.Props): Promise<string> {
-        const key = await this.vaultTransitService.getKey({ name: props.key });
-        const now = Math.floor(Date.now() / 1e3);
-        const version = key.latestVersion;
-
-        const header = base64url.encode(
-            JSON.stringify({
-                kid: `${props.key}:v${version}`,
-                alg: this.algorithm,
-                typ: props.type,
-            }),
-        );
-
-        const claims = base64url.encode(
-            JSON.stringify({
-                ...payload,
-                exp: now + Math.ceil(props.ttl / 1e3),
-                jti: payload.jti ?? randomUUID(),
-                aud: props.audience,
-                sub: payload.sub,
-                iss: this.issuer,
-                iat: now,
-            }),
-        );
-
-        const input = `${header}.${claims}`;
-        const { signature } = await this.vaultTransitService.sign({ input, version, name: props.key });
-
-        return `${input}.${signature}`;
-    }
-
-    public resolveVerificationFailure(error: unknown, tokenType: CommonServices.JWT.Token): CommonServices.JWT.Failure {
+    public resolveVerificationFailure(
+        props: CommonServices.JWT.ResolveVerificationFailure.Props,
+    ): CommonServices.JWT.ResolveVerificationFailure.Result {
+        const { tokenType, error } = props;
         const { prefix, label } =
             tokenType === "ACCESS"
                 ? { prefix: "ACCESS_TOKEN", label: "access" }
@@ -223,17 +223,34 @@ export class JWTService implements CommonServices.JWT.Contract {
         }
     }
 
-    public computeAtHash(accessToken: string): string {
-        const digest = createHash("sha256").update(accessToken, "ascii").digest();
-        return base64url.encode(digest.subarray(0, digest.length / 2));
-    }
+    public async sign({ payload, props }: CommonServices.JWT.Sign.Props): CommonServices.JWT.Sign.Result {
+        const key = await this.vaultTransitService.getKey({ name: props.key });
+        const now = Math.floor(Date.now() / 1e3);
+        const version = key.latestVersion;
 
-    public async computePairwiseSubject(props: CommonServices.JWT.ComputePairwiseSubject.Props): Promise<string> {
-        const digest = await this.vaultTransitService.hmac({
-            input: `${props.client}:${props.account}`,
-            name: this.pairwiseKey,
-        });
+        const header = base64url.encode(
+            JSON.stringify({
+                kid: `${props.key}:v${version}`,
+                alg: this.algorithm,
+                typ: props.type,
+            }),
+        );
 
-        return base64url.encode(Buffer.from(digest, "base64"));
+        const claims = base64url.encode(
+            JSON.stringify({
+                ...payload,
+                exp: now + Math.ceil(props.ttl / 1e3),
+                jti: payload.jti ?? randomUUID(),
+                aud: props.audience,
+                sub: payload.sub,
+                iss: this.issuer,
+                iat: now,
+            }),
+        );
+
+        const input = `${header}.${claims}`;
+        const { signature } = await this.vaultTransitService.sign({ input, version, name: props.key });
+
+        return `${input}.${signature}`;
     }
 }

@@ -39,15 +39,15 @@ export class AuthnCommands implements Commands.Authn.Contract {
         @Inject(SECOND_FACTOR_SERVICE)
         private readonly secondFactorService: Services.SecondFactor.CommandContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
-        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
         @Inject(PENDING_2FA_CACHE_SERVICE)
-        private readonly pending2FACacheService: InfrastructureServices.Pending2FACache.Contract,
+        private readonly pending2FACacheService: InfrastructureServices.Pending2FACache.PublicContract,
         @Inject(OTP_CACHE_SERVICE)
-        private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
+        private readonly otpCacheService: InfrastructureServices.OTPCache.PublicContract,
         @Inject(HASHING_SERVICE)
-        private readonly hashingService: CommonServices.Hashing.Contract,
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
     ) {}
 
     public async password(props: Commands.Authn.Password.Props): Commands.Authn.Password.Result {

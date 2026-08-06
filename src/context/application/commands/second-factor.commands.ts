@@ -34,11 +34,11 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         @Inject(SECOND_FACTOR_SERVICE)
         private readonly secondFactorService: Services.SecondFactor.CommandContract,
         @Inject(HASHING_SERVICE)
-        private readonly hashingService: CommonServices.Hashing.Contract,
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
-        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
     ) {}
 
     public async create(props: Commands.SecondFactor.Create.Props): Commands.SecondFactor.Create.Result {

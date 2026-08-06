@@ -4,11 +4,19 @@ import { KafkaContext } from "@nestjs/microservices";
 declare global {
     namespace Consumers {
         namespace Realm {
-            interface Contract {
-                handle(message: Message, ctx: KafkaContext): Promise<void>;
+            type Message = Topics.Realm.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
             }
 
-            type Message = Topics.Realm.Message;
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message, ctx: KafkaContext) => Result;
+            }
 
             type Handlers = {
                 [K in RealmTopicAction]: (payload: Topics.Realm.Message["payload"]) => Promise<void>;
@@ -16,35 +24,83 @@ declare global {
         }
 
         namespace AccessCache {
-            interface Contract {
-                handle(message: Message, ctx: KafkaContext): Promise<void>;
+            type Message = Topics.AccessCache.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
             }
 
-            type Message = Topics.AccessCache.Message;
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message, ctx: KafkaContext) => Result;
+            }
         }
 
         namespace Blacklist {
-            interface Contract {
-                handle(message: Message): Promise<void>;
+            type Message = Topics.Blacklist.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
             }
 
-            type Message = Topics.Blacklist.Message;
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message) => Result;
+            }
         }
 
         namespace Reauthentication {
-            interface Contract {
-                handle(message: Message): Promise<void>;
+            type Message = Topics.Reauthentication.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
             }
 
-            type Message = Topics.Reauthentication.Message;
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message) => Result;
+            }
         }
 
         namespace Membership {
-            interface Contract {
-                handle(message: Message, ctx: KafkaContext): Promise<void>;
+            type Message = Topics.Membership.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
             }
 
-            type Message = Topics.Membership.Message;
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message, ctx: KafkaContext) => Result;
+            }
+        }
+
+        namespace Retry {
+            type Message = Consumers.DLQ.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
+            }
+
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message, ctx: KafkaContext) => Result;
+            }
         }
     }
 }

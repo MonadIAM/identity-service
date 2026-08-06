@@ -35,11 +35,11 @@ export class AccountCommands implements Commands.Account.Contract {
         @Inject(ACCOUNT_SERVICE)
         private readonly accountService: Services.Account.CommandContract,
         @Inject(OTP_CACHE_SERVICE)
-        private readonly otpCacheService: InfrastructureServices.OTPCache.Contract,
+        private readonly otpCacheService: InfrastructureServices.OTPCache.PublicContract,
         @Inject(HASHING_SERVICE)
-        private readonly hashingService: CommonServices.Hashing.Contract,
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
     ) {}
 
     public async signup(props: Commands.Account.Signup.Props): Commands.Account.Signup.Result {

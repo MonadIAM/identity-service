@@ -25,7 +25,10 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
     }
 
     @EventPattern(KafkaTopic.MEMBERSHIP)
-    public async handle(@Payload() message: Consumers.Membership.Message, @Ctx() context: KafkaContext): Promise<void> {
+    public async handle(
+        @Payload() message: Consumers.Membership.Message,
+        @Ctx() context: KafkaContext,
+    ): Consumers.Membership.Handle.Result {
         try {
             const { actionType, payload } = message;
             switch (actionType) {

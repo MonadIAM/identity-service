@@ -39,15 +39,15 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         @Inject(ACCOUNT_SERVICE)
         private readonly accountService: Services.Account.CommandContract,
         @Inject(OAUTH_STATE_CACHE_SERVICE)
-        private readonly oauthStateCacheService: InfrastructureServices.OAuthStateCache.Contract,
+        private readonly oauthStateCacheService: InfrastructureServices.OAuthStateCache.PublicContract,
         @Inject(GOOGLE_OAUTH_SERVICE)
-        private readonly googleOAuthService: CommonServices.GoogleOAuth.Contract,
+        private readonly googleOAuthService: CommonServices.GoogleOAuth.PublicContract,
         @Inject(GITHUB_OAUTH_SERVICE)
-        private readonly githubOAuthService: CommonServices.GitHubOAuth.Contract,
+        private readonly githubOAuthService: CommonServices.GitHubOAuth.PublicContract,
         @Inject(HASHING_SERVICE)
-        private readonly hashingService: CommonServices.Hashing.Contract,
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
     ) {}
 
     public async authorize({ input }: Commands.FederatedAuthn.Authorize.Props): Commands.FederatedAuthn.Authorize.Result {

@@ -21,13 +21,13 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         @Inject(SESSION_COMMANDS)
         private readonly sessionCommands: Commands.Session.CommandsContract,
         @Inject(AUTHORIZATION_CACHE_SERVICE)
-        private readonly authorizationCacheService: InfrastructureServices.AuthorizationCache.Contract,
+        private readonly authorizationCacheService: InfrastructureServices.AuthorizationCache.PublicContract,
         @Inject(INTERFACE_CLIENT_REPOSITORY)
         private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
         @Inject(JWT_SERVICE)
-        private readonly jwtService: CommonServices.JWT.Contract,
+        private readonly jwtService: CommonServices.JWT.PublicContract,
     ) {
         this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
     }
@@ -208,7 +208,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 });
             }
 
-            const payload: Nullable<JWTPayload> = await this.jwtService.verifyRefresh(refreshToken).catch(() => null);
+            const payload: Nullable<JWTPayload> = await this.jwtService
+                .verifyRefresh({ token: refreshToken })
+                .catch(() => null);
 
             if (payload?.client_id === client) {
                 await this.sessionCommands.revoke({
@@ -223,7 +225,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
 
     public async endSession(props: Commands.OAuth.EndSession.Props): Commands.OAuth.EndSession.Result {
         const { response, context, input } = props;
-        const payload = await this.jwtService.verifyIdToken(input.idTokenHint);
+        const payload = await this.jwtService.verifyIdToken({ token: input.idTokenHint });
 
         await this.sessionCommands.revoke({
             session: payload.sid as string,

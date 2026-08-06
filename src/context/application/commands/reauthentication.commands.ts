@@ -27,11 +27,11 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(HASHING_SERVICE)
-        private readonly hashingService: CommonServices.Hashing.Contract,
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(SECOND_FACTOR_SERVICE)
         private readonly secondFactorService: Services.SecondFactor.CommandContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
-        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.Contract,
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
         protected readonly configService: ConfigService,
     ) {
         this.ttl = ms(this.configService.getOrThrow<StringValue>("REAUTHENTICATION_TTL")) / 1e3;

@@ -4,7 +4,9 @@ import { CodeChallengeMethod } from "~context/enums";
 declare global {
     namespace InfrastructureServices {
         namespace ReauthenticationCache {
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 exists: Exists.Signature;
                 delete: Delete.Signature;
                 set: Set.Signature;
@@ -130,7 +132,9 @@ declare global {
         }
 
         namespace SecondFactorSecret {
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 resolve: Resolve.Signature;
                 encrypt: Encrypt.Signature;
             }
@@ -165,7 +169,9 @@ declare global {
                 account: string;
             };
 
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 delete: Delete.Signature;
                 set: Set.Signature;
                 get: Get.Signature;
@@ -209,7 +215,9 @@ declare global {
                 provider: string;
             };
 
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 consume: Consume.Signature;
                 set: Set.Signature;
             }
@@ -236,26 +244,10 @@ declare global {
             }
         }
 
-        namespace ScriptExecutor {
-            interface Contract {
-                execute: Execute.Signature;
-            }
-
-            namespace Execute {
-                type Props = {
-                    script: LuaScript;
-                    args: string[];
-                    keys?: string[];
-                };
-
-                type Result<T> = Promise<T>;
-
-                type Signature = <T>(props: Props) => Result<T>;
-            }
-        }
-
         namespace BlacklistCache {
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 exists: Exists.Signature;
                 set: Set.Signature;
             }
@@ -282,8 +274,46 @@ declare global {
             }
         }
 
+        namespace ScriptExecutor {
+            interface Contract extends InternalContract, PublicContract {}
+
+            interface InternalContract {
+                evalsha: Evalsha.Signature;
+            }
+
+            namespace Evalsha {
+                type Props = {
+                    script: LuaScript;
+                    args: string[];
+                    keys: string[];
+                };
+
+                type Result<T> = Promise<T>;
+
+                type Signature = <T>(props: Props) => Result<T>;
+            }
+
+            interface PublicContract {
+                execute: Execute.Signature;
+            }
+
+            namespace Execute {
+                type Props = {
+                    script: LuaScript;
+                    args: string[];
+                    keys?: string[];
+                };
+
+                type Result<T> = Promise<T>;
+
+                type Signature = <T>(props: Props) => Result<T>;
+            }
+        }
+
         namespace ScriptLoader {
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 getHash: GetHash.Signature;
                 reload: Reload.Signature;
             }
@@ -330,6 +360,7 @@ declare global {
                 deleteAll: DeleteAll.Signature;
                 delete: Delete.Signature;
             }
+
             namespace CheckPermissions {
                 type Props = {
                     permissions: string[];
@@ -384,7 +415,9 @@ declare global {
         namespace OTPCache {
             type Purpose = "verification" | "identifier" | "login" | "reset" | "setup2FA";
 
-            interface Contract {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
                 consume: Consume.Signature;
                 set: Set.Signature;
             }

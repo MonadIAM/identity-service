@@ -17,7 +17,7 @@ export class OAuthQueries implements Queries.OAuth.Contract {
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.QueryContract,
         @Inject(JWT_SERVICE)
-        private readonly jwtService: CommonServices.JWT.Contract,
+        private readonly jwtService: CommonServices.JWT.PublicContract,
     ) {
         this.issuer = configService.getOrThrow<string>("JWT_ISSUER");
 

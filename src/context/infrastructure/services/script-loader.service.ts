@@ -22,7 +22,9 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
         await Promise.all(Object.typedEntries(LUA_SCRIPT_FILES).map(([script]) => this.reload(script)));
     }
 
-    public async reload(script: LuaScript): Promise<string> {
+    public async reload(
+        script: InfrastructureServices.ScriptLoader.Reload.Props,
+    ): InfrastructureServices.ScriptLoader.Reload.Result {
         const content = await readFile(join(__dirname, "../scripts", LUA_SCRIPT_FILES[script]), "utf8");
         const hash = await this.redis.script("LOAD", content);
         if (typeof hash === "string") {
@@ -33,7 +35,9 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
         }
     }
 
-    public getHash(script: LuaScript): string {
+    public getHash(
+        script: InfrastructureServices.ScriptLoader.GetHash.Props,
+    ): InfrastructureServices.ScriptLoader.GetHash.Result {
         const hash = this.scriptHashes.get(script);
         if (hash) {
             return hash;

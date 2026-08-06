@@ -63,10 +63,12 @@ export class SessionService implements Services.Session.Contract {
         });
 
         const refreshToken = await this.jwtService.signRefreshToken({
-            client_id: session.client,
-            sub: input.account.id,
-            realms: input.realms,
-            sid: session.id,
+            payload: {
+                client_id: session.client,
+                sub: input.account.id,
+                realms: input.realms,
+                sid: session.id,
+            },
         });
 
         session.refresh(this.cryptoService.hashToken({ token: refreshToken }));
@@ -74,13 +76,15 @@ export class SessionService implements Services.Session.Contract {
         transaction.persist(session);
 
         const accessToken = await this.jwtService.signAccessToken({
-            auth_time: Math.floor(session.createdAt.getTime() / 1e3),
-            ...(session.scope ? { scope: session.scope } : {}),
-            client_id: session.client,
-            sub: input.account.id,
-            realms: input.realms,
-            acr: session.acr,
-            sid: session.id,
+            payload: {
+                auth_time: Math.floor(session.createdAt.getTime() / 1e3),
+                ...(session.scope ? { scope: session.scope } : {}),
+                client_id: session.client,
+                sub: input.account.id,
+                realms: input.realms,
+                acr: session.acr,
+                sid: session.id,
+            },
         });
 
         let idToken: Optional<string>;
@@ -91,19 +95,19 @@ export class SessionService implements Services.Session.Contract {
                 client: session.client,
             });
 
-            idToken = await this.jwtService.signIdToken(
-                {
+            idToken = await this.jwtService.signIdToken({
+                payload: {
                     auth_time: Math.floor(session.createdAt.getTime() / 1e3),
                     ...(input.nonce ? { nonce: input.nonce } : {}),
                     acr: session.acr,
                     sid: session.id,
                     sub,
                 },
-                {
+                props: {
                     audience: session.client,
                     accessToken,
                 },
-            );
+            });
         }
 
         return {

@@ -27,9 +27,9 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
         @Inject(RECOVERY_CODE_SERVICE)
         private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
         @Inject(HASHING_SERVICE)
-        private readonly hashingService: CommonServices.Hashing.Contract,
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
-        private readonly cryptoService: CommonServices.Crypto.Contract,
+        private readonly cryptoService: CommonServices.Crypto.PublicContract,
     ) {}
 
     public async regenerate(props: Commands.RecoveryCode.Regenerate.Props): Commands.RecoveryCode.Regenerate.Result {
