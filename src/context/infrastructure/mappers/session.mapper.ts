@@ -2,9 +2,9 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class SessionAdapter implements Adapters.Contract<Entities.Session, Adapters.Session.Types> {
+export class SessionMapper implements Repositories.Mappers.Contract<Entities.Session, Repositories.Mappers.Session.Types> {
     public buildWhereORM(
-        _filters: Adapters.Session.Filters,
+        _filters: Repositories.Mappers.Session.Filters,
         basic: ORM.ObjectQuery<Entities.Session> = {},
     ): ORM.ObjectQuery<Entities.Session> {
         const where: ORM.ObjectQuery<Entities.Session> = basic;
@@ -13,7 +13,7 @@ export class SessionAdapter implements Adapters.Contract<Entities.Session, Adapt
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.Session.Sort,
+        sort: Repositories.Mappers.Session.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.Session, P, F> = {},
     ): ORM.FindOptions<Entities.Session, P, F> {

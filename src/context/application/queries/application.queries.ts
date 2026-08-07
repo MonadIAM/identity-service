@@ -23,7 +23,7 @@ export class ApplicationQueries implements Queries.Application.Contract {
     }
 
     public findMany(props: Queries.Application.FindMany.Props): Queries.Application.FindMany.Result {
-        const filters: Adapters.Application.Filters = { ...props.filters };
+        const filters: Repositories.Mappers.Application.Filters = { ...props.filters };
 
         if (props.mode === QueryMode.DEFAULT) {
             filters.realm = { operator: PublicLinkOperator.EQUAL, value: props.realm };

@@ -1,7 +1,7 @@
-export class ApplicationMapper implements Mappers.Application.Contract {
+export class ApplicationMapper implements Commands.Mappers.Application.Contract {
     public interfaceClientOutboxPayload(
-        props: Mappers.Application.InterfaceClientOutboxPayload.Props,
-    ): Mappers.Application.InterfaceClientOutboxPayload.Result {
+        props: Commands.Mappers.Application.InterfaceClientOutboxPayload.Props,
+    ): Commands.Mappers.Application.InterfaceClientOutboxPayload.Result {
         const { entities, isRevoked } = props;
 
         return entities.flatMap((application) =>
@@ -15,8 +15,8 @@ export class ApplicationMapper implements Mappers.Application.Contract {
     }
 
     public serviceClientOutboxPayload(
-        props: Mappers.Application.ServiceClientOutboxPayload.Props,
-    ): Mappers.Application.ServiceClientOutboxPayload.Result {
+        props: Commands.Mappers.Application.ServiceClientOutboxPayload.Props,
+    ): Commands.Mappers.Application.ServiceClientOutboxPayload.Result {
         return props.entities.flatMap((application) =>
             application.serviceClients.getItems().map((client) => ({
                 application: application.id,

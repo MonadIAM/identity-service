@@ -2,7 +2,10 @@ declare namespace Repositories {
     namespace ServiceClient {
         interface Contract extends PublicContract {}
 
-        interface PublicContract extends Repositories.Base.Contract<Entities.ServiceClient, Adapters.ServiceClient.Types> {
+        interface PublicContract extends Repositories.Base.Contract<
+            Entities.ServiceClient,
+            Repositories.Mappers.ServiceClient.Types
+        > {
             wouldExceedApplicationLimit: WouldExceedApplicationLimit.Signature;
         }
 

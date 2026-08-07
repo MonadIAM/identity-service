@@ -2,9 +2,12 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class ServiceClientAdapter implements Adapters.Contract<Entities.ServiceClient, Adapters.ServiceClient.Types> {
+export class ServiceClientMapper implements Repositories.Mappers.Contract<
+    Entities.ServiceClient,
+    Repositories.Mappers.ServiceClient.Types
+> {
     public buildWhereORM(
-        filters: Adapters.ServiceClient.Filters,
+        filters: Repositories.Mappers.ServiceClient.Filters,
         basic: ORM.ObjectQuery<Entities.ServiceClient> = {},
     ): ORM.ObjectQuery<Entities.ServiceClient> {
         const where: ORM.ObjectQuery<Entities.ServiceClient> = basic;
@@ -41,7 +44,7 @@ export class ServiceClientAdapter implements Adapters.Contract<Entities.ServiceC
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.ServiceClient.Sort,
+        sort: Repositories.Mappers.ServiceClient.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.ServiceClient, P, F> = {},
     ): ORM.FindOptions<Entities.ServiceClient, P, F> {

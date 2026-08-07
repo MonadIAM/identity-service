@@ -4,12 +4,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { Profile } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
-import { ProfileAdapter } from "../adapters";
+import { ProfileMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ProfileRepository
-    extends BaseRepository<Entities.Profile, Adapters.Profile.Types>({
-        Adapter: ProfileAdapter,
+    extends BaseRepository<Entities.Profile, Repositories.Mappers.Profile.Types>({
+        Mapper: ProfileMapper,
         Entity: Profile,
     })
     implements Repositories.Profile.Contract

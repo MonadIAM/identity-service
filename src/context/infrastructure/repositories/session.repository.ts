@@ -5,12 +5,12 @@ import { LockMode } from "@mikro-orm/postgresql";
 import { Session, Account } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
-import { SessionAdapter } from "../adapters";
+import { SessionMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionRepository
-    extends BaseRepository<Entities.Session, Adapters.Session.Types>({
-        Adapter: SessionAdapter,
+    extends BaseRepository<Entities.Session, Repositories.Mappers.Session.Types>({
+        Mapper: SessionMapper,
         Entity: Session,
     })
     implements Repositories.Session.Contract

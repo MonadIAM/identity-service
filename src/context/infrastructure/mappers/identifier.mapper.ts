@@ -3,9 +3,9 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 import { ORMAdapter } from "~infrastructure/database/utils";
 import { IdentifierType } from "~context/enums";
 
-export class IdentifierAdapter {
+export class IdentifierMapper {
     public buildWhereORM(
-        filters: Adapters.Identifier.Filters,
+        filters: Repositories.Mappers.Identifier.Filters,
         basic: ORM.ObjectQuery<Entities.Identifier> = {},
     ): ORM.ObjectQuery<Entities.Identifier> {
         const where: ORM.ObjectQuery<Entities.Identifier> = basic;
@@ -51,7 +51,7 @@ export class IdentifierAdapter {
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.Identifier.Sort,
+        sort: Repositories.Mappers.Identifier.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.Identifier, P, F> = {},
     ): ORM.FindOptions<Entities.Identifier, P, F> {

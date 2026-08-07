@@ -4,12 +4,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { MasterCode } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
-import { MasterCodeAdapter } from "../adapters";
+import { MasterCodeMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class MasterCodeRepository
-    extends BaseRepository<Entities.MasterCode, Adapters.MasterCode.Types>({
-        Adapter: MasterCodeAdapter,
+    extends BaseRepository<Entities.MasterCode, Repositories.Mappers.MasterCode.Types>({
+        Mapper: MasterCodeMapper,
         Entity: MasterCode,
     })
     implements Repositories.MasterCode.Contract

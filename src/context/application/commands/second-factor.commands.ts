@@ -13,7 +13,7 @@ import { SecondFactorMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorCommands implements Commands.SecondFactor.Contract {
-    private readonly mapper = new SecondFactorMapper();
+    private readonly mapper: Commands.Mappers.SecondFactor.Contract;
     private readonly dictionaryPath = "commands.second-factor";
     private readonly resource = "SecondFactor";
 
@@ -34,7 +34,9 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new SecondFactorMapper();
+    }
 
     public async create(props: Commands.SecondFactor.Create.Props): Commands.SecondFactor.Create.Result {
         const secret = new Secret({ size: 20 });

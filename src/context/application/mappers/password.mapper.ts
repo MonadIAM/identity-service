@@ -1,9 +1,9 @@
 import { NotificationContentKind, NotificationCategory, PlatformService, MessageTemplate } from "~context/enums";
 
-export class PasswordMapper implements Mappers.Password.Contract {
+export class PasswordMapper implements Commands.Mappers.Password.Contract {
     public passwordChangedPayload(
-        props: Mappers.Password.PasswordChangedPayload.Props,
-    ): Mappers.Password.PasswordChangedPayload.Result {
+        props: Commands.Mappers.Password.PasswordChangedPayload.Props,
+    ): Commands.Mappers.Password.PasswordChangedPayload.Result {
         return {
             sourceService: PlatformService.IDENTITY_SERVICE,
             template: MessageTemplate.PASSWORD_CHANGED,
@@ -15,8 +15,8 @@ export class PasswordMapper implements Mappers.Password.Contract {
     }
 
     public passwordChangedViaOtpPayload(
-        props: Mappers.Password.PasswordChangedViaOtpPayload.Props,
-    ): Mappers.Password.PasswordChangedViaOtpPayload.Result {
+        props: Commands.Mappers.Password.PasswordChangedViaOtpPayload.Props,
+    ): Commands.Mappers.Password.PasswordChangedViaOtpPayload.Result {
         return {
             template: MessageTemplate.PASSWORD_CHANGED_VIA_OTP,
             sourceService: PlatformService.IDENTITY_SERVICE,
@@ -28,8 +28,8 @@ export class PasswordMapper implements Mappers.Password.Contract {
     }
 
     public passwordChangedViaRecoveryCodePayload(
-        props: Mappers.Password.PasswordChangedViaRecoveryCodePayload.Props,
-    ): Mappers.Password.PasswordChangedViaRecoveryCodePayload.Result {
+        props: Commands.Mappers.Password.PasswordChangedViaRecoveryCodePayload.Props,
+    ): Commands.Mappers.Password.PasswordChangedViaRecoveryCodePayload.Result {
         return {
             template: MessageTemplate.PASSWORD_CHANGED_VIA_RECOVERY_CODE,
             sourceService: PlatformService.IDENTITY_SERVICE,
@@ -41,8 +41,8 @@ export class PasswordMapper implements Mappers.Password.Contract {
     }
 
     public notificationPayload(
-        props: Mappers.Password.NotificationPayload.Props,
-    ): Mappers.Password.NotificationPayload.Result {
+        props: Commands.Mappers.Password.NotificationPayload.Props,
+    ): Commands.Mappers.Password.NotificationPayload.Result {
         return {
             sourceService: PlatformService.IDENTITY_SERVICE,
             template: MessageTemplate.RESET_PASSWORD_OTP,

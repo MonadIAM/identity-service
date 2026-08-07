@@ -5,7 +5,10 @@ declare global {
         namespace Account {
             interface Contract extends PublicContract {}
 
-            interface PublicContract extends Repositories.Base.Contract<Entities.Account, Adapters.Account.Types> {
+            interface PublicContract extends Repositories.Base.Contract<
+                Entities.Account,
+                Repositories.Mappers.Account.Types
+            > {
                 findExpiredInactive: FindExpiredInactive.Signature;
                 findExpiredPending: FindExpiredPending.Signature;
                 getLookupList: GetLookupList.Signature;

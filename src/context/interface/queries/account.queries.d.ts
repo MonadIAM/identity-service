@@ -34,16 +34,16 @@ declare global {
 
             namespace FindMany {
                 type ManageProps = {
-                    filters: Adapters.Account.ManageFilters;
-                    sort: Adapters.Account.Sort;
+                    filters: Repositories.Mappers.Account.ManageFilters;
+                    sort: Repositories.Mappers.Account.Sort;
                     mode: QueryMode.MANAGE;
                     pagination: Pagination;
                     view: ResponseViewType;
                 };
 
                 type DefaultProps = {
-                    filters: Adapters.Account.DefaultFilters;
-                    sort: Adapters.Account.Sort;
+                    filters: Repositories.Mappers.Account.DefaultFilters;
+                    sort: Repositories.Mappers.Account.Sort;
                     mode: QueryMode.DEFAULT;
                     pagination: Pagination;
                     view: ResponseViewType;

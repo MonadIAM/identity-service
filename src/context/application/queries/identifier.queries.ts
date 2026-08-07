@@ -23,7 +23,7 @@ export class IdentifierQueries implements Queries.Identifier.Contract {
     }
 
     public findMany(props: Queries.Identifier.FindMany.Props): Queries.Identifier.FindMany.Result {
-        const filters: Adapters.Identifier.Filters = { ...props.filters };
+        const filters: Repositories.Mappers.Identifier.Filters = { ...props.filters };
 
         if (props.mode === QueryMode.DEFAULT) {
             filters.account = { operator: PublicLinkOperator.EQUAL, value: props.actor };

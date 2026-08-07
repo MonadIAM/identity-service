@@ -1,30 +1,32 @@
-declare namespace Mappers {
-    namespace SecondFactor {
-        interface Contract extends PublicContract {}
+declare namespace Commands {
+    namespace Mappers {
+        namespace SecondFactor {
+            interface Contract extends PublicContract {}
 
-        interface PublicContract {
-            secondFactorEnabledPayload: SecondFactorEnabledPayload.Signature;
-            secondFactorResetPayload: SecondFactorResetPayload.Signature;
-        }
+            interface PublicContract {
+                secondFactorEnabledPayload: SecondFactorEnabledPayload.Signature;
+                secondFactorResetPayload: SecondFactorResetPayload.Signature;
+            }
 
-        namespace SecondFactorEnabledPayload {
-            type Props = {
-                account: string;
-            };
+            namespace SecondFactorEnabledPayload {
+                type Props = {
+                    account: string;
+                };
 
-            type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Topics.Notification.CreateMessage["payload"];
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace SecondFactorResetPayload {
-            type Props = {
-                account: string;
-            };
+            namespace SecondFactorResetPayload {
+                type Props = {
+                    account: string;
+                };
 
-            type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Topics.Notification.CreateMessage["payload"];
 
-            type Signature = (props: Props) => Result;
+                type Signature = (props: Props) => Result;
+            }
         }
     }
 }

@@ -1,9 +1,9 @@
 import { NotificationContentKind, NotificationCategory, PlatformService, MessageTemplate } from "~context/enums";
 
-export class RecoveryCodeMapper implements Mappers.RecoveryCode.Contract {
+export class RecoveryCodeMapper implements Commands.Mappers.RecoveryCode.Contract {
     public notificationPayload(
-        props: Mappers.RecoveryCode.NotificationPayload.Props,
-    ): Mappers.RecoveryCode.NotificationPayload.Result {
+        props: Commands.Mappers.RecoveryCode.NotificationPayload.Props,
+    ): Commands.Mappers.RecoveryCode.NotificationPayload.Result {
         return {
             template: MessageTemplate.RECOVERY_CODES_REGENERATED,
             sourceService: PlatformService.IDENTITY_SERVICE,

@@ -1,7 +1,7 @@
-export class InterfaceClientMapper implements Mappers.InterfaceClient.Contract {
+export class InterfaceClientMapper implements Commands.Mappers.InterfaceClient.Contract {
     public interfaceClientPayload(
-        props: Mappers.InterfaceClient.InterfaceClientPayload.Props,
-    ): Mappers.InterfaceClient.InterfaceClientPayload.Result {
+        props: Commands.Mappers.InterfaceClient.InterfaceClientPayload.Props,
+    ): Commands.Mappers.InterfaceClient.InterfaceClientPayload.Result {
         return props.entities.map(({ id, application }) => ({
             application: application.id,
             isRevoked: props.isRevoked,

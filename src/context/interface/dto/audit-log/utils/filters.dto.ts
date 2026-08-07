@@ -5,7 +5,7 @@ import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "AuditLogFilters" })
-export class FiltersDTO implements Adapters.AuditLog.Filters {
+export class FiltersDTO implements Repositories.Mappers.AuditLog.Filters {
     @Expose()
     @Validator.IsOptional()
     @Type(() => StringFilterDTO)

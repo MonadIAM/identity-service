@@ -1,9 +1,9 @@
 import { NotificationContentKind, NotificationCategory, PlatformService, MessageTemplate } from "~context/enums";
 
-export class IdentifierMapper implements Mappers.Identifier.Contract {
+export class IdentifierMapper implements Commands.Mappers.Identifier.Contract {
     public identifierPurgedPayload(
-        props: Mappers.Identifier.IdentifierPurgedPayload.Props,
-    ): Mappers.Identifier.IdentifierPurgedPayload.Result {
+        props: Commands.Mappers.Identifier.IdentifierPurgedPayload.Props,
+    ): Commands.Mappers.Identifier.IdentifierPurgedPayload.Result {
         return {
             sourceService: PlatformService.IDENTITY_SERVICE,
             template: MessageTemplate.IDENTIFIER_PURGED,
@@ -15,8 +15,8 @@ export class IdentifierMapper implements Mappers.Identifier.Contract {
     }
 
     public notificationPayload(
-        props: Mappers.Identifier.NotificationPayload.Props,
-    ): Mappers.Identifier.NotificationPayload.Result {
+        props: Commands.Mappers.Identifier.NotificationPayload.Props,
+    ): Commands.Mappers.Identifier.NotificationPayload.Result {
         return {
             template: MessageTemplate.IDENTIFIER_VERIFICATION_OTP,
             sourceService: PlatformService.IDENTITY_SERVICE,

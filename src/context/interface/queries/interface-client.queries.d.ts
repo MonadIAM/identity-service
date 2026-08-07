@@ -34,8 +34,8 @@ declare global {
 
             namespace FindMany {
                 type DefaultProps = {
-                    filters: Adapters.InterfaceClient.DefaultFilters;
-                    sort: Adapters.InterfaceClient.Sort;
+                    filters: Repositories.Mappers.InterfaceClient.DefaultFilters;
+                    sort: Repositories.Mappers.InterfaceClient.Sort;
                     mode: QueryMode.DEFAULT;
                     pagination: Pagination;
                     view: ResponseViewType;
@@ -44,8 +44,8 @@ declare global {
                 };
 
                 type ManageProps = {
-                    filters: Adapters.InterfaceClient.ManageFilters;
-                    sort: Adapters.InterfaceClient.Sort;
+                    filters: Repositories.Mappers.InterfaceClient.ManageFilters;
+                    sort: Repositories.Mappers.InterfaceClient.Sort;
                     mode: QueryMode.MANAGE;
                     pagination: Pagination;
                     view: ResponseViewType;

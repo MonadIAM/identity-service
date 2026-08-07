@@ -22,7 +22,7 @@ import { AccountMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountCommands implements Commands.Account.Contract {
-    private readonly mapper = new AccountMapper();
+    private readonly mapper: Commands.Mappers.Account.Contract;
     private readonly dictionaryPath = "commands.account";
     private readonly resource = "Account";
 
@@ -43,7 +43,9 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new AccountMapper();
+    }
 
     public async signup(props: Commands.Account.Signup.Props): Commands.Account.Signup.Result {
         const hashedPassword = await this.hashingService.hash({ value: props.input.password });

@@ -1,7 +1,7 @@
-export class ServiceClientMapper implements Mappers.ServiceClient.Contract {
+export class ServiceClientMapper implements Commands.Mappers.ServiceClient.Contract {
     public serviceClientPayload(
-        props: Mappers.ServiceClient.ServiceClientPayload.Props,
-    ): Mappers.ServiceClient.ServiceClientPayload.Result {
+        props: Commands.Mappers.ServiceClient.ServiceClientPayload.Props,
+    ): Commands.Mappers.ServiceClient.ServiceClientPayload.Result {
         if (Array.isArray(props.serviceClients)) {
             return props.serviceClients.map(({ id, application, code }) => ({ application: application.id, code, id }));
         } else {

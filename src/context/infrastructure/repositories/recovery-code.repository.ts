@@ -6,12 +6,12 @@ import { RecoveryCode } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { RecoveryCodeAdapter } from "../adapters";
+import { RecoveryCodeMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeRepository
-    extends BaseRepository<Entities.RecoveryCode, Adapters.RecoveryCode.Types>({
-        Adapter: RecoveryCodeAdapter,
+    extends BaseRepository<Entities.RecoveryCode, Repositories.Mappers.RecoveryCode.Types>({
+        Mapper: RecoveryCodeMapper,
         Entity: RecoveryCode,
     })
     implements Repositories.RecoveryCode.Contract

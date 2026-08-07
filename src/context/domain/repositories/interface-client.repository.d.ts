@@ -4,7 +4,7 @@ declare namespace Repositories {
 
         interface PublicContract extends Repositories.Base.Contract<
             Entities.InterfaceClient,
-            Adapters.InterfaceClient.Types
+            Repositories.Mappers.InterfaceClient.Types
         > {
             wouldExceedApplicationLimit: WouldExceedApplicationLimit.Signature;
         }

@@ -13,7 +13,7 @@ import { PasswordMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PasswordCommands implements Commands.Password.Contract {
-    private readonly mapper = new PasswordMapper();
+    private readonly mapper: Commands.Mappers.Password.Contract;
     private readonly dictionaryPath = "commands.password";
     private readonly historyCheckDays: number;
     private readonly resource = "Password";
@@ -37,6 +37,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
         private readonly configService: ConfigService,
     ) {
+        this.mapper = new PasswordMapper();
         this.historyCheckDays = this.configService.getOrThrow<number>("PASSWORD_HISTORY_CHECK_DAYS");
     }
 

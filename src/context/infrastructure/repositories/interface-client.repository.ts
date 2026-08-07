@@ -6,12 +6,12 @@ import { InterfaceClient } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { InterfaceClientAdapter } from "../adapters";
+import { InterfaceClientMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InterfaceClientRepository
-    extends BaseRepository<Entities.InterfaceClient, Adapters.InterfaceClient.Types>({
-        Adapter: InterfaceClientAdapter,
+    extends BaseRepository<Entities.InterfaceClient, Repositories.Mappers.InterfaceClient.Types>({
+        Mapper: InterfaceClientMapper,
         Entity: InterfaceClient,
     })
     implements Repositories.InterfaceClient.Contract

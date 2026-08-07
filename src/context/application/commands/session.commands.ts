@@ -23,7 +23,7 @@ export class SessionCommands implements Commands.Session.Contract {
     private readonly dictionaryPath = "commands.session";
     private readonly resource = "Session";
     private readonly sessionTTL: number;
-    private readonly mapper: SessionMapper;
+    private readonly mapper: Commands.Mappers.Session.Contract;
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -47,7 +47,7 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async create(props: Commands.Session.Create.Props): Commands.Session.Create.Result {
-        const session = await this.transactionalService.run<Mappers.Session.CreateResult>({
+        const session = await this.transactionalService.run<Commands.Mappers.Session.CreateResult>({
             resource: this.resource,
             outbox: [
                 {

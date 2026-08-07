@@ -18,7 +18,7 @@ import { AuthnMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthnCommands implements Commands.Authn.Contract {
-    private readonly mapper = new AuthnMapper();
+    private readonly mapper: Commands.Mappers.Authn.Contract;
     private readonly dictionaryPath = "commands.authn";
     private readonly resource = "Authn";
 
@@ -43,7 +43,9 @@ export class AuthnCommands implements Commands.Authn.Contract {
         private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new AuthnMapper();
+    }
 
     public async password(props: Commands.Authn.Password.Props): Commands.Authn.Password.Result {
         await this.oauthCommands.assertAuthorizationPending({

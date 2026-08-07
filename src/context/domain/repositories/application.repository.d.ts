@@ -2,7 +2,10 @@ declare namespace Repositories {
     namespace Application {
         interface Contract extends PublicContract {}
 
-        interface PublicContract extends Repositories.Base.Contract<Entities.Application, Adapters.Application.Types> {
+        interface PublicContract extends Repositories.Base.Contract<
+            Entities.Application,
+            Repositories.Mappers.Application.Types
+        > {
             wouldExceedRealmLimit: WouldExceedRealmLimit.Signature;
         }
 

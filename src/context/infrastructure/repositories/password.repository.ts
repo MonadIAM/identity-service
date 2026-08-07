@@ -4,12 +4,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { Password } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
-import { PasswordAdapter } from "../adapters";
+import { PasswordMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PasswordRepository
-    extends BaseRepository<Entities.Password, Adapters.Password.Types>({
-        Adapter: PasswordAdapter,
+    extends BaseRepository<Entities.Password, Repositories.Mappers.Password.Types>({
+        Mapper: PasswordMapper,
         Entity: Password,
     })
     implements Repositories.Password.Contract

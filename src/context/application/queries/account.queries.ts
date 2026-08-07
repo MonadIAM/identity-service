@@ -38,7 +38,7 @@ export class AccountQueries implements Queries.Account.Contract {
     }
 
     public findMany(props: Queries.Account.FindMany.Props): Queries.Account.FindMany.Result {
-        const filters: Adapters.Account.Filters = { ...props.filters };
+        const filters: Repositories.Mappers.Account.Filters = { ...props.filters };
 
         if (props.mode === QueryMode.DEFAULT) {
             filters.realm = { operator: PublicLinkOperator.EQUAL, value: props.realm };

@@ -3,9 +3,9 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 import { AccountSubject, AccountStatus, IdentifierType } from "~context/enums";
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapters.Account.Types> {
+export class AccountMapper implements Repositories.Mappers.Contract<Entities.Account, Repositories.Mappers.Account.Types> {
     public buildWhereORM(
-        filters: Adapters.Account.Filters,
+        filters: Repositories.Mappers.Account.Filters,
         basic: ORM.ObjectQuery<Entities.Account> = {},
     ): ORM.ObjectQuery<Entities.Account> {
         const where: ORM.ObjectQuery<Entities.Account> = basic;
@@ -66,7 +66,7 @@ export class AccountAdapter implements Adapters.Contract<Entities.Account, Adapt
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.Account.Sort,
+        sort: Repositories.Mappers.Account.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.Account, P, F> = {},
     ): ORM.FindOptions<Entities.Account, P, F> {

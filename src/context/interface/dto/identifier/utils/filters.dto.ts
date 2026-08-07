@@ -5,7 +5,7 @@ import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "IdentifierFilters" })
-export class DefaultFiltersDTO implements Adapters.Identifier.DefaultFilters {
+export class DefaultFiltersDTO implements Repositories.Mappers.Identifier.DefaultFilters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
@@ -69,7 +69,7 @@ export class DefaultFiltersDTO implements Adapters.Identifier.DefaultFilters {
 }
 
 @ApiSchema({ name: "IdentifierManageFilters" })
-export class ManageFiltersDTO extends DefaultFiltersDTO implements Adapters.Identifier.ManageFilters {
+export class ManageFiltersDTO extends DefaultFiltersDTO implements Repositories.Mappers.Identifier.ManageFilters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

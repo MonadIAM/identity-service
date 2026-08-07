@@ -10,7 +10,7 @@ import { ApplicationMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ApplicationCommands implements Commands.Application.Contract {
-    private readonly mapper = new ApplicationMapper();
+    private readonly mapper: Commands.Mappers.Application.Contract;
     private readonly dictionaryPath = "commands.application";
     private readonly resource = "Application";
 
@@ -21,7 +21,9 @@ export class ApplicationCommands implements Commands.Application.Contract {
         private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(APPLICATION_SERVICE)
         private readonly applicationService: Services.Application.CommandContract,
-    ) {}
+    ) {
+        this.mapper = new ApplicationMapper();
+    }
 
     public async create(props: Commands.Application.Create.Props): Commands.Application.Create.Result {
         const { realm, input } = props;

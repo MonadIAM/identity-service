@@ -23,7 +23,7 @@ import { FederatedAuthnMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract {
-    private readonly mapper = new FederatedAuthnMapper();
+    private readonly mapper: Commands.Mappers.FederatedAuthn.Contract;
     private readonly dictionaryPath = "commands.federated-authn";
     private readonly resource = "Account";
 
@@ -50,7 +50,9 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new FederatedAuthnMapper();
+    }
 
     public async authorize(props: Commands.FederatedAuthn.Authorize.Props): Commands.FederatedAuthn.Authorize.Result {
         const { input } = props;

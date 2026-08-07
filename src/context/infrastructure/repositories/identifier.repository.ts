@@ -6,12 +6,12 @@ import { Identifier } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { IdentifierAdapter } from "../adapters";
+import { IdentifierMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierRepository
-    extends BaseRepository<Entities.Identifier, Adapters.Identifier.Types>({
-        Adapter: IdentifierAdapter,
+    extends BaseRepository<Entities.Identifier, Repositories.Mappers.Identifier.Types>({
+        Mapper: IdentifierMapper,
         Entity: Identifier,
     })
     implements Repositories.Identifier.Contract

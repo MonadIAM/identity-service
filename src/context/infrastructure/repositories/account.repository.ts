@@ -8,12 +8,12 @@ import { Account } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 import { AccountStatus } from "~context/enums";
 
-import { AccountAdapter } from "../adapters";
+import { AccountMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRepository
-    extends BaseRepository<Entities.Account, Adapters.Account.Types>({
-        Adapter: AccountAdapter,
+    extends BaseRepository<Entities.Account, Repositories.Mappers.Account.Types>({
+        Mapper: AccountMapper,
         Entity: Account,
     })
     implements Repositories.Account.Contract

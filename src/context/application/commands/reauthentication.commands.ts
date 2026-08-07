@@ -15,7 +15,7 @@ import { ReauthenticationMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ReauthenticationCommands implements Commands.Reauthentication.Contract {
-    private readonly mapper = new ReauthenticationMapper();
+    private readonly mapper: Commands.Mappers.Reauthentication.Contract;
     private readonly dictionaryPath = "commands.reauthentication";
     private readonly resource = "Reauthentication";
     private readonly ttl: number;
@@ -36,6 +36,7 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
         protected readonly configService: ConfigService,
     ) {
         this.ttl = ms(this.configService.getOrThrow<StringValue>("REAUTHENTICATION_TTL")) / 1e3;
+        this.mapper = new ReauthenticationMapper();
     }
 
     public async byPassword(

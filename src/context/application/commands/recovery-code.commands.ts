@@ -10,7 +10,7 @@ import { RecoveryCodeMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
-    private readonly mapper = new RecoveryCodeMapper();
+    private readonly mapper: Commands.Mappers.RecoveryCode.Contract;
     private readonly dictionaryPath = "commands.recovery-code";
     private readonly resource = "RecoveryCode";
 
@@ -25,7 +25,9 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
         private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new RecoveryCodeMapper();
+    }
 
     public async regenerate(props: Commands.RecoveryCode.Regenerate.Props): Commands.RecoveryCode.Regenerate.Result {
         const codes = this.cryptoService.generateRecoveryCodes();

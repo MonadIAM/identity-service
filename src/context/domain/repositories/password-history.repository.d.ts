@@ -4,7 +4,7 @@ declare namespace Repositories {
 
         interface PublicContract extends Repositories.Base.Contract<
             Entities.PasswordHistory,
-            Adapters.PasswordHistory.Types
+            Repositories.Mappers.PasswordHistory.Types
         > {}
     }
 }

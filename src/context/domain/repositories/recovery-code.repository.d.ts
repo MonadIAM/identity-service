@@ -2,7 +2,10 @@ declare namespace Repositories {
     namespace RecoveryCode {
         interface Contract extends PublicContract {}
 
-        interface PublicContract extends Repositories.Base.Contract<Entities.RecoveryCode, Adapters.RecoveryCode.Types> {
+        interface PublicContract extends Repositories.Base.Contract<
+            Entities.RecoveryCode,
+            Repositories.Mappers.RecoveryCode.Types
+        > {
             getStatus: GetStatus.Signature;
         }
 

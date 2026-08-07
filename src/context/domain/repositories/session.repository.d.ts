@@ -2,7 +2,7 @@ declare namespace Repositories {
     namespace Session {
         interface Contract extends PublicContract {}
 
-        interface PublicContract extends Repositories.Base.Contract<Entities.Session, Adapters.Session.Types> {
+        interface PublicContract extends Repositories.Base.Contract<Entities.Session, Repositories.Mappers.Session.Types> {
             lockByAccount: LockByAccount.Signature;
         }
 

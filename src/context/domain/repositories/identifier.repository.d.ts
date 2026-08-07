@@ -2,7 +2,10 @@ declare namespace Repositories {
     namespace Identifier {
         interface Contract extends PublicContract {}
 
-        interface PublicContract extends Repositories.Base.Contract<Entities.Identifier, Adapters.Identifier.Types> {
+        interface PublicContract extends Repositories.Base.Contract<
+            Entities.Identifier,
+            Repositories.Mappers.Identifier.Types
+        > {
             isLastVerifiedIdentifier: IsLastVerifiedIdentifier.Signature;
             getLookupList: GetLookupList.Signature;
         }

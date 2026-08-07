@@ -6,12 +6,12 @@ import { ServiceClient } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { ServiceClientAdapter } from "../adapters";
+import { ServiceClientMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ServiceClientRepository
-    extends BaseRepository<Entities.ServiceClient, Adapters.ServiceClient.Types>({
-        Adapter: ServiceClientAdapter,
+    extends BaseRepository<Entities.ServiceClient, Repositories.Mappers.ServiceClient.Types>({
+        Mapper: ServiceClientMapper,
         Entity: ServiceClient,
     })
     implements Repositories.ServiceClient.Contract

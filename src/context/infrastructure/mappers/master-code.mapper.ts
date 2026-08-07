@@ -2,9 +2,12 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class MasterCodeAdapter implements Adapters.Contract<Entities.MasterCode, Adapters.MasterCode.Types> {
+export class MasterCodeMapper implements Repositories.Mappers.Contract<
+    Entities.MasterCode,
+    Repositories.Mappers.MasterCode.Types
+> {
     public buildWhereORM(
-        _filters: Adapters.MasterCode.Filters,
+        _filters: Repositories.Mappers.MasterCode.Filters,
         basic: ORM.ObjectQuery<Entities.MasterCode> = {},
     ): ORM.ObjectQuery<Entities.MasterCode> {
         const where: ORM.ObjectQuery<Entities.MasterCode> = basic;
@@ -13,7 +16,7 @@ export class MasterCodeAdapter implements Adapters.Contract<Entities.MasterCode,
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.MasterCode.Sort,
+        sort: Repositories.Mappers.MasterCode.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.MasterCode, P, F> = {},
     ): ORM.FindOptions<Entities.MasterCode, P, F> {

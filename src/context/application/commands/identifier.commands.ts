@@ -12,7 +12,7 @@ import { IdentifierMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierCommands implements Commands.Identifier.Contract {
-    private readonly mapper = new IdentifierMapper();
+    private readonly mapper: Commands.Mappers.Identifier.Contract;
     private readonly dictionaryPath = "commands.identifier";
     private readonly resource = "Identifier";
 
@@ -29,7 +29,9 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         private readonly otpCacheService: InfrastructureServices.OTPCache.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new IdentifierMapper();
+    }
 
     public async create(props: Commands.Identifier.Create.Props): Commands.Identifier.Create.Result {
         const otp = this.cryptoService.generateOTP();

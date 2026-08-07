@@ -4,12 +4,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { Membership } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
-import { MembershipAdapter } from "../adapters";
+import { MembershipMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class MembershipRepository
-    extends BaseRepository<Entities.Membership, Adapters.Membership.Types>({
-        Adapter: MembershipAdapter,
+    extends BaseRepository<Entities.Membership, Repositories.Mappers.Membership.Types>({
+        Mapper: MembershipMapper,
         Entity: Membership,
     })
     implements Repositories.Membership.Contract

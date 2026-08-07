@@ -4,9 +4,9 @@ import { ORMAdapter } from "~infrastructure/database/utils";
 import { EntityType, ActionType } from "~context/enums";
 import { AuditLog } from "~common/transaction-manager";
 
-export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.AuditLog.Types> {
+export class AuditLogMapper implements Repositories.Mappers.Contract<AuditLog, Repositories.Mappers.AuditLog.Types> {
     public buildWhereORM(
-        filters: Adapters.AuditLog.Filters,
+        filters: Repositories.Mappers.AuditLog.Filters,
         basic: ORM.ObjectQuery<AuditLog> = {},
     ): ORM.ObjectQuery<AuditLog> {
         const where: ORM.ObjectQuery<AuditLog> = basic;
@@ -37,7 +37,7 @@ export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.Aud
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.AuditLog.Sort,
+        sort: Repositories.Mappers.AuditLog.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<AuditLog, P, F> = {},
     ): ORM.FindOptions<AuditLog, P, F> {

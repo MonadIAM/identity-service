@@ -6,12 +6,12 @@ import { Application } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { ApplicationAdapter } from "../adapters";
+import { ApplicationMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ApplicationRepository
-    extends BaseRepository<Entities.Application, Adapters.Application.Types>({
-        Adapter: ApplicationAdapter,
+    extends BaseRepository<Entities.Application, Repositories.Mappers.Application.Types>({
+        Mapper: ApplicationMapper,
         Entity: Application,
     })
     implements Repositories.Application.Contract

@@ -10,7 +10,7 @@ import { ServiceClientMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ServiceClientCommands implements Commands.ServiceClient.Contract {
-    private readonly mapper = new ServiceClientMapper();
+    private readonly mapper: Commands.Mappers.ServiceClient.Contract;
     private readonly dictionaryPath = "commands.service-client";
     private readonly resource = "ServiceClient";
 
@@ -23,7 +23,9 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
         private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(SERVICE_CLIENT_SERVICE)
         private readonly serviceClientService: Services.ServiceClient.CommandContract,
-    ) {}
+    ) {
+        this.mapper = new ServiceClientMapper();
+    }
 
     public async create(props: Commands.ServiceClient.Create.Props): Commands.ServiceClient.Create.Result {
         await this.transactionalService.run({

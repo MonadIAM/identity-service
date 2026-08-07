@@ -1,5 +1,5 @@
 declare namespace Repositories {
     namespace Password {
-        interface Contract extends Repositories.Base.Contract<Entities.Password, Adapters.Password.Types> {}
+        interface Contract extends Repositories.Base.Contract<Entities.Password, Repositories.Mappers.Password.Types> {}
     }
 }

@@ -2,9 +2,12 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class PasswordHistoryAdapter implements Adapters.Contract<Entities.PasswordHistory, Adapters.PasswordHistory.Types> {
+export class PasswordHistoryMapper implements Repositories.Mappers.Contract<
+    Entities.PasswordHistory,
+    Repositories.Mappers.PasswordHistory.Types
+> {
     public buildWhereORM(
-        _filters: Adapters.PasswordHistory.Filters,
+        _filters: Repositories.Mappers.PasswordHistory.Filters,
         basic: ORM.ObjectQuery<Entities.PasswordHistory> = {},
     ): ORM.ObjectQuery<Entities.PasswordHistory> {
         const where: ORM.ObjectQuery<Entities.PasswordHistory> = basic;
@@ -13,7 +16,7 @@ export class PasswordHistoryAdapter implements Adapters.Contract<Entities.Passwo
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.PasswordHistory.Sort,
+        sort: Repositories.Mappers.PasswordHistory.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.PasswordHistory, P, F> = {},
     ): ORM.FindOptions<Entities.PasswordHistory, P, F> {

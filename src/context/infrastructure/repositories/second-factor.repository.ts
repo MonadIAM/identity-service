@@ -4,12 +4,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { SecondFactor } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
-import { SecondFactorAdapter } from "../adapters";
+import { SecondFactorMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorRepository
-    extends BaseRepository<Entities.SecondFactor, Adapters.SecondFactor.Types>({
-        Adapter: SecondFactorAdapter,
+    extends BaseRepository<Entities.SecondFactor, Repositories.Mappers.SecondFactor.Types>({
+        Mapper: SecondFactorMapper,
         Entity: SecondFactor,
     })
     implements Repositories.SecondFactor.Contract

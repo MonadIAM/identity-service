@@ -1,7 +1,7 @@
-export class FederatedAuthnMapper implements Mappers.FederatedAuthn.Contract {
+export class FederatedAuthnMapper implements Commands.Mappers.FederatedAuthn.Contract {
     public blacklistPayload(
-        props: Mappers.FederatedAuthn.BlacklistPayload.Props,
-    ): Mappers.FederatedAuthn.BlacklistPayload.Result {
+        props: Commands.Mappers.FederatedAuthn.BlacklistPayload.Props,
+    ): Commands.Mappers.FederatedAuthn.BlacklistPayload.Result {
         return props.revokedSessions;
     }
 }

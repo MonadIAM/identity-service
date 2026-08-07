@@ -1,6 +1,6 @@
 import { NotificationContentKind, NotificationCategory, PlatformService, MessageTemplate } from "~context/enums";
 
-export class SessionMapper implements Mappers.Session.Contract {
+export class SessionMapper implements Commands.Mappers.Session.Contract {
     private readonly sessionTTL: number;
 
     public constructor(sessionTTL: number) {
@@ -8,8 +8,8 @@ export class SessionMapper implements Mappers.Session.Contract {
     }
 
     public notificationPayload(
-        props: Mappers.Session.NotificationPayload.Props,
-    ): Mappers.Session.NotificationPayload.Result {
+        props: Commands.Mappers.Session.NotificationPayload.Props,
+    ): Commands.Mappers.Session.NotificationPayload.Result {
         return {
             sourceService: PlatformService.IDENTITY_SERVICE,
             category: NotificationCategory.SECURITY,
@@ -20,7 +20,9 @@ export class SessionMapper implements Mappers.Session.Contract {
         };
     }
 
-    public blacklistPayload(props: Mappers.Session.BlacklistPayload.Props): Mappers.Session.BlacklistPayload.Result {
+    public blacklistPayload(
+        props: Commands.Mappers.Session.BlacklistPayload.Props,
+    ): Commands.Mappers.Session.BlacklistPayload.Result {
         if ("sessions" in props) {
             return props.sessions.map(({ id, lastRefreshedAt }) => ({
                 expiresAt: Math.round(lastRefreshedAt.getTime() + this.sessionTTL * 1e3),

@@ -1,56 +1,58 @@
-declare namespace Mappers {
-    namespace Password {
-        interface Contract extends PublicContract {}
+declare namespace Commands {
+    namespace Mappers {
+        namespace Password {
+            interface Contract extends PublicContract {}
 
-        interface PublicContract {
-            passwordChangedViaRecoveryCodePayload: PasswordChangedViaRecoveryCodePayload.Signature;
-            passwordChangedViaOtpPayload: PasswordChangedViaOtpPayload.Signature;
-            passwordChangedPayload: PasswordChangedPayload.Signature;
-            notificationPayload: NotificationPayload.Signature;
-        }
+            interface PublicContract {
+                passwordChangedViaRecoveryCodePayload: PasswordChangedViaRecoveryCodePayload.Signature;
+                passwordChangedViaOtpPayload: PasswordChangedViaOtpPayload.Signature;
+                passwordChangedPayload: PasswordChangedPayload.Signature;
+                notificationPayload: NotificationPayload.Signature;
+            }
 
-        namespace PasswordChangedViaRecoveryCodePayload {
-            type Props = {
-                message: string;
-                account: string;
-            };
+            namespace PasswordChangedViaRecoveryCodePayload {
+                type Props = {
+                    message: string;
+                    account: string;
+                };
 
-            type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Topics.Notification.CreateMessage["payload"];
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace PasswordChangedViaOtpPayload {
-            type Props = {
-                message: string;
-                account: string;
-            };
+            namespace PasswordChangedViaOtpPayload {
+                type Props = {
+                    message: string;
+                    account: string;
+                };
 
-            type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Topics.Notification.CreateMessage["payload"];
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace PasswordChangedPayload {
-            type Props = {
-                message: string;
-                account: string;
-            };
+            namespace PasswordChangedPayload {
+                type Props = {
+                    message: string;
+                    account: string;
+                };
 
-            type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Topics.Notification.CreateMessage["payload"];
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace NotificationPayload {
-            type Props = {
-                account: string;
-                otp: string;
-            };
+            namespace NotificationPayload {
+                type Props = {
+                    account: string;
+                    otp: string;
+                };
 
-            type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Topics.Notification.CreateMessage["payload"];
 
-            type Signature = (props: Props) => Result;
+                type Signature = (props: Props) => Result;
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ import { InterfaceClientMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InterfaceClientCommands implements Commands.InterfaceClient.Contract {
-    private readonly mapper = new InterfaceClientMapper();
+    private readonly mapper: Commands.Mappers.InterfaceClient.Contract;
     private readonly dictionaryPath = "commands.interface-client";
     private readonly resource = "InterfaceClient";
 
@@ -23,7 +23,9 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
         private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(INTERFACE_CLIENT_SERVICE)
         private readonly interfaceClientService: Services.InterfaceClient.CommandContract,
-    ) {}
+    ) {
+        this.mapper = new InterfaceClientMapper();
+    }
 
     public async create(props: Commands.InterfaceClient.Create.Props): Commands.InterfaceClient.Create.Result {
         await this.transactionalService.run({
