@@ -3,33 +3,7 @@ import { IdentifierType } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Identifier {
-            interface Contract extends InternalContract, ControllerContract {}
-
-            interface InternalContract {
-                identifierPurgedPayloadMapper: IdentifierPurgedPayloadMapper.Signature;
-                notificationPayloadMapper: NotificationPayloadMapper.Signature;
-            }
-
-            namespace IdentifierPurgedPayloadMapper {
-                type Props = {
-                    account: string;
-                };
-
-                type Result = Topics.Notification.CreateMessage["payload"];
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace NotificationPayloadMapper {
-                type Props = {
-                    account: string;
-                    otp: string;
-                };
-
-                type Result = Topics.Notification.CreateMessage["payload"];
-
-                type Signature = (props: Props) => Result;
-            }
+            interface Contract extends ControllerContract {}
 
             interface ControllerContract {
                 togglePublicContact: TogglePublicContact.Signature;

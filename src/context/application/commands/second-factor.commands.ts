@@ -1,24 +1,19 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
-import {
-    NotificationContentKind,
-    NotificationTopicAction,
-    NotificationCategory,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
 import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
-import { ActionType, EntityType, KafkaTopic, SecondFactorType } from "~context/enums";
+import { NotificationTopicAction, ActionType, EntityType, KafkaTopic, SecondFactorType } from "~context/enums";
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { SECOND_FACTOR_SERVICE } from "../services";
+import { SecondFactorMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorCommands implements Commands.SecondFactor.Contract {
+    private readonly mapper = new SecondFactorMapper();
     private readonly dictionaryPath = "commands.second-factor";
     private readonly resource = "SecondFactor";
 
@@ -95,17 +90,17 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         const masterCodeHash = await this.hashingService.hash({ value: masterCodePlaintext });
         let hasMasterCode = false;
 
-        await this.transactionalService.run<Entities.SecondFactor>({
+        await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.secondFactorEnabledPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.SECOND_FACTOR,
                 actionType: ActionType.VERIFY,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.secondFactorEnabledPayloadMapper.bind(this, { account: props.actor }),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: async (transaction) => {
                 const factor = await this.secondFactorRepository.findUniqueOrThrow({
@@ -137,7 +132,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                     transaction,
                 });
 
-                return factor;
+                return { account: props.actor };
             },
         });
 
@@ -191,17 +186,17 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CODE` });
         }
 
-        await this.transactionalService.run<Entities.Account>({
+        await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.secondFactorResetPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.SECOND_FACTOR,
                 actionType: ActionType.RESET,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.secondFactorResetPayloadMapper.bind(this, { account: identifier.account.id }),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: (transaction) => {
                 transaction.merge(identifier.account);
@@ -210,36 +205,10 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                     transaction,
                 });
 
-                return identifier.account;
+                return { account: identifier.account.id };
             },
         });
 
         return { message: `${this.dictionaryPath}.RESET` };
-    }
-
-    public secondFactorEnabledPayloadMapper(
-        props: Commands.SecondFactor.SecondFactorEnabledPayloadMapper.Props,
-    ): Commands.SecondFactor.SecondFactorEnabledPayloadMapper.Result {
-        return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            template: MessageTemplate.SECOND_FACTOR_ENABLED,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
-        };
-    }
-
-    public secondFactorResetPayloadMapper(
-        props: Commands.SecondFactor.SecondFactorResetPayloadMapper.Props,
-    ): Commands.SecondFactor.SecondFactorResetPayloadMapper.Result {
-        return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            template: MessageTemplate.SECOND_FACTOR_RESET,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
-        };
     }
 }

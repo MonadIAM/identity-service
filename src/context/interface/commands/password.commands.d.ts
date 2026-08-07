@@ -3,53 +3,8 @@ declare namespace Commands {
         interface Contract extends InternalContract, ControllerContract {}
 
         interface InternalContract {
-            passwordChangedViaRecoveryCodePayloadMapper: PasswordChangedViaRecoveryCodePayloadMapper.Signature;
-            passwordChangedViaOtpPayloadMapper: PasswordChangedViaOtpPayloadMapper.Signature;
-            passwordChangedPayloadMapper: PasswordChangedPayloadMapper.Signature;
-            notificationPayloadMapper: NotificationPayloadMapper.Signature;
             findMatchingRecoveryCode: FindMatchingRecoveryCode.Signature;
             checkPasswordHistory: CheckPasswordHistory.Signature;
-        }
-
-        namespace PasswordChangedViaRecoveryCodePayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace PasswordChangedViaOtpPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace PasswordChangedPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = {
-                account: string;
-                otp: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
         }
 
         namespace FindMatchingRecoveryCode {

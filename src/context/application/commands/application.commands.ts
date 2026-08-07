@@ -1,15 +1,16 @@
-import { InterfaceClientTopicAction, ServiceClientTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { InterfaceClientTopicAction, ServiceClientTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { APPLICATION_REPOSITORY } from "~context/domain/repositories";
-import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 
 import { APPLICATION_SERVICE } from "../services";
+import { ApplicationMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ApplicationCommands implements Commands.Application.Contract {
+    private readonly mapper = new ApplicationMapper();
     private readonly dictionaryPath = "commands.application";
     private readonly resource = "Application";
 
@@ -24,7 +25,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
 
     public async create(props: Commands.Application.Create.Props): Commands.Application.Create.Result {
         const { realm, input } = props;
-        await this.transactionalService.run<Entities.Application>({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.APPLICATION,
@@ -80,23 +81,23 @@ export class ApplicationCommands implements Commands.Application.Contract {
         const { realm, input } = props;
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
+            outbox: [
+                {
+                    payloadMapper: this.mapper.interfaceClientOutboxPayload,
+                    actionType: InterfaceClientTopicAction.REVOKE,
+                    destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+                },
+                {
+                    payloadMapper: this.mapper.serviceClientOutboxPayload,
+                    actionType: ServiceClientTopicAction.REVOKE,
+                    destinationTopic: KafkaTopic.SERVICE_CLIENT,
+                },
+            ],
             audit: {
                 entityType: EntityType.APPLICATION,
                 actionType: ActionType.REVOKE,
                 ...props,
             },
-            outbox: [
-                {
-                    payloadMapper: this.interfaceClientOutboxPayloadMapper.bind(this),
-                    actionType: InterfaceClientTopicAction.REVOKE,
-                    destinationTopic: KafkaTopic.INTERFACE_CLIENT,
-                },
-                {
-                    payloadMapper: this.serviceClientOutboxPayloadMapper.bind(this),
-                    actionType: ServiceClientTopicAction.REVOKE,
-                    destinationTopic: KafkaTopic.SERVICE_CLIENT,
-                },
-            ],
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: {
@@ -127,23 +128,23 @@ export class ApplicationCommands implements Commands.Application.Contract {
     public async restore(props: Commands.Application.Restore.Props): Commands.Application.Restore.Result {
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
+            outbox: [
+                {
+                    payloadMapper: this.mapper.interfaceClientOutboxPayload,
+                    actionType: InterfaceClientTopicAction.RESTORE,
+                    destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+                },
+                {
+                    payloadMapper: this.mapper.serviceClientOutboxPayload,
+                    actionType: ServiceClientTopicAction.RESTORE,
+                    destinationTopic: KafkaTopic.SERVICE_CLIENT,
+                },
+            ],
             audit: {
                 entityType: EntityType.APPLICATION,
                 actionType: ActionType.RESTORE,
                 ...props,
             },
-            outbox: [
-                {
-                    payloadMapper: this.interfaceClientOutboxPayloadMapper.bind(this),
-                    actionType: InterfaceClientTopicAction.RESTORE,
-                    destinationTopic: KafkaTopic.INTERFACE_CLIENT,
-                },
-                {
-                    payloadMapper: this.serviceClientOutboxPayloadMapper.bind(this),
-                    actionType: ServiceClientTopicAction.RESTORE,
-                    destinationTopic: KafkaTopic.SERVICE_CLIENT,
-                },
-            ],
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: {
@@ -172,7 +173,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async purge(props: Commands.Application.Purge.Props): Commands.Application.Purge.Result {
-        const entities = await this.transactionalService.run<Entities.Application[]>({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.APPLICATION,
@@ -210,12 +211,12 @@ export class ApplicationCommands implements Commands.Application.Contract {
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: this.interfaceClientOutboxPayloadMapper.bind(this),
+                    payloadMapper: this.mapper.interfaceClientOutboxPayload,
                     actionType: InterfaceClientTopicAction.REVOKE,
                     destinationTopic: KafkaTopic.INTERFACE_CLIENT,
                 },
                 {
-                    payloadMapper: this.serviceClientOutboxPayloadMapper.bind(this),
+                    payloadMapper: this.mapper.serviceClientOutboxPayload,
                     actionType: ServiceClientTopicAction.REVOKE,
                     destinationTopic: KafkaTopic.SERVICE_CLIENT,
                 },
@@ -239,12 +240,12 @@ export class ApplicationCommands implements Commands.Application.Contract {
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: this.interfaceClientOutboxPayloadMapper.bind(this),
+                    payloadMapper: this.mapper.interfaceClientOutboxPayload,
                     actionType: InterfaceClientTopicAction.RESTORE,
                     destinationTopic: KafkaTopic.INTERFACE_CLIENT,
                 },
                 {
-                    payloadMapper: this.serviceClientOutboxPayloadMapper.bind(this),
+                    payloadMapper: this.mapper.serviceClientOutboxPayload,
                     actionType: ServiceClientTopicAction.RESTORE,
                     destinationTopic: KafkaTopic.SERVICE_CLIENT,
                 },
@@ -271,32 +272,5 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 this.applicationService.purgeRealm({ transaction, entities, version });
             },
         });
-    }
-
-    public interfaceClientOutboxPayloadMapper(
-        props: Commands.Application.InterfaceClientOutboxPayloadMapper.Props,
-    ): Commands.Application.InterfaceClientOutboxPayloadMapper.Result {
-        const { entities, isRevoked } = props;
-
-        return entities.flatMap((application) =>
-            application.interfaceClients.getItems().map((client) => ({
-                application: application.id,
-                realm: application.realm,
-                id: client.id,
-                isRevoked,
-            })),
-        );
-    }
-
-    public serviceClientOutboxPayloadMapper(
-        props: Commands.Application.ServiceClientOutboxPayloadMapper.Props,
-    ): Commands.Application.ServiceClientOutboxPayloadMapper.Result {
-        return props.entities.flatMap((application) =>
-            application.serviceClients.getItems().map((client) => ({
-                application: application.id,
-                code: client.code,
-                id: client.id,
-            })),
-        );
     }
 }

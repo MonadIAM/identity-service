@@ -1,25 +1,28 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { isEmail } from "class-validator";
-import {
-    NotificationTopicAction,
-    NotificationContentKind,
-    NotificationCategory,
-    AccountTopicAction,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
-import { AccountSubject, IdentifierType, AccountStatus, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/domain/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
+import {
+    NotificationTopicAction,
+    AccountTopicAction,
+    AccountSubject,
+    IdentifierType,
+    AccountStatus,
+    ActionType,
+    EntityType,
+    KafkaTopic,
+} from "~context/enums";
 
 import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE } from "../services";
+import { AccountMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountCommands implements Commands.Account.Contract {
+    private readonly mapper = new AccountMapper();
     private readonly dictionaryPath = "commands.account";
     private readonly resource = "Account";
 
@@ -48,10 +51,10 @@ export class AccountCommands implements Commands.Account.Contract {
 
         const otp = this.cryptoService.generateOTP();
 
-        const account = await this.transactionalService.run<Entities.Account>({
+        const { account } = await this.transactionalService.run({
             resource: this.resource,
             outbox: {
-                payloadMapper: (result) => this.notificationPayloadMapper({ account: result.id, otp }),
+                payloadMapper: this.mapper.notificationPayload,
                 actionType: NotificationTopicAction.CREATE,
                 destinationTopic: KafkaTopic.NOTIFICATION,
             },
@@ -61,7 +64,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 ...props,
             },
             execute: (transaction) => {
-                return this.accountService.create({
+                const account = this.accountService.create({
                     transaction,
                     input: {
                         primaryIdentifier: { value: props.input.identifier, type },
@@ -71,12 +74,14 @@ export class AccountCommands implements Commands.Account.Contract {
                         password: hashedPassword,
                     },
                 });
+
+                return { account: account.id, otp };
             },
         });
 
         await this.otpCacheService.set({
             purpose: "verification",
-            value: account.id,
+            value: account,
             key: otp,
         });
 
@@ -101,7 +106,7 @@ export class AccountCommands implements Commands.Account.Contract {
         });
 
         await this.transactionalService.emit({
-            payload: this.notificationPayloadMapper({ account: identifier.account.id, otp }),
+            payload: this.mapper.notificationPayload({ account: identifier.account.id, otp }),
             actionType: NotificationTopicAction.CREATE,
             destinationTopic: KafkaTopic.NOTIFICATION,
             resource: this.resource,
@@ -123,10 +128,10 @@ export class AccountCommands implements Commands.Account.Contract {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        await this.transactionalService.run<Entities.Account>({
+        await this.transactionalService.run({
             resource: this.resource,
             outbox: {
-                payloadMapper: this.accountPayloadMapper.bind(this),
+                payloadMapper: this.mapper.accountPayload,
                 actionType: AccountTopicAction.CREATE,
                 destinationTopic: KafkaTopic.ACCOUNT,
             },
@@ -148,7 +153,7 @@ export class AccountCommands implements Commands.Account.Contract {
                     input: { account, hashes: hashedCodes },
                 });
 
-                return account;
+                return { account };
             },
         });
 
@@ -225,25 +230,5 @@ export class AccountCommands implements Commands.Account.Contract {
         });
 
         return { message: `${this.dictionaryPath}.RESTORED` };
-    }
-
-    public notificationPayloadMapper(
-        props: Commands.Account.NotificationPayloadMapper.Props,
-    ): Commands.Account.NotificationPayloadMapper.Result {
-        return {
-            template: MessageTemplate.ACCOUNT_VERIFICATION_OTP,
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            params: { otp: props.otp },
-            recipient: props.account,
-            language: "en",
-        };
-    }
-
-    public accountPayloadMapper(
-        props: Commands.Account.AccountPayloadMapper.Props,
-    ): Commands.Account.AccountPayloadMapper.Result {
-        return { account: props.id };
     }
 }

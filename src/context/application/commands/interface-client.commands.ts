@@ -1,15 +1,16 @@
-import { InterfaceClientTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { INTERFACE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/domain/repositories";
+import { InterfaceClientTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 import { INTERFACE_CLIENT_SERVICE } from "../services";
+import { InterfaceClientMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InterfaceClientCommands implements Commands.InterfaceClient.Contract {
+    private readonly mapper = new InterfaceClientMapper();
     private readonly dictionaryPath = "commands.interface-client";
     private readonly resource = "InterfaceClient";
 
@@ -27,15 +28,15 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     public async create(props: Commands.InterfaceClient.Create.Props): Commands.InterfaceClient.Create.Result {
         await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.interfaceClientPayload,
+                actionType: InterfaceClientTopicAction.CREATE,
+                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+            },
             audit: {
                 entityType: EntityType.INTERFACE_CLIENT,
                 actionType: ActionType.CREATE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.interfaceClientPayloadMapper.bind(this),
-                actionType: InterfaceClientTopicAction.CREATE,
-                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
             execute: async (transaction) => {
                 const application = await this.applicationRepository.findUniqueOrThrow({
@@ -93,15 +94,15 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     public async revoke(props: Commands.InterfaceClient.Revoke.Props): Commands.InterfaceClient.Revoke.Result {
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.interfaceClientPayload,
+                actionType: InterfaceClientTopicAction.REVOKE,
+                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+            },
             audit: {
                 entityType: EntityType.INTERFACE_CLIENT,
                 actionType: ActionType.REVOKE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.interfaceClientPayloadMapper.bind(this),
-                actionType: InterfaceClientTopicAction.REVOKE,
-                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
@@ -129,15 +130,15 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     public async restore(props: Commands.InterfaceClient.Restore.Props): Commands.InterfaceClient.Restore.Result {
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.interfaceClientPayload,
+                actionType: InterfaceClientTopicAction.RESTORE,
+                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+            },
             audit: {
                 entityType: EntityType.INTERFACE_CLIENT,
                 actionType: ActionType.RESTORE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.interfaceClientPayloadMapper.bind(this),
-                actionType: InterfaceClientTopicAction.RESTORE,
-                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
@@ -165,15 +166,15 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     public async purge(props: Commands.InterfaceClient.Purge.Props): Commands.InterfaceClient.Purge.Result {
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.interfaceClientPayload,
+                actionType: InterfaceClientTopicAction.PURGE,
+                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
+            },
             audit: {
                 entityType: EntityType.INTERFACE_CLIENT,
                 actionType: ActionType.PURGE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.interfaceClientPayloadMapper.bind(this),
-                actionType: InterfaceClientTopicAction.PURGE,
-                destinationTopic: KafkaTopic.INTERFACE_CLIENT,
             },
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
@@ -196,16 +197,5 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
-    }
-
-    public interfaceClientPayloadMapper(
-        props: Commands.InterfaceClient.InterfaceClientPayloadMapper.Props,
-    ): Commands.InterfaceClient.InterfaceClientPayloadMapper.Result {
-        return props.entities.map(({ id, application }) => ({
-            application: application.id,
-            isRevoked: props.isRevoked,
-            realm: application.realm,
-            id,
-        }));
     }
 }

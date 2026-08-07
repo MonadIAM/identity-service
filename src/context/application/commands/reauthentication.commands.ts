@@ -1,20 +1,21 @@
-import { ReauthenticationTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TOTP, Secret } from "otpauth";
 import ms, { StringValue } from "ms";
 
+import { ReauthenticationTopicAction, EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/domain/repositories";
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
-import { EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { SECOND_FACTOR_SERVICE } from "../services";
+import { ReauthenticationMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ReauthenticationCommands implements Commands.Reauthentication.Contract {
+    private readonly mapper = new ReauthenticationMapper();
     private readonly dictionaryPath = "commands.reauthentication";
     private readonly resource = "Reauthentication";
     private readonly ttl: number;
@@ -59,15 +60,15 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
         }
 
         await this.transactionalService.emit({
-            payload: { session: props.session, expiresAt: Date.now() + this.ttl * 1e3 },
+            payload: this.mapper.grantPayload({ session: props.session, expiresAt: Date.now() + this.ttl * 1e3 }),
             destinationTopic: KafkaTopic.REAUTHENTICATION,
             actionType: ReauthenticationTopicAction.GRANT,
+            resource: this.resource,
             audit: {
                 entityType: EntityType.SESSION,
                 actionType: ActionType.GRANT,
                 ...props,
             },
-            resource: this.resource,
         });
 
         return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
@@ -81,7 +82,7 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
         await this.transactionalService.run({
             resource: this.resource,
             outbox: {
-                payloadMapper: () => ({ session: props.session, expiresAt }),
+                payloadMapper: this.mapper.grantPayload,
                 destinationTopic: KafkaTopic.REAUTHENTICATION,
                 actionType: ReauthenticationTopicAction.GRANT,
             },
@@ -116,6 +117,8 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
                 if (ciphertext) {
                     this.secondFactorService.rewrap({ input: { factor, secret: ciphertext }, transaction });
                 }
+
+                return { session: props.session, expiresAt };
             },
         });
 

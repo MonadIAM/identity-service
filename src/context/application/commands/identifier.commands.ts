@@ -1,23 +1,18 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import {
-    NotificationTopicAction,
-    NotificationContentKind,
-    NotificationCategory,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
+import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/domain/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
-import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { IDENTIFIER_SERVICE } from "../services";
+import { IdentifierMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class IdentifierCommands implements Commands.Identifier.Contract {
+    private readonly mapper = new IdentifierMapper();
     private readonly dictionaryPath = "commands.identifier";
     private readonly resource = "Identifier";
 
@@ -39,10 +34,10 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     public async create(props: Commands.Identifier.Create.Props): Commands.Identifier.Create.Result {
         const otp = this.cryptoService.generateOTP();
 
-        const identifier = await this.transactionalService.run<Entities.Identifier>({
+        const { identifier } = await this.transactionalService.run({
             resource: this.resource,
             outbox: {
-                payloadMapper: () => this.notificationPayloadMapper({ account: props.actor, otp }),
+                payloadMapper: this.mapper.notificationPayload,
                 actionType: NotificationTopicAction.CREATE,
                 destinationTopic: KafkaTopic.NOTIFICATION,
             },
@@ -57,7 +52,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                     transaction,
                 });
 
-                return this.identifierService.create({
+                const identifier = this.identifierService.create({
                     transaction,
                     input: {
                         account,
@@ -67,12 +62,14 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                         },
                     },
                 });
+
+                return { identifier: identifier.id, account: props.actor, otp };
             },
         });
 
         await this.otpCacheService.set({
             purpose: "identifier",
-            value: identifier.id,
+            value: identifier,
             key: otp,
         });
 
@@ -100,7 +97,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         });
 
         await this.transactionalService.emit({
-            payload: this.notificationPayloadMapper({ account: props.actor, otp }),
+            payload: this.mapper.notificationPayload({ identifier: identifier.id, account: props.actor, otp }),
             actionType: NotificationTopicAction.CREATE,
             destinationTopic: KafkaTopic.NOTIFICATION,
             resource: this.resource,
@@ -170,17 +167,17 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     }
 
     public async purge(props: Commands.Identifier.Purge.Props): Commands.Identifier.Purge.Result {
-        await this.transactionalService.run<Entities.Identifier>({
+        await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.identifierPurgedPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.IDENTIFIER,
                 actionType: ActionType.PURGE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.identifierPurgedPayloadMapper.bind(this, { account: props.actor }),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: async (transaction) => {
                 const identifier = await this.identifierRepository.findUniqueOrThrow({
@@ -197,37 +194,10 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                     transaction,
                 });
 
-                return identifier;
+                return { account: props.actor };
             },
         });
 
         return { message: `${this.dictionaryPath}.PURGED` };
-    }
-
-    public identifierPurgedPayloadMapper(
-        props: Commands.Identifier.IdentifierPurgedPayloadMapper.Props,
-    ): Commands.Identifier.IdentifierPurgedPayloadMapper.Result {
-        return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            template: MessageTemplate.IDENTIFIER_PURGED,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
-        };
-    }
-
-    public notificationPayloadMapper(
-        props: Commands.Identifier.NotificationPayloadMapper.Props,
-    ): Commands.Identifier.NotificationPayloadMapper.Result {
-        return {
-            template: MessageTemplate.IDENTIFIER_VERIFICATION_OTP,
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            params: { otp: props.otp },
-            recipient: props.account,
-            language: "en",
-        };
     }
 }

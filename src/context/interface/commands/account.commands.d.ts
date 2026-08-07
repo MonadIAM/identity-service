@@ -1,30 +1,6 @@
 declare namespace Commands {
     namespace Account {
-        interface Contract extends InternalContract, ControllerContract {}
-
-        interface InternalContract {
-            notificationPayloadMapper: NotificationPayloadMapper.Signature;
-            accountPayloadMapper: AccountPayloadMapper.Signature;
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = {
-                account: string;
-                otp: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace AccountPayloadMapper {
-            type Props = Entities.Account;
-
-            type Result = Topics.Account.Message["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends ControllerContract {}
 
         interface ControllerContract {
             deactivate: Deactivate.Signature;

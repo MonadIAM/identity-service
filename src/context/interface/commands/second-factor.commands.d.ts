@@ -1,31 +1,6 @@
 declare namespace Commands {
     namespace SecondFactor {
-        interface Contract extends InternalContract, ControllerContract {}
-
-        interface InternalContract {
-            secondFactorEnabledPayloadMapper: SecondFactorEnabledPayloadMapper.Signature;
-            secondFactorResetPayloadMapper: SecondFactorResetPayloadMapper.Signature;
-        }
-
-        namespace SecondFactorEnabledPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace SecondFactorResetPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends ControllerContract {}
 
         interface ControllerContract {
             create: Create.Signature;

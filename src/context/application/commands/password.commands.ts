@@ -1,24 +1,19 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import {
-    NotificationTopicAction,
-    NotificationContentKind,
-    NotificationCategory,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
 import { PASSWORD_HISTORY_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
+import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
-import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { PASSWORD_SERVICE } from "../services";
+import { PasswordMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PasswordCommands implements Commands.Password.Contract {
+    private readonly mapper = new PasswordMapper();
     private readonly dictionaryPath = "commands.password";
     private readonly historyCheckDays: number;
     private readonly resource = "Password";
@@ -46,17 +41,17 @@ export class PasswordCommands implements Commands.Password.Contract {
     }
 
     public async change(props: Commands.Password.Change.Props): Commands.Password.Change.Result {
-        return await this.transactionalService.run<MessageResult>({
+        return await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.passwordChangedPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.PASSWORD,
                 actionType: ActionType.UPDATE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.passwordChangedPayloadMapper.bind(this, { account: props.actor }),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
@@ -87,7 +82,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                     transaction,
                 });
 
-                return { message: `${this.dictionaryPath}.CHANGED` };
+                return { message: `${this.dictionaryPath}.CHANGED`, account: props.actor };
             },
         });
     }
@@ -108,7 +103,7 @@ export class PasswordCommands implements Commands.Password.Contract {
             });
 
             await this.transactionalService.emit({
-                payload: this.notificationPayloadMapper({ account: identifier.account.id, otp }),
+                payload: this.mapper.notificationPayload({ account: identifier.account.id, otp }),
                 actionType: NotificationTopicAction.CREATE,
                 destinationTopic: KafkaTopic.NOTIFICATION,
                 resource: this.resource,
@@ -130,15 +125,15 @@ export class PasswordCommands implements Commands.Password.Contract {
 
         return this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.passwordChangedViaOtpPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.PASSWORD,
                 actionType: ActionType.RESET,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.passwordChangedViaOtpPayloadMapper.bind(this, { account: cachedAccount }),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: async (transaction) => {
                 await this.checkPasswordHistory({ account: cachedAccount, password: props.input.password });
@@ -160,7 +155,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                     transaction,
                 });
 
-                return { message: `${this.dictionaryPath}.RESET` };
+                return { message: `${this.dictionaryPath}.RESET`, account: cachedAccount };
             },
         });
     }
@@ -181,17 +176,17 @@ export class PasswordCommands implements Commands.Password.Contract {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_RECOVERY_CODE` });
         }
 
-        return this.transactionalService.run<MessageResult>({
+        return this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.passwordChangedViaRecoveryCodePayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.PASSWORD,
                 actionType: ActionType.RESET,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.passwordChangedViaRecoveryCodePayloadMapper.bind(this, { account: account.id }),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: async (transaction) => {
                 await this.checkPasswordHistory({ account: account.id, password: props.input.password });
@@ -210,7 +205,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                     transaction,
                 });
 
-                return { message: `${this.dictionaryPath}.RESET` };
+                return { message: `${this.dictionaryPath}.RESET`, account: account.id };
             },
         });
     }
@@ -250,58 +245,5 @@ export class PasswordCommands implements Commands.Password.Contract {
         );
 
         return results.find(({ isValid }) => isValid)?.entry ?? null;
-    }
-
-    public passwordChangedPayloadMapper(
-        props: Commands.Password.PasswordChangedPayloadMapper.Props,
-    ): Commands.Password.PasswordChangedPayloadMapper.Result {
-        return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            template: MessageTemplate.PASSWORD_CHANGED,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
-        };
-    }
-
-    public passwordChangedViaOtpPayloadMapper(
-        props: Commands.Password.PasswordChangedViaOtpPayloadMapper.Props,
-    ): Commands.Password.PasswordChangedViaOtpPayloadMapper.Result {
-        return {
-            template: MessageTemplate.PASSWORD_CHANGED_VIA_OTP,
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
-        };
-    }
-
-    public passwordChangedViaRecoveryCodePayloadMapper(
-        props: Commands.Password.PasswordChangedViaRecoveryCodePayloadMapper.Props,
-    ): Commands.Password.PasswordChangedViaRecoveryCodePayloadMapper.Result {
-        return {
-            template: MessageTemplate.PASSWORD_CHANGED_VIA_RECOVERY_CODE,
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
-        };
-    }
-
-    public notificationPayloadMapper(
-        props: Commands.Password.NotificationPayloadMapper.Props,
-    ): Commands.Password.NotificationPayloadMapper.Result {
-        return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            template: MessageTemplate.RESET_PASSWORD_OTP,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            params: { otp: props.otp },
-            recipient: props.account,
-            language: "en",
-        };
     }
 }

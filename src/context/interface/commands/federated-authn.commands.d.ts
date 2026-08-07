@@ -21,21 +21,10 @@ declare namespace Commands {
         interface Contract extends InternalContract, ControllerContract {}
 
         interface InternalContract {
-            blacklistPayloadMapper: BlacklistPayloadMapper.Signature;
             authenticateExisting: AuthenticateExisting.Signature;
             attachToExisting: AttachToExisting.Signature;
             resolveProvider: ResolveProvider.Signature;
             provision: Provision.Signature;
-        }
-
-        namespace BlacklistPayloadMapper {
-            type Props = {
-                revokedSessions: Services.Session.Create.RevokedSession[];
-            };
-
-            type Result = Topics.Blacklist.Message["payload"][];
-
-            type Signature = (props: Props) => Result;
         }
 
         namespace AuthenticateExisting {

@@ -1,5 +1,4 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { BlacklistTopicAction } from "@monadiam/shared";
 
 import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SERVICE } from "~common/services";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
@@ -9,6 +8,7 @@ import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 import {
     AuthenticationContextClass,
+    BlacklistTopicAction,
     AccountSubject,
     IdentifierType,
     AccountStatus,
@@ -19,9 +19,11 @@ import {
 } from "~context/enums";
 
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "../services";
+import { FederatedAuthnMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract {
+    private readonly mapper = new FederatedAuthnMapper();
     private readonly dictionaryPath = "commands.federated-authn";
     private readonly resource = "Account";
 
@@ -50,7 +52,8 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
     ) {}
 
-    public async authorize({ input }: Commands.FederatedAuthn.Authorize.Props): Commands.FederatedAuthn.Authorize.Result {
+    public async authorize(props: Commands.FederatedAuthn.Authorize.Props): Commands.FederatedAuthn.Authorize.Result {
+        const { input } = props;
         const oauthService = this.resolveProvider({ provider: input.provider });
         const state = this.cryptoService.generateToken();
 
@@ -59,10 +62,8 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         return { url: oauthService.getAuthorizationUrl(state) };
     }
 
-    public async callback({
-        context,
-        input,
-    }: Commands.FederatedAuthn.Callback.Props): Commands.FederatedAuthn.Callback.Result {
+    public async callback(props: Commands.FederatedAuthn.Callback.Props): Commands.FederatedAuthn.Callback.Result {
+        const { context, input } = props;
         const cached = await this.oauthStateCacheService.consume({ state: input.state });
 
         if (cached?.provider !== input.provider) {
@@ -87,15 +88,15 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         const oauthIdentifier = await this.identifierRepository.findUnique({
             options: { populate: ["account"] },
             where: {
-                provider: identity.provider,
                 providerUserId: identity.providerUserId,
+                provider: identity.provider,
             },
         });
 
         if (oauthIdentifier) {
             return this.authenticateExisting({
-                context,
                 input: { account: oauthIdentifier.account },
+                context,
             });
         }
 
@@ -120,17 +121,17 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
     public async authenticateExisting(
         props: Commands.FederatedAuthn.AuthenticateExisting.Props,
     ): Commands.FederatedAuthn.AuthenticateExisting.Result {
-        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
+        const session = await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.blacklistPayload,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                actionType: BlacklistTopicAction.ADD,
+            },
             audit: {
                 entityType: EntityType.ACCOUNT,
                 actionType: ActionType.SIGN_IN,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.blacklistPayloadMapper.bind(this),
-                destinationTopic: KafkaTopic.BLACKLIST,
-                actionType: BlacklistTopicAction.ADD,
             },
             execute: (transaction) => {
                 return this.sessionService.create({
@@ -158,17 +159,17 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
     public async attachToExisting(
         props: Commands.FederatedAuthn.AttachToExisting.Props,
     ): Commands.FederatedAuthn.AttachToExisting.Result {
-        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
+        const session = await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.blacklistPayload,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                actionType: BlacklistTopicAction.ADD,
+            },
             audit: {
                 entityType: EntityType.IDENTIFIER,
                 actionType: ActionType.CREATE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.blacklistPayloadMapper.bind(this),
-                destinationTopic: KafkaTopic.BLACKLIST,
-                actionType: BlacklistTopicAction.ADD,
             },
             execute: (transaction) => {
                 this.identifierService.create({
@@ -191,10 +192,10 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                         acr: AuthenticationContextClass.FEDERATED,
                         userAgent: props.context.userAgent,
                         account: props.input.account,
+                        scope: DEFAULT_OAUTH_SCOPE,
                         realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
-                        scope: DEFAULT_OAUTH_SCOPE,
                     },
                 });
             },
@@ -211,7 +212,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
+        const session = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.ACCOUNT,
@@ -282,11 +283,5 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
             default:
                 throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.UNSUPPORTED_PROVIDER` });
         }
-    }
-
-    public blacklistPayloadMapper(
-        props: Commands.FederatedAuthn.BlacklistPayloadMapper.Props,
-    ): Commands.FederatedAuthn.BlacklistPayloadMapper.Result {
-        return props.revokedSessions;
     }
 }

@@ -1,28 +1,29 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
-import {
-    NotificationContentKind,
-    NotificationTopicAction,
-    NotificationCategory,
-    BlacklistTopicAction,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
 import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
-import { EntityType, KafkaTopic, ActionType, AccountStatus } from "~context/enums";
+import {
+    NotificationTopicAction,
+    BlacklistTopicAction,
+    EntityType,
+    KafkaTopic,
+    ActionType,
+    AccountStatus,
+} from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "../services";
+import { SessionMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionCommands implements Commands.Session.Contract {
     private readonly dictionaryPath = "commands.session";
     private readonly resource = "Session";
     private readonly sessionTTL: number;
+    private readonly mapper: SessionMapper;
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
@@ -42,29 +43,30 @@ export class SessionCommands implements Commands.Session.Contract {
         protected readonly configService: ConfigService,
     ) {
         this.sessionTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
+        this.mapper = new SessionMapper(this.sessionTTL);
     }
 
     public async create(props: Commands.Session.Create.Props): Commands.Session.Create.Result {
-        const session = await this.transactionalService.run<Awaited<Services.Session.Create.Result>>({
+        const session = await this.transactionalService.run<Mappers.Session.CreateResult>({
             resource: this.resource,
+            outbox: [
+                {
+                    payloadMapper: this.mapper.blacklistPayload,
+                    destinationTopic: KafkaTopic.BLACKLIST,
+                    actionType: BlacklistTopicAction.ADD,
+                },
+                {
+                    payloadMapper: this.mapper.notificationPayload,
+                    destinationTopic: KafkaTopic.NOTIFICATION,
+                    actionType: NotificationTopicAction.CREATE,
+                },
+            ],
             audit: {
                 entityType: EntityType.ACCOUNT,
                 actionType: ActionType.SIGN_IN,
                 context: props.context,
                 input: props.input,
             },
-            outbox: [
-                {
-                    payloadMapper: this.blacklistPayloadMapper.bind(this),
-                    destinationTopic: KafkaTopic.BLACKLIST,
-                    actionType: BlacklistTopicAction.ADD,
-                },
-                {
-                    payloadMapper: this.notificationPayloadMapper.bind(this, { account: props.input.account }),
-                    destinationTopic: KafkaTopic.NOTIFICATION,
-                    actionType: NotificationTopicAction.CREATE,
-                },
-            ],
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     where: { id: props.input.account },
@@ -81,7 +83,7 @@ export class SessionCommands implements Commands.Session.Contract {
 
                 account.touch();
 
-                return this.sessionService.create({
+                const result = await this.sessionService.create({
                     transaction,
                     input: {
                         userAgent: props.context.userAgent,
@@ -94,6 +96,8 @@ export class SessionCommands implements Commands.Session.Contract {
                         account,
                     },
                 });
+
+                return { ...result, account: props.input.account };
             },
         });
 
@@ -129,22 +133,22 @@ export class SessionCommands implements Commands.Session.Contract {
         const tokenHash = this.cryptoService.hashToken({ token: props.input.refreshToken });
 
         if (tokenHash !== session.refreshTokenHash) {
-            await this.transactionalService.run<Entities.Session[]>({
+            await this.transactionalService.run({
                 resource: this.resource,
+                outbox: {
+                    payloadMapper: this.mapper.blacklistPayload,
+                    destinationTopic: KafkaTopic.BLACKLIST,
+                    actionType: BlacklistTopicAction.ADD,
+                },
                 audit: {
                     entityType: EntityType.SESSION,
                     actionType: ActionType.REVOKE,
                     context: props.context,
                     input: { session: session.id },
                 },
-                outbox: {
-                    payloadMapper: this.blacklistPayloadMapper.bind(this),
-                    destinationTopic: KafkaTopic.BLACKLIST,
-                    actionType: BlacklistTopicAction.ADD,
-                },
                 execute: (transaction) => {
                     this.sessionService.purge({ input: { sessions: [session] }, transaction });
-                    return [session];
+                    return { sessions: [session] };
                 },
             });
 
@@ -191,17 +195,17 @@ export class SessionCommands implements Commands.Session.Contract {
 
     public async revoke(props: Commands.Session.Revoke.Props): Commands.Session.Revoke.Result {
         let isLogout = false;
-        await this.transactionalService.run<Entities.Session[]>({
+        await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.blacklistPayload,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                actionType: BlacklistTopicAction.ADD,
+            },
             audit: {
                 entityType: EntityType.SESSION,
                 actionType: ActionType.REVOKE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.blacklistPayloadMapper.bind(this),
-                destinationTopic: KafkaTopic.BLACKLIST,
-                actionType: BlacklistTopicAction.ADD,
             },
             execute: async (transaction) => {
                 let sessions: Entities.Session[];
@@ -232,7 +236,7 @@ export class SessionCommands implements Commands.Session.Contract {
                     transaction,
                 });
 
-                return sessions;
+                return { sessions };
             },
         });
 
@@ -244,17 +248,17 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async revokeAll(props: Commands.Session.RevokeAll.Props): Commands.Session.RevokeAll.Result {
-        await this.transactionalService.run<Entities.Session[]>({
+        await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.blacklistPayload,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                actionType: BlacklistTopicAction.ADD,
+            },
             audit: {
                 entityType: EntityType.SESSION,
                 actionType: ActionType.REVOKE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.blacklistPayloadMapper.bind(this),
-                destinationTopic: KafkaTopic.BLACKLIST,
-                actionType: BlacklistTopicAction.ADD,
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
@@ -270,36 +274,10 @@ export class SessionCommands implements Commands.Session.Contract {
                     transaction,
                 });
 
-                return sessions;
+                return { sessions };
             },
         });
 
         return { message: `${this.dictionaryPath}.REVOKED_ALL` };
-    }
-
-    public notificationPayloadMapper(
-        props: Commands.Session.NotificationPayloadMapper.Props,
-    ): Commands.Session.NotificationPayloadMapper.Result {
-        return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            template: MessageTemplate.LOGIN_ALERT,
-            recipient: props.account,
-            language: "en",
-        };
-    }
-
-    public blacklistPayloadMapper(
-        props: Commands.Session.BlacklistPayloadMapper.Props,
-    ): Commands.Session.BlacklistPayloadMapper.Result {
-        if (Array.isArray(props)) {
-            return props.map(({ id, lastRefreshedAt }) => ({
-                expiresAt: Math.round(lastRefreshedAt.getTime() + this.sessionTTL * 1e3),
-                session: id,
-            }));
-        } else {
-            return props.revokedSessions;
-        }
     }
 }

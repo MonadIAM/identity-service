@@ -1,21 +1,16 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import {
-    NotificationContentKind,
-    NotificationTopicAction,
-    NotificationCategory,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
-import { ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, HASHING_SERVICE } from "~common/services";
 import { ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 
 import { RECOVERY_CODE_SERVICE } from "../services";
+import { RecoveryCodeMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
+    private readonly mapper = new RecoveryCodeMapper();
     private readonly dictionaryPath = "commands.recovery-code";
     private readonly resource = "RecoveryCode";
 
@@ -36,17 +31,17 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        await this.transactionalService.run<Entities.Account>({
+        await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.notificationPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.RECOVERY_CODE,
                 actionType: ActionType.REGENERATE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.notificationPayloadMapper.bind(this, { account: props.actor }),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
@@ -63,23 +58,10 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
                     },
                 });
 
-                return account;
+                return { account: props.actor };
             },
         });
 
         return { message: `${this.dictionaryPath}.REGENERATED`, codes };
-    }
-
-    public notificationPayloadMapper(
-        props: Commands.RecoveryCode.NotificationPayloadMapper.Props,
-    ): Commands.RecoveryCode.NotificationPayloadMapper.Result {
-        return {
-            template: MessageTemplate.RECOVERY_CODES_REGENERATED,
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
-        };
     }
 }

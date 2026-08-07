@@ -3,19 +3,7 @@ declare namespace Commands {
         interface Contract extends InternalContract, ControllerContract {}
 
         interface InternalContract {
-            notificationPayloadMapper: NotificationPayloadMapper.Signature;
             assertCanAuthenticate: AssertCanAuthenticate.Signature;
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = {
-                account: string;
-                otp: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
         }
 
         namespace AssertCanAuthenticate {

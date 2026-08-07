@@ -1,26 +1,6 @@
 declare namespace Commands {
     namespace InterfaceClient {
-        interface Contract extends InternalContract, ControllerContract {}
-
-        interface InternalContract {
-            interfaceClientPayloadMapper: InterfaceClientPayloadMapper.Signature;
-        }
-
-        namespace InterfaceClientPayloadMapper {
-            type Props = {
-                entities: Entities.InterfaceClient[];
-                isRevoked: boolean;
-            };
-
-            type Result = {
-                application: string;
-                isRevoked: boolean;
-                realm: string;
-                id: string;
-            }[];
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends ControllerContract {}
 
         interface ControllerContract {
             restore: Restore.Signature;

@@ -1,33 +1,6 @@
 declare namespace Commands {
     namespace Session {
-        interface Contract extends InternalContract, PublicContract {}
-
-        interface InternalContract {
-            notificationPayloadMapper: NotificationPayloadMapper.Signature;
-            blacklistPayloadMapper: BlacklistPayloadMapper.Signature;
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = {
-                account: string;
-            };
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace BlacklistPayloadMapper {
-            type Props =
-                | {
-                      revokedSessions: Services.Session.Create.RevokedSession[];
-                  }
-                | Entities.Session[];
-
-            type Result = Services.Session.Create.RevokedSession[];
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends PublicContract {}
 
         interface PublicContract {
             revokeAll: RevokeAll.Signature;

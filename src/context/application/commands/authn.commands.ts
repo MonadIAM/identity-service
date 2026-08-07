@@ -1,17 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
-import {
-    NotificationTopicAction,
-    NotificationContentKind,
-    NotificationCategory,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
+import { AuthenticationContextClass, NotificationTopicAction, AccountStatus, KafkaTopic } from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/domain/repositories";
-import { AuthenticationContextClass, AccountStatus, KafkaTopic } from "~context/enums";
-import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { OAUTH_COMMANDS } from "~context/interface/commands";
 import { Exception } from "~common/exceptions";
 import {
@@ -21,9 +14,11 @@ import {
 } from "~context/infrastructure/services";
 
 import { SECOND_FACTOR_SERVICE } from "../services";
+import { AuthnMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthnCommands implements Commands.Authn.Contract {
+    private readonly mapper = new AuthnMapper();
     private readonly dictionaryPath = "commands.authn";
     private readonly resource = "Authn";
 
@@ -124,7 +119,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
         });
 
         await this.transactionalService.emit({
-            payload: this.notificationPayloadMapper({ account: identifier.account.id, otp }),
+            payload: this.mapper.notificationPayload({ account: identifier.account.id, otp }),
             actionType: NotificationTopicAction.CREATE,
             destinationTopic: KafkaTopic.NOTIFICATION,
             resource: this.resource,
@@ -177,7 +172,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.EXPIRED_PENDING_2FA` });
         }
 
-        const factor = await this.transactionalService.run<Entities.SecondFactor>({
+        const factor = await this.transactionalService.run({
             resource: this.resource,
             execute: async (transaction) => {
                 const factor = await this.secondFactorRepository.findUnique({
@@ -233,19 +228,5 @@ export class AuthnCommands implements Commands.Authn.Contract {
         if (props.status === AccountStatus.PENDING) {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_VERIFIED` });
         }
-    }
-
-    public notificationPayloadMapper(
-        props: Commands.Authn.NotificationPayloadMapper.Props,
-    ): Commands.Authn.NotificationPayloadMapper.Result {
-        return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            template: MessageTemplate.LOGIN_OTP,
-            params: { otp: props.otp },
-            recipient: props.account,
-            language: "en",
-        };
     }
 }

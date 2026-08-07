@@ -1,41 +1,6 @@
 declare namespace Commands {
     namespace Application {
-        interface Contract extends InternalContract, ControllerContract, ConsumerContract {}
-
-        interface InternalContract {
-            interfaceClientOutboxPayloadMapper: InterfaceClientOutboxPayloadMapper.Signature;
-            serviceClientOutboxPayloadMapper: ServiceClientOutboxPayloadMapper.Signature;
-        }
-
-        namespace InterfaceClientOutboxPayloadMapper {
-            type Props = {
-                entities: Entities.Application[];
-                isRevoked: boolean;
-            };
-
-            type Result = {
-                application: string;
-                realm: string;
-                isRevoked: boolean;
-                id: string;
-            }[];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace ServiceClientOutboxPayloadMapper {
-            type Props = {
-                entities: Entities.Application[];
-            };
-
-            type Result = {
-                application: string;
-                code: string;
-                id: string;
-            }[];
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends ControllerContract, ConsumerContract {}
 
         interface ConsumerContract {
             restoreRealm: RestoreRealm.Signature;
