@@ -1,3 +1,4 @@
+import { DiagLogLevel } from "@opentelemetry/api";
 import { StringValue } from "ms";
 
 declare global {
@@ -25,6 +26,14 @@ declare global {
             IDENTITY_SERVICE_URL: string;
             ACCESS_CONTROL_SERVICE_URL: string;
             ACCESS_CONTROL_GRPC_URL: string;
+
+            // ---------------------------------------------------------------------------
+            // OpenTelemetry
+            // ---------------------------------------------------------------------------
+
+            OTEL_EXPORTER_OTLP_ENDPOINT: string;
+            OTEL_LOG_LEVEL: keyof typeof DiagLogLevel;
+            OTEL_LOGS_EXPORTER: "none" | "otlp" | "console";
 
             // ---------------------------------------------------------------------------
             // PostgreSQL
