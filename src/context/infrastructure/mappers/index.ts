@@ -13,3 +13,4 @@ export { PasswordMapper } from "./password.mapper";
 export { AccountMapper } from "./account.mapper";
 export { ProfileMapper } from "./profile.mapper";
 export { SessionMapper } from "./session.mapper";
+export { InviteMapper } from "./invite.mapper";

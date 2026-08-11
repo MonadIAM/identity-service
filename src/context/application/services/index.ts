@@ -11,3 +11,4 @@ export const PASSWORD_SERVICE = Symbol("Services.Password.Contract");
 export const ACCOUNT_SERVICE = Symbol("Services.Account.Contract");
 export const SESSION_SERVICE = Symbol("Services.Session.Contract");
 export const PROFILE_SERVICE = Symbol("Services.Profile.Contract");
+export const INVITE_SERVICE = Symbol("Services.Invite.Contract");

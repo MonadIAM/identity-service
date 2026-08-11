@@ -1,18 +1,45 @@
 declare namespace Commands {
     namespace Membership {
-        interface Contract extends ControllerContract {}
+        interface Contract extends ControllerContract, ConsumerContract {}
 
         interface ControllerContract {
-            revoke: Revoke.Signature;
-            grant: Grant.Signature;
+            exclude: Exclude.Signature;
         }
 
-        namespace Revoke {
+        namespace Exclude {
             type Props = {
+                actor: string;
+                realm: string;
                 input: {
                     account: string;
-                    realm: string;
+                    reason: string;
                 };
+                context: Extract.Meta;
+            };
+
+            type ExecuteResult = {
+                actor: string;
+                realm: string;
+                input: {
+                    account: string;
+                    reason: string;
+                };
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        interface ConsumerContract {
+            confirm: Confirm.Signature;
+            reject: Reject.Signature;
+        }
+
+        namespace Confirm {
+            type Props = {
+                input:
+                    Topics.Membership.JoinConfirmedMessage["payload"] | Topics.Membership.LeaveConfirmedMessage["payload"];
             };
 
             type Result = Promise<void>;
@@ -20,14 +47,9 @@ declare namespace Commands {
             type Signature = (props: Props) => Result;
         }
 
-        namespace Grant {
+        namespace Reject {
             type Props = {
-                input: {
-                    invitedBy: string;
-                    account: string;
-                    joinedAt: Date;
-                    realm: string;
-                };
+                input: Topics.Membership.JoinRejectedMessage["payload"];
             };
 
             type Result = Promise<void>;

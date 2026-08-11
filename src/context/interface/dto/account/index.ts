@@ -6,6 +6,7 @@ export { VerifyBodyDTO } from "./req/verify.dto";
 export { SignupBodyDTO } from "./req/signup.dto";
 export { ResendBodyDTO } from "./req/resend.dto";
 
+export { AccountLookupDTO } from "./res/lookup-entity.dto";
 export { VerifyResultDTO } from "./res/verify.dto";
 export { AccountDTO } from "./res/entity.dto";
 export { ListDTO } from "./res/list.dto";

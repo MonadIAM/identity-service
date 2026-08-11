@@ -14,6 +14,7 @@ import {
     ACCOUNT_SERVICE,
     SESSION_SERVICE,
     PROFILE_SERVICE,
+    INVITE_SERVICE,
 } from "~context/application/services";
 
 import { InterfaceClientService } from "./interface-client.service";
@@ -29,6 +30,7 @@ import { PasswordService } from "./password.service";
 import { AccountService } from "./account.service";
 import { SessionService } from "./session.service";
 import { ProfileService } from "./profile.service";
+import { InviteService } from "./invite.service";
 
 export const DOMAIN_SERVICES: ClassProvider[] = [
     {
@@ -82,5 +84,9 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
     {
         provide: PROFILE_SERVICE,
         useClass: ProfileService,
+    },
+    {
+        provide: INVITE_SERVICE,
+        useClass: InviteService,
     },
 ];

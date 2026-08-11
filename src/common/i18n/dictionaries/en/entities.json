@@ -20,6 +20,13 @@
     "PUBLIC_CONTACT_REQUIRES_VERIFICATION": "Public contact visibility requires a verified identifier.",
     "ALREADY_VERIFIED": "The identifier is already verified."
   },
+  "invite": {
+    "CANNOT_CANCEL_INACTIVE": "The invite cannot be cancelled: it is no longer active.",
+    "CANNOT_ACCEPT_INACTIVE": "The invite cannot be accepted: it is no longer active.",
+    "CANNOT_DECLINE_INACTIVE": "The invite cannot be declined: it is no longer active.",
+    "CANNOT_EXPIRE_INACTIVE": "The invite cannot expire: it is no longer active.",
+    "CANNOT_INVALIDATE_INACTIVE": "The invite cannot be invalidated: it is no longer active."
+  },
   "interface-client": {
     "CANNOT_UPDATE_REVOKED": "A revoked InterfaceClient cannot be updated.",
     "NO_CHANGES_DETECTED": "The InterfaceClient already matches the provided changes.",

@@ -11,3 +11,4 @@ export { Password } from "./password.entity";
 export { Session } from "./session.entity";
 export { Profile } from "./profile.entity";
 export { Account } from "./account.entity";
+export { Invite } from "./invite.entity";

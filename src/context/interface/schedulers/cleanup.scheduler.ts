@@ -12,6 +12,7 @@ export class CleanupScheduler {
     private readonly auditLogRetentionTTL: StringValue;
     private readonly inactiveAccountTTL: StringValue;
     private readonly pendingAccountTTL: StringValue;
+    private readonly pendingInviteTTL: StringValue;
     private readonly batchSize: number;
 
     public constructor(
@@ -23,6 +24,7 @@ export class CleanupScheduler {
         this.auditLogRetentionTTL = this.configService.getOrThrow<StringValue>("AUDIT_LOG_RETENTION_TTL");
         this.inactiveAccountTTL = this.configService.getOrThrow<StringValue>("INACTIVE_ACCOUNT_TTL");
         this.pendingAccountTTL = this.configService.getOrThrow<StringValue>("PENDING_ACCOUNT_TTL");
+        this.pendingInviteTTL = this.configService.getOrThrow<StringValue>("PENDING_INVITE_TTL");
         this.batchSize = this.configService.getOrThrow<number>("CLEANUP_BATCH_SIZE");
     }
 
@@ -43,6 +45,17 @@ export class CleanupScheduler {
             job: CleanupJob.INACTIVE_ACCOUNTS,
             data: {
                 olderThanMs: ms(this.inactiveAccountTTL),
+                batchSize: this.batchSize,
+            },
+        });
+    }
+
+    @Cron(CronExpression.EVERY_HOUR)
+    public async schedulePendingInvitesCleanup(): Promise<void> {
+        await this.cleanupQueue.schedule({
+            job: CleanupJob.PENDING_INVITES,
+            data: {
+                olderThanMs: ms(this.pendingInviteTTL),
                 batchSize: this.batchSize,
             },
         });

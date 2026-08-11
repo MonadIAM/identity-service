@@ -26,6 +26,8 @@ declare global {
                 passwordHistory: ORM.Collection<Entities.PasswordHistory>;
                 identifiers: ORM.Collection<Entities.Identifier>;
                 memberships: ORM.Collection<Entities.Membership>;
+                receivedInvites: ORM.Collection<Entities.Invite>;
+                sentInvites: ORM.Collection<Entities.Invite>;
 
                 assignRelations(props: AssignRelations): void;
                 deactivate(): void;

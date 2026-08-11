@@ -3,10 +3,10 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { AccountTopicAction } from "@monadiam/shared";
 import { Job } from "bullmq";
 
-import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/application/services";
-import { CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
+import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE, INVITE_SERVICE } from "~context/application/services";
+import { CleanupJob, KafkaTopic, AccountStatus, InviteStatus } from "~context/enums";
+import { ACCOUNT_REPOSITORY, INVITE_REPOSITORY } from "~context/domain/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 
 import { CLEANUP_QUEUE } from "../tokens";
 import { BullQueue } from "../enums";
@@ -22,10 +22,14 @@ export class CleanupProcessor extends WorkerHost {
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
+        @Inject(INVITE_REPOSITORY)
+        private readonly inviteRepository: Repositories.Invite.PublicContract,
         @Inject(CHANGE_LOG_SERVICE)
         private readonly changeLogService: Services.ChangeLog.ProcessorContract,
         @Inject(AUDIT_LOG_SERVICE)
         private readonly auditLogService: Services.AuditLog.ProcessorContract,
+        @Inject(INVITE_SERVICE)
+        private readonly inviteService: Services.Invite.CommandContract,
         @Inject(CLEANUP_QUEUE)
         private readonly cleanupQueue: Queues.Cleanup.Contract,
     ) {
@@ -35,6 +39,7 @@ export class CleanupProcessor extends WorkerHost {
     private readonly handlers: Record<CleanupJob, Queues.Cleanup.Handler> = {
         [CleanupJob.INACTIVE_ACCOUNTS]: (job: Job) => this.cleanupInactiveAccounts(job),
         [CleanupJob.PENDING_ACCOUNTS]: (job: Job) => this.cleanupPendingAccounts(job),
+        [CleanupJob.PENDING_INVITES]: (job: Job) => this.cleanupPendingInvites(job),
         [CleanupJob.CHANGE_LOG]: (job: Job) => this.cleanupChangeLog(job),
         [CleanupJob.AUDIT_LOG]: (job: Job) => this.cleanupAuditLog(job),
     };
@@ -130,6 +135,43 @@ export class CleanupProcessor extends WorkerHost {
             }
         } catch (error) {
             this.logger.error("Failed to clean up inactive accounts", error);
+            throw error;
+        }
+    }
+
+    private async cleanupPendingInvites(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
+        const { olderThanMs, batchSize } = job.data;
+
+        const expirationDate = new Date(Date.now() - olderThanMs);
+        this.logger.log(`Cleaning up pending invites older than ${expirationDate.toISOString()}`);
+
+        try {
+            const expired = await this.transactionalService.run<Entities.Invite[]>({
+                resource: "Invite",
+                execute: async (transaction) => {
+                    const invites = await this.inviteRepository.find({
+                        where: { status: InviteStatus.PENDING, createdAt: { $lt: expirationDate } },
+                        options: { limit: batchSize },
+                        transaction,
+                    });
+
+                    for (const invite of invites) {
+                        this.inviteService.expire({ entity: invite });
+                    }
+
+                    return invites;
+                },
+            });
+
+            if (expired.length) {
+                this.logger.log(`Expired ${expired.length} pending invites.`);
+                return this.scheduleNextBatch(job, expired.length === batchSize);
+            } else {
+                this.logger.log("No pending invites to clean up.");
+                return { deleted: 0, nextBatch: false };
+            }
+        } catch (error) {
+            this.logger.error("Failed to clean up pending invites", error);
             throw error;
         }
     }

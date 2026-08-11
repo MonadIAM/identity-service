@@ -11,6 +11,7 @@ import {
     AUDIT_LOG_QUERIES,
     ACCOUNT_QUERIES,
     SESSION_QUERIES,
+    INVITE_QUERIES,
     OAUTH_QUERIES,
 } from "~context/interface/queries";
 
@@ -24,6 +25,7 @@ import { ChangeLogQueries } from "./change-log.queries";
 import { AuditLogQueries } from "./audit-log.queries";
 import { AccountQueries } from "./account.queries";
 import { SessionQueries } from "./session.queries";
+import { InviteQueries } from "./invite.queries";
 import { OAuthQueries } from "./oauth.queries";
 
 export const QUERIES: ClassProvider[] = [
@@ -66,6 +68,10 @@ export const QUERIES: ClassProvider[] = [
     {
         provide: SESSION_QUERIES,
         useClass: SessionQueries,
+    },
+    {
+        provide: INVITE_QUERIES,
+        useClass: InviteQueries,
     },
     {
         provide: OAUTH_QUERIES,

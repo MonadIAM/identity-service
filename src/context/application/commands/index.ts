@@ -14,6 +14,7 @@ import {
     ACCOUNT_COMMANDS,
     PROFILE_COMMANDS,
     SESSION_COMMANDS,
+    INVITE_COMMANDS,
     OAUTH_COMMANDS,
     AUTHN_COMMANDS,
 } from "~context/interface/commands";
@@ -31,6 +32,7 @@ import { PasswordCommands } from "./password.commands";
 import { AccountCommands } from "./account.commands";
 import { ProfileCommands } from "./profile.commands";
 import { SessionCommands } from "./session.commands";
+import { InviteCommands } from "./invite.commands";
 import { OAuthCommands } from "./oauth.commands";
 import { AuthnCommands } from "./authn.commands";
 
@@ -86,6 +88,10 @@ export const COMMANDS: ClassProvider[] = [
     {
         provide: SESSION_COMMANDS,
         useClass: SessionCommands,
+    },
+    {
+        provide: INVITE_COMMANDS,
+        useClass: InviteCommands,
     },
     {
         provide: OAUTH_COMMANDS,

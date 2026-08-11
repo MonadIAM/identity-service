@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { isEmail } from "class-validator";
 
-import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY } from "~context/domain/repositories";
+import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY, INVITE_REPOSITORY } from "~context/domain/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
@@ -12,12 +12,13 @@ import {
     AccountSubject,
     IdentifierType,
     AccountStatus,
+    InviteStatus,
     ActionType,
     EntityType,
     KafkaTopic,
 } from "~context/enums";
 
-import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE } from "../services";
+import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE, INVITE_SERVICE } from "../services";
 import { AccountMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -33,10 +34,14 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly identifierRepository: Repositories.Identifier.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.PublicContract,
+        @Inject(INVITE_REPOSITORY)
+        private readonly inviteRepository: Repositories.Invite.PublicContract,
         @Inject(RECOVERY_CODE_SERVICE)
         private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
         @Inject(ACCOUNT_SERVICE)
         private readonly accountService: Services.Account.CommandContract,
+        @Inject(INVITE_SERVICE)
+        private readonly inviteService: Services.Invite.CommandContract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.PublicContract,
         @Inject(HASHING_SERVICE)
@@ -207,6 +212,15 @@ export class AccountCommands implements Commands.Account.Contract {
                 const sessions = account.sessions.getItems();
 
                 this.accountService.suspend({ transaction, input: { account, sessions } });
+
+                const pendingInvites = await this.inviteRepository.find({
+                    where: { status: InviteStatus.PENDING, $or: [{ invitee: account }, { inviter: account }] },
+                    transaction,
+                });
+
+                for (const invite of pendingInvites) {
+                    this.inviteService.invalidate({ entity: invite });
+                }
             },
         });
 

@@ -15,7 +15,7 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
 
     public constructor(
         @Inject(MEMBERSHIP_COMMANDS)
-        private readonly membershipCommands: Commands.Membership.ControllerContract,
+        private readonly membershipCommands: Commands.Membership.ConsumerContract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
@@ -32,20 +32,17 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
         try {
             const { actionType, payload } = message;
             switch (actionType) {
-                case MembershipTopicAction.GRANT:
-                    await this.membershipCommands.grant({
-                        input: {
-                            joinedAt: new Date(payload.joinedAt),
-                            invitedBy: payload.invitedBy,
-                            account: payload.account,
-                            realm: payload.realm,
-                        },
-                    });
+                case MembershipTopicAction.JOIN_CONFIRMED:
+                case MembershipTopicAction.LEAVE_CONFIRMED:
+                    await this.membershipCommands.confirm({ input: payload });
                     break;
-                case MembershipTopicAction.REVOKE:
-                    await this.membershipCommands.revoke({
-                        input: { account: payload.account, realm: payload.realm },
-                    });
+                case MembershipTopicAction.JOIN_REJECTED:
+                    await this.membershipCommands.reject({ input: payload });
+                    break;
+                case MembershipTopicAction.LEAVE_REJECTED:
+                    this.logger.warn(
+                        `Membership leave rejected: process=${payload.process} account=${payload.account} realm=${payload.realm}`,
+                    );
                     break;
                 default:
                     this.logger.warn(`Unknown membership action type: ${String(actionType)}`);
@@ -59,8 +56,8 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
                         },
                         value: {
                             originalTopic: KafkaTopic.MEMBERSHIP,
-                            payload: message.payload,
                             error: String(error),
+                            payload: message,
                         },
                     }),
                 );
@@ -70,8 +67,8 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
                     this.kafkaClient.emit(KafkaTopic.MEMBERSHIP_DEAD, {
                         value: {
                             originalTopic: KafkaTopic.MEMBERSHIP,
-                            payload: message.payload,
                             error: String(error),
+                            payload: message,
                         },
                     }),
                 );

@@ -7,8 +7,7 @@ import { ExceptionMapper } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
 import { OperationContext } from "../utilities/operation-context";
-import { AuditLog } from "../entities/audit-log.entity";
-import { Outbox } from "../entities";
+import { AuditLog, Outbox } from "../entities";
 
 @Injectable()
 export class TransactionalService implements TransactionManager.Service.Contract {

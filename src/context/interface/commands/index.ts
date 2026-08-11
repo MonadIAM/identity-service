@@ -11,5 +11,6 @@ export const PASSWORD_COMMANDS = Symbol("Commands.Password.Contract");
 export const ACCOUNT_COMMANDS = Symbol("Commands.Account.Contract");
 export const PROFILE_COMMANDS = Symbol("Commands.Profile.Contract");
 export const SESSION_COMMANDS = Symbol("Commands.Session.Contract");
+export const INVITE_COMMANDS = Symbol("Commands.Invite.Contract");
 export const OAUTH_COMMANDS = Symbol("Commands.OAuth.Contract");
 export const AUTHN_COMMANDS = Symbol("Commands.Authn.Contract");

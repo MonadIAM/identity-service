@@ -17,6 +17,8 @@ const SWAGGER_TAGS: Record<string, string> = {
     Authn: "Authentication, step-up reauthentication, and session lifecycle: password, OTP, and TOTP verification, plus session listing and sign-out.",
     FederatedAuthn: "Federated authentication through external OpenID Connect providers (OpenID Connect Core 1.0).",
     Account: "Account lifecycle management, including registration, verification, suspension, restoration, and self-service access.",
+    Realm: "Realm membership workflow operations owned by identity-service.",
+    Invite: "Account invitation workflows for joining realms: creation, acceptance, declination, and cancellation.",
     Identifier: "Management of account identifiers such as email or phone: creation, verification, and notification/visibility preferences.",
     Profile: "Self-service profile updates for account-owned personal and presentation data.",
     Password: "Password credential management, including rotation and recovery through OTP or recovery code flows.",

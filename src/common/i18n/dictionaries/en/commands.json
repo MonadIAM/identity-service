@@ -41,6 +41,19 @@
     "PUBLIC_CONTACT_TOGGLED": "Identifier public contact visibility successfully toggled.",
     "PURGED": "Identifier successfully deleted."
   },
+  "invite": {
+    "CREATED": "Invite successfully sent.",
+    "ACCEPTANCE_REQUESTED": "Invite acceptance successfully requested.",
+    "ACCEPTED": "Invite successfully accepted.",
+    "DECLINED": "Invite successfully declined.",
+    "CANCELLED": "Invite successfully cancelled.",
+    "INVALID_STATUS": "The requested invite status transition is not supported.",
+    "INVITEE_ALREADY_MEMBER": "The specified account is already a member of this realm."
+  },
+  "membership": {
+    "EXCLUSION_REQUESTED": "Realm exclusion successfully requested.",
+    "MEMBERSHIP_NOT_FOUND": "The specified account is not a member of this realm."
+  },
   "federated-authn": {
     "INVALID_STATE": "The OAuth state is invalid or expired.",
     "SIGNED_IN": "Signed in successfully.",

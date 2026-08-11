@@ -123,6 +123,34 @@ declare global {
                 }
             }
 
+            namespace Invite {
+                type DefaultFilters = {
+                    updatedAt?: OrdinalFilterDTO<Date>;
+                    createdAt?: OrdinalFilterDTO<Date>;
+                    status?: StringFilterDTO;
+                    realm?: LinkFilterDTO;
+                    role?: LinkFilterDTO;
+                    id?: StringFilterDTO;
+                };
+
+                type ManageFilters = DefaultFilters & {
+                    invitee?: LinkFilterDTO;
+                    inviter?: LinkFilterDTO;
+                };
+
+                type Filters = DefaultFilters & ManageFilters;
+
+                type Sort = {
+                    createdAt?: QueryOrder;
+                    updatedAt?: QueryOrder;
+                };
+
+                interface Types {
+                    Filters: Filters;
+                    Sort: Sort;
+                }
+            }
+
             namespace MasterCode {
                 type Filters = {};
 

@@ -195,6 +195,7 @@ declare global {
 
             INACTIVE_ACCOUNT_TTL: StringValue;
             PENDING_ACCOUNT_TTL: StringValue;
+            PENDING_INVITE_TTL: StringValue;
             AUDIT_LOG_RETENTION_TTL: StringValue;
             CHANGE_LOG_RETENTION_TTL: StringValue;
             CLEANUP_BATCH_SIZE: `${number}`;

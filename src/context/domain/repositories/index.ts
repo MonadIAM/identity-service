@@ -13,3 +13,4 @@ export const PASSWORD_REPOSITORY = Symbol("Repositories.Password.Contract");
 export const SESSION_REPOSITORY = Symbol("Repositories.Session.Contract");
 export const PROFILE_REPOSITORY = Symbol("Repositories.Profile.Contract");
 export const ACCOUNT_REPOSITORY = Symbol("Repositories.Account.Contract");
+export const INVITE_REPOSITORY = Symbol("Repositories.Invite.Contract");

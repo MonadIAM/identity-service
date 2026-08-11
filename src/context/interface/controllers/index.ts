@@ -8,6 +8,7 @@ import { AuditLogManageController } from "./manage-audit-log.controller";
 import { FederatedAuthnController } from "./federated-authn.controller";
 import { ServiceClientController } from "./service-client.controller";
 import { AccountManageController } from "./manage-account.controller";
+import { InviteManageController } from "./manage-invite.controller";
 import { SecondFactorController } from "./second-factor.controller";
 import { RecoveryCodeController } from "./recovery-code.controller";
 import { ApplicationController } from "./application.controller";
@@ -16,6 +17,8 @@ import { DiscoveryController } from "./discovery.controller";
 import { PasswordController } from "./password.controller";
 import { ProfileController } from "./profile.controller";
 import { AccountController } from "./account.controller";
+import { InviteController } from "./invite.controller";
+import { RealmController } from "./realm.controller";
 import { AuthnController } from "./authn.controller";
 import { OAuthController } from "./oauth.controller";
 
@@ -30,6 +33,7 @@ export const HTTP_CONTROLLERS = [
     FederatedAuthnController,
     ServiceClientController,
     AccountManageController,
+    InviteManageController,
     SecondFactorController,
     RecoveryCodeController,
     ApplicationController,
@@ -38,6 +42,8 @@ export const HTTP_CONTROLLERS = [
     PasswordController,
     ProfileController,
     AccountController,
+    InviteController,
+    RealmController,
     AuthnController,
     OAuthController,
 ];
@@ -53,6 +59,7 @@ export {
     FederatedAuthnController,
     ServiceClientController,
     AccountManageController,
+    InviteManageController,
     SecondFactorController,
     RecoveryCodeController,
     ApplicationController,
@@ -61,6 +68,8 @@ export {
     PasswordController,
     ProfileController,
     AccountController,
+    InviteController,
+    RealmController,
     AuthnController,
     OAuthController,
 };

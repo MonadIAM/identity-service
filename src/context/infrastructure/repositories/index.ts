@@ -16,6 +16,7 @@ import {
     SESSION_REPOSITORY,
     PROFILE_REPOSITORY,
     ACCOUNT_REPOSITORY,
+    INVITE_REPOSITORY,
 } from "~context/domain/repositories";
 
 import { PasswordHistoryRepository } from "./password-history.repository";
@@ -33,6 +34,7 @@ import { PasswordRepository } from "./password.repository";
 import { SessionRepository } from "./session.repository";
 import { ProfileRepository } from "./profile.repository";
 import { AccountRepository } from "./account.repository";
+import { InviteRepository } from "./invite.repository";
 
 export const REPOSITORIES: ClassProvider[] = [
     {
@@ -94,5 +96,9 @@ export const REPOSITORIES: ClassProvider[] = [
     {
         provide: ACCOUNT_REPOSITORY,
         useClass: AccountRepository,
+    },
+    {
+        provide: INVITE_REPOSITORY,
+        useClass: InviteRepository,
     },
 ];
