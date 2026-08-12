@@ -1,5 +1,7 @@
+import { MembershipHistoryManageController } from "./manage-membership-history.controller";
 import { InterfaceClientManageController } from "./manage-interface-client.controller";
 import { ServiceClientManageController } from "./manage-service-client.controller";
+import { MembershipHistoryController } from "./membership-history.controller";
 import { ApplicationManageController } from "./manage-application.controller";
 import { IdentifierManageController } from "./manage-identifier.controller";
 import { ChangeLogManageController } from "./manage-change-log.controller";
@@ -23,8 +25,10 @@ import { AuthnController } from "./authn.controller";
 import { OAuthController } from "./oauth.controller";
 
 export const HTTP_CONTROLLERS = [
+    MembershipHistoryManageController,
     InterfaceClientManageController,
     ServiceClientManageController,
+    MembershipHistoryController,
     ApplicationManageController,
     IdentifierManageController,
     InterfaceClientController,
@@ -49,8 +53,10 @@ export const HTTP_CONTROLLERS = [
 ];
 
 export {
+    MembershipHistoryManageController,
     InterfaceClientManageController,
     ServiceClientManageController,
+    MembershipHistoryController,
     ApplicationManageController,
     IdentifierManageController,
     InterfaceClientController,

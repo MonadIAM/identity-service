@@ -1,3 +1,4 @@
+export const MEMBERSHIP_HISTORY_QUERIES = Symbol("Queries.MembershipHistory.Contract");
 export const INTERFACE_CLIENT_QUERIES = Symbol("Queries.InterfaceClient.Contract");
 export const SERVICE_CLIENT_QUERIES = Symbol("Queries.ServiceClient.Contract");
 export const RECOVERY_CODE_QUERIES = Symbol("Queries.RecoveryCode.Contract");

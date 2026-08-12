@@ -1,6 +1,7 @@
 import { ClassProvider } from "@nestjs/common";
 
 import {
+    MEMBERSHIP_HISTORY_REPOSITORY,
     PASSWORD_HISTORY_REPOSITORY,
     INTERFACE_CLIENT_REPOSITORY,
     SERVICE_CLIENT_REPOSITORY,
@@ -19,6 +20,7 @@ import {
     INVITE_REPOSITORY,
 } from "~context/domain/repositories";
 
+import { MembershipHistoryRepository } from "./membership-history.repository";
 import { PasswordHistoryRepository } from "./password-history.repository";
 import { InterfaceClientRepository } from "./interface-client.repository";
 import { ServiceClientRepository } from "./service-client.repository";
@@ -37,6 +39,10 @@ import { AccountRepository } from "./account.repository";
 import { InviteRepository } from "./invite.repository";
 
 export const REPOSITORIES: ClassProvider[] = [
+    {
+        provide: MEMBERSHIP_HISTORY_REPOSITORY,
+        useClass: MembershipHistoryRepository,
+    },
     {
         provide: PASSWORD_HISTORY_REPOSITORY,
         useClass: PasswordHistoryRepository,

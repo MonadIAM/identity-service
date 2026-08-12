@@ -347,6 +347,35 @@ declare global {
                     Sort: Sort;
                 }
             }
+
+            namespace MembershipHistory {
+                type DefaultFilters = {
+                    joinedAt?: OrdinalFilterDTO<Date>;
+                    leaveAt?: OrdinalFilterDTO<Date>;
+                    createdAt?: OrdinalFilterDTO<Date>;
+                    realm?: LinkFilterDTO;
+                    id?: StringFilterDTO;
+                };
+
+                type ManageFilters = DefaultFilters & {
+                    account?: LinkFilterDTO;
+                    invitedBy?: LinkFilterDTO;
+                    excludedBy?: LinkFilterDTO;
+                };
+
+                type Filters = DefaultFilters & ManageFilters;
+
+                type Sort = {
+                    createdAt?: QueryOrder;
+                    joinedAt?: QueryOrder;
+                    leaveAt?: QueryOrder;
+                };
+
+                interface Types {
+                    Filters: Filters;
+                    Sort: Sort;
+                }
+            }
         }
     }
 }

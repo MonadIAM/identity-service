@@ -1,3 +1,4 @@
+export const MEMBERSHIP_HISTORY_SERVICE = Symbol("Services.MembershipHistory.Contract");
 export const INTERFACE_CLIENT_SERVICE = Symbol("Services.InterfaceClient.Contract");
 export const SERVICE_CLIENT_SERVICE = Symbol("Services.ServiceClient.Contract");
 export const RECOVERY_CODE_SERVICE = Symbol("Services.RecoveryCode.Contract");

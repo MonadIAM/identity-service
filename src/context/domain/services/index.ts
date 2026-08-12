@@ -1,6 +1,7 @@
 import { ClassProvider } from "@nestjs/common";
 
 import {
+    MEMBERSHIP_HISTORY_SERVICE,
     INTERFACE_CLIENT_SERVICE,
     SERVICE_CLIENT_SERVICE,
     SECOND_FACTOR_SERVICE,
@@ -17,6 +18,7 @@ import {
     INVITE_SERVICE,
 } from "~context/application/services";
 
+import { MembershipHistoryService } from "./membership-history.service";
 import { InterfaceClientService } from "./interface-client.service";
 import { ServiceClientService } from "./service-client.service";
 import { RecoveryCodeService } from "./recovery-code.service";
@@ -33,6 +35,10 @@ import { ProfileService } from "./profile.service";
 import { InviteService } from "./invite.service";
 
 export const DOMAIN_SERVICES: ClassProvider[] = [
+    {
+        provide: MEMBERSHIP_HISTORY_SERVICE,
+        useClass: MembershipHistoryService,
+    },
     {
         provide: INTERFACE_CLIENT_SERVICE,
         useClass: InterfaceClientService,

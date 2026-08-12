@@ -27,6 +27,9 @@
     "CANNOT_EXPIRE_INACTIVE": "The invite cannot expire: it is no longer active.",
     "CANNOT_INVALIDATE_INACTIVE": "The invite cannot be invalidated: it is no longer active."
   },
+  "membership-history": {
+    "ALREADY_CLOSED": "The membership history record is already closed."
+  },
   "interface-client": {
     "CANNOT_UPDATE_REVOKED": "A revoked InterfaceClient cannot be updated.",
     "NO_CHANGES_DETECTED": "The InterfaceClient already matches the provided changes.",

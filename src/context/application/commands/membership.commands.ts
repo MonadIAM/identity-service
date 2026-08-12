@@ -5,7 +5,7 @@ import { MembershipTopicAction, InviteStatus, EntityType, ActionType, KafkaTopic
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 
-import { INVITE_SERVICE, MEMBERSHIP_SERVICE } from "../services";
+import { INVITE_SERVICE, MEMBERSHIP_SERVICE, MEMBERSHIP_HISTORY_SERVICE } from "../services";
 import { MembershipMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -23,6 +23,8 @@ export class MembershipCommands implements Commands.Membership.Contract {
         private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(INVITE_REPOSITORY)
         private readonly inviteRepository: Repositories.Invite.PublicContract,
+        @Inject(MEMBERSHIP_HISTORY_SERVICE)
+        private readonly membershipHistoryService: Services.MembershipHistory.CommandContract,
         @Inject(MEMBERSHIP_SERVICE)
         private readonly membershipService: Services.Membership.CommandContract,
         @Inject(INVITE_SERVICE)
@@ -68,39 +70,52 @@ export class MembershipCommands implements Commands.Membership.Contract {
 
         await this.transactionalService.run({
             execute: async (transaction) => {
-                if (!("invite" in input)) {
+                if ("invite" in input) {
+                    const [account, invite] = await Promise.all([
+                        this.accountRepository.findUniqueOrThrow({
+                            where: { id: input.account },
+                            transaction,
+                        }),
+                        this.inviteRepository.findUniqueOrThrow({
+                            where: { id: input.invite, invitee: input.account, realm: input.realm, role: input.role },
+                            transaction,
+                        }),
+                    ]);
+
+                    if ([InviteStatus.PENDING, InviteStatus.ACCEPTED].includes(invite.status)) {
+                        await this.membershipService.create({
+                            transaction,
+                            input: {
+                                invitedBy: input.invitedBy,
+                                joinedAt: new Date(input.joinedAt),
+                                realm: input.realm,
+                                account,
+                            },
+                        });
+
+                        await this.membershipHistoryService.create({
+                            transaction,
+                            input: {
+                                invitedBy: input.invitedBy,
+                                joinedAt: new Date(input.joinedAt),
+                                account: account.id,
+                                realm: input.realm,
+                            },
+                        });
+
+                        if (invite.status === InviteStatus.PENDING) {
+                            this.inviteService.accept({ entity: invite });
+                        }
+                    }
+                } else {
+                    await this.membershipHistoryService.close({
+                        input: { account: input.account, realm: input.realm, excludedBy: input.requestedBy },
+                        transaction,
+                    });
                     await this.membershipService.revoke({
                         input: { account: input.account, realm: input.realm },
                         transaction,
                     });
-                    return;
-                }
-
-                const [account, invite] = await Promise.all([
-                    this.accountRepository.findUniqueOrThrow({
-                        where: { id: input.account },
-                        transaction,
-                    }),
-                    this.inviteRepository.findUniqueOrThrow({
-                        where: { id: input.invite, invitee: input.account, realm: input.realm, role: input.role },
-                        transaction,
-                    }),
-                ]);
-
-                if ([InviteStatus.PENDING, InviteStatus.ACCEPTED].includes(invite.status)) {
-                    await this.membershipService.create({
-                        transaction,
-                        input: {
-                            invitedBy: input.invitedBy,
-                            joinedAt: new Date(input.joinedAt),
-                            realm: input.realm,
-                            account,
-                        },
-                    });
-
-                    if (invite.status === InviteStatus.PENDING) {
-                        this.inviteService.accept({ entity: invite });
-                    }
                 }
             },
         });

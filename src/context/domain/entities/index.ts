@@ -1,3 +1,4 @@
+export { MembershipHistory } from "./membership-history.entity";
 export { PasswordHistory } from "./password-history.entity";
 export { InterfaceClient } from "./interface-client.entity";
 export { ServiceClient } from "./service-client.entity";

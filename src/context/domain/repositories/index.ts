@@ -1,3 +1,4 @@
+export const MEMBERSHIP_HISTORY_REPOSITORY = Symbol("Repositories.MembershipHistory.Contract");
 export const PASSWORD_HISTORY_REPOSITORY = Symbol("Repositories.PasswordHistory.Contract");
 export const INTERFACE_CLIENT_REPOSITORY = Symbol("Repositories.InterfaceClient.Contract");
 export const SERVICE_CLIENT_REPOSITORY = Symbol("Repositories.ServiceClient.Contract");

@@ -1,3 +1,4 @@
+export { MembershipHistoryMapper } from "./membership-history.mapper";
 export { PasswordHistoryMapper } from "./password-history.mapper";
 export { InterfaceClientMapper } from "./interface-client.mapper";
 export { ServiceClientMapper } from "./service-client.mapper";

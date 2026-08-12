@@ -1,6 +1,7 @@
 import { ClassProvider } from "@nestjs/common";
 
 import {
+    MEMBERSHIP_HISTORY_QUERIES,
     INTERFACE_CLIENT_QUERIES,
     SERVICE_CLIENT_QUERIES,
     RECOVERY_CODE_QUERIES,
@@ -15,6 +16,7 @@ import {
     OAUTH_QUERIES,
 } from "~context/interface/queries";
 
+import { MembershipHistoryQueries } from "./membership-history.queries";
 import { InterfaceClientQueries } from "./interface-client.queries";
 import { ServiceClientQueries } from "./service-client.queries";
 import { RecoveryCodeQueries } from "./recovery-code.queries";
@@ -29,6 +31,10 @@ import { InviteQueries } from "./invite.queries";
 import { OAuthQueries } from "./oauth.queries";
 
 export const QUERIES: ClassProvider[] = [
+    {
+        provide: MEMBERSHIP_HISTORY_QUERIES,
+        useClass: MembershipHistoryQueries,
+    },
     {
         provide: INTERFACE_CLIENT_QUERIES,
         useClass: InterfaceClientQueries,
