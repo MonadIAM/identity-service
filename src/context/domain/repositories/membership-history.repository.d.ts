@@ -7,6 +7,6 @@ declare namespace Repositories {
             Repositories.Mappers.MembershipHistory.Types
         > {}
 
-        interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
+        interface QueryContract extends Pick<PublicContract, "findMany"> {}
     }
 }

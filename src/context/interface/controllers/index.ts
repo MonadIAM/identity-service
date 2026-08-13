@@ -1,8 +1,7 @@
-import { MembershipHistoryManageController } from "./manage-membership-history.controller";
 import { InterfaceClientManageController } from "./manage-interface-client.controller";
 import { ServiceClientManageController } from "./manage-service-client.controller";
-import { MembershipHistoryController } from "./membership-history.controller";
 import { ApplicationManageController } from "./manage-application.controller";
+import { MembershipManageController } from "./manage-membership.controller";
 import { IdentifierManageController } from "./manage-identifier.controller";
 import { ChangeLogManageController } from "./manage-change-log.controller";
 import { InterfaceClientController } from "./interface-client.controller";
@@ -14,6 +13,7 @@ import { InviteManageController } from "./manage-invite.controller";
 import { SecondFactorController } from "./second-factor.controller";
 import { RecoveryCodeController } from "./recovery-code.controller";
 import { ApplicationController } from "./application.controller";
+import { MembershipController } from "./membership.controller";
 import { IdentifierController } from "./identifier.controller";
 import { DiscoveryController } from "./discovery.controller";
 import { PasswordController } from "./password.controller";
@@ -25,11 +25,10 @@ import { AuthnController } from "./authn.controller";
 import { OAuthController } from "./oauth.controller";
 
 export const HTTP_CONTROLLERS = [
-    MembershipHistoryManageController,
     InterfaceClientManageController,
     ServiceClientManageController,
-    MembershipHistoryController,
     ApplicationManageController,
+    MembershipManageController,
     IdentifierManageController,
     InterfaceClientController,
     ChangeLogManageController,
@@ -41,6 +40,7 @@ export const HTTP_CONTROLLERS = [
     SecondFactorController,
     RecoveryCodeController,
     ApplicationController,
+    MembershipController,
     IdentifierController,
     DiscoveryController,
     PasswordController,
@@ -53,11 +53,10 @@ export const HTTP_CONTROLLERS = [
 ];
 
 export {
-    MembershipHistoryManageController,
     InterfaceClientManageController,
     ServiceClientManageController,
-    MembershipHistoryController,
     ApplicationManageController,
+    MembershipManageController,
     IdentifierManageController,
     InterfaceClientController,
     ChangeLogManageController,
@@ -69,6 +68,7 @@ export {
     SecondFactorController,
     RecoveryCodeController,
     ApplicationController,
+    MembershipController,
     IdentifierController,
     DiscoveryController,
     PasswordController,

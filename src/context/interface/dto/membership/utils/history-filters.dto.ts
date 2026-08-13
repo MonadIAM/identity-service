@@ -5,7 +5,7 @@ import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "MembershipHistoryFilters" })
-export class FiltersDTO implements Repositories.Mappers.MembershipHistory.DefaultFilters {
+export class HistoryFiltersDTO implements Repositories.Mappers.MembershipHistory.DefaultFilters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
@@ -42,8 +42,38 @@ export class FiltersDTO implements Repositories.Mappers.MembershipHistory.Defaul
     public createdAt?: OrdinalFilterDTO<Date>;
 }
 
+@ApiSchema({ name: "MembershipHistoryCommonFilters" })
+export class HistoryCommonFiltersDTO
+    extends HistoryFiltersDTO
+    implements Repositories.Mappers.MembershipHistory.CommonFilters
+{
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
+    public account?: LinkFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
+    public invitedBy?: LinkFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
+    public excludedBy?: LinkFilterDTO;
+}
+
 @ApiSchema({ name: "MembershipHistoryManageFilters" })
-export class ManageFiltersDTO extends FiltersDTO implements Repositories.Mappers.MembershipHistory.ManageFilters {
+export class HistoryManageFiltersDTO
+    extends HistoryFiltersDTO
+    implements Repositories.Mappers.MembershipHistory.ManageFilters
+{
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

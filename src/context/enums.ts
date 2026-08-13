@@ -43,6 +43,7 @@ export enum InviteQueryScope {
 export enum QueryMode {
     /* eslint-disable prettier/prettier */
     DEFAULT = "DEFAULT",
+    COMMON  = "COMMON",
     MANAGE  = "MANAGE",
     /* eslint-enable prettier/prettier */
 }

@@ -10,23 +10,15 @@ export class MembershipHistoryQueries implements Queries.MembershipHistory.Contr
         private readonly membershipHistoryRepository: Repositories.MembershipHistory.QueryContract,
     ) {}
 
-    public findUnique(props: Queries.MembershipHistory.FindUnique.Props): Queries.MembershipHistory.FindUnique.Result {
-        const filter: ORM.ObjectQuery<Entities.MembershipHistory> = {};
-
-        if (props.mode === QueryMode.DEFAULT) {
-            filter.account = props.actor;
-        }
-
-        return this.membershipHistoryRepository.findUniqueOrThrow({
-            where: { id: props.membershipHistory, ...filter },
-        });
-    }
-
     public findMany(props: Queries.MembershipHistory.FindMany.Props): Queries.MembershipHistory.FindMany.Result {
-        const prefilter: ORM.ObjectQuery<Entities.MembershipHistory> = {};
+        const prefilter: ORM.ObjectQuery<Entities.MembershipHistory> = { leaveAt: { $ne: null } };
 
         if (props.mode === QueryMode.DEFAULT) {
             prefilter.account = props.actor;
+        }
+
+        if (props.mode === QueryMode.COMMON) {
+            prefilter.realm = props.realm;
         }
 
         return this.membershipHistoryRepository.findMany({

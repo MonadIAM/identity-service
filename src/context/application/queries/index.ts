@@ -7,6 +7,7 @@ import {
     RECOVERY_CODE_QUERIES,
     SECOND_FACTOR_QUERIES,
     APPLICATION_QUERIES,
+    MEMBERSHIP_QUERIES,
     IDENTIFIER_QUERIES,
     CHANGE_LOG_QUERIES,
     AUDIT_LOG_QUERIES,
@@ -22,6 +23,7 @@ import { ServiceClientQueries } from "./service-client.queries";
 import { RecoveryCodeQueries } from "./recovery-code.queries";
 import { SecondFactorQueries } from "./second-factor.queries";
 import { ApplicationQueries } from "./application.queries";
+import { MembershipQueries } from "./membership.queries";
 import { IdentifierQueries } from "./identifier.queries";
 import { ChangeLogQueries } from "./change-log.queries";
 import { AuditLogQueries } from "./audit-log.queries";
@@ -54,6 +56,10 @@ export const QUERIES: ClassProvider[] = [
     {
         provide: APPLICATION_QUERIES,
         useClass: ApplicationQueries,
+    },
+    {
+        provide: MEMBERSHIP_QUERIES,
+        useClass: MembershipQueries,
     },
     {
         provide: IDENTIFIER_QUERIES,

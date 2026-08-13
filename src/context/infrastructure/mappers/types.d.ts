@@ -336,10 +336,28 @@ declare global {
             }
 
             namespace Membership {
-                type Filters = {};
+                type PersonalFilters = {
+                    joinedAt?: OrdinalFilterDTO<Date>;
+                    createdAt?: OrdinalFilterDTO<Date>;
+                    realm?: LinkFilterDTO;
+                };
+
+                type CommonFilters = {
+                    joinedAt?: OrdinalFilterDTO<Date>;
+                    createdAt?: OrdinalFilterDTO<Date>;
+                    account?: LinkFilterDTO;
+                    invitedBy?: LinkFilterDTO;
+                };
+
+                type ManageFilters = CommonFilters & {
+                    realm?: LinkFilterDTO;
+                };
+
+                type Filters = PersonalFilters & CommonFilters & ManageFilters;
 
                 type Sort = {
                     createdAt?: QueryOrder;
+                    joinedAt?: QueryOrder;
                 };
 
                 interface Types {
@@ -362,6 +380,8 @@ declare global {
                     invitedBy?: LinkFilterDTO;
                     excludedBy?: LinkFilterDTO;
                 };
+
+                type CommonFilters = ManageFilters;
 
                 type Filters = DefaultFilters & ManageFilters;
 

@@ -4,8 +4,8 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-@ApiSchema({ name: "MembershipHistorySort" })
-export class SortDTO implements Repositories.Mappers.MembershipHistory.Sort {
+@ApiSchema({ name: "MembershipSort" })
+export class SortDTO implements Repositories.Mappers.Membership.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)
@@ -17,10 +17,4 @@ export class SortDTO implements Repositories.Mappers.MembershipHistory.Sort {
     @Validator.IsEnum(QueryOrder)
     @ApiProperty({ required: false, enum: QueryOrder, enumName: "QueryOrder" })
     public joinedAt?: QueryOrder;
-
-    @Expose()
-    @Validator.IsOptional()
-    @Validator.IsEnum(QueryOrder)
-    @ApiProperty({ required: false, enum: QueryOrder, enumName: "QueryOrder" })
-    public leaveAt?: QueryOrder;
 }

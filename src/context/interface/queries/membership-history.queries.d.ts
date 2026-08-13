@@ -6,27 +6,7 @@ declare global {
             interface Contract extends ControllerContract {}
 
             interface ControllerContract {
-                findUnique: FindUnique.Signature;
                 findMany: FindMany.Signature;
-            }
-
-            namespace FindUnique {
-                type DefaultProps = {
-                    mode: QueryMode.DEFAULT;
-                    membershipHistory: string;
-                    actor: string;
-                };
-
-                type ManageProps = {
-                    mode: QueryMode.MANAGE;
-                    membershipHistory: string;
-                };
-
-                type Props = DefaultProps | ManageProps;
-
-                type Result = Promise<Entities.MembershipHistory>;
-
-                type Signature = (props: Props) => Result;
             }
 
             namespace FindMany {
@@ -38,6 +18,14 @@ declare global {
                     actor: string;
                 };
 
+                type CommonProps = {
+                    mode: QueryMode.COMMON;
+                    filters: Repositories.Mappers.MembershipHistory.CommonFilters;
+                    sort: Repositories.Mappers.MembershipHistory.Sort;
+                    pagination: Pagination;
+                    realm: string;
+                };
+
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
                     filters: Repositories.Mappers.MembershipHistory.ManageFilters;
@@ -45,7 +33,7 @@ declare global {
                     pagination: Pagination;
                 };
 
-                type Props = DefaultProps | ManageProps;
+                type Props = DefaultProps | CommonProps | ManageProps;
 
                 type Result = Promise<[Entities.MembershipHistory[], number]>;
 
