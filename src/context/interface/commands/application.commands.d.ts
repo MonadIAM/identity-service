@@ -10,8 +10,11 @@ declare namespace Commands {
 
         namespace RestoreRealm {
             type Props = {
-                version: number;
-                realm: string;
+                context: Extract.Meta;
+                input: {
+                    version: number;
+                    realm: string;
+                };
             };
 
             type Result = Promise<void>;
@@ -21,8 +24,11 @@ declare namespace Commands {
 
         namespace RevokeRealm {
             type Props = {
-                version: number;
-                realm: string;
+                context: Extract.Meta;
+                input: {
+                    version: number;
+                    realm: string;
+                };
             };
 
             type Result = Promise<void>;
@@ -32,8 +38,11 @@ declare namespace Commands {
 
         namespace PurgeRealm {
             type Props = {
-                version: number;
-                realm: string;
+                context: Extract.Meta;
+                input: {
+                    version: number;
+                    realm: string;
+                };
             };
 
             type Result = Promise<void>;

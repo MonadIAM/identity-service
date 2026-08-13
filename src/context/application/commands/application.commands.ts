@@ -34,6 +34,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 actionType: ActionType.CREATE,
                 ...props,
             },
+            changeLog: true,
             execute: (transaction) => {
                 return this.applicationService.create({
                     transaction,
@@ -57,6 +58,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 actionType: ActionType.UPDATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entity = await this.applicationRepository.findUniqueOrThrow({
                     where: {
@@ -100,6 +102,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 actionType: ActionType.REVOKE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: {
@@ -147,6 +150,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 actionType: ActionType.RESTORE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: {
@@ -182,6 +186,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 actionType: ActionType.PURGE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
                     where: {
@@ -208,9 +213,15 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async revokeRealm(props: Commands.Application.RevokeRealm.Props): Commands.Application.RevokeRealm.Result {
-        const { version, realm } = props;
+        const { version, realm } = props.input;
         await this.transactionalService.run({
             resource: this.resource,
+            audit: {
+                entityType: EntityType.APPLICATION,
+                actionType: ActionType.REVOKE,
+                ...props,
+            },
+            changeLog: true,
             outbox: [
                 {
                     payloadMapper: this.mapper.interfaceClientOutboxPayload,
@@ -237,9 +248,15 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async restoreRealm(props: Commands.Application.RestoreRealm.Props): Commands.Application.RestoreRealm.Result {
-        const { version, realm } = props;
+        const { version, realm } = props.input;
         await this.transactionalService.run({
             resource: this.resource,
+            audit: {
+                entityType: EntityType.APPLICATION,
+                actionType: ActionType.RESTORE,
+                ...props,
+            },
+            changeLog: true,
             outbox: [
                 {
                     payloadMapper: this.mapper.interfaceClientOutboxPayload,
@@ -266,9 +283,15 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async purgeRealm(props: Commands.Application.PurgeRealm.Props): Commands.Application.PurgeRealm.Result {
-        const { version, realm } = props;
+        const { version, realm } = props.input;
         await this.transactionalService.run({
             resource: this.resource,
+            audit: {
+                entityType: EntityType.APPLICATION,
+                actionType: ActionType.PURGE,
+                ...props,
+            },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({ transaction, where: { realm } });
                 this.applicationService.purgeRealm({ transaction, entities, version });

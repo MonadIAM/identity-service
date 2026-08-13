@@ -50,6 +50,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 actionType: ActionType.CREATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const [account, existingFactor] = await Promise.all([
                     this.accountRepository.findUniqueOrThrow({
@@ -104,6 +105,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 actionType: ActionType.VERIFY,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const factor = await this.secondFactorRepository.findUniqueOrThrow({
                     options: { populate: ["account.masterCode"] },
@@ -152,6 +154,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 actionType: ActionType.PURGE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const factors = await this.secondFactorRepository.find({
                     options: { populate: ["account.masterCode"] },
@@ -200,6 +203,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 actionType: ActionType.RESET,
                 ...props,
             },
+            changeLog: true,
             execute: (transaction) => {
                 transaction.merge(identifier.account);
                 this.secondFactorService.reset({

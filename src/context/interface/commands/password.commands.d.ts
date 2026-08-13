@@ -53,6 +53,7 @@ declare namespace Commands {
 
         namespace RequestOTP {
             type Props = {
+                context: Extract.Meta;
                 input: {
                     identifier: string;
                 };

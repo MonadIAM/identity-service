@@ -69,6 +69,13 @@ export class MembershipCommands implements Commands.Membership.Contract {
         const { input } = props;
 
         await this.transactionalService.run({
+            resource: this.resource,
+            audit: {
+                actionType: "invite" in input ? ActionType.ACCEPT : ActionType.EXCLUDE,
+                entityType: EntityType.MEMBERSHIP,
+                ...props,
+            },
+            changeLog: true,
             execute: async (transaction) => {
                 if ("invite" in input) {
                     const [account, invite] = await Promise.all([
@@ -125,6 +132,13 @@ export class MembershipCommands implements Commands.Membership.Contract {
         const { input } = props;
 
         await this.transactionalService.run({
+            resource: this.resource,
+            audit: {
+                entityType: EntityType.INVITE,
+                actionType: ActionType.CANCEL,
+                ...props,
+            },
+            changeLog: true,
             execute: async (transaction) => {
                 const invite = await this.inviteRepository.findUniqueOrThrow({
                     where: { id: input.invite },

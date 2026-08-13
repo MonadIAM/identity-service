@@ -139,8 +139,8 @@ export class AccountController {
         NOT_FOUND,
         CONFLICT,
     )
-    public resend(@Body() input: ResendBodyDTO): Commands.Account.Resend.Result {
-        return this.accountCommands.resend({ input });
+    public resend(@Body() input: ResendBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Account.Resend.Result {
+        return this.accountCommands.resend({ context, input });
     }
 
     @Public()

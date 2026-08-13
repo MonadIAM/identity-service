@@ -4,6 +4,7 @@ import { MembershipTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { CONSUMER_META } from "~context/constants";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
@@ -34,10 +35,10 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
             switch (actionType) {
                 case MembershipTopicAction.JOIN_CONFIRMED:
                 case MembershipTopicAction.LEAVE_CONFIRMED:
-                    await this.membershipCommands.confirm({ input: payload });
+                    await this.membershipCommands.confirm({ context: CONSUMER_META, input: payload });
                     break;
                 case MembershipTopicAction.JOIN_REJECTED:
-                    await this.membershipCommands.reject({ input: payload });
+                    await this.membershipCommands.reject({ context: CONSUMER_META, input: payload });
                     break;
                 case MembershipTopicAction.LEAVE_REJECTED:
                     this.logger.warn(

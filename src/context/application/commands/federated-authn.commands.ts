@@ -173,6 +173,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 actionType: ActionType.CREATE,
                 ...props,
             },
+            changeLog: true,
             execute: (transaction) => {
                 this.identifierService.create({
                     transaction,
@@ -221,6 +222,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 actionType: ActionType.SIGN_UP,
                 ...props,
             },
+            changeLog: true,
             execute: (transaction) => {
                 const account = this.accountService.create({
                     transaction,

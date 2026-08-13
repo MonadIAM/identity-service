@@ -4,6 +4,7 @@ import { RealmTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { CONSUMER_META } from "~context/constants";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
@@ -26,13 +27,13 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
 
     private readonly handlers: Consumers.Realm.Handlers = {
         [RealmTopicAction.RESTORE]: async (payload) => {
-            await this.applicationCommands.restoreRealm(payload);
+            await this.applicationCommands.restoreRealm({ context: CONSUMER_META, input: payload });
         },
         [RealmTopicAction.REVOKE]: async (payload) => {
-            await this.applicationCommands.revokeRealm(payload);
+            await this.applicationCommands.revokeRealm({ context: CONSUMER_META, input: payload });
         },
         [RealmTopicAction.PURGE]: async (payload) => {
-            await this.applicationCommands.purgeRealm(payload);
+            await this.applicationCommands.purgeRealm({ context: CONSUMER_META, input: payload });
         },
     };
 

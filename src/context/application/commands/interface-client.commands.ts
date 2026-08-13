@@ -40,6 +40,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 actionType: ActionType.CREATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const application = await this.applicationRepository.findUniqueOrThrow({
                     where: { id: props.input.application, realm: props.realm },
@@ -72,6 +73,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 actionType: ActionType.UPDATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entity = await this.interfaceClientRepository.findUniqueOrThrow({
                     where: { id: props.client, application: { realm: props.realm } },
@@ -106,6 +108,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 actionType: ActionType.REVOKE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
@@ -142,6 +145,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 actionType: ActionType.RESTORE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
@@ -178,6 +182,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 actionType: ActionType.PURGE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },

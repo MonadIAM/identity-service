@@ -44,6 +44,7 @@ declare global {
 
             namespace Resend {
                 type Props = {
+                    context: Extract.Meta;
                     actor: string;
                     input: {
                         identifier: string;

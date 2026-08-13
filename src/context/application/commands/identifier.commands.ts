@@ -48,6 +48,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                 actionType: ActionType.CREATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     where: { id: props.actor },
@@ -103,6 +104,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
             actionType: NotificationTopicAction.CREATE,
             destinationTopic: KafkaTopic.NOTIFICATION,
             resource: this.resource,
+            audit: {
+                entityType: EntityType.IDENTIFIER,
+                actionType: ActionType.REGENERATE,
+                ...props,
+            },
         });
 
         return { message: `${this.dictionaryPath}.CODE_RESENT` };
@@ -125,6 +131,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                 actionType: ActionType.VERIFY,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const identifier = await this.identifierRepository.findUniqueOrThrow({
                     where: { id: cachedIdentifier },
@@ -152,6 +159,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                 actionType: ActionType.UPDATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const identifier = await this.identifierRepository.findUniqueOrThrow({
                     where: {
@@ -181,6 +189,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                 actionType: ActionType.PURGE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const identifier = await this.identifierRepository.findUniqueOrThrow({
                     options: { populate: ["account.password"] },

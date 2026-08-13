@@ -87,8 +87,11 @@ export class AuthnController {
         security: [],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED)
-    public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Authn.RequestOTP.Result {
-        return this.authnCommands.requestOTP({ input });
+    public requestOTP(
+        @Body() input: RequestOTPBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Authn.RequestOTP.Result {
+        return this.authnCommands.requestOTP({ context, input });
     }
 
     @Public()
@@ -137,9 +140,10 @@ export class AuthnController {
     )
     public verifySecondFactor(
         @Body() input: VerifySecondFactorBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
         @Tokens.Pending() token?: string,
     ): Commands.Authn.VerifySecondFactor.Result {
-        return this.authnCommands.verifySecondFactor({ token, input });
+        return this.authnCommands.verifySecondFactor({ context, token, input });
     }
 
     @HttpCode(OK)
@@ -242,14 +246,14 @@ export class AuthnController {
     )
     public revokeSessions(
         @Body() input: RevokeBodyDTO,
-        @Extract.Session() { account: actor, session }: Extract.Session.Authenticated,
+        @Extract.Session() { account, session }: Extract.Session.Authenticated,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Session.Revoke.Result {
         return this.sessionCommands.revoke({
+            actor: account,
             context,
             session,
             input,
-            actor,
         });
     }
 

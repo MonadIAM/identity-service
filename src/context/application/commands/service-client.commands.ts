@@ -40,6 +40,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 actionType: ActionType.CREATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const application = await this.applicationRepository.findUniqueOrThrow({
                     where: { id: props.input.application, realm: props.realm },
@@ -72,6 +73,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 actionType: ActionType.UPDATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entity = await this.serviceClientRepository.findUniqueOrThrow({
                     where: { id: props.input.client, application: { realm: props.realm } },
@@ -105,6 +107,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 actionType: ActionType.REVOKE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
@@ -143,6 +146,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 actionType: ActionType.RESTORE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
@@ -181,6 +185,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                 actionType: ActionType.PURGE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
                     where: { id: { $in: props.input.clients }, application: { realm: props.realm } },

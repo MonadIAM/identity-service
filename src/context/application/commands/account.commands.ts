@@ -70,6 +70,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 entityType: EntityType.ACCOUNT,
                 ...props,
             },
+            changeLog: true,
             execute: (transaction) => {
                 const account = this.accountService.create({
                     transaction,
@@ -117,6 +118,11 @@ export class AccountCommands implements Commands.Account.Contract {
             actionType: NotificationTopicAction.CREATE,
             destinationTopic: KafkaTopic.NOTIFICATION,
             resource: this.resource,
+            audit: {
+                entityType: EntityType.ACCOUNT,
+                actionType: ActionType.REGENERATE,
+                ...props,
+            },
         });
 
         return { message: `${this.dictionaryPath}.CODE_RESENT` };
@@ -147,6 +153,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 actionType: ActionType.VERIFY,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     where: { id: cachedAccount },
@@ -178,6 +185,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 entityType: EntityType.ACCOUNT,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["sessions"] },
@@ -202,6 +210,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 actionType: ActionType.REVOKE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["sessions"] },
@@ -235,6 +244,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 actionType: ActionType.RESTORE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     where: { id: props.input.account },

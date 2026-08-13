@@ -23,6 +23,7 @@ declare namespace Commands {
 
         namespace VerifySecondFactor {
             type Props = {
+                context: Extract.Meta;
                 token?: string;
                 input: {
                     code: string;
@@ -37,6 +38,7 @@ declare namespace Commands {
 
         namespace RequestOTP {
             type Props = {
+                context: Extract.Meta;
                 input: {
                     authorizationRequest: string;
                     identifier: string;

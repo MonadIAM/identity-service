@@ -45,6 +45,7 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
                 actionType: ActionType.REGENERATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["recoveryCodes"] },

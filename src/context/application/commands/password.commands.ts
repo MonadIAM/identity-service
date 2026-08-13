@@ -54,6 +54,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                 actionType: ActionType.UPDATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["password"] },
@@ -108,6 +109,11 @@ export class PasswordCommands implements Commands.Password.Contract {
                 actionType: NotificationTopicAction.CREATE,
                 destinationTopic: KafkaTopic.NOTIFICATION,
                 resource: this.resource,
+                audit: {
+                    entityType: EntityType.PASSWORD,
+                    actionType: ActionType.REGENERATE,
+                    ...props,
+                },
             });
         }
 
@@ -136,6 +142,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                 actionType: ActionType.RESET,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 await this.checkPasswordHistory({ account: cachedAccount, password: props.input.password });
 
@@ -189,6 +196,7 @@ export class PasswordCommands implements Commands.Password.Contract {
                 actionType: ActionType.RESET,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 await this.checkPasswordHistory({ account: account.id, password: props.input.password });
 

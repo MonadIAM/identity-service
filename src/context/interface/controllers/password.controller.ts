@@ -69,8 +69,11 @@ export class PasswordController {
         security: [],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT)
-    public requestOTP(@Body() input: RequestOTPBodyDTO): Commands.Password.RequestOTP.Result {
-        return this.passwordCommands.requestOTP({ input });
+    public requestOTP(
+        @Body() input: RequestOTPBodyDTO,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Password.RequestOTP.Result {
+        return this.passwordCommands.requestOTP({ context, input });
     }
 
     @Public()

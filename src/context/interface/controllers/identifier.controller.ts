@@ -188,8 +188,9 @@ export class IdentifierController {
     public resend(
         @Body() input: ResendBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Meta() context: Extract.Meta,
     ): Commands.Identifier.Resend.Result {
-        return this.identifierCommands.resend({ actor, input });
+        return this.identifierCommands.resend({ context, actor, input });
     }
 
     @HttpCode(OK)

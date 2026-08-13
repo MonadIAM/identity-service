@@ -86,6 +86,7 @@ declare namespace Commands {
 
         namespace Resend {
             type Props = {
+                context: Extract.Meta;
                 input: {
                     identifier: string;
                 };

@@ -28,6 +28,7 @@ export class ProfileCommands implements Commands.Profile.Contract {
                 actionType: ActionType.UPDATE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 const account = await this.accountRepository.findUniqueOrThrow({
                     options: { populate: ["profile"] },

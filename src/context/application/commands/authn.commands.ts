@@ -1,7 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
-import { AuthenticationContextClass, NotificationTopicAction, AccountStatus, KafkaTopic } from "~context/enums";
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/domain/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
@@ -12,6 +11,14 @@ import {
     PENDING_2FA_CACHE_SERVICE,
     OTP_CACHE_SERVICE,
 } from "~context/infrastructure/services";
+import {
+    AuthenticationContextClass,
+    NotificationTopicAction,
+    AccountStatus,
+    EntityType,
+    ActionType,
+    KafkaTopic,
+} from "~context/enums";
 
 import { SECOND_FACTOR_SERVICE } from "../services";
 import { AuthnMapper } from "../mappers";
@@ -125,6 +132,11 @@ export class AuthnCommands implements Commands.Authn.Contract {
             actionType: NotificationTopicAction.CREATE,
             destinationTopic: KafkaTopic.NOTIFICATION,
             resource: this.resource,
+            audit: {
+                entityType: EntityType.SESSION,
+                actionType: ActionType.REGENERATE,
+                ...props,
+            },
         });
 
         return { message: `${this.dictionaryPath}.OTP_SENT` };
