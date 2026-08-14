@@ -12,14 +12,10 @@ declare namespace Commands {
                 type Props = {
                     entities: Entities.Application[];
                     isRevoked: boolean;
+                    actor: string;
                 };
 
-                type Result = {
-                    application: string;
-                    realm: string;
-                    isRevoked: boolean;
-                    id: string;
-                }[];
+                type Result = Topics.InterfaceClient.Message["payload"][];
 
                 type Signature = (props: Props) => Result;
             }
@@ -27,13 +23,10 @@ declare namespace Commands {
             namespace ServiceClientOutboxPayload {
                 type Props = {
                     entities: Entities.Application[];
+                    actor: string;
                 };
 
-                type Result = {
-                    application: string;
-                    code: string;
-                    id: string;
-                }[];
+                type Result = Topics.ServiceClient.Message["payload"][];
 
                 type Signature = (props: Props) => Result;
             }

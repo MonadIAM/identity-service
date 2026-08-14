@@ -27,13 +27,22 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
 
     private readonly handlers: Consumers.Realm.Handlers = {
         [RealmTopicAction.RESTORE]: async (payload) => {
-            await this.applicationCommands.restoreRealm({ context: CONSUMER_META, input: payload });
+            await this.applicationCommands.restoreRealm({
+                context: CONSUMER_META,
+                ...payload,
+            });
         },
         [RealmTopicAction.REVOKE]: async (payload) => {
-            await this.applicationCommands.revokeRealm({ context: CONSUMER_META, input: payload });
+            await this.applicationCommands.revokeRealm({
+                context: CONSUMER_META,
+                ...payload,
+            });
         },
         [RealmTopicAction.PURGE]: async (payload) => {
-            await this.applicationCommands.purgeRealm({ context: CONSUMER_META, input: payload });
+            await this.applicationCommands.purgeRealm({
+                context: CONSUMER_META,
+                ...payload,
+            });
         },
     };
 

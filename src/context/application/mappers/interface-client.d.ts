@@ -11,14 +11,10 @@ declare namespace Commands {
                 type Props = {
                     entities: Entities.InterfaceClient[];
                     isRevoked: boolean;
+                    actor: string;
                 };
 
-                type Result = {
-                    application: string;
-                    isRevoked: boolean;
-                    realm: string;
-                    id: string;
-                }[];
+                type Result = Topics.InterfaceClient.Message["payload"][];
 
                 type Signature = (props: Props) => Result;
             }

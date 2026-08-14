@@ -28,6 +28,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
     }
 
     public async create(props: Commands.ServiceClient.Create.Props): Commands.ServiceClient.Create.Result {
+        const { input, realm, actor } = props;
         await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -43,22 +44,22 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const application = await this.applicationRepository.findUniqueOrThrow({
-                    where: { id: props.input.application, realm: props.realm },
+                    where: { id: input.application, realm },
                     transaction,
                 });
 
                 const serviceClient = await this.serviceClientService.create({
                     transaction,
                     input: {
-                        allowedAddresses: props.input.allowedAddresses,
-                        description: props.input.description,
-                        code: props.input.code,
-                        name: props.input.name,
+                        allowedAddresses: input.allowedAddresses,
+                        description: input.description,
+                        code: input.code,
+                        name: input.name,
                         application,
                     },
                 });
 
-                return { serviceClients: serviceClient };
+                return { serviceClients: serviceClient, actor };
             },
         });
 
@@ -66,6 +67,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
     }
 
     public async update(props: Commands.ServiceClient.Update.Props): Commands.ServiceClient.Update.Result {
+        const { input, realm } = props;
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -76,15 +78,15 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const entity = await this.serviceClientRepository.findUniqueOrThrow({
-                    where: { id: props.input.client, application: { realm: props.realm } },
+                    where: { id: input.client, application: { realm } },
                     transaction,
                 });
 
                 this.serviceClientService.update({
                     patch: {
-                        allowedAddresses: props.input.allowedAddresses,
-                        description: props.input.description,
-                        name: props.input.name,
+                        allowedAddresses: input.allowedAddresses,
+                        description: input.description,
+                        name: input.name,
                     },
                     entity,
                 });
@@ -95,6 +97,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
     }
 
     public async revoke(props: Commands.ServiceClient.Revoke.Props): Commands.ServiceClient.Revoke.Result {
+        const { realm, actor, input } = props;
         const { serviceClients } = await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -110,17 +113,17 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
-                    where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    where: { id: { $in: input.clients }, application: { realm } },
                     options: { populate: ["application"] },
                     transaction,
                 });
 
-                if (entities.length < props.input.clients.length) {
+                if (entities.length < input.clients.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
                 }
 
                 this.serviceClientService.revoke({ entities });
-                return { serviceClients: entities };
+                return { serviceClients: entities, actor };
             },
         });
 
@@ -134,6 +137,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
     }
 
     public async restore(props: Commands.ServiceClient.Restore.Props): Commands.ServiceClient.Restore.Result {
+        const { realm, input, actor } = props;
         const { serviceClients } = await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -149,17 +153,17 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
-                    where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    where: { id: { $in: input.clients }, application: { realm } },
                     options: { populate: ["application"] },
                     transaction,
                 });
 
-                if (entities.length < props.input.clients.length) {
+                if (entities.length < input.clients.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
                 }
 
                 this.serviceClientService.restore({ entities });
-                return { serviceClients: entities };
+                return { serviceClients: entities, actor };
             },
         });
 
@@ -173,6 +177,7 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
     }
 
     public async purge(props: Commands.ServiceClient.Purge.Props): Commands.ServiceClient.Purge.Result {
+        const { input, realm, actor } = props;
         const { serviceClients } = await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -188,17 +193,17 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.serviceClientRepository.find({
-                    where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    where: { id: { $in: input.clients }, application: { realm } },
                     options: { populate: ["application"] },
                     transaction,
                 });
 
-                if (entities.length < props.input.clients.length) {
+                if (entities.length < input.clients.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
                 }
 
                 this.serviceClientService.purge({ transaction, entities });
-                return { serviceClients: entities };
+                return { serviceClients: entities, actor };
             },
         });
 

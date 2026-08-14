@@ -38,9 +38,12 @@ declare namespace Commands {
 
         namespace Confirm {
             type Props = {
-                context: Extract.Meta;
                 input:
-                    Topics.Membership.JoinConfirmedMessage["payload"] | Topics.Membership.LeaveConfirmedMessage["payload"];
+                    | Topics.Membership.JoinConfirmedMessage["payload"]["input"]
+                    | Topics.Membership.LeaveConfirmedMessage["payload"]["input"];
+                context: Extract.Meta;
+                actor: string;
+                realm: string;
             };
 
             type Result = Promise<void>;
@@ -50,8 +53,10 @@ declare namespace Commands {
 
         namespace Reject {
             type Props = {
+                input: Topics.Membership.JoinRejectedMessage["payload"]["input"];
                 context: Extract.Meta;
-                input: Topics.Membership.JoinRejectedMessage["payload"];
+                actor: string;
+                realm: string;
             };
 
             type Result = Promise<void>;

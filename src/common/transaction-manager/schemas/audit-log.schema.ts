@@ -9,6 +9,10 @@ export const AuditLogSchema = new EntitySchema<AuditLog>({
 
     indexes: [
         {
+            name: "audit_log_realm_idx",
+            properties: ["realm"],
+        },
+        {
             name: "audit_log_actor_created_at_idx",
             properties: ["actor", "createdAt"],
         },
@@ -24,6 +28,7 @@ export const AuditLogSchema = new EntitySchema<AuditLog>({
         actionType: { type: "string", length: 64 },
         entityType: { type: "string", length: 64 },
 
+        realm: { type: "uuid", nullable: true },
         actor: { type: "uuid", nullable: true },
 
         ip: { type: "text", columnType: "inet", nullable: true },

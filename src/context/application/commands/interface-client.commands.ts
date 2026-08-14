@@ -28,6 +28,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public async create(props: Commands.InterfaceClient.Create.Props): Commands.InterfaceClient.Create.Result {
+        const { actor, input, realm } = props;
         await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -43,22 +44,22 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             changeLog: true,
             execute: async (transaction) => {
                 const application = await this.applicationRepository.findUniqueOrThrow({
-                    where: { id: props.input.application, realm: props.realm },
+                    where: { id: input.application, realm },
                     transaction,
                 });
 
                 const entity = await this.interfaceClientService.create({
                     transaction,
                     input: {
-                        description: props.input.description,
-                        redirectUri: props.input.redirectUri,
-                        authAddress: props.input.authAddress,
-                        name: props.input.name,
+                        description: input.description,
+                        redirectUri: input.redirectUri,
+                        authAddress: input.authAddress,
+                        name: input.name,
                         application,
                     },
                 });
 
-                return { entities: [entity], isRevoked: false };
+                return { entities: [entity], isRevoked: false, actor };
             },
         });
 
@@ -66,6 +67,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public async update(props: Commands.InterfaceClient.Update.Props): Commands.InterfaceClient.Update.Result {
+        const { client, realm, input } = props;
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -76,16 +78,16 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             changeLog: true,
             execute: async (transaction) => {
                 const entity = await this.interfaceClientRepository.findUniqueOrThrow({
-                    where: { id: props.client, application: { realm: props.realm } },
+                    where: { id: client, application: { realm } },
                     transaction,
                 });
 
                 this.interfaceClientService.update({
                     patch: {
-                        redirectUri: props.input.redirectUri,
-                        authAddress: props.input.authAddress,
-                        description: props.input.description,
-                        name: props.input.name,
+                        redirectUri: input.redirectUri,
+                        authAddress: input.authAddress,
+                        description: input.description,
+                        name: input.name,
                     },
                     entity,
                 });
@@ -96,6 +98,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public async revoke(props: Commands.InterfaceClient.Revoke.Props): Commands.InterfaceClient.Revoke.Result {
+        const { input, realm, actor } = props;
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -111,17 +114,17 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
-                    where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    where: { id: { $in: input.clients }, application: { realm } },
                     options: { populate: ["application"] },
                     transaction,
                 });
 
-                if (entities.length < props.input.clients.length) {
+                if (entities.length < input.clients.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
                 }
 
                 this.interfaceClientService.revoke({ entities });
-                return { entities, isRevoked: true };
+                return { entities, isRevoked: true, actor };
             },
         });
 
@@ -133,6 +136,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public async restore(props: Commands.InterfaceClient.Restore.Props): Commands.InterfaceClient.Restore.Result {
+        const { realm, input, actor } = props;
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -148,17 +152,17 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
-                    where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    where: { id: { $in: input.clients }, application: { realm } },
                     options: { populate: ["application"] },
                     transaction,
                 });
 
-                if (entities.length < props.input.clients.length) {
+                if (entities.length < input.clients.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
                 }
 
                 this.interfaceClientService.restore({ entities });
-                return { entities, isRevoked: false };
+                return { entities, isRevoked: false, actor };
             },
         });
 
@@ -170,6 +174,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     }
 
     public async purge(props: Commands.InterfaceClient.Purge.Props): Commands.InterfaceClient.Purge.Result {
+        const { realm, input, actor } = props;
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -185,17 +190,17 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.interfaceClientRepository.find({
-                    where: { id: { $in: props.input.clients }, application: { realm: props.realm } },
+                    where: { id: { $in: input.clients }, application: { realm } },
                     options: { populate: ["application"] },
                     transaction,
                 });
 
-                if (entities.length < props.input.clients.length) {
+                if (entities.length < input.clients.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
                 }
 
                 this.interfaceClientService.purge({ transaction, entities });
-                return { entities, isRevoked: true };
+                return { entities, isRevoked: true, actor };
             },
         });
 

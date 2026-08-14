@@ -11,12 +11,14 @@ export class SessionMapper implements Commands.Mappers.Session.Contract {
         props: Commands.Mappers.Session.NotificationPayload.Props,
     ): Commands.Mappers.Session.NotificationPayload.Result {
         return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            template: MessageTemplate.LOGIN_ALERT,
-            recipient: props.account,
-            language: "en",
+            input: {
+                sourceService: PlatformService.IDENTITY_SERVICE,
+                category: NotificationCategory.SECURITY,
+                kind: NotificationContentKind.TEMPLATE,
+                template: MessageTemplate.LOGIN_ALERT,
+                recipient: props.account,
+                language: "en",
+            },
         };
     }
 

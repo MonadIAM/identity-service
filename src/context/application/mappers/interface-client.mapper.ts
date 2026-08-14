@@ -3,10 +3,13 @@ export class InterfaceClientMapper implements Commands.Mappers.InterfaceClient.C
         props: Commands.Mappers.InterfaceClient.InterfaceClientPayload.Props,
     ): Commands.Mappers.InterfaceClient.InterfaceClientPayload.Result {
         return props.entities.map(({ id, application }) => ({
-            application: application.id,
-            isRevoked: props.isRevoked,
             realm: application.realm,
-            id,
+            actor: props.actor,
+            input: {
+                application: application.id,
+                isRevoked: props.isRevoked,
+                id,
+            },
         }));
     }
 }

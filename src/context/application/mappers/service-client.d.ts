@@ -10,6 +10,7 @@ declare namespace Commands {
             namespace ServiceClientPayload {
                 type Props = {
                     serviceClients: Entities.ServiceClient | Entities.ServiceClient[];
+                    actor: string;
                 };
 
                 type Result = Topics.ServiceClient.Message["payload"] | Topics.ServiceClient.Message["payload"][];

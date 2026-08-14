@@ -2,11 +2,21 @@ export class ServiceClientMapper implements Commands.Mappers.ServiceClient.Contr
     public serviceClientPayload(
         props: Commands.Mappers.ServiceClient.ServiceClientPayload.Props,
     ): Commands.Mappers.ServiceClient.ServiceClientPayload.Result {
+        const { actor } = props;
+
         if (Array.isArray(props.serviceClients)) {
-            return props.serviceClients.map(({ id, application, code }) => ({ application: application.id, code, id }));
+            return props.serviceClients.map(({ id, application, code }) => ({
+                input: { application: application.id, code, id },
+                realm: application.realm,
+                actor,
+            }));
         } else {
             const { id, application, code } = props.serviceClients;
-            return { application: application.id, code, id };
+            return {
+                input: { application: application.id, code, id },
+                realm: application.realm,
+                actor,
+            };
         }
     }
 }

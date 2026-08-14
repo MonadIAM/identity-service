@@ -7,6 +7,7 @@ export class AuditLog {
     public actionType: string;
     public entityType: string;
 
+    public realm?: string;
     public actor?: string;
 
     public ip?: string;
@@ -21,6 +22,7 @@ export class AuditLog {
         this.actionType = props.actionType;
         this.entityType = props.entityType;
 
+        this.realm = props.realm;
         this.actor = props.actor;
 
         this.userAgent = props.context.userAgent;

@@ -82,7 +82,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async revoke(props: Commands.Application.Revoke.Props): Commands.Application.Revoke.Result {
-        const { realm, input } = props;
+        const { realm, actor, input } = props;
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
@@ -119,7 +119,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                     this.applicationService.revoke({ entities });
                 }
 
-                return { entities, isRevoked: true };
+                return { entities, isRevoked: true, actor };
             },
         });
 
@@ -131,6 +131,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async restore(props: Commands.Application.Restore.Props): Commands.Application.Restore.Result {
+        const { actor } = props;
         const { entities } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
@@ -167,7 +168,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
                     this.applicationService.restore({ entities });
                 }
 
-                return { entities, isRevoked: false };
+                return { entities, isRevoked: false, actor };
             },
         });
 
@@ -213,7 +214,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async revokeRealm(props: Commands.Application.RevokeRealm.Props): Commands.Application.RevokeRealm.Result {
-        const { version, realm } = props.input;
+        const { actor, realm, input } = props;
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -236,19 +237,19 @@ export class ApplicationCommands implements Commands.Application.Contract {
             ],
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
-                    where: { realm },
                     options: { populate: ["interfaceClients", "serviceClients"] },
+                    where: { realm },
                     transaction,
                 });
 
-                this.applicationService.applyRealmRevocation({ entities, version });
-                return { entities, isRevoked: true };
+                this.applicationService.applyRealmRevocation({ entities, version: input.version });
+                return { entities, isRevoked: true, actor };
             },
         });
     }
 
     public async restoreRealm(props: Commands.Application.RestoreRealm.Props): Commands.Application.RestoreRealm.Result {
-        const { version, realm } = props.input;
+        const { actor, realm, input } = props;
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
@@ -271,19 +272,20 @@ export class ApplicationCommands implements Commands.Application.Contract {
             ],
             execute: async (transaction) => {
                 const entities = await this.applicationRepository.find({
-                    where: { realm },
                     options: { populate: ["interfaceClients", "serviceClients"] },
+                    where: { realm },
                     transaction,
                 });
 
-                this.applicationService.applyRealmRestore({ entities, version });
-                return { entities, isRevoked: false };
+                this.applicationService.applyRealmRestore({ entities, version: input.version });
+                return { entities, isRevoked: false, actor };
             },
         });
     }
 
     public async purgeRealm(props: Commands.Application.PurgeRealm.Props): Commands.Application.PurgeRealm.Result {
-        const { version, realm } = props.input;
+        const { realm, input } = props;
+        const { version } = input;
         await this.transactionalService.run({
             resource: this.resource,
             audit: {

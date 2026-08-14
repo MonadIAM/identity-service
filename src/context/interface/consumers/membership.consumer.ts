@@ -31,22 +31,32 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
         @Ctx() context: KafkaContext,
     ): Consumers.Membership.Handle.Result {
         try {
-            const { actionType, payload } = message;
-            switch (actionType) {
+            switch (message.actionType) {
                 case MembershipTopicAction.JOIN_CONFIRMED:
+                    await this.membershipCommands.confirm({
+                        context: CONSUMER_META,
+                        ...message.payload,
+                    });
+                    break;
                 case MembershipTopicAction.LEAVE_CONFIRMED:
-                    await this.membershipCommands.confirm({ context: CONSUMER_META, input: payload });
+                    await this.membershipCommands.confirm({
+                        context: CONSUMER_META,
+                        ...message.payload,
+                    });
                     break;
                 case MembershipTopicAction.JOIN_REJECTED:
-                    await this.membershipCommands.reject({ context: CONSUMER_META, input: payload });
+                    await this.membershipCommands.reject({
+                        context: CONSUMER_META,
+                        ...message.payload,
+                    });
                     break;
                 case MembershipTopicAction.LEAVE_REJECTED:
                     this.logger.warn(
-                        `Membership leave rejected: process=${payload.process} account=${payload.account} realm=${payload.realm}`,
+                        `Membership leave rejected: process=${message.payload.input.process} account=${message.payload.input.account} realm=${message.payload.realm}`,
                     );
                     break;
                 default:
-                    this.logger.warn(`Unknown membership action type: ${String(actionType)}`);
+                    this.logger.warn(`Unknown membership action type: ${message.actionType}`);
             }
         } catch (error) {
             if (Exception.isRetryable(error)) {

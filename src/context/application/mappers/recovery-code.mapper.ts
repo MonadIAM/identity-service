@@ -5,12 +5,14 @@ export class RecoveryCodeMapper implements Commands.Mappers.RecoveryCode.Contrac
         props: Commands.Mappers.RecoveryCode.NotificationPayload.Props,
     ): Commands.Mappers.RecoveryCode.NotificationPayload.Result {
         return {
-            template: MessageTemplate.RECOVERY_CODES_REGENERATED,
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
+            input: {
+                template: MessageTemplate.RECOVERY_CODES_REGENERATED,
+                sourceService: PlatformService.IDENTITY_SERVICE,
+                category: NotificationCategory.SECURITY,
+                kind: NotificationContentKind.TEMPLATE,
+                recipient: props.account,
+                language: "en",
+            },
         };
     }
 }

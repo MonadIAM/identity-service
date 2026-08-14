@@ -66,7 +66,7 @@ export class MembershipCommands implements Commands.Membership.Contract {
     }
 
     public async confirm(props: Commands.Membership.Confirm.Props): Commands.Membership.Confirm.Result {
-        const { input } = props;
+        const { actor, realm, input } = props;
 
         await this.transactionalService.run({
             resource: this.resource,
@@ -84,7 +84,7 @@ export class MembershipCommands implements Commands.Membership.Contract {
                             transaction,
                         }),
                         this.inviteRepository.findUniqueOrThrow({
-                            where: { id: input.invite, invitee: input.account, realm: input.realm, role: input.role },
+                            where: { id: input.invite, invitee: input.account, realm, role: input.role },
                             transaction,
                         }),
                     ]);
@@ -93,20 +93,20 @@ export class MembershipCommands implements Commands.Membership.Contract {
                         await this.membershipService.create({
                             transaction,
                             input: {
-                                invitedBy: input.invitedBy,
                                 joinedAt: new Date(input.joinedAt),
-                                realm: input.realm,
+                                invitedBy: actor,
                                 account,
+                                realm,
                             },
                         });
 
                         await this.membershipHistoryService.create({
                             transaction,
                             input: {
-                                invitedBy: input.invitedBy,
                                 joinedAt: new Date(input.joinedAt),
                                 account: account.id,
-                                realm: input.realm,
+                                invitedBy: actor,
+                                realm,
                             },
                         });
 
@@ -116,11 +116,11 @@ export class MembershipCommands implements Commands.Membership.Contract {
                     }
                 } else {
                     await this.membershipHistoryService.close({
-                        input: { account: input.account, realm: input.realm, excludedBy: input.requestedBy },
+                        input: { account: input.account, realm, excludedBy: actor },
                         transaction,
                     });
                     await this.membershipService.revoke({
-                        input: { account: input.account, realm: input.realm },
+                        input: { account: input.account, realm },
                         transaction,
                     });
                 }

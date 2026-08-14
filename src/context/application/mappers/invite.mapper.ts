@@ -7,13 +7,15 @@ export class InviteMapper implements Commands.Mappers.Invite.Contract {
         const [entity] = props.invites;
 
         return {
-            invitedBy: entity.inviter.id,
-            account: entity.invitee.id,
-            command: "invite.accept",
+            actor: entity.inviter.id,
             realm: entity.realm,
-            process: entity.id,
-            invite: entity.id,
-            role: entity.role,
+            input: {
+                account: entity.invitee.id,
+                command: "invite.accept",
+                process: entity.id,
+                invite: entity.id,
+                role: entity.role,
+            },
         };
     }
 
@@ -23,14 +25,18 @@ export class InviteMapper implements Commands.Mappers.Invite.Contract {
         const [entity] = props.invites;
 
         return {
-            params: { inviter: entity.inviter.id, realm: entity.realm },
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            template: MessageTemplate.INVITE_RECEIVED,
-            category: NotificationCategory.INVITES,
-            kind: NotificationContentKind.TEMPLATE,
-            dedupKey: `invite:${entity.id}`,
-            recipient: entity.invitee.id,
-            language: "en",
+            actor: entity.inviter.id,
+            realm: entity.realm,
+            input: {
+                params: { inviter: entity.inviter.id, realm: entity.realm },
+                sourceService: PlatformService.IDENTITY_SERVICE,
+                template: MessageTemplate.INVITE_RECEIVED,
+                category: NotificationCategory.INVITES,
+                kind: NotificationContentKind.TEMPLATE,
+                dedupKey: `invite:${entity.id}`,
+                recipient: entity.invitee.id,
+                language: "en",
+            },
         };
     }
 
@@ -40,15 +46,23 @@ export class InviteMapper implements Commands.Mappers.Invite.Contract {
         const [entity] = props.invites;
 
         return {
-            dedupKey: `invite:${entity.id}`,
-            override: {
-                params: { inviter: entity.inviter.id, realm: entity.realm },
-                sourceService: PlatformService.IDENTITY_SERVICE,
-                template: MessageTemplate.INVITE_CANCELLED,
-                category: NotificationCategory.INVITES,
-                kind: NotificationContentKind.TEMPLATE,
-                recipient: entity.invitee.id,
-                language: "en",
+            actor: entity.inviter.id,
+            realm: entity.realm,
+            input: {
+                dedupKey: `invite:${entity.id}`,
+                override: {
+                    actor: entity.inviter.id,
+                    realm: entity.realm,
+                    input: {
+                        params: { inviter: entity.inviter.id, realm: entity.realm },
+                        sourceService: PlatformService.IDENTITY_SERVICE,
+                        template: MessageTemplate.INVITE_CANCELLED,
+                        category: NotificationCategory.INVITES,
+                        kind: NotificationContentKind.TEMPLATE,
+                        recipient: entity.invitee.id,
+                        language: "en",
+                    },
+                },
             },
         };
     }

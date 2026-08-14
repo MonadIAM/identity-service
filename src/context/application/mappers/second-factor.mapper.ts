@@ -5,12 +5,14 @@ export class SecondFactorMapper implements Commands.Mappers.SecondFactor.Contrac
         props: Commands.Mappers.SecondFactor.SecondFactorEnabledPayload.Props,
     ): Commands.Mappers.SecondFactor.SecondFactorEnabledPayload.Result {
         return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            template: MessageTemplate.SECOND_FACTOR_ENABLED,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
+            input: {
+                sourceService: PlatformService.IDENTITY_SERVICE,
+                template: MessageTemplate.SECOND_FACTOR_ENABLED,
+                category: NotificationCategory.SECURITY,
+                kind: NotificationContentKind.TEMPLATE,
+                recipient: props.account,
+                language: "en",
+            },
         };
     }
 
@@ -18,12 +20,14 @@ export class SecondFactorMapper implements Commands.Mappers.SecondFactor.Contrac
         props: Commands.Mappers.SecondFactor.SecondFactorResetPayload.Props,
     ): Commands.Mappers.SecondFactor.SecondFactorResetPayload.Result {
         return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            template: MessageTemplate.SECOND_FACTOR_RESET,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            recipient: props.account,
-            language: "en",
+            input: {
+                sourceService: PlatformService.IDENTITY_SERVICE,
+                template: MessageTemplate.SECOND_FACTOR_RESET,
+                category: NotificationCategory.SECURITY,
+                kind: NotificationContentKind.TEMPLATE,
+                recipient: props.account,
+                language: "en",
+            },
         };
     }
 }

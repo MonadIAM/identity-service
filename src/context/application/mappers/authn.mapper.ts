@@ -5,13 +5,15 @@ export class AuthnMapper implements Commands.Mappers.Authn.Contract {
         props: Commands.Mappers.Authn.NotificationPayload.Props,
     ): Commands.Mappers.Authn.NotificationPayload.Result {
         return {
-            sourceService: PlatformService.IDENTITY_SERVICE,
-            category: NotificationCategory.SECURITY,
-            kind: NotificationContentKind.TEMPLATE,
-            template: MessageTemplate.LOGIN_OTP,
-            params: { otp: props.otp },
-            recipient: props.account,
-            language: "en",
+            input: {
+                sourceService: PlatformService.IDENTITY_SERVICE,
+                category: NotificationCategory.SECURITY,
+                kind: NotificationContentKind.TEMPLATE,
+                template: MessageTemplate.LOGIN_OTP,
+                params: { otp: props.otp },
+                recipient: props.account,
+                language: "en",
+            },
         };
     }
 }
