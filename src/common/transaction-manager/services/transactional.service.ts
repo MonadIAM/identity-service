@@ -125,6 +125,7 @@ export class TransactionalService implements TransactionManager.Service.Contract
                 user_agent: props.userAgent ?? null,
                 action_type: props.actionType,
                 entity_type: props.entityType,
+                realm: props.realm ?? null,
                 service: this.serviceName,
                 ip: props.ip ?? null,
                 actor: props.actor,

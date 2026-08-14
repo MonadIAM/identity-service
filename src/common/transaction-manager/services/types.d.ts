@@ -87,6 +87,7 @@ declare global {
 
             type OutboxPayloadMap = {
                 [KafkaTopic.REAUTHENTICATION]: Topics.Reauthentication.Message["payload"];
+                [KafkaTopic.INTERFACE_CLIENT]: Topics.InterfaceClient.Message["payload"];
                 [KafkaTopic.SERVICE_CLIENT]: Topics.ServiceClient.Message["payload"];
                 [KafkaTopic.NOTIFICATION]: Topics.Notification.Message["payload"];
                 [KafkaTopic.MEMBERSHIP]: Topics.Membership.Message["payload"];
@@ -94,7 +95,7 @@ declare global {
                 [KafkaTopic.ACCOUNT]: Topics.Account.Message["payload"];
             };
 
-            type MappedOutboxConfig<T> = {
+            type OutboxConfig<T> = {
                 [D in keyof OutboxPayloadMap]: {
                     payloadMapper?(result: T): OutboxPayloadMap[D] | OutboxPayloadMap[D][];
                     metadata?: UnknownObject;
@@ -102,15 +103,6 @@ declare global {
                     actionType: string;
                 };
             }[keyof OutboxPayloadMap];
-
-            type UnmappedOutboxConfig<T> = {
-                destinationTopic: Exclude<KafkaTopic, keyof OutboxPayloadMap>;
-                payloadMapper?(result: T): ORM.AnyEntity | ORM.AnyEntity[];
-                metadata?: UnknownObject;
-                actionType: string;
-            };
-
-            type OutboxConfig<T> = MappedOutboxConfig<T> | UnmappedOutboxConfig<T>;
         }
     }
 }

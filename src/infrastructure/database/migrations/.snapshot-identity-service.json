@@ -2949,6 +2949,23 @@
           "enumItems": [],
           "mappedType": "unknown"
         },
+        "realm": {
+          "name": "realm",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
         "user_agent": {
           "name": "user_agent",
           "type": "text",
@@ -2999,6 +3016,16 @@
           "keyName": "audit_log_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "realm"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "audit_log_realm_idx",
+          "primary": false,
+          "unique": false
         }
       ],
       "checks": [],
