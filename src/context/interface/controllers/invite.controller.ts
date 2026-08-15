@@ -65,7 +65,7 @@ export class InviteController {
     )
     public getById(
         @Query() { invite, view, mode }: GetByIdQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Invite.FindUnique.Result {
         return this.inviteQueries.findUnique({ mode, invite, actor, view });
     }
@@ -90,7 +90,7 @@ export class InviteController {
     public getPersonalList(
         @Body() { pagination, filters, sort, scope }: GetListBodyDTO,
         @Query() { view, mode }: GetListQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Invite.FindMany.Result {
         return this.inviteQueries.findMany({ mode, pagination, filters, sort, view, actor, scope });
     }
@@ -118,7 +118,7 @@ export class InviteController {
     public create(
         @Query() { realm }: CreateQueryDTO,
         @Body() input: CreateBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.inviteCommands.create({ context, realm, actor, input });
@@ -145,7 +145,7 @@ export class InviteController {
     )
     public changeStatus(
         @Body() input: ChangeStatusBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.inviteCommands.changeStatus({ context, actor, input });

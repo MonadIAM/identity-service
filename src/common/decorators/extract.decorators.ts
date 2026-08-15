@@ -10,7 +10,7 @@ export class Extract {
     });
 
     public static readonly Session = createParamDecorator(
-        (_: unknown, ctx: ExecutionContext): Extract.Session.Public | Extract.Session.Authenticated => {
+        (_: unknown, ctx: ExecutionContext): Extract.Session.Public | Extract.Session.Auth => {
             const request = ctx.switchToHttp().getRequest<Req>();
             return request.session;
         },

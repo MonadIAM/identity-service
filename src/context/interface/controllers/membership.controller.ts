@@ -59,7 +59,7 @@ export class MembershipController {
     public getMyMembershipList(
         @Body() { pagination, filters, sort }: BodyDTO,
         @Query() { mode }: QueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Membership.FindMany.Result {
         return this.membershipQueries.findMany({ mode, pagination, filters, sort, actor });
     }
@@ -108,7 +108,7 @@ export class MembershipController {
     public getMyMembershipHistoryList(
         @Body() { pagination, filters, sort }: HistoryBodyDTO,
         @Query() { mode }: HistoryQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.MembershipHistory.FindMany.Result {
         return this.membershipHistoryQueries.findMany({ mode, pagination, filters, sort, actor });
     }

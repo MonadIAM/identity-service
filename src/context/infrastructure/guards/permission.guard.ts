@@ -3,6 +3,7 @@ import { Reflector } from "@nestjs/core";
 
 import { REQUIRE_GLOBAL_PERMISSION, REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
 import { SYSTEM_REALM_ID } from "~context/constants";
+import { PermissionCode } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 import { ACCESS_CACHE_SERVICE } from "../services";
@@ -24,14 +25,17 @@ export class PermissionGuard implements CanActivate {
             return true;
         }
 
-        const globalPermissions = this.reflector.getAllAndOverride<string[]>(REQUIRE_GLOBAL_PERMISSION, [
+        const globalPermissions = this.reflector.getAllAndOverride<PermissionCode[]>(REQUIRE_GLOBAL_PERMISSION, [
             context.getHandler(),
             context.getClass(),
         ]);
 
         const permissions =
             globalPermissions ??
-            this.reflector.getAllAndOverride<string[]>(REQUIRE_PERMISSION, [context.getHandler(), context.getClass()]);
+            this.reflector.getAllAndOverride<PermissionCode[]>(REQUIRE_PERMISSION, [
+                context.getHandler(),
+                context.getClass(),
+            ]);
 
         if (!permissions?.length) {
             return true;

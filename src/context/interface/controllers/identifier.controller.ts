@@ -88,7 +88,7 @@ export class IdentifierController {
     )
     public findUnique(
         @Query() { identifier, view, mode }: GetByIdQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Identifier.FindUnique.Result {
         return this.identifierQueries.findUnique({ mode, identifier, actor, view });
     }
@@ -112,7 +112,7 @@ export class IdentifierController {
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { view, mode }: GetListQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Identifier.FindMany.Result {
         return this.identifierQueries.findMany({ mode, pagination, filters, sort, view, actor });
     }
@@ -136,7 +136,7 @@ export class IdentifierController {
     public getLookupList(
         @Body() { pagination }: GetLookupListBodyDTO,
         @Query() { term }: GetLookupListQueryDTO,
-        @Extract.Session() { account }: Extract.Session.Authenticated,
+        @Extract.Session() { account }: Extract.Session.Auth,
     ): Queries.Identifier.GetLookupList.Result {
         return this.identifierQueries.getLookupList({ pagination, account, term });
     }
@@ -161,7 +161,7 @@ export class IdentifierController {
     )
     public create(
         @Body() input: CreateBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Identifier.Create.Result {
         return this.identifierCommands.create({ context, actor, input });
@@ -187,7 +187,7 @@ export class IdentifierController {
     )
     public resend(
         @Body() input: ResendBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Identifier.Resend.Result {
         return this.identifierCommands.resend({ context, actor, input });
@@ -214,7 +214,7 @@ export class IdentifierController {
     )
     public verify(
         @Body() input: VerifyBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Identifier.Verify.Result {
         return this.identifierCommands.verify({ context, actor, input });
@@ -241,7 +241,7 @@ export class IdentifierController {
     )
     public togglePublicContact(
         @Body() input: TogglePublicContactBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Identifier.TogglePublicContact.Result {
         return this.identifierCommands.togglePublicContact({ context, actor, input });
@@ -269,7 +269,7 @@ export class IdentifierController {
     )
     public purge(
         @Query() input: PurgeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Identifier.Purge.Result {
         return this.identifierCommands.purge({ context, actor, input });

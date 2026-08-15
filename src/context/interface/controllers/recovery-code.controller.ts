@@ -42,7 +42,7 @@ export class RecoveryCodeController {
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
-    public getStatus(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.RecoveryCode.GetStatus.Result {
+    public getStatus(@Extract.Session() { account }: Extract.Session.Auth): Queries.RecoveryCode.GetStatus.Result {
         return this.recoveryCodeQueries.getStatus({ account });
     }
 
@@ -68,7 +68,7 @@ export class RecoveryCodeController {
         CONFLICT,
     )
     public regenerate(
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.RecoveryCode.Regenerate.Result {
         return this.recoveryCodeCommands.regenerate({ context, actor });

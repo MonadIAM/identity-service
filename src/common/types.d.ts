@@ -12,7 +12,7 @@ declare global {
     };
 
     type Req<T extends RouteGenericInterface = RouteGenericInterface> = FastifyRequest<T> & {
-        session: Extract.Session.Public | Extract.Session.Authenticated;
+        session: Extract.Session.Public | Extract.Session.Auth;
         metadata: {
             permissions?: string[];
         };

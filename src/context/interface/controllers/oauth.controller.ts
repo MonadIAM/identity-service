@@ -171,9 +171,7 @@ export class OAuthController {
         security: [{ identity: [] }],
     })
     @Swagger.OAuthExceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
-    public getUserInfo(
-        @Extract.Session() { account, client, scope }: Extract.Session.Authenticated,
-    ): Queries.OAuth.UserInfo.Result {
+    public getUserInfo(@Extract.Session() { account, client, scope }: Extract.Session.Auth): Queries.OAuth.UserInfo.Result {
         return this.oauthQueries.getUserInfo({ account, client, scope });
     }
 }

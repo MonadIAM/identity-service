@@ -138,7 +138,7 @@ export class ApplicationController {
     public create(
         @Body() input: CreateBodyDTO,
         @Query() { realm }: CreateQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Application.Create.Result {
         return this.applicationCommands.create({ context, actor, realm, input });
@@ -166,7 +166,7 @@ export class ApplicationController {
     public update(
         @Body() input: UpdateBodyDTO,
         @Query() { realm }: UpdateQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Application.Update.Result {
         return this.applicationCommands.update({ context, actor, realm, input });
@@ -194,7 +194,7 @@ export class ApplicationController {
     public revoke(
         @Body() input: RevokeBodyDTO,
         @Query() { realm }: RevokeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Application.Revoke.Result {
         return this.applicationCommands.revoke({ context, actor, realm, input });
@@ -222,7 +222,7 @@ export class ApplicationController {
     public restore(
         @Body() input: RestoreBodyDTO,
         @Query() { realm }: RestoreQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Application.Restore.Result {
         return this.applicationCommands.restore({ context, actor, realm, input });
@@ -250,7 +250,7 @@ export class ApplicationController {
     public purge(
         @Body() input: PurgeBodyDTO,
         @Query() { realm }: PurgeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Application.Purge.Result {
         return this.applicationCommands.purge({ context, actor, realm, input });

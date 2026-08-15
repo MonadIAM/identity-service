@@ -59,7 +59,7 @@ export class AccountController {
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findMe(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.Account.FindUnique.Result {
+    public findMe(@Extract.Session() { account }: Extract.Session.Auth): Queries.Account.FindUnique.Result {
         return this.accountQueries.findMe({ account, view: ResponseViewType.DETAILED });
     }
 
@@ -187,7 +187,7 @@ export class AccountController {
     )
     public suspend(
         @Body() input: SuspendBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Account.Suspend.Result {
         return this.accountCommands.suspend({ context, actor, input });
@@ -213,7 +213,7 @@ export class AccountController {
     )
     public restore(
         @Body() input: RestoreBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Account.Restore.Result {
         return this.accountCommands.restore({ context, actor, input });

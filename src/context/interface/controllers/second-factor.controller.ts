@@ -81,7 +81,7 @@ export class SecondFactorController {
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
-    public getList(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.SecondFactor.FindMany.Result {
+    public getList(@Extract.Session() { account }: Extract.Session.Auth): Queries.SecondFactor.FindMany.Result {
         return this.secondFactorQueries.findMany({ account });
     }
 
@@ -98,7 +98,7 @@ export class SecondFactorController {
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getQRCode(
         @Query() { id }: GetQRCodeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.SecondFactor.GetQRCode.Result {
         return this.secondFactorQueries.getQRCode({ id, actor });
     }
@@ -125,7 +125,7 @@ export class SecondFactorController {
     )
     public create(
         @Body() input: CreateBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.SecondFactor.Create.Result {
         return this.secondFactorCommands.create({ context, actor, input });
@@ -154,7 +154,7 @@ export class SecondFactorController {
     )
     public verify(
         @Body() input: VerifyBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.SecondFactor.Verify.Result {
         return this.secondFactorCommands.verify({ context, actor, input });
@@ -181,7 +181,7 @@ export class SecondFactorController {
     )
     public purge(
         @Query() input: PurgeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.SecondFactor.Purge.Result {
         return this.secondFactorCommands.purge({ context, actor, input });

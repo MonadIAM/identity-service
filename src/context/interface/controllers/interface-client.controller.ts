@@ -140,7 +140,7 @@ export class InterfaceClientController {
     public create(
         @Body() input: CreateBodyDTO,
         @Query() { realm }: CreateQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.InterfaceClient.Create.Result {
         return this.interfaceClientCommands.create({ context, actor, realm, input });
@@ -168,7 +168,7 @@ export class InterfaceClientController {
     public update(
         @Body() input: UpdateBodyDTO,
         @Query() { realm, client }: UpdateQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.InterfaceClient.Update.Result {
         return this.interfaceClientCommands.update({ context, actor, realm, client, input });
@@ -196,7 +196,7 @@ export class InterfaceClientController {
     public revoke(
         @Body() input: RevokeBodyDTO,
         @Query() { realm }: RevokeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.InterfaceClient.Revoke.Result {
         return this.interfaceClientCommands.revoke({ context, actor, realm, input });
@@ -224,7 +224,7 @@ export class InterfaceClientController {
     public restore(
         @Body() input: RestoreBodyDTO,
         @Query() { realm }: RestoreQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.InterfaceClient.Restore.Result {
         return this.interfaceClientCommands.restore({ context, actor, realm, input });
@@ -252,7 +252,7 @@ export class InterfaceClientController {
     public purge(
         @Body() input: PurgeBodyDTO,
         @Query() { realm }: PurgeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.InterfaceClient.Purge.Result {
         return this.interfaceClientCommands.purge({ context, actor, realm, input });

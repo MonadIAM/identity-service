@@ -46,10 +46,10 @@ export class AuthnGuard implements CanActivate {
 
             request.session = {
                 scope: (payload.scope as string) ?? DEFAULT_OAUTH_SCOPE,
+                client: payload.client_id as string,
                 realms: payload.realms as string[],
                 session: payload.sid as string,
                 account: payload.sub as string,
-                client: payload.client_id as string,
             };
 
             return true;

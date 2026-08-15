@@ -53,7 +53,7 @@ export class RealmController {
     public exclude(
         @Query() { realm }: ExcludeQueryDTO,
         @Body() input: ExcludeBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.membershipCommands.exclude({ context, actor, realm, input });

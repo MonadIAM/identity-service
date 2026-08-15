@@ -167,7 +167,7 @@ export class AuthnController {
     )
     public reauthenticateByPassword(
         @Body() input: ByPasswordBodyDTO,
-        @Extract.Session() { account, session }: Extract.Session.Authenticated,
+        @Extract.Session() { account, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Reauthentication.ByPassword.Result {
         return this.reauthenticationCommands.byPassword({ actor: account, context, session, input });
@@ -193,7 +193,7 @@ export class AuthnController {
     )
     public reauthenticateBySecondFactor(
         @Body() input: BySecondFactorBodyDTO,
-        @Extract.Session() { account, session }: Extract.Session.Authenticated,
+        @Extract.Session() { account, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Reauthentication.BySecondFactor.Result {
         return this.reauthenticationCommands.bySecondFactor({ actor: account, context, session, input });
@@ -209,7 +209,7 @@ export class AuthnController {
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getCurrentSession(
-        @Extract.Session() { session, account }: Extract.Session.Authenticated,
+        @Extract.Session() { session, account }: Extract.Session.Auth,
     ): Queries.Session.GetCurrent.Result {
         return this.sessionQueries.getCurrent({ session, account });
     }
@@ -223,7 +223,7 @@ export class AuthnController {
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN)
-    public getSessions(@Extract.Session() { account }: Extract.Session.Authenticated): Queries.Session.FindMany.Result {
+    public getSessions(@Extract.Session() { account }: Extract.Session.Auth): Queries.Session.FindMany.Result {
         return this.sessionQueries.findMany({ account });
     }
 
@@ -246,7 +246,7 @@ export class AuthnController {
     )
     public revokeSessions(
         @Body() input: RevokeBodyDTO,
-        @Extract.Session() { account, session }: Extract.Session.Authenticated,
+        @Extract.Session() { account, session }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Session.Revoke.Result {
         return this.sessionCommands.revoke({
@@ -275,7 +275,7 @@ export class AuthnController {
         CONFLICT,
     )
     public revokeAllSessions(
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Session.RevokeAll.Result {
         return this.sessionCommands.revokeAll({ context, actor });

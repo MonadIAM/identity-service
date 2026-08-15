@@ -53,7 +53,7 @@ export class PasswordController {
     )
     public change(
         @Body() input: ChangeBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Authenticated,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Password.Change.Result {
         return this.passwordCommands.change({ context, actor, input });
