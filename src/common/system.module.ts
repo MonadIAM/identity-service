@@ -2,10 +2,9 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { ConfigModule } from "@nestjs/config";
 import { Module, Global } from "@nestjs/common";
 
-import { RateLimiterModule, BullMQModule } from "./modules";
+import { RateLimiterModule, BullMQModule, I18nModule } from "./modules";
 import { COMMON_SERVICES } from "./services";
 import { validateEnv } from "./validator";
-import { I18nModule } from "./i18n";
 
 @Global()
 @Module({
