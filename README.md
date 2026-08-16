@@ -53,7 +53,7 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | Command                                              | Makefile                  | Description                                                        |
 |:-----------------------------------------------------|:--------------------------|:-------------------------------------------------------------------|
 | **Infrastructure**                                   |                           |                                                                    |
-| `[ -f .env.example ] && cp -f .env.example .env ...` | `make env`                | Generate `.env` and `.vault.env` from their examples (if present). |
+| `[ -f .env.example ] && cp -f .env.example .env ...` | `make env`                | Generate `.env` from its example (if present).                     |
 | `docker-compose up -d`                               | `make up`                 | Start all services in detached mode.                               |
 | `docker-compose stop`                                | `make stop`               | Stop containers without removing them.                             |
 | `docker-compose down`                                | `make down`               | Stop and remove containers and networks.                           |
@@ -74,7 +74,6 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | `npx mikro-orm migration:create --name=$(name)`      | `make migration name="*"` | Generate a new migration based on entity changes.                  |
 | `npx mikro-orm migration:up`                         | `make migrate`            | Apply all pending migrations to the database.                      |
 | `npx mikro-orm seeder:run`                           | `make seed`               | Run the default seeder (`SystemSeeder`).                           |
-| `npx mikro-orm seeder:run --class=DemoSeeder`        | `make seed-demo`          | Run a specific seeder by class name.                               |
 | **Test**                                             |                           |                                                                    |
 | `npx jest --config ./jest.unit.config.ts`            | `make test`               | Run unit tests.                                                    |
 | `npx jest --config ./jest.unit.config.ts --coverage` | `make coverage`           | Run unit tests with coverage report.                               |

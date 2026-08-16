@@ -1,3 +1,4 @@
+import { Agent, fetch, type RequestInit } from "undici";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
@@ -10,13 +11,13 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
 
     private readonly keyCache = new Map<string, Vault.KeyCache>();
     private readonly transitMount: string;
-    private readonly token: string;
-    private readonly url: string;
+    private readonly dispatcher: Agent;
 
     public constructor(private readonly configService: ConfigService) {
         this.transitMount = this.configService.getOrThrow<string>("VAULT_TRANSIT_MOUNT");
-        this.token = this.configService.getOrThrow<string>("VAULT_TOKEN");
-        this.url = this.configService.getOrThrow<string>("VAULT_URL");
+        this.dispatcher = new Agent({
+            connect: { socketPath: this.configService.getOrThrow<string>("VAULT_AGENT_SOCKET_PATH") },
+        });
     }
 
     public async getKey(props: CommonServices.VaultTransit.GetKey.Props): CommonServices.VaultTransit.GetKey.Result {
@@ -121,16 +122,16 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
 
     private async request<T>(path: string, init?: RequestInit): Promise<T> {
         try {
-            const response = await fetch(`${this.url}/v1/${this.transitMount}/${path}`, {
+            const response = await fetch(`http://vault-agent/v1/${this.transitMount}/${path}`, {
                 ...init,
+                dispatcher: this.dispatcher,
                 headers: {
                     "Content-Type": "application/json",
-                    "X-Vault-Token": this.token,
                 },
             });
 
             if (response.ok) {
-                return (await response.json()).data;
+                return ((await response.json()) as Vault.Response<T>).data;
             } else {
                 throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.REQUEST_FAILED` });
             }

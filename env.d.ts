@@ -123,22 +123,17 @@ declare global {
             // ---------------------------------------------------------------------------
 
             VAULT_IMAGE: string;
-            VAULT_URL: string;
+            VAULT_AGENT_SOCKET_PATH: string;
             VAULT_PORT: `${number}`;
-            VAULT_ROOT_TOKEN: string;
-            VAULT_TOKEN: string;
+            VAULT_APPROLE_NAME: string;
             VAULT_TRANSIT_MOUNT: string;
             VAULT_TRANSIT_ACCESS_KEY: string;
-            VAULT_TRANSIT_ACCESS_ROTATION_PERIOD: StringValue;
             VAULT_TRANSIT_ACCESS_RETAIN_VERSIONS: `${number}`;
             VAULT_TRANSIT_REFRESH_KEY: string;
-            VAULT_TRANSIT_REFRESH_ROTATION_PERIOD: StringValue;
             VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS: `${number}`;
             VAULT_TRANSIT_ID_KEY: string;
-            VAULT_TRANSIT_ID_ROTATION_PERIOD: StringValue;
             VAULT_TRANSIT_ID_RETAIN_VERSIONS: `${number}`;
             VAULT_TRANSIT_TOTP_KEY: string;
-            VAULT_TRANSIT_TOTP_ROTATION_PERIOD: StringValue;
             VAULT_TRANSIT_PAIRWISE_KEY: string;
             VAULT_KEY_TRIM_SCHEDULE: string;
             VAULT_KV_MOUNT: string;

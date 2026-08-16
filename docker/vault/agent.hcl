@@ -1,0 +1,82 @@
+pid_file = "/tmp/pidfile"
+
+auto_auth {
+    method "approle" {
+        mount_path = "auth/approle"
+
+        config = {
+            role_id_file_path                   = "/vault/config/role-id"
+            secret_id_file_path                 = "/vault/agent-bootstrap/secret-id"
+            remove_secret_id_file_after_reading = true
+        }
+    }
+
+    sink "file" {
+        config = {
+            path = "/vault/token/agent-token"
+        }
+    }
+}
+
+cache {
+    use_auto_auth_token = true
+}
+
+listener "unix" {
+    address     = "/vault/proxy/agent.sock"
+    tls_disable = true
+}
+
+template {
+    contents    = "{{ with secret \"kv/data/identity-service/runtime\" }}{{ .Data.data.redis_password }}{{ end }}"
+    destination = "/secrets/redis/redis_password"
+    perms       = "0440"
+}
+
+template {
+    contents    = "{{ with secret \"kv/data/identity-service/postgresql-replication\" }}{{ .Data.data.postgresql_replication_password }}{{ end }}"
+    destination = "/secrets/postgresql/postgresql_replication_password"
+    perms       = "0440"
+}
+
+template {
+    contents    = "{{ with secret \"kv/data/identity-service/runtime\" }}{{ .Data.data.postgresql_password }}{{ end }}"
+    destination = "/secrets/postgresql/postgresql_password"
+    perms       = "0440"
+}
+
+template {
+    contents    = "{{ with secret \"kv/data/identity-service/oauth\" }}{{ .Data.data.google_client_secret }}{{ end }}"
+    destination = "/secrets/application/google_client_secret"
+    perms       = "0440"
+}
+
+template {
+    contents    = "{{ with secret \"kv/data/identity-service/oauth\" }}{{ .Data.data.github_client_secret }}{{ end }}"
+    destination = "/secrets/application/github_client_secret"
+    perms       = "0440"
+}
+
+template {
+    contents    = "{{ with secret \"database/creds/identity-service-app\" }}{{ .Data.username }}{{ end }}"
+    destination = "/secrets/application/postgresql_username"
+    perms       = "0440"
+}
+
+template {
+    contents    = "{{ with secret \"database/creds/identity-service-app\" }}{{ .Data.password }}{{ end }}"
+    destination = "/secrets/application/postgresql_password"
+    perms       = "0440"
+}
+
+template {
+    contents    = "{{ with secret \"kv/data/identity-service/runtime\" }}{{ .Data.data.redis_password }}{{ end }}"
+    destination = "/secrets/application/redis_password"
+    perms       = "0440"
+}
+
+template {
+    contents    = "{{ with secret \"kv/data/identity-service/runtime\" }}{{ .Data.data.postgresql_password }}{{ end }}"
+    destination = "/secrets/debezium/postgresql_password"
+    perms       = "0440"
+}

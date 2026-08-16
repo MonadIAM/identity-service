@@ -12,11 +12,15 @@ services:
       - .env
     ports:
       - "${POSTGRES_PRIMARY_PUBLISHED_PORT}:${POSTGRES_PORT}"
+    depends_on:
+      vault-agent:
+        condition: service_healthy
     volumes:
       - postgres_primary_data:/var/lib/postgresql/data
       - postgresql_secrets:/vault/secrets:ro
-      - ./docker/postgres/entrypoint.sh:/usr/local/bin/vault-entrypoint.sh:ro
+      - ./docker/postgres/init/10-readonly-role.sql:/docker-entrypoint-initdb.d/10-readonly-role.sql:ro
       - ./docker/postgres/setup-replication.sh:/docker-entrypoint-initdb.d/99-setup-replication.sh:ro
+      - ./docker/postgres/entrypoint.sh:/usr/local/bin/vault-entrypoint.sh:ro
     entrypoint: ["sh", "/usr/local/bin/vault-entrypoint.sh"]
     command: >
       postgres
@@ -24,11 +28,9 @@ services:
       -c max_wal_senders=10
       -c max_replication_slots=10
       -c hot_standby=on
-    depends_on:
-      vault-secrets-init:
-        condition: service_completed_successfully
     networks:
       internal:
+      vault_net:
     healthcheck:
       test:
         [
@@ -51,8 +53,8 @@ services:
     depends_on:
       postgresql-primary:
         condition: service_healthy
-      vault-secrets-init:
-        condition: service_completed_successfully
+      vault-agent:
+        condition: service_healthy
     volumes:
       - postgres_replica_data:/var/lib/postgresql/data
       - postgresql_secrets:/vault/secrets:ro
@@ -110,32 +112,62 @@ services:
     depends_on:
       kafka-connect:
         condition: service_healthy
-      vault-secrets-init:
-        condition: service_completed_successfully
+      vault-agent:
+        condition: service_healthy
     entrypoint: ["sh", "/init.sh"]
     networks:
       internal:
 
-  vault-init:
+  vault-bootstrap:
     image: ${VAULT_IMAGE:?}
-    container_name: ${SERVICE_NAME}-vault-init
+    container_name: ${SERVICE_NAME}-vault-bootstrap
     env_file:
       - .env
-      - .vault.env
     environment:
       VAULT_ADDR: "http://vault:${VAULT_PORT}"
-      VAULT_IDENTITY_TOKEN: ${VAULT_TOKEN}
-      VAULT_TOKEN: ${VAULT_ROOT_TOKEN}
+      VAULT_TOKEN: ${VAULT_PROVISIONER_TOKEN:?}
     volumes:
-      - ./docker/vault/identity-service-policy.hcl:/identity-service-policy.hcl:ro
-      - ./docker/vault/key-trim-policy.hcl:/key-trim-policy.hcl:ro
-      - ./docker/vault/secrets-policy.hcl:/secrets-policy.hcl:ro
-      - ./docker/vault/init.sh:/init.sh:ro
-      - vault_secrets_token:/vault/token
-    entrypoint: ["sh", "/init.sh"]
+      - ./docker/vault/bootstrap.sh:/bootstrap.sh:ro
+      - vault_agent_config:/vault/config
+      - vault_agent_bootstrap:/vault/agent-bootstrap
+    entrypoint: ["sh", "/bootstrap.sh"]
+    networks:
+      vault_net:
+
+  vault-agent:
+    image: ${VAULT_IMAGE:?}
+    container_name: ${SERVICE_NAME}-vault-agent
+    restart: always
+    depends_on:
+      vault-bootstrap:
+        condition: service_completed_successfully
+    environment:
+      VAULT_ADDR: "http://vault:${VAULT_PORT}"
+    entrypoint: ["vault"]
+    command: ["agent", "-config=/agent.hcl"]
+    volumes:
+      - ./docker/vault/agent.hcl:/agent.hcl:ro
+      - vault_agent_config:/vault/config:ro
+      - vault_agent_bootstrap:/vault/agent-bootstrap
+      - vault_agent_token:/vault/token
+      - application_secrets:/secrets/application
+      - postgresql_secrets:/secrets/postgresql
+      - redis_secrets:/secrets/redis
+      - debezium_secrets:/secrets/debezium
+      - vault_agent_proxy:/vault/proxy
     networks:
       vault_net:
       internal:
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "test -f /secrets/application/redis_password && test -f /secrets/application/google_client_secret && test -f /secrets/application/github_client_secret && test -f /secrets/postgresql/postgresql_replication_password && test -f /secrets/postgresql/postgresql_password && test -f /secrets/debezium/postgresql_password",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+      start_period: 5s
 
   vault-key-trim:
     image: ${VAULT_IMAGE:?}
@@ -143,6 +175,7 @@ services:
     restart: always
     environment:
       VAULT_ADDR: "http://vault:${VAULT_PORT}"
+      VAULT_TOKEN: ${VAULT_PROVISIONER_TOKEN:?}
       VAULT_TRANSIT_ACCESS_RETAIN_VERSIONS: ${VAULT_TRANSIT_ACCESS_RETAIN_VERSIONS}
       VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS: ${VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS}
       VAULT_TRANSIT_ID_RETAIN_VERSIONS: ${VAULT_TRANSIT_ID_RETAIN_VERSIONS}
@@ -152,38 +185,11 @@ services:
       VAULT_TRANSIT_ID_KEY: ${VAULT_TRANSIT_ID_KEY}
       VAULT_TRANSIT_MOUNT: ${VAULT_TRANSIT_MOUNT}
     volumes:
-      - vault_secrets_token:/vault/token:ro
-      - ./docker/vault/trim-keys.sh:/trim-keys.sh:ro
-      - ./docker/vault/trim-keys-cron.sh:/trim-keys-cron.sh:ro
-    entrypoint: ["sh", "/trim-keys-cron.sh"]
-    depends_on:
-      vault-init:
-        condition: service_completed_successfully
+      - ./docker/vault/trim-jwt-keys.sh:/trim-jwt-keys.sh:ro
+      - ./docker/vault/trim-jwt-keys-entrypoint.sh:/trim-jwt-keys-entrypoint.sh:ro
+    entrypoint: ["sh", "/trim-jwt-keys-entrypoint.sh"]
     networks:
       vault_net:
-      internal:
-
-  vault-secrets-init:
-    image: ${VAULT_IMAGE:?}
-    container_name: ${SERVICE_NAME}-vault-secrets-init
-    env_file:
-      - .env
-    environment:
-      VAULT_ADDR: "http://vault:${VAULT_PORT}"
-    volumes:
-      - application_secrets:/secrets/application
-      - postgresql_secrets:/secrets/postgresql
-      - redis_secrets:/secrets/redis
-      - debezium_secrets:/secrets/debezium
-      - vault_secrets_token:/vault/token
-      - ./docker/vault/render-secrets.sh:/render-secrets.sh:ro
-    depends_on:
-      vault-init:
-        condition: service_completed_successfully
-    entrypoint: ["sh", "/render-secrets.sh"]
-    networks:
-      vault_net:
-      internal:
 
   redis:
     <<: *base
@@ -192,8 +198,8 @@ services:
     ports:
       - "${REDIS_PUBLISHED_PORT}:${REDIS_PORT}"
     depends_on:
-      vault-secrets-init:
-        condition: service_completed_successfully
+      vault-agent:
+        condition: service_healthy
     volumes:
       - redis_data:/data
       - redis_secrets:/vault/secrets:ro
@@ -212,8 +218,6 @@ services:
     container_name: ${SERVICE_NAME}-app
     env_file:
       - .env
-    environment:
-      VAULT_ROOT_TOKEN: ""
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
@@ -227,15 +231,14 @@ services:
         condition: service_started
       debezium-init:
         condition: service_completed_successfully
-      vault-init:
-        condition: service_completed_successfully
-      vault-secrets-init:
-        condition: service_completed_successfully
+      vault-agent:
+        condition: service_healthy
       vault-key-trim:
         condition: service_started
     volumes:
       - uploads_data:/app/uploads
       - application_secrets:/vault/secrets:ro
+      - vault_agent_proxy:/vault/proxy:ro
       - ./docker/app/entrypoint.sh:/usr/local/bin/vault-entrypoint.sh:ro
     entrypoint: ["sh", "/usr/local/bin/vault-entrypoint.sh"]
     networks:
@@ -263,9 +266,12 @@ services:
 volumes:
   postgres_primary_data: {}
   postgres_replica_data: {}
-  vault_secrets_token: {}
+  vault_agent_bootstrap: {}
   application_secrets: {}
   postgresql_secrets: {}
+  vault_agent_config: {}
+  vault_agent_token: {}
+  vault_agent_proxy: {}
   debezium_secrets: {}
   redis_secrets: {}
   uploads_data: {}

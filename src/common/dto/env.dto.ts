@@ -253,17 +253,14 @@ export class EnvironmentVariablesDTO {
     declare public VAULT_IMAGE: string;
 
     @Validator.IsString()
-    declare public VAULT_URL: string;
+    declare public VAULT_AGENT_SOCKET_PATH: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public VAULT_PORT: number;
 
     @Validator.IsString()
-    declare public VAULT_ROOT_TOKEN: string;
-
-    @Validator.IsString()
-    declare public VAULT_TOKEN: string;
+    declare public VAULT_APPROLE_NAME: string;
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_MOUNT: string;
@@ -271,17 +268,11 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public VAULT_TRANSIT_ACCESS_KEY: string;
 
-    @Validator.IsMsString()
-    declare public VAULT_TRANSIT_ACCESS_ROTATION_PERIOD: StringValue;
-
     @Validator.IsPositiveInt()
     declare public VAULT_TRANSIT_ACCESS_RETAIN_VERSIONS: number;
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_REFRESH_KEY: string;
-
-    @Validator.IsMsString()
-    declare public VAULT_TRANSIT_REFRESH_ROTATION_PERIOD: StringValue;
 
     @Validator.IsPositiveInt()
     declare public VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS: number;
@@ -289,17 +280,11 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public VAULT_TRANSIT_ID_KEY: string;
 
-    @Validator.IsMsString()
-    declare public VAULT_TRANSIT_ID_ROTATION_PERIOD: StringValue;
-
     @Validator.IsPositiveInt()
     declare public VAULT_TRANSIT_ID_RETAIN_VERSIONS: number;
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_TOTP_KEY: string;
-
-    @Validator.IsMsString()
-    declare public VAULT_TRANSIT_TOTP_ROTATION_PERIOD: StringValue;
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_PAIRWISE_KEY: string;
