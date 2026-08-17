@@ -2,7 +2,7 @@
   "name": "outbox-connector",
   "config": {
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
-    "database.hostname": "postgresql-primary",
+    "database.hostname": "haproxy-write",
     "database.port": "${POSTGRES_PORT}",
     "database.user": "${POSTGRES_USER}",
     "database.password": "${POSTGRES_PASSWORD}",
