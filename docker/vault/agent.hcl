@@ -33,24 +33,6 @@ listener "unix" {
 }
 
 template {
-    contents    = "{{ with secret \"kv/data/identity-service/runtime\" }}{{ .Data.data.redis_password }}{{ end }}"
-    destination = "/secrets/redis/redis_password"
-    perms       = "0440"
-}
-
-template {
-    contents    = "{{ with secret \"kv/data/identity-service/postgresql-replication\" }}{{ .Data.data.postgresql_replication_password }}{{ end }}"
-    destination = "/secrets/postgresql/postgresql_replication_password"
-    perms       = "0440"
-}
-
-template {
-    contents    = "{{ with secret \"kv/data/identity-service/runtime\" }}{{ .Data.data.postgresql_password }}{{ end }}"
-    destination = "/secrets/postgresql/postgresql_password"
-    perms       = "0440"
-}
-
-template {
     contents    = "{{ with secret \"kv/data/identity-service/oauth\" }}{{ .Data.data.google_client_secret }}{{ end }}"
     destination = "/secrets/application/google_client_secret"
     perms       = "0440"
@@ -77,11 +59,5 @@ template {
 template {
     contents    = "{{ with secret \"kv/data/identity-service/runtime\" }}{{ .Data.data.redis_password }}{{ end }}"
     destination = "/secrets/application/redis_password"
-    perms       = "0440"
-}
-
-template {
-    contents    = "{{ with secret \"kv/data/identity-service/runtime\" }}{{ .Data.data.postgresql_password }}{{ end }}"
-    destination = "/secrets/debezium/postgresql_password"
     perms       = "0440"
 }
