@@ -49,7 +49,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "test -f /secrets/application/postgresql_username && test -f /secrets/application/postgresql_password && test -f /secrets/application/redis_password && test -f /secrets/application/google_client_secret && test -f /secrets/application/github_client_secret",
+          "test -f /secrets/application/postgresql_username && test -f /secrets/application/postgresql_password && test -f /secrets/application/redis_password && test -f /secrets/application/kafka_sasl_password && test -f /secrets/application/google_client_secret && test -f /secrets/application/github_client_secret",
         ]
       interval: 5s
       timeout: 3s
