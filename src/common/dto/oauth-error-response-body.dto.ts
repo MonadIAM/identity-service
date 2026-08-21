@@ -31,7 +31,11 @@ export class OAuthErrorResponseBodyDTO {
 
     @Expose()
     @Validator.IsListOrSingleString()
-    @ApiProperty({ required: true, oneOf: [{ type: "array", items: { type: "string" } }, { type: "string" }] })
+    @ApiProperty({
+        required: true,
+        type: Object,
+        oneOf: [{ type: "array", items: { type: "string" } }, { type: "string" }],
+    })
     declare public error_description: string | string[];
 
     @Expose()

@@ -9,9 +9,6 @@ import {
     registerDecorator,
 } from "class-validator";
 
-const REQUEST_TIMEOUT_MS = ms(process.env.HIBP_REQUEST_TIMEOUT);
-const { HIBP_RANGE_URL } = process.env;
-
 @ValidatorConstraint({ name: "IsNotPwned", async: true })
 class IsNotPwnedConstraint implements ValidatorConstraintInterface {
     private readonly logger = new Logger("IsNotPwned");
@@ -21,12 +18,15 @@ class IsNotPwnedConstraint implements ValidatorConstraintInterface {
             return true;
         }
 
+        const requestTimeoutMs = ms(process.env.HIBP_REQUEST_TIMEOUT);
+        const { HIBP_RANGE_URL } = process.env;
+
         const hash = createHash("sha1").update(value, "utf-8").digest("hex").toUpperCase();
         const prefix = hash.slice(0, 5);
         const suffix = hash.slice(5);
 
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        const timeout = setTimeout(() => controller.abort(), requestTimeoutMs);
 
         try {
             const response = await fetch(`${HIBP_RANGE_URL}${prefix}`, {

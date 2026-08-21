@@ -10,6 +10,7 @@ export class ValidationErrorDetailsDTO {
     @ApiProperty({
         required: false,
         nullable: true,
+        type: Object,
         oneOf: [
             { type: "object", additionalProperties: true },
             { type: "array", items: {} },

@@ -88,18 +88,17 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public POSTGRES_PASSWORD: string;
 
-    @Validator.IsString()
-    declare public POSTGRES_HOST: string;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public POSTGRES_PORT: number;
-
-    @Validator.IsBoolean()
-    declare public POSTGRES_SSL: boolean;
-
     @Validator.IsBoolean()
     declare public POSTGRES_SSL_REJECT_UNAUTHORIZED: boolean;
+
+    @Validator.IsString()
+    declare public POSTGRES_SSL_CA_FILE: string;
+
+    @Validator.IsString()
+    declare public POSTGRES_SSL_CERT_FILE: string;
+
+    @Validator.IsString()
+    declare public POSTGRES_SSL_KEY_FILE: string;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_POOL_MAX: number;
@@ -110,15 +109,16 @@ export class EnvironmentVariablesDTO {
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
 
-    @Validator.IsBoolean()
-    declare public POSTGRES_CQRS_ENABLED: boolean;
-
     // ---------------------------------------------------------------------------
     // PostgreSQL - write-side
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
     declare public POSTGRES_WRITE_HOST: string;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public POSTGRES_WRITE_PORT: number;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_WRITE_POOL_MAX: number;
@@ -132,6 +132,10 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public POSTGRES_READ_HOST: string;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public POSTGRES_READ_PORT: number;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_READ_POOL_MAX: number;
@@ -152,6 +156,18 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public REDIS_PASSWORD: string;
+
+    @Validator.IsBoolean()
+    declare public REDIS_TLS_REJECT_UNAUTHORIZED: boolean;
+
+    @Validator.IsString()
+    declare public REDIS_TLS_CA_FILE: string;
+
+    @Validator.IsString()
+    declare public REDIS_TLS_CERT_FILE: string;
+
+    @Validator.IsString()
+    declare public REDIS_TLS_KEY_FILE: string;
 
     @Validator.IsInt()
     @Validator.Min(0)
@@ -211,6 +227,9 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public DOCKER_VOLUME_VAULT_CA: string;
+
+    @Validator.IsString()
+    declare public DOCKER_VOLUME_SERVICE_TLS: string;
 
     // ---------------------------------------------------------------------------
     // Vault
