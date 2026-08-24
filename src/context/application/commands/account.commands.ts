@@ -75,7 +75,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 const account = this.accountService.create({
                     transaction,
                     input: {
-                        primaryIdentifier: { value: props.input.identifier, type },
+                        primaryIdentifier: { identity: props.input.identifier, type },
                         profile: { displayName: props.input.name },
                         subject: AccountSubject.HUMAN,
                         status: AccountStatus.PENDING,
@@ -98,7 +98,7 @@ export class AccountCommands implements Commands.Account.Contract {
 
     public async resend(props: Commands.Account.Resend.Props): Commands.Account.Resend.Result {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
-            where: { value: props.input.identifier },
+            where: { identity: props.input.identifier },
         });
 
         if (identifier.isVerified) {

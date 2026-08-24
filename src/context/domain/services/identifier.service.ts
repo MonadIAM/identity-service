@@ -19,7 +19,7 @@ export class IdentifierService implements Services.Identifier.Contract {
         const identifierEntity = new Identifier({
             providerUserId: input.identifier.providerUserId,
             provider: input.identifier.provider,
-            value: input.identifier.value,
+            identity: input.identifier.identity,
             type: input.identifier.type,
             account: input.account,
         });

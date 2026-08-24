@@ -9,7 +9,7 @@ const dataset = [
     {
         id: "00000001-0000-4000-8000-100000000001",
         type: IdentifierType.EMAIL,
-        value: "admin@example.com",
+        identity: "admin@example.com",
         provider_user_id: null,
         provider: null,
         is_public_contact: false,
@@ -22,7 +22,7 @@ const dataset = [
     {
         id: "00000001-0000-4000-8000-100000000002",
         type: IdentifierType.EMAIL,
-        value: "user@example.com",
+        identity: "user@example.com",
         provider_user_id: null,
         provider: null,
         is_public_contact: false,

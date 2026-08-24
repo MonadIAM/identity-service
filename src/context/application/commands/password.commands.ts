@@ -91,7 +91,7 @@ export class PasswordCommands implements Commands.Password.Contract {
 
     public async requestOTP(props: Commands.Password.RequestOTP.Props): Commands.Password.RequestOTP.Result {
         const identifier = await this.identifierRepository.findUnique({
-            where: { value: props.input.identifier },
+            where: { identity: props.input.identifier },
             options: { populate: ["account"] },
         });
 
@@ -173,7 +173,7 @@ export class PasswordCommands implements Commands.Password.Contract {
     ): Commands.Password.ResetByRecoveryCode.Result {
         const { account } = await this.identifierRepository.findUniqueOrThrow({
             options: { populate: ["account.password", "account.recoveryCodes"] },
-            where: { value: props.input.identifier },
+            where: { identity: props.input.identifier },
         });
 
         const recoveryCodes = account.recoveryCodes.getItems().filter(({ usedAt }) => !usedAt);

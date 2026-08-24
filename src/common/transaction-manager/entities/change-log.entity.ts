@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-export class ChangeLog {
+export class ChangeLog implements SystemEntities.ChangeLog.Contract {
     public id: string;
     public createdAt: Date;
 
@@ -10,7 +10,10 @@ export class ChangeLog {
     public entityType: string;
     public entity: string;
 
-    public delta: DeltaChanges;
+    public delta: ValueObjects.DeltaChanges;
+
+    public keyVersion?: number;
+    public signature?: string;
 
     public constructor(props: SystemEntities.ChangeLog.ConstructorProps) {
         this.id = randomUUID();
@@ -23,5 +26,10 @@ export class ChangeLog {
         this.entity = props.entity;
 
         this.delta = props.delta;
+    }
+
+    public sign(props: SystemEntities.ChangeLog.Sign.Props): SystemEntities.ChangeLog.Sign.Result {
+        this.keyVersion = props.keyVersion;
+        this.signature = props.signature;
     }
 }

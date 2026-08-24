@@ -40,25 +40,25 @@ export class AccountMapper implements Repositories.Mappers.Contract<Entities.Acc
                 {
                     identifiers: {
                         type: IdentifierType.EMAIL,
-                        value: ORMAdapter.applyStringFilter(filters.email),
+                        identity: ORMAdapter.applyStringFilter(filters.email),
                     },
                 },
                 {
                     identifiers: {
                         type: IdentifierType.PHONE,
-                        value: ORMAdapter.applyStringFilter(filters.phone),
+                        identity: ORMAdapter.applyStringFilter(filters.phone),
                     },
                 },
             ];
         } else if (filters.email) {
             where.identifiers = {
                 type: IdentifierType.EMAIL,
-                value: ORMAdapter.applyStringFilter(filters.email),
+                identity: ORMAdapter.applyStringFilter(filters.email),
             };
         } else if (filters.phone) {
             where.identifiers = {
                 type: IdentifierType.PHONE,
-                value: ORMAdapter.applyStringFilter(filters.phone),
+                identity: ORMAdapter.applyStringFilter(filters.phone),
             };
         }
 

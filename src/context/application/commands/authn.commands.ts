@@ -61,7 +61,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
 
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.secondFactors", "account.password"] },
-            where: { value: props.input.identifier },
+            where: { identity: props.input.identifier },
         });
 
         if (!identifier?.account?.password) {
@@ -109,7 +109,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
         });
 
         const identifier = await this.identifierRepository.findUnique({
-            where: { value: props.input.identifier },
+            where: { identity: props.input.identifier },
         });
 
         if (!identifier?.isVerified) {

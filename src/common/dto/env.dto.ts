@@ -294,6 +294,12 @@ export class EnvironmentVariablesDTO {
     declare public VAULT_TRANSIT_PAIRWISE_KEY: string;
 
     @Validator.IsString()
+    declare public VAULT_TRANSIT_AUDIT_MASK_KEY: string;
+
+    @Validator.IsString()
+    declare public VAULT_TRANSIT_AUDIT_LOG_KEY: string;
+
+    @Validator.IsString()
     declare public VAULT_KEY_TRIM_SCHEDULE: string;
 
     @Validator.IsString()

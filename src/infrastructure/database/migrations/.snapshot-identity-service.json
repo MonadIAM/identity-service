@@ -459,6 +459,23 @@
           "enumItems": [],
           "mappedType": "uuid"
         },
+        "identity": {
+          "name": "identity",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
         "is_public_contact": {
           "name": "is_public_contact",
           "type": "boolean",
@@ -566,23 +583,6 @@
           "mappedType": "enum",
           "nativeEnumName": "identifier_type"
         },
-        "value": {
-          "name": "value",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "text"
-        },
         "verified_at": {
           "name": "verified_at",
           "type": "timestamptz(3)",
@@ -613,6 +613,15 @@
           "unique": false
         },
         {
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "keyName": "identifier_identity_trgm_idx",
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX \"identifier_identity_trgm_idx\" ON \"identity\".\"identifier\" USING gin (\"identity\" gin_trgm_ops)"
+        },
+        {
           "columnNames": [
             "id"
           ],
@@ -636,22 +645,13 @@
         {
           "columnNames": [
             "type",
-            "value"
+            "identity"
           ],
           "composite": true,
           "constraint": true,
-          "keyName": "identifier_type_value_unique",
+          "keyName": "identifier_type_identity_unique",
           "primary": false,
           "unique": true
-        },
-        {
-          "columnNames": [],
-          "composite": false,
-          "constraint": false,
-          "keyName": "identifier_value_trgm_idx",
-          "primary": false,
-          "unique": false,
-          "expression": "CREATE INDEX \"identifier_value_trgm_idx\" ON \"identity\".\"identifier\" USING gin (\"value\" gin_trgm_ops)"
         }
       ],
       "checks": [],
@@ -2949,6 +2949,23 @@
           "enumItems": [],
           "mappedType": "unknown"
         },
+        "key_version": {
+          "name": "key_version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "realm": {
           "name": "realm",
           "type": "uuid",
@@ -2965,6 +2982,23 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "uuid"
+        },
+        "signature": {
+          "name": "signature",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
         },
         "user_agent": {
           "name": "user_agent",
@@ -3155,6 +3189,40 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "uuid"
+        },
+        "key_version": {
+          "name": "key_version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "signature": {
+          "name": "signature",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
         }
       },
       "indexes": [

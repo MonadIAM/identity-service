@@ -60,7 +60,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                     input: {
                         account,
                         identifier: {
-                            value: props.input.identifier,
+                            identity: props.input.identifier,
                             type: props.input.type,
                         },
                     },
@@ -82,7 +82,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     public async resend(props: Commands.Identifier.Resend.Props): Commands.Identifier.Resend.Result {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             where: {
-                value: props.input.identifier,
+                identity: props.input.identifier,
                 account: props.actor,
             },
         });

@@ -90,7 +90,7 @@ export class OAuthQueries implements Queries.OAuth.Contract {
                 const email = account.identifiers.getItems().find((identifier) => identifier.type === IdentifierType.EMAIL);
 
                 if (email) {
-                    claims.email = email.value;
+                    claims.email = email.identity;
                     claims.emailVerified = email.isVerified;
                 }
             }

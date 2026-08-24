@@ -105,7 +105,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         const emailIdentifier =
             identity.email && identity.emailVerified
                 ? await this.identifierRepository.findUnique({
-                      where: { type: IdentifierType.EMAIL, value: identity.email },
+                      where: { type: IdentifierType.EMAIL, identity: identity.email },
                       options: { populate: ["account"] },
                   })
                 : null;
@@ -180,7 +180,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     input: {
                         account: props.input.account,
                         identifier: {
-                            value: `${props.input.provider}:${props.input.providerUserId}`,
+                            identity: `${props.input.provider}:${props.input.providerUserId}`,
                             providerUserId: props.input.providerUserId,
                             provider: props.input.provider,
                             type: IdentifierType.OAUTH,
@@ -228,7 +228,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     transaction,
                     input: {
                         primaryIdentifier: {
-                            value: `${props.input.provider}:${props.input.providerUserId}`,
+                            identity: `${props.input.provider}:${props.input.providerUserId}`,
                             providerUserId: props.input.providerUserId,
                             provider: props.input.provider,
                             type: IdentifierType.OAUTH,
@@ -238,7 +238,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                             props.input.email && props.input.emailVerified
                                 ? {
                                       type: IdentifierType.EMAIL,
-                                      value: props.input.email,
+                                      identity: props.input.email,
                                       isVerified: true,
                                   }
                                 : undefined,

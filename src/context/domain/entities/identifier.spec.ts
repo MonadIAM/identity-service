@@ -9,7 +9,7 @@ import { Account } from "./account.entity";
 function createIdentifier(overrides?: Partial<Entities.Identifier.ConstructorProps>): Identifier {
     return new Identifier({
         type: IdentifierType.EMAIL,
-        value: "user@example.com",
+        identity: "user@example.com",
         account: {} as Account,
         ...overrides,
     });
@@ -20,11 +20,11 @@ describe("Identifier Entity", () => {
         it("should assign required fields", () => {
             const account = {} as Account;
 
-            const identifier = createIdentifier({ account, type: IdentifierType.PHONE, value: "+79001234567" });
+            const identifier = createIdentifier({ account, type: IdentifierType.PHONE, identity: "+79001234567" });
 
             expect(identifier.account).toBe(account);
             expect(identifier.type).toBe(IdentifierType.PHONE);
-            expect(identifier.value).toBe("+79001234567");
+            expect(identifier.identity).toBe("+79001234567");
         });
 
         it("should default flags to false", () => {

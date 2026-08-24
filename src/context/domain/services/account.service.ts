@@ -22,7 +22,7 @@ export class AccountService implements Services.Account.Contract {
             providerUserId: input.primaryIdentifier.providerUserId,
             isVerified: input.primaryIdentifier.isVerified,
             provider: input.primaryIdentifier.provider,
-            value: input.primaryIdentifier.value,
+            identity: input.primaryIdentifier.identity,
             type: input.primaryIdentifier.type,
             account,
         });
@@ -47,7 +47,7 @@ export class AccountService implements Services.Account.Contract {
             const additional = new Identifier({
                 providerUserId: input.additionalIdentifier.providerUserId,
                 provider: input.additionalIdentifier.provider,
-                value: input.additionalIdentifier.value,
+                identity: input.additionalIdentifier.identity,
                 type: input.additionalIdentifier.type,
                 isVerified: input.additionalIdentifier.isVerified,
                 account,

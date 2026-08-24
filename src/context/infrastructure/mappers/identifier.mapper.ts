@@ -19,11 +19,11 @@ export class IdentifierMapper {
 
         if (filters.email) {
             where.type = IdentifierType.EMAIL;
-            where.value = ORMAdapter.applyStringFilter(filters.email);
+            where.identity = ORMAdapter.applyStringFilter(filters.email);
         }
         if (filters.phone) {
             where.type = IdentifierType.PHONE;
-            where.value = ORMAdapter.applyStringFilter(filters.phone);
+            where.identity = ORMAdapter.applyStringFilter(filters.phone);
         }
 
         if (filters.isVerified !== undefined) {

@@ -14,7 +14,7 @@ export class Identifier implements Entities.Identifier.Contract {
     public lastUsedAt?: Date;
 
     public type: IdentifierType;
-    public value: string;
+    public identity: string;
 
     public providerUserId?: string;
     public provider?: string;
@@ -32,7 +32,7 @@ export class Identifier implements Entities.Identifier.Contract {
         this.isPublicContact = false;
 
         this.type = props.type;
-        this.value = props.value;
+        this.identity = props.identity;
 
         this.providerUserId = props.providerUserId;
         this.provider = props.provider;

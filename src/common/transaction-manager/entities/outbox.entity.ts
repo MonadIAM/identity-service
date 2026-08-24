@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { KafkaTopic } from "~context/enums";
 
-export class Outbox {
+export class Outbox implements SystemEntities.Outbox.Contract {
     declare public sequenceNumber: number;
 
     public id: string;

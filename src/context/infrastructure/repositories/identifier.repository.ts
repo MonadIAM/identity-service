@@ -32,7 +32,7 @@ export class IdentifierRepository
             const builder = entityManager.createQueryBuilder(Identifier, "i");
 
             builder
-                .select(["i.id", "i.type", "i.value", "i.isVerified"])
+                .select(["i.id", "i.type", "i.identity", "i.isVerified"])
                 .leftJoinAndSelect("i.account", "a")
                 .leftJoinAndSelect("a.profile", "p")
                 .where({ "a.id": account })
@@ -44,7 +44,7 @@ export class IdentifierRepository
                     [raw("GREATEST(similarity(i.value, ?), similarity(p.display_name, ?))", [term, term])]: "DESC",
                 });
             } else {
-                builder.orderBy({ "i.value": "ASC" });
+                builder.orderBy({ "i.identity": "ASC" });
             }
 
             return await builder.getResultAndCount();

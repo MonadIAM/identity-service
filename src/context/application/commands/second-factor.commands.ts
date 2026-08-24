@@ -175,7 +175,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
     public async reset(props: Commands.SecondFactor.Reset.Props): Commands.SecondFactor.Reset.Result {
         const identifier = await this.identifierRepository.findUnique({
             options: { populate: ["account.masterCode", "account.secondFactors"] },
-            where: { value: props.input.identifier },
+            where: { identity: props.input.identifier },
         });
 
         if (!identifier?.account?.masterCode) {

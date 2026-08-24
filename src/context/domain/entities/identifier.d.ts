@@ -12,7 +12,7 @@ declare global {
                 lastUsedAt?: Date;
 
                 type: IdentifierType;
-                value: string;
+                identity: string;
 
                 providerUserId?: string;
                 provider?: string;
@@ -29,7 +29,7 @@ declare global {
             type ConstructorProps = {
                 account: Entities.Account;
                 type: IdentifierType;
-                value: string;
+                identity: string;
                 providerUserId?: string;
                 isVerified?: boolean;
                 provider?: string;

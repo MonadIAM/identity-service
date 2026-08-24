@@ -120,6 +120,53 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
         }
     }
 
+    public async signBatch(
+        props: CommonServices.VaultTransit.SignBatch.Props,
+    ): CommonServices.VaultTransit.SignBatch.Result {
+        const data = await this.request<Vault.SignBatch>(`sign/${encodeURIComponent(props.name)}`, {
+            method: "POST",
+            body: JSON.stringify({
+                batch_input: props.inputs.map((input) => ({
+                    input: Buffer.from(input).toString("base64"),
+                })),
+                marshaling_algorithm: "jws",
+                key_version: props.version,
+            }),
+        });
+
+        return data.batch_results.map((result) => {
+            const match = /^vault:v(\d+):(.+)$/.exec(result.signature);
+            if (!match || Number(match[1]) !== result.key_version || result.key_version !== props.version) {
+                throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.INVALID_SIGNATURE` });
+            } else {
+                return { version: result.key_version, signature: match[2] };
+            }
+        });
+    }
+
+    public async hmacBatch(
+        props: CommonServices.VaultTransit.HmacBatch.Props,
+    ): CommonServices.VaultTransit.HmacBatch.Result {
+        const data = await this.request<Vault.HmacBatch>(`hmac/${encodeURIComponent(props.name)}`, {
+            method: "POST",
+            body: JSON.stringify({
+                batch_input: props.inputs.map((input) => ({
+                    input: Buffer.from(input).toString("base64"),
+                })),
+                algorithm: "sha2-256",
+            }),
+        });
+
+        return data.batch_results.map((result) => {
+            const match = /^vault:v(\d+):(.+)$/.exec(result.hmac);
+            if (match) {
+                return match[2];
+            } else {
+                throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.INVALID_SIGNATURE` });
+            }
+        });
+    }
+
     private async request<T>(path: string, init?: RequestInit): Promise<T> {
         try {
             const response = await fetch(`http://vault-agent/v1/${this.transitMount}/${path}`, {

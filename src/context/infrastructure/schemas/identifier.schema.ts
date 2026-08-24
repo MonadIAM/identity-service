@@ -10,8 +10,8 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
 
     uniques: [
         {
-            name: "identifier_type_value_unique",
-            properties: ["type", "value"],
+            name: "identifier_type_identity_unique",
+            properties: ["type", "identity"],
         },
         {
             name: "identifier_provider_provider_user_id_unique",
@@ -21,9 +21,9 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
 
     indexes: [
         {
-            name: "identifier_value_trgm_idx",
+            name: "identifier_identity_trgm_idx",
             expression:
-                'CREATE INDEX "identifier_value_trgm_idx" ON "identity"."identifier" USING gin ("value" gin_trgm_ops)',
+                'CREATE INDEX "identifier_identity_trgm_idx" ON "identity"."identifier" USING gin ("identity" gin_trgm_ops)',
         },
         {
             name: "identifier_account_id_idx",
@@ -35,7 +35,7 @@ export const IdentifierSchema = new EntitySchema<Identifier>({
         id: { primary: true, type: "uuid" },
 
         type: { enum: true, items: () => IdentifierType, nativeEnumName: "identifier_type" },
-        value: { type: "text" },
+        identity: { type: "text" },
 
         provider: { type: "text", nullable: true },
         providerUserId: { type: "text", nullable: true },

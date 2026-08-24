@@ -28,8 +28,16 @@ declare global {
             signature: string;
         };
 
+        type SignBatch = {
+            batch_results: Sign[];
+        };
+
         type Hmac = {
             hmac: string;
+        };
+
+        type HmacBatch = {
+            batch_results: Hmac[];
         };
 
         type Encrypt = {
@@ -64,7 +72,9 @@ declare global {
                 getKey: GetKey.Signature;
                 rewrap: Rewrap.Signature;
                 sign: Sign.Signature;
+                signBatch: SignBatch.Signature;
                 hmac: Hmac.Signature;
+                hmacBatch: HmacBatch.Signature;
             }
 
             namespace GetLatestVersion {
@@ -153,6 +163,29 @@ declare global {
                 };
 
                 type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace SignBatch {
+                type Props = {
+                    version: number;
+                    inputs: string[];
+                    name: string;
+                };
+
+                type Result = Promise<{ signature: string; version: number }[]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace HmacBatch {
+                type Props = {
+                    inputs: string[];
+                    name: string;
+                };
+
+                type Result = Promise<string[]>;
 
                 type Signature = (props: Props) => Result;
             }
