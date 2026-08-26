@@ -1,14 +1,18 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { PASSWORD_HISTORY_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
 import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
+import { PASSWORD_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
+import {
+    PASSWORD_HISTORY_REPOSITORY,
+    IDENTIFIER_REPOSITORY,
+    ACCOUNT_REPOSITORY,
+} from "~context/infrastructure/repositories";
 
-import { PASSWORD_SERVICE } from "../services";
 import { PasswordMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

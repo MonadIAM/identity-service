@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { IDENTIFIER_REPOSITORY } from "~context/domain/repositories";
+import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicLinkOperator } from "~infrastructure/database";
 import { Identifier } from "~context/domain/entities";
 import { QueryMode } from "~context/enums";

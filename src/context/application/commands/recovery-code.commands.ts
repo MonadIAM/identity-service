@@ -1,11 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, HASHING_SERVICE } from "~common/services";
-import { ACCOUNT_REPOSITORY } from "~context/domain/repositories";
+import { RECOVERY_CODE_SERVICE } from "~context/domain/services";
 
-import { RECOVERY_CODE_SERVICE } from "../services";
 import { RecoveryCodeMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

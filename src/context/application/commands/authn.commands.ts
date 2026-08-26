@@ -1,10 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { TOTP, Secret } from "otpauth";
 
-import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/domain/repositories";
+import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
-import { OAUTH_COMMANDS } from "~context/interface/commands";
+import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
+import { OAUTH_COMMANDS } from "~context/application/commands";
 import { Exception } from "~common/exceptions";
 import {
     SECOND_FACTOR_SECRET_SERVICE,
@@ -20,7 +21,6 @@ import {
     KafkaTopic,
 } from "~context/enums";
 
-import { SECOND_FACTOR_SERVICE } from "../services";
 import { AuthnMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

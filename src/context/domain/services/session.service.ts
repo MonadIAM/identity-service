@@ -2,10 +2,10 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
+import { SESSION_REPOSITORY } from "~context/infrastructure/repositories";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { OidcScope } from "~context/enums";
 
-import { SESSION_REPOSITORY } from "../repositories";
 import { Session } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

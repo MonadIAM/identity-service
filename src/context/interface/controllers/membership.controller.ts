@@ -1,11 +1,11 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
+import { MEMBERSHIP_HISTORY_QUERIES, MEMBERSHIP_QUERIES } from "~context/application/queries";
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
-import { MEMBERSHIP_HISTORY_QUERIES, MEMBERSHIP_QUERIES } from "../queries";
 import {
     HistoryCommonQueryDTO,
     HistoryCommonBodyDTO,

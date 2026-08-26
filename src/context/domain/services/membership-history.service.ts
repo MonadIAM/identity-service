@@ -1,6 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { MEMBERSHIP_HISTORY_REPOSITORY } from "../repositories";
+import { MEMBERSHIP_HISTORY_REPOSITORY } from "~context/infrastructure/repositories";
+
 import { MembershipHistory } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

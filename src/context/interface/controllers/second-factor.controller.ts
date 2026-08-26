@@ -13,6 +13,8 @@ import {
     Get,
 } from "@nestjs/common";
 
+import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
+import { SECOND_FACTOR_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -26,8 +28,6 @@ import {
     Public,
 } from "~common/decorators";
 
-import { SECOND_FACTOR_COMMANDS } from "../commands";
-import { SECOND_FACTOR_QUERIES } from "../queries";
 import {
     GetQRCodeResultDTO,
     GetQRCodeQueryDTO,

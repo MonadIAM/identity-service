@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { AUDIT_LOG_REPOSITORY } from "~context/domain/repositories";
+import { AUDIT_LOG_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuditLogQueries implements Queries.AuditLog.Contract {

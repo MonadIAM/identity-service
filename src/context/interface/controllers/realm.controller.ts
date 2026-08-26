@@ -2,12 +2,12 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Quer
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
+import { MEMBERSHIP_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import { ExcludeQueryDTO, ExcludeBodyDTO } from "../dto/realm";
-import { MEMBERSHIP_COMMANDS } from "../commands";
 
 const { REALM_EXCLUDE } = PermissionCode;
 const {

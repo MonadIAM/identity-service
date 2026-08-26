@@ -1,11 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { InterfaceClientTopicAction, ServiceClientTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { APPLICATION_REPOSITORY } from "~context/domain/repositories";
+import { APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { APPLICATION_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
 
-import { APPLICATION_SERVICE } from "../services";
 import { ApplicationMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

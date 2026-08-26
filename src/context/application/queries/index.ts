@@ -1,22 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import {
-    MEMBERSHIP_HISTORY_QUERIES,
-    INTERFACE_CLIENT_QUERIES,
-    SERVICE_CLIENT_QUERIES,
-    RECOVERY_CODE_QUERIES,
-    SECOND_FACTOR_QUERIES,
-    APPLICATION_QUERIES,
-    MEMBERSHIP_QUERIES,
-    IDENTIFIER_QUERIES,
-    CHANGE_LOG_QUERIES,
-    AUDIT_LOG_QUERIES,
-    ACCOUNT_QUERIES,
-    SESSION_QUERIES,
-    INVITE_QUERIES,
-    OAUTH_QUERIES,
-} from "~context/interface/queries";
-
 import { MembershipHistoryQueries } from "./membership-history.queries";
 import { InterfaceClientQueries } from "./interface-client.queries";
 import { ServiceClientQueries } from "./service-client.queries";
@@ -31,6 +14,21 @@ import { AccountQueries } from "./account.queries";
 import { SessionQueries } from "./session.queries";
 import { InviteQueries } from "./invite.queries";
 import { OAuthQueries } from "./oauth.queries";
+
+export const MEMBERSHIP_HISTORY_QUERIES = Symbol("Queries.MembershipHistory.Contract");
+export const INTERFACE_CLIENT_QUERIES = Symbol("Queries.InterfaceClient.Contract");
+export const SERVICE_CLIENT_QUERIES = Symbol("Queries.ServiceClient.Contract");
+export const RECOVERY_CODE_QUERIES = Symbol("Queries.RecoveryCode.Contract");
+export const SECOND_FACTOR_QUERIES = Symbol("Queries.SecondFactor.Contract");
+export const APPLICATION_QUERIES = Symbol("Queries.Application.Contract");
+export const MEMBERSHIP_QUERIES = Symbol("Queries.Membership.Contract");
+export const IDENTIFIER_QUERIES = Symbol("Queries.Identifier.Contract");
+export const CHANGE_LOG_QUERIES = Symbol("Queries.ChangeLog.Contract");
+export const AUDIT_LOG_QUERIES = Symbol("Queries.AuditLog.Contract");
+export const ACCOUNT_QUERIES = Symbol("Queries.Account.Contract");
+export const SESSION_QUERIES = Symbol("Queries.Session.Contract");
+export const INVITE_QUERIES = Symbol("Queries.Invite.Contract");
+export const OAUTH_QUERIES = Symbol("Queries.OAuth.Contract");
 
 export const QUERIES: ClassProvider[] = [
     {

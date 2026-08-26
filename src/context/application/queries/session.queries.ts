@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { SESSION_REPOSITORY } from "~context/domain/repositories";
+import { SESSION_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SessionQueries implements Queries.Session.Contract {

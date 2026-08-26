@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { TokenGrantType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
-import { INTERFACE_CLIENT_REPOSITORY } from "../repositories";
 import { InterfaceClient } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

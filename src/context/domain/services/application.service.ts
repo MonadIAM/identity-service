@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
 
-import { APPLICATION_REPOSITORY } from "../repositories";
 import { Application } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

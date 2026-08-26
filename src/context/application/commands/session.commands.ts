@@ -2,20 +2,20 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/domain/repositories";
-import {
-    NotificationTopicAction,
-    BlacklistTopicAction,
-    EntityType,
-    KafkaTopic,
-    ActionType,
-    AccountStatus,
-} from "~context/enums";
+import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
+import {
+    NotificationTopicAction,
+    BlacklistTopicAction,
+    AccountStatus,
+    EntityType,
+    KafkaTopic,
+    ActionType,
+} from "~context/enums";
 
-import { ACCOUNT_SERVICE, SESSION_SERVICE } from "../services";
 import { SessionMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

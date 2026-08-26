@@ -1,7 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { isEmail } from "class-validator";
 
-import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY, INVITE_REPOSITORY } from "~context/domain/repositories";
+import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY, INVITE_REPOSITORY } from "~context/infrastructure/repositories";
+import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE, INVITE_SERVICE } from "~context/domain/services";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
@@ -18,7 +19,6 @@ import {
     KafkaTopic,
 } from "~context/enums";
 
-import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE, INVITE_SERVICE } from "../services";
 import { AccountMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

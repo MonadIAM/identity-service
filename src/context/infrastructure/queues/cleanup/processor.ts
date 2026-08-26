@@ -3,9 +3,9 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { AccountTopicAction } from "@monadiam/shared";
 import { Job } from "bullmq";
 
-import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE, INVITE_SERVICE } from "~context/application/services";
+import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE, INVITE_SERVICE } from "~context/domain/services";
+import { ACCOUNT_REPOSITORY, INVITE_REPOSITORY } from "~context/infrastructure/repositories";
 import { CleanupJob, KafkaTopic, AccountStatus, InviteStatus } from "~context/enums";
-import { ACCOUNT_REPOSITORY, INVITE_REPOSITORY } from "~context/domain/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 
 import { CLEANUP_QUEUE } from "../tokens";

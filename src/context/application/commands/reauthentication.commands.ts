@@ -3,14 +3,14 @@ import { ConfigService } from "@nestjs/config";
 import { TOTP, Secret } from "otpauth";
 import ms, { StringValue } from "ms";
 
+import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { ReauthenticationTopicAction, EntityType, KafkaTopic, ActionType } from "~context/enums";
-import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/domain/repositories";
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
 import { HASHING_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
-import { SECOND_FACTOR_SERVICE } from "../services";
 import { ReauthenticationMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

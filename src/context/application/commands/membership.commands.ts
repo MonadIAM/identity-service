@@ -1,11 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ACCOUNT_REPOSITORY, INVITE_REPOSITORY, MEMBERSHIP_REPOSITORY } from "~context/domain/repositories";
+import { ACCOUNT_REPOSITORY, INVITE_REPOSITORY, MEMBERSHIP_REPOSITORY } from "~context/infrastructure/repositories";
+import { INVITE_SERVICE, MEMBERSHIP_SERVICE, MEMBERSHIP_HISTORY_SERVICE } from "~context/domain/services";
 import { MembershipTopicAction, InviteStatus, EntityType, ActionType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 
-import { INVITE_SERVICE, MEMBERSHIP_SERVICE, MEMBERSHIP_HISTORY_SERVICE } from "../services";
 import { MembershipMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

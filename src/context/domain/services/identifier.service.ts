@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
 
-import { IDENTIFIER_REPOSITORY } from "../repositories";
 import { Identifier } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

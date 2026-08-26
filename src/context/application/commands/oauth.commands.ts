@@ -3,10 +3,10 @@ import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 import { JWTPayload } from "jose";
 
+import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
-import { INTERFACE_CLIENT_REPOSITORY } from "~context/domain/repositories";
 import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
-import { SESSION_COMMANDS } from "~context/interface/commands";
+import { SESSION_COMMANDS } from "~context/application/commands";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
 import { ErrorCode, Exception } from "~common/exceptions";
 import { TokenGrantType } from "~context/enums";

@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { RECOVERY_CODE_REPOSITORY } from "~context/domain/repositories";
+import { RECOVERY_CODE_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeQueries implements Queries.RecoveryCode.Contract {

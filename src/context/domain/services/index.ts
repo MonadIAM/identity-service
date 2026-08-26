@@ -1,23 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import {
-    MEMBERSHIP_HISTORY_SERVICE,
-    INTERFACE_CLIENT_SERVICE,
-    SERVICE_CLIENT_SERVICE,
-    SECOND_FACTOR_SERVICE,
-    RECOVERY_CODE_SERVICE,
-    APPLICATION_SERVICE,
-    MEMBERSHIP_SERVICE,
-    IDENTIFIER_SERVICE,
-    CHANGE_LOG_SERVICE,
-    AUDIT_LOG_SERVICE,
-    PASSWORD_SERVICE,
-    ACCOUNT_SERVICE,
-    SESSION_SERVICE,
-    PROFILE_SERVICE,
-    INVITE_SERVICE,
-} from "~context/application/services";
-
 import { MembershipHistoryService } from "./membership-history.service";
 import { InterfaceClientService } from "./interface-client.service";
 import { ServiceClientService } from "./service-client.service";
@@ -33,6 +15,22 @@ import { AccountService } from "./account.service";
 import { SessionService } from "./session.service";
 import { ProfileService } from "./profile.service";
 import { InviteService } from "./invite.service";
+
+export const MEMBERSHIP_HISTORY_SERVICE = Symbol("Services.MembershipHistory.Contract");
+export const INTERFACE_CLIENT_SERVICE = Symbol("Services.InterfaceClient.Contract");
+export const SERVICE_CLIENT_SERVICE = Symbol("Services.ServiceClient.Contract");
+export const SECOND_FACTOR_SERVICE = Symbol("Services.SecondFactor.Contract");
+export const RECOVERY_CODE_SERVICE = Symbol("Services.RecoveryCode.Contract");
+export const APPLICATION_SERVICE = Symbol("Services.Application.Contract");
+export const MEMBERSHIP_SERVICE = Symbol("Services.Membership.Contract");
+export const IDENTIFIER_SERVICE = Symbol("Services.Identifier.Contract");
+export const CHANGE_LOG_SERVICE = Symbol("Services.ChangeLog.Contract");
+export const AUDIT_LOG_SERVICE = Symbol("Services.AuditLog.Contract");
+export const PASSWORD_SERVICE = Symbol("Services.Password.Contract");
+export const ACCOUNT_SERVICE = Symbol("Services.Account.Contract");
+export const SESSION_SERVICE = Symbol("Services.Session.Contract");
+export const PROFILE_SERVICE = Symbol("Services.Profile.Contract");
+export const INVITE_SERVICE = Symbol("Services.Invite.Contract");
 
 export const DOMAIN_SERVICES: ClassProvider[] = [
     {

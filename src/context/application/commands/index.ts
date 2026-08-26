@@ -1,24 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import {
-    REAUTHENTICATION_COMMANDS,
-    INTERFACE_CLIENT_COMMANDS,
-    FEDERATED_AUTHN_COMMANDS,
-    SERVICE_CLIENT_COMMANDS,
-    RECOVERY_CODE_COMMANDS,
-    SECOND_FACTOR_COMMANDS,
-    APPLICATION_COMMANDS,
-    MEMBERSHIP_COMMANDS,
-    IDENTIFIER_COMMANDS,
-    PASSWORD_COMMANDS,
-    ACCOUNT_COMMANDS,
-    PROFILE_COMMANDS,
-    SESSION_COMMANDS,
-    INVITE_COMMANDS,
-    OAUTH_COMMANDS,
-    AUTHN_COMMANDS,
-} from "~context/interface/commands";
-
 import { ReauthenticationCommands } from "./reauthentication.commands";
 import { InterfaceClientCommands } from "./interface-client.commands";
 import { FederatedAuthnCommands } from "./federated-authn.commands";
@@ -35,6 +16,23 @@ import { SessionCommands } from "./session.commands";
 import { InviteCommands } from "./invite.commands";
 import { OAuthCommands } from "./oauth.commands";
 import { AuthnCommands } from "./authn.commands";
+
+export const REAUTHENTICATION_COMMANDS = Symbol("Commands.Reauthentication.Contract");
+export const INTERFACE_CLIENT_COMMANDS = Symbol("Commands.InterfaceClient.Contract");
+export const FEDERATED_AUTHN_COMMANDS = Symbol("Commands.FederatedAuthn.Contract");
+export const SERVICE_CLIENT_COMMANDS = Symbol("Commands.ServiceClient.Contract");
+export const RECOVERY_CODE_COMMANDS = Symbol("Commands.RecoveryCode.Contract");
+export const SECOND_FACTOR_COMMANDS = Symbol("Commands.SecondFactor.Contract");
+export const APPLICATION_COMMANDS = Symbol("Commands.Application.Contract");
+export const MEMBERSHIP_COMMANDS = Symbol("Commands.Membership.Contract");
+export const IDENTIFIER_COMMANDS = Symbol("Commands.Identifier.Contract");
+export const PASSWORD_COMMANDS = Symbol("Commands.Password.Contract");
+export const ACCOUNT_COMMANDS = Symbol("Commands.Account.Contract");
+export const PROFILE_COMMANDS = Symbol("Commands.Profile.Contract");
+export const SESSION_COMMANDS = Symbol("Commands.Session.Contract");
+export const INVITE_COMMANDS = Symbol("Commands.Invite.Contract");
+export const OAUTH_COMMANDS = Symbol("Commands.OAuth.Contract");
+export const AUTHN_COMMANDS = Symbol("Commands.Authn.Contract");
 
 export const COMMANDS: ClassProvider[] = [
     {
