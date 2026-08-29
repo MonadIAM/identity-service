@@ -2,7 +2,7 @@ export enum NodeEnv {
     /* eslint-disable prettier/prettier */
     DEVELOPMENT = "development",
     PRODUCTION  = "production",
-    TEST        = "test",
+    LOCAL       = "local",
     /* eslint-enable prettier/prettier */
 }
 

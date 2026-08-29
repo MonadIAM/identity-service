@@ -13,14 +13,17 @@
   },
   "packageManager": "pnpm@11.24.0",
   "scripts": {
-    "knip": "knip --config configs/knip.config.ts",
+    "db:migration": "mikro-orm migration:create",
+    "db:migrate": "mikro-orm migration:up",
+    "db:seed": "mikro-orm seeder:run",
     "swagger": "tsx cli/swagger/main.ts",
     "postman": "tsx cli/postman/main.ts",
+    "knip": "knip --config configs/knip.config.ts",
+    "lint": "eslint .",
     "start:prod": "node dist/index.js",
     "start:dev": "nest start --watch",
-    "start": "nest start",
     "build": "nest build",
-    "lint": "eslint ."
+    "start": "nest start"
   },
   "repository": {
     "type": "git",

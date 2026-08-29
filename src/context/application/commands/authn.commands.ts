@@ -5,7 +5,6 @@ import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infras
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
-import { OAUTH_COMMANDS } from "~context/application/commands";
 import { Exception } from "~common/exceptions";
 import {
     SECOND_FACTOR_SECRET_SERVICE,
@@ -21,6 +20,7 @@ import {
     KafkaTopic,
 } from "~context/enums";
 
+import { OAUTH_COMMANDS } from "./tokens";
 import { AuthnMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

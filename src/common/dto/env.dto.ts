@@ -1,4 +1,5 @@
 import { DiagLogLevel } from "@opentelemetry/api";
+import { ValidateIf } from "class-validator";
 import { type StringValue } from "ms";
 
 import { PasswordValidationMode, NodeEnv } from "~common/enums";
@@ -102,16 +103,7 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_PASSWORD: string;
 
     @Validator.IsBoolean()
-    declare public POSTGRES_SSL_REJECT_UNAUTHORIZED: boolean;
-
-    @Validator.IsString()
-    declare public POSTGRES_SSL_CA_FILE: string;
-
-    @Validator.IsString()
-    declare public POSTGRES_SSL_CERT_FILE: string;
-
-    @Validator.IsString()
-    declare public POSTGRES_SSL_KEY_FILE: string;
+    declare public POSTGRES_SSL_ENABLED: boolean;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_POOL_MAX: number;
@@ -121,6 +113,26 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public POSTGRES_VAULT_CREDENTIALS_PATH?: string;
+
+    @Validator.IsBoolean()
+    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
+    declare public POSTGRES_SSL_REJECT_UNAUTHORIZED?: boolean;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
+    declare public POSTGRES_SSL_CA_FILE?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
+    declare public POSTGRES_SSL_CERT_FILE?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
+    declare public POSTGRES_SSL_KEY_FILE?: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - write-side
@@ -170,18 +182,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public REDIS_PASSWORD: string;
 
-    @Validator.IsBoolean()
-    declare public REDIS_TLS_REJECT_UNAUTHORIZED: boolean;
-
-    @Validator.IsString()
-    declare public REDIS_TLS_CA_FILE: string;
-
-    @Validator.IsString()
-    declare public REDIS_TLS_CERT_FILE: string;
-
-    @Validator.IsString()
-    declare public REDIS_TLS_KEY_FILE: string;
-
     @Validator.IsInt()
     @Validator.Min(0)
     declare public REDIS_DB_CACHE: number;
@@ -194,30 +194,35 @@ export class EnvironmentVariablesDTO {
     @Validator.Min(0)
     declare public REDIS_DB_QUEUE: number;
 
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public REDIS_VAULT_RUNTIME_PATH?: string;
+
+    @Validator.IsBoolean()
+    declare public REDIS_TLS_ENABLED: boolean;
+
+    @Validator.IsBoolean()
+    @ValidateIf((o) => o.REDIS_TLS_ENABLED)
+    declare public REDIS_TLS_REJECT_UNAUTHORIZED?: boolean;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.REDIS_TLS_ENABLED)
+    declare public REDIS_TLS_CA_FILE?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.REDIS_TLS_ENABLED)
+    declare public REDIS_TLS_CERT_FILE?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.REDIS_TLS_ENABLED)
+    declare public REDIS_TLS_KEY_FILE?: string;
+
     // ---------------------------------------------------------------------------
     // Kafka
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
     declare public KAFKA_BROKER: string;
-
-    @Validator.IsBoolean()
-    declare public KAFKA_SSL_REJECT_UNAUTHORIZED: boolean;
-
-    @Validator.IsString()
-    declare public KAFKA_SSL_CA_FILE: string;
-
-    @Validator.IsString()
-    declare public KAFKA_SSL_CERT_FILE: string;
-
-    @Validator.IsString()
-    declare public KAFKA_SSL_KEY_FILE: string;
-
-    @Validator.IsString()
-    declare public KAFKA_SASL_USERNAME: string;
-
-    @Validator.IsString()
-    declare public KAFKA_SASL_PASSWORD_FILE: string;
 
     @Validator.IsPositiveInt()
     declare public KAFKA_RETRY_ATTEMPTS: number;
@@ -237,12 +242,39 @@ export class EnvironmentVariablesDTO {
     @Validator.IsMsString()
     declare public KAFKA_DLQ_RETRY_JITTER: StringValue;
 
+    @Validator.IsBoolean()
+    declare public KAFKA_SSL_ENABLED: boolean;
+
+    @Validator.IsBoolean()
+    declare public KAFKA_SASL_ENABLED: boolean;
+
+    @Validator.IsBoolean()
+    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
+    declare public KAFKA_SSL_REJECT_UNAUTHORIZED?: boolean;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
+    declare public KAFKA_SSL_CA_FILE?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
+    declare public KAFKA_SSL_CERT_FILE?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
+    declare public KAFKA_SSL_KEY_FILE?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.KAFKA_SASL_ENABLED)
+    declare public KAFKA_SASL_USERNAME?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.KAFKA_SASL_ENABLED)
+    declare public KAFKA_SASL_PASSWORD_FILE?: string;
+
     // ---------------------------------------------------------------------------
     // Network
     // ---------------------------------------------------------------------------
-
-    @Validator.IsString()
-    declare public DOCKER_NETWORK_MONITORING: string;
 
     @Validator.IsString()
     declare public DOCKER_NETWORK_KAFKA: string;
@@ -257,10 +289,16 @@ export class EnvironmentVariablesDTO {
     declare public DOCKER_NETWORK_VAULT: string;
 
     @Validator.IsString()
-    declare public DOCKER_VOLUME_VAULT_CA: string;
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public DOCKER_NETWORK_MONITORING?: string;
 
     @Validator.IsString()
-    declare public DOCKER_VOLUME_SERVICE_TLS: string;
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public DOCKER_VOLUME_VAULT_CA?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public DOCKER_VOLUME_SERVICE_TLS?: string;
 
     // ---------------------------------------------------------------------------
     // Vault
@@ -271,10 +309,6 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public VAULT_AGENT_SOCKET_PATH: string;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public VAULT_PORT: number;
 
     @Validator.IsString()
     declare public VAULT_APPROLE_NAME: string;
@@ -313,9 +347,6 @@ export class EnvironmentVariablesDTO {
     declare public VAULT_TRANSIT_AUDIT_LOG_KEY: string;
 
     @Validator.IsString()
-    declare public VAULT_KEY_TRIM_SCHEDULE: string;
-
-    @Validator.IsString()
     declare public VAULT_KV_MOUNT: string;
 
     @Validator.IsString()
@@ -324,12 +355,26 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public VAULT_KV_RUNTIME_PATH: string;
 
+    @Validator.Max(65535)
+    @Validator.IsPositiveInt()
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public VAULT_PORT?: number;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public VAULT_ADDR?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public VAULT_TOKEN?: string;
+
     // ---------------------------------------------------------------------------
     // Vault (bootstrap)
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    declare public VAULT_PROVISIONER_TOKEN: string;
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public VAULT_PROVISIONER_TOKEN?: string;
 
     // ---------------------------------------------------------------------------
     // Cache TTLs
@@ -396,6 +441,10 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public OAUTH_GITHUB_REDIRECT_URI: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public OAUTH_VAULT_PATH?: string;
 
     // ---------------------------------------------------------------------------
     // BullMQ - cleanup

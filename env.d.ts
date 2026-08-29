@@ -9,7 +9,7 @@ declare global {
             // ---------------------------------------------------------------------------
 
             SERVICE_NAME: string;
-            NODE_ENV: "development" | "production" | "test";
+            NODE_ENV: "development" | "production" | "local";
             API_VERSION: `${number}`;
 
             APP_BASE_IMAGE: string;
@@ -50,13 +50,15 @@ declare global {
             POSTGRES_DB: string;
             POSTGRES_USER: string;
             POSTGRES_PASSWORD: string;
-            POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
-            POSTGRES_SSL_CA_FILE: string;
-            POSTGRES_SSL_CERT_FILE: string;
-            POSTGRES_SSL_KEY_FILE: string;
+            POSTGRES_SSL_ENABLED: "true" | "false";
+            POSTGRES_SSL_REJECT_UNAUTHORIZED?: "true" | "false";
+            POSTGRES_SSL_CA_FILE?: string;
+            POSTGRES_SSL_CERT_FILE?: string;
+            POSTGRES_SSL_KEY_FILE?: string;
             POSTGRES_POOL_MAX: `${number}`;
             POSTGRES_POOL_IDLE_MS: StringValue;
             POSTGRES_LOGGING: "true" | "false";
+            POSTGRES_VAULT_CREDENTIALS_PATH?: string;
 
             // ---------------------------------------------------------------------------
             // PostgreSQL - write
@@ -83,10 +85,12 @@ declare global {
             REDIS_HOST: string;
             REDIS_PORT: `${number}`;
             REDIS_PASSWORD: string;
-            REDIS_TLS_REJECT_UNAUTHORIZED: "true" | "false";
-            REDIS_TLS_CA_FILE: string;
-            REDIS_TLS_CERT_FILE: string;
-            REDIS_TLS_KEY_FILE: string;
+            REDIS_VAULT_RUNTIME_PATH?: string;
+            REDIS_TLS_ENABLED: "true" | "false";
+            REDIS_TLS_REJECT_UNAUTHORIZED?: "true" | "false";
+            REDIS_TLS_CA_FILE?: string;
+            REDIS_TLS_CERT_FILE?: string;
+            REDIS_TLS_KEY_FILE?: string;
             REDIS_DB_CACHE: `${number}`;
             REDIS_DB_LIMITER: `${number}`;
             REDIS_DB_QUEUE: `${number}`;
@@ -96,12 +100,14 @@ declare global {
             // ---------------------------------------------------------------------------
 
             KAFKA_BROKER: string;
-            KAFKA_SSL_REJECT_UNAUTHORIZED: "true" | "false";
-            KAFKA_SSL_CA_FILE: string;
-            KAFKA_SSL_CERT_FILE: string;
-            KAFKA_SSL_KEY_FILE: string;
-            KAFKA_SASL_USERNAME: string;
-            KAFKA_SASL_PASSWORD_FILE: string;
+            KAFKA_SSL_ENABLED: "true" | "false";
+            KAFKA_SSL_REJECT_UNAUTHORIZED?: "true" | "false";
+            KAFKA_SSL_CA_FILE?: string;
+            KAFKA_SSL_CERT_FILE?: string;
+            KAFKA_SSL_KEY_FILE?: string;
+            KAFKA_SASL_ENABLED: "true" | "false";
+            KAFKA_SASL_USERNAME?: string;
+            KAFKA_SASL_PASSWORD_FILE?: string;
             KAFKA_RETRY_ATTEMPTS: `${number}`;
             KAFKA_RETRY_INITIAL_TIME: StringValue;
             KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
@@ -114,12 +120,12 @@ declare global {
             // ---------------------------------------------------------------------------
 
             DOCKER_NETWORK_KAFKA: string;
-            DOCKER_NETWORK_MONITORING: string;
+            DOCKER_NETWORK_MONITORING?: string;
             DOCKER_NETWORK_POSTGRES: string;
             DOCKER_NETWORK_REDIS: string;
             DOCKER_NETWORK_VAULT: string;
-            DOCKER_VOLUME_VAULT_CA: string;
-            DOCKER_VOLUME_SERVICE_TLS: string;
+            DOCKER_VOLUME_VAULT_CA?: string;
+            DOCKER_VOLUME_SERVICE_TLS?: string;
 
             // ---------------------------------------------------------------------------
             // Vault
@@ -127,7 +133,9 @@ declare global {
 
             VAULT_IMAGE: string;
             VAULT_AGENT_SOCKET_PATH: string;
-            VAULT_PORT: `${number}`;
+            VAULT_PORT?: `${number}`;
+            VAULT_ADDR?: string;
+            VAULT_TOKEN?: string;
             VAULT_APPROLE_NAME: string;
             VAULT_TRANSIT_MOUNT: string;
             VAULT_TRANSIT_ACCESS_KEY: string;
@@ -138,7 +146,6 @@ declare global {
             VAULT_TRANSIT_ID_RETAIN_VERSIONS: `${number}`;
             VAULT_TRANSIT_TOTP_KEY: string;
             VAULT_TRANSIT_PAIRWISE_KEY: string;
-            VAULT_KEY_TRIM_SCHEDULE: string;
             VAULT_KV_MOUNT: string;
             VAULT_KV_OAUTH_PATH: string;
             VAULT_KV_RUNTIME_PATH: string;
@@ -147,7 +154,7 @@ declare global {
             // Vault (bootstrap)
             // ---------------------------------------------------------------------------
 
-            VAULT_PROVISIONER_TOKEN: string;
+            VAULT_PROVISIONER_TOKEN?: string;
 
             // ---------------------------------------------------------------------------
             // Cache TTLs
@@ -182,6 +189,7 @@ declare global {
             OAUTH_GITHUB_CLIENT_ID: string;
             OAUTH_GITHUB_CLIENT_SECRET: string;
             OAUTH_GITHUB_REDIRECT_URI: string;
+            OAUTH_VAULT_PATH?: string;
 
             // ---------------------------------------------------------------------------
             // BullMQ - cleanup
