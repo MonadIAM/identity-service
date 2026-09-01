@@ -16,8 +16,6 @@ const config: KnipConfig = {
         "src/context/infrastructure/schemas/*.ts",
         // Barrel files
         "src/**/index.ts",
-        // Preload script
-        "src/infrastructure/schema-registry/script.ts",
         "src/observability/tracing/script.ts",
     ],
     ignoreDependencies: [

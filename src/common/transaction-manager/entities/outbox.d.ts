@@ -16,6 +16,17 @@ declare global {
 
                 metadata?: UnknownObject;
                 payload: UnknownObject;
+
+                envelope: Envelope.Signature;
+            }
+
+            namespace Envelope {
+                type Result = {
+                    actionType: string;
+                    payload: UnknownObject;
+                };
+
+                type Signature = () => Result;
             }
 
             type ConstructorProps = {

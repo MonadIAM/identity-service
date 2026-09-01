@@ -1,56 +1,52 @@
 import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
-import { Controller, Inject, OnModuleInit } from "@nestjs/common";
+import { Controller, Inject, Logger } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
+import { KafkaTopicBuilder, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { KAFKA_RETRY_QUEUE } from "~context/infrastructure/queues";
-import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { KafkaTopic } from "~context/enums";
 
 const RETRY_TOPICS = [
-    KafkaTopic.REAUTHENTICATION_RETRY,
-    KafkaTopic.ACCESS_CACHE_RETRY,
-    KafkaTopic.MEMBERSHIP_RETRY,
-    KafkaTopic.REALM_RETRY,
+    KafkaTopicBuilder.retry(KafkaTopic.REAUTHENTICATION),
+    KafkaTopicBuilder.retry(KafkaTopic.ACCESS_CACHE),
+    KafkaTopicBuilder.retry(KafkaTopic.MEMBERSHIP),
+    KafkaTopicBuilder.retry(KafkaTopic.REALM),
 ];
 
-const DEAD_TOPIC_MAP: Partial<Record<string, string>> = {
-    [KafkaTopic.REAUTHENTICATION]: KafkaTopic.REAUTHENTICATION_DEAD,
-    [KafkaTopic.ACCESS_CACHE]: KafkaTopic.ACCESS_CACHE_DEAD,
-    [KafkaTopic.MEMBERSHIP]: KafkaTopic.MEMBERSHIP_DEAD,
-    [KafkaTopic.REALM]: KafkaTopic.REALM_DEAD,
-};
-
 @Controller()
-export class RetryConsumer implements Consumers.Retry.Contract, OnModuleInit {
+export class RetryConsumer implements Consumers.Retry.Contract {
+    private readonly logger = new Logger(RetryConsumer.name);
+
     public constructor(
-        @Inject(KAFKA_SERVICE)
-        private readonly kafkaClient: ClientKafka,
         @Inject(KAFKA_RETRY_QUEUE)
         private readonly kafkaRetryQueue: Queues.KafkaRetry.Contract,
+        @Inject(KAFKA_SCHEMA_REGISTRY)
+        private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
+        @Inject(KAFKA_SERVICE)
+        private readonly kafkaClient: ClientKafka,
     ) {}
-
-    public async onModuleInit(): Promise<void> {
-        await this.kafkaClient.connect();
-    }
 
     @EventPattern(RETRY_TOPICS)
     public async handle(
         @Payload() message: Consumers.Retry.Message,
         @Ctx() context: KafkaContext,
     ): Consumers.Retry.Handle.Result {
-        const retryCount = KafkaUtils.extractRetryCount(context);
-
-        if (retryCount >= this.kafkaRetryQueue.maxRetryCount) {
-            await this.moveToDeadLetter(message);
-        } else {
-            await this.kafkaRetryQueue.schedule({ message, retryCount });
+        try {
+            await this.process({ message, context });
+        } catch (error) {
+            await this.reject({ message, error });
         }
     }
 
-    private async moveToDeadLetter(message: Consumers.Retry.Message): Promise<void> {
-        const deadTopic = DEAD_TOPIC_MAP[message.originalTopic];
-        if (deadTopic) {
-            await lastValueFrom(this.kafkaClient.emit(deadTopic, message));
-        }
+    public async process(props: Consumers.Retry.Process.Props): Consumers.Retry.Process.Result {
+        const { message, context } = props;
+        this.schemaRegistry.validate({ topic: context.getTopic(), value: message });
+        await this.kafkaRetryQueue.schedule({ message });
+    }
+
+    public async reject(props: Consumers.Retry.Reject.Props): Consumers.Retry.Reject.Result {
+        const { message, error } = props;
+        this.logger.warn(`Rejected retry envelope for topic "${message.originalTopic}": ${String(error)}`);
+        await lastValueFrom(this.kafkaClient.emit(`${message.originalTopic}-dead`, { value: message }));
     }
 }

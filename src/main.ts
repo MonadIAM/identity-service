@@ -51,6 +51,7 @@ async function bootstrap(): Promise<void> {
     const port: number = configService.getOrThrow<number>("APP_PORT");
     const host: string = configService.getOrThrow<string>("APP_HOST");
 
+    await application.init();
     await application.startAllMicroservices();
     await application.listen({ port, host });
 }
