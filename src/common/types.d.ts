@@ -7,8 +7,8 @@ declare global {
     };
 
     type MessageResult = {
-        message: string;
         params?: Record<string, unknown>;
+        message: Intl.Key;
     };
 
     type Req<T extends RouteGenericInterface = RouteGenericInterface> = FastifyRequest<T> & {

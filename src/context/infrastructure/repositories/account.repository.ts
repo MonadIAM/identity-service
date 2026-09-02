@@ -77,7 +77,7 @@ export class AccountRepository
 
             return [rows, Number(countRow?.total ?? 0)];
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -94,7 +94,7 @@ export class AccountRepository
                 { limit: batchSize },
             );
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -114,7 +114,7 @@ export class AccountRepository
                 { limit: batchSize },
             );
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

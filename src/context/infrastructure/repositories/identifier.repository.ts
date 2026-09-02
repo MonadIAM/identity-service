@@ -49,7 +49,7 @@ export class IdentifierRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -68,7 +68,7 @@ export class IdentifierRepository
 
             return remaining === 0;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

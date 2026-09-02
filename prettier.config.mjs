@@ -12,6 +12,7 @@ const prettierConfig = [
             "./configs/*.config.{mjs,ts}",
             "./scripts/*.{mjs,ts}",
             "**/migrations/*.ts",
+            "**/*.generated.ts",
         ]
     },
     {

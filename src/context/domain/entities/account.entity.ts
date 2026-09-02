@@ -5,9 +5,7 @@ import { AccountSubject, AccountStatus } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class Account implements Entities.Account.Contract {
-    private get dictionaryPath(): string {
-        return "entities.account";
-    }
+    private static readonly dictionaryPath = "entities.account";
 
     public id: string;
     public createdAt: Date;
@@ -56,7 +54,7 @@ export class Account implements Entities.Account.Contract {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVATED` });
+            throw Exception.invariantViolation({ messageKey: `${Account.dictionaryPath}.ALREADY_ACTIVATED` });
         }
     }
 
@@ -65,7 +63,7 @@ export class Account implements Entities.Account.Contract {
             this.status = AccountStatus.DEACTIVATED;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.DEACTIVATION_NOT_ALLOWED` });
+            throw Exception.invariantViolation({ messageKey: `${Account.dictionaryPath}.DEACTIVATION_NOT_ALLOWED` });
         }
     }
 
@@ -74,13 +72,13 @@ export class Account implements Entities.Account.Contract {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.RESTORE_NOT_ALLOWED` });
+            throw Exception.invariantViolation({ messageKey: `${Account.dictionaryPath}.RESTORE_NOT_ALLOWED` });
         }
     }
 
     public suspend(): void {
         if (this.status === AccountStatus.SUSPENDED) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_SUSPENDED` });
+            throw Exception.invariantViolation({ messageKey: `${Account.dictionaryPath}.ALREADY_SUSPENDED` });
         } else {
             this.status = AccountStatus.SUSPENDED;
             this.updatedAt = new Date();
@@ -92,7 +90,7 @@ export class Account implements Entities.Account.Contract {
             this.status = AccountStatus.ACTIVE;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NOT_SUSPENDED` });
+            throw Exception.invariantViolation({ messageKey: `${Account.dictionaryPath}.NOT_SUSPENDED` });
         }
     }
 }

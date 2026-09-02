@@ -40,7 +40,7 @@ export class RecoveryCodeRepository
                 used: Number(used),
             };
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

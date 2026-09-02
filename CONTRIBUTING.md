@@ -5,8 +5,12 @@
 <details>
 <summary><strong>Environment Setup</strong></summary>
 
-> The application requires `Node.js v22.17.0` and `pnpm v11.22.0`;
+> The application requires `Node.js v24.18.0` and `pnpm v11.25.0`;
 > other versions are not supported.
+
+> The git hooks additionally require [`jq`](https://jqlang.github.io/jq/download/)
+> and [`gitleaks`](https://github.com/gitleaks/gitleaks#installing) to be available
+> in `PATH`; a commit is rejected when either of them is missing.
 
 [VSCode](https://code.visualstudio.com/) is the recommended editor for development.
 

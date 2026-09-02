@@ -4,9 +4,7 @@ import { randomUUID } from "node:crypto";
 import { Exception } from "~common/exceptions";
 
 export class Application implements Entities.Application.Contract {
-    private get dictionaryPath(): string {
-        return "entities.application";
-    }
+    private static readonly dictionaryPath = "entities.application";
 
     public id: string;
     public createdAt: Date;
@@ -41,11 +39,11 @@ export class Application implements Entities.Application.Contract {
 
     public update(patch: Entities.Application.ChangeDataProps): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
         }
 
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
         }
 
         let affected = 0;
@@ -59,19 +57,19 @@ export class Application implements Entities.Application.Contract {
         if (affected) {
             this.updatedAt = new Date();
         } else if (Object.keys(patch).length) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 
     public revoke(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
         }
 
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             this.isRevoked = true;
             this.updatedAt = new Date();
@@ -80,24 +78,24 @@ export class Application implements Entities.Application.Contract {
 
     public restore(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
         }
 
         if (this.isRevoked) {
             this.isRevoked = false;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
         }
 
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Application.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         }
     }
 

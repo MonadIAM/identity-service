@@ -37,15 +37,17 @@ import { IsMsString } from "./algorithms/is-ms-string.validator";
 import { IsOrdinal } from "./algorithms/is-ordinal.validator";
 
 export abstract class StandardValidationDecorators {
+    private static readonly dictionaryPath = "validator";
+
     private static wrap(
-        key: string,
+        key: Intl.ValidatorKey,
         args: Record<string, unknown>,
         options?: ValidationOptions,
         label?: string,
     ): ValidationOptions {
         return {
             ...options,
-            message: `validator.${key}`,
+            message: `${this.dictionaryPath}.${key}`,
             context: {
                 ...options?.context,
                 ...args,

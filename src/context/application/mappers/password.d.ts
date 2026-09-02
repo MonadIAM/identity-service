@@ -12,7 +12,7 @@ declare namespace Commands {
 
             namespace PasswordChangedViaRecoveryCodePayload {
                 type Props = {
-                    message: string;
+                    message: Intl.Key;
                     account: string;
                 };
 
@@ -23,7 +23,7 @@ declare namespace Commands {
 
             namespace PasswordChangedViaOtpPayload {
                 type Props = {
-                    message: string;
+                    message: Intl.Key;
                     account: string;
                 };
 
@@ -34,7 +34,7 @@ declare namespace Commands {
 
             namespace PasswordChangedPayload {
                 type Props = {
-                    message: string;
+                    message: Intl.Key;
                     account: string;
                 };
 

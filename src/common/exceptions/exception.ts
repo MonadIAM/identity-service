@@ -11,6 +11,8 @@ const RETRYABLE_STATUSES = new Set<number>([
 ]);
 
 export class Exception extends Error {
+    private static readonly dictionaryPath = "validator";
+
     public readonly timestamp: string;
 
     public readonly statusCode: number;
@@ -30,8 +32,8 @@ export class Exception extends Error {
         this.timestamp = new Date().toISOString();
         this.name = new.target.name;
 
-        this.statusCode = props.statusCode;
         this.messageKey = props.messageKey;
+        this.statusCode = props.statusCode;
         this.kind = props.kind;
         this.code = props.code;
 
@@ -148,8 +150,8 @@ export class Exception extends Error {
 
     public static validationFailed(details: Exception.ValidationDetail[]): Exception {
         return new Exception({
+            messageKey: `${this.dictionaryPath}.COMMON_ERROR`,
             statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-            messageKey: "validator.COMMON_ERROR",
             code: ErrorCode.UNPROCESSABLE,
             kind: ErrorKind.UNPROCESSABLE,
             details,

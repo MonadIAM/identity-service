@@ -4,9 +4,7 @@ import { IdentifierType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class Identifier implements Entities.Identifier.Contract {
-    private get dictionaryPath(): string {
-        return "entities.identifier";
-    }
+    private static readonly dictionaryPath = "entities.identifier";
 
     public id: string;
     public createdAt: Date;
@@ -42,19 +40,21 @@ export class Identifier implements Entities.Identifier.Contract {
 
     public togglePublicContact(): void {
         if (this.type === IdentifierType.OAUTH) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.PUBLIC_CONTACT_NOT_APPLICABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${Identifier.dictionaryPath}.PUBLIC_CONTACT_NOT_APPLICABLE`,
+            });
         } else if (this.isVerified) {
             this.isPublicContact = !this.isPublicContact;
         } else {
             throw Exception.invariantViolation({
-                messageKey: `${this.dictionaryPath}.PUBLIC_CONTACT_REQUIRES_VERIFICATION`,
+                messageKey: `${Identifier.dictionaryPath}.PUBLIC_CONTACT_REQUIRES_VERIFICATION`,
             });
         }
     }
 
     public verify(): void {
         if (this.isVerified) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
+            throw Exception.invariantViolation({ messageKey: `${Identifier.dictionaryPath}.ALREADY_VERIFIED` });
         } else {
             this.verifiedAt = new Date();
             this.isVerified = true;

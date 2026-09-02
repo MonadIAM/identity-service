@@ -178,12 +178,13 @@ export class JWTService implements CommonServices.JWT.Contract {
         props: CommonServices.JWT.ResolveVerificationFailure.Props,
     ): CommonServices.JWT.ResolveVerificationFailure.Result {
         const { tokenType, error } = props;
-        const { prefix, label } =
-            tokenType === "ACCESS"
-                ? { prefix: "ACCESS_TOKEN", label: "access" }
-                : tokenType === "REFRESH"
-                  ? { prefix: "REFRESH_TOKEN", label: "refresh" }
-                  : { prefix: "ID_TOKEN", label: "id" };
+        const { prefix, label } = (
+            {
+                REFRESH: { prefix: "REFRESH_TOKEN", label: "refresh" },
+                ACCESS: { prefix: "ACCESS_TOKEN", label: "access" },
+                ID: { prefix: "ID_TOKEN", label: "id" },
+            } as const
+        )[tokenType];
 
         switch (true) {
             case error instanceof errors.JWTExpired:

@@ -4,9 +4,7 @@ import { InviteStatus } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class Invite implements Entities.Invite.Contract {
-    private get dictionaryPath(): string {
-        return "entities.invite";
-    }
+    private static readonly dictionaryPath = "entities.invite";
 
     public id: string;
     public createdAt: Date;
@@ -35,7 +33,7 @@ export class Invite implements Entities.Invite.Contract {
             this.status = InviteStatus.CANCELLED;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_CANCEL_INACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Invite.dictionaryPath}.CANNOT_CANCEL_INACTIVE` });
         }
     }
 
@@ -44,7 +42,7 @@ export class Invite implements Entities.Invite.Contract {
             this.status = InviteStatus.ACCEPTED;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ACCEPT_INACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Invite.dictionaryPath}.CANNOT_ACCEPT_INACTIVE` });
         }
     }
 
@@ -53,7 +51,7 @@ export class Invite implements Entities.Invite.Contract {
             this.status = InviteStatus.DECLINED;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DECLINE_INACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Invite.dictionaryPath}.CANNOT_DECLINE_INACTIVE` });
         }
     }
 
@@ -62,7 +60,7 @@ export class Invite implements Entities.Invite.Contract {
             this.status = InviteStatus.INVALIDATED;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_INVALIDATE_INACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Invite.dictionaryPath}.CANNOT_INVALIDATE_INACTIVE` });
         }
     }
 
@@ -71,7 +69,7 @@ export class Invite implements Entities.Invite.Contract {
             this.status = InviteStatus.EXPIRED;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_EXPIRE_INACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Invite.dictionaryPath}.CANNOT_EXPIRE_INACTIVE` });
         }
     }
 }

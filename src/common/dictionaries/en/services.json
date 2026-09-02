@@ -33,6 +33,7 @@
     "REFRESH_TOKEN_INVALID_CLAIMS": "The refresh token \"{claim}\" claim failed validation.",
     "REFRESH_TOKEN_MALFORMED": "The refresh token is malformed.",
     "INVALID_ID_TOKEN": "The id_token_hint is invalid.",
+    "ID_TOKEN_EXPIRED": "The id_token_hint has expired.",
     "ID_TOKEN_INVALID_SIGNATURE": "The id_token_hint signature could not be verified.",
     "ID_TOKEN_INVALID_CLAIMS": "The id_token_hint \"{claim}\" claim failed validation.",
     "ID_TOKEN_MALFORMED": "The id_token_hint is malformed."
@@ -50,5 +51,13 @@
       "CODE_EXCHANGE_FAILED": "GitHub OAuth code exchange failed.",
       "PROFILE_FETCH_FAILED": "GitHub OAuth profile fetch failed."
     }
+  },
+  "kafka-retry": {
+    "HANDLER_NOT_REGISTERED": "No retry handler is registered for topic {topic}."
+  },
+  "schema-registry": {
+    "ENCODE_FAILED": "Failed to encode a message for subject {subject}: {reason}.",
+    "DECODE_FAILED": "Failed to decode a message for subject {subject}: {reason}.",
+    "MESSAGE_INVALID": "The message for subject {subject} does not match the schema. Invalid fields: {fields}."
   }
 }

@@ -36,7 +36,7 @@ export class InterfaceClientRepository
 
             return total + 1 > this.applicationLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

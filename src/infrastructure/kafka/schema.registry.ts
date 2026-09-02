@@ -13,9 +13,11 @@ export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApp
 
     private readonly schemas = new Map<string, Kafka.SchemaRegistry.Schema>();
     private readonly logger = new Logger(KafkaSchemaRegistry.name);
+    private readonly dictionaryPath = "services.schema-registry";
+    private readonly ids = new Map<string, number>();
+
     private readonly registry: Nullable<ConfluentSchemaRegistry>;
     private readonly config: Kafka.SchemaRegistry.Config;
-    private readonly ids = new Map<string, number>();
 
     public constructor(private readonly configService: ConfigService) {
         this.config = {
@@ -61,7 +63,7 @@ export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApp
                 return await this.registry.encode(id, value);
             } catch (error) {
                 throw Exception.externalServiceFailed({
-                    messageKey: "schema-registry.ENCODE_FAILED",
+                    messageKey: `${this.dictionaryPath}.ENCODE_FAILED`,
                     params: {
                         reason: error instanceof Error ? error.message : "encode failed",
                         subject,
@@ -81,7 +83,7 @@ export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApp
                 return await registry.decode(value);
             } catch (error) {
                 throw Exception.externalServiceFailed({
-                    messageKey: "schema-registry.DECODE_FAILED",
+                    messageKey: `${this.dictionaryPath}.DECODE_FAILED`,
                     params: {
                         reason: error instanceof Error ? error.message : "decode failed",
                         subject: `${topic}-value`,
@@ -102,7 +104,7 @@ export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApp
 
             if (!schema.isValid(value, { errorHook: (path) => paths.push(path.join(".")) })) {
                 throw Exception.unprocessable({
-                    messageKey: "schema-registry.MESSAGE_INVALID",
+                    messageKey: `${this.dictionaryPath}.MESSAGE_INVALID`,
                     params: { fields: paths.join(", "), subject },
                 });
             }

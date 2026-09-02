@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Exception } from "~common/exceptions";
 
 export class Session implements Entities.Session.Contract {
-    private get dictionaryPath(): string {
-        return "entities.session";
-    }
+    private static readonly dictionaryPath = "entities.session";
 
     public id: string;
     public createdAt: Date;
@@ -48,7 +46,7 @@ export class Session implements Entities.Session.Contract {
 
     public isExpired(): void {
         if (this.expiresAt < new Date()) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EXPIRED` });
+            throw Exception.invariantViolation({ messageKey: `${Session.dictionaryPath}.EXPIRED` });
         }
     }
 }

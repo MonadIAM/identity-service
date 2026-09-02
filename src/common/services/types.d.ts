@@ -324,8 +324,8 @@ declare global {
 
                 type Result = {
                     params?: UnknownObject;
+                    messageKey: Intl.Key;
                     description: string;
-                    messageKey: string;
                 };
 
                 type Signature = (props: Props) => Result;

@@ -4,9 +4,7 @@ import { TokenGrantType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class InterfaceClient implements Entities.InterfaceClient.Contract {
-    private get dictionaryPath(): string {
-        return "entities.interface-client";
-    }
+    private static readonly dictionaryPath = "entities.interface-client";
 
     public id: string;
     public createdAt: Date;
@@ -44,11 +42,13 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
 
     public update(patch: Entities.InterfaceClient.ChangeDataProps): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${InterfaceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE`,
+            });
         }
 
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${InterfaceClient.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
         }
 
         let affected = 0;
@@ -62,19 +62,21 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
         if (affected) {
             this.updatedAt = new Date();
         } else if (Object.keys(patch).length) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
+            throw Exception.invariantViolation({ messageKey: `${InterfaceClient.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
+            throw Exception.invariantViolation({ messageKey: `${InterfaceClient.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 
     public revoke(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${InterfaceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE`,
+            });
         }
 
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${InterfaceClient.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             this.isRevoked = true;
             this.updatedAt = new Date();
@@ -83,24 +85,28 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
 
     public restore(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${InterfaceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE`,
+            });
         }
 
         if (this.isRevoked) {
             this.isRevoked = false;
             this.updatedAt = new Date();
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${InterfaceClient.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${InterfaceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE`,
+            });
         }
 
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${InterfaceClient.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         }
     }
 

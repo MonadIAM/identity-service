@@ -1,9 +1,7 @@
 import { Exception } from "~common/exceptions";
 
 export class Profile implements Entities.Profile.Contract {
-    private get dictionaryPath(): string {
-        return "entities.profile";
-    }
+    private static readonly dictionaryPath = "entities.profile";
 
     public updatedAt?: Date;
 
@@ -36,9 +34,9 @@ export class Profile implements Entities.Profile.Contract {
         if (affected) {
             this.updatedAt = now;
         } else if (Object.keys(patch).length) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
+            throw Exception.invariantViolation({ messageKey: `${Profile.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
+            throw Exception.invariantViolation({ messageKey: `${Profile.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 }

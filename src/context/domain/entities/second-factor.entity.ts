@@ -4,9 +4,7 @@ import { SecondFactorType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class SecondFactor implements Entities.SecondFactor.Contract {
-    private get dictionaryPath(): string {
-        return "entities.second-factor";
-    }
+    private static readonly dictionaryPath = "entities.second-factor";
 
     public id: string;
     public createdAt: Date;
@@ -31,7 +29,7 @@ export class SecondFactor implements Entities.SecondFactor.Contract {
 
     public confirm(): void {
         if (this.confirmedAt) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CONFIRM_NOT_ALLOWED` });
+            throw Exception.invariantViolation({ messageKey: `${SecondFactor.dictionaryPath}.CONFIRM_NOT_ALLOWED` });
         } else {
             this.confirmedAt = new Date();
         }

@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Exception } from "~common/exceptions";
 
 export class MembershipHistory implements Entities.MembershipHistory.Contract {
-    private get dictionaryPath(): string {
-        return "entities.membership-history";
-    }
+    private static readonly dictionaryPath = "entities.membership-history";
 
     public id: string;
     public createdAt: Date;
@@ -31,7 +29,7 @@ export class MembershipHistory implements Entities.MembershipHistory.Contract {
 
     public close(excludedBy: string): void {
         if (this.leaveAt) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_CLOSED` });
+            throw Exception.invariantViolation({ messageKey: `${MembershipHistory.dictionaryPath}.ALREADY_CLOSED` });
         } else {
             this.excludedBy = excludedBy;
             this.leaveAt = new Date();

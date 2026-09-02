@@ -10,7 +10,6 @@
   "authn": {
     "SESSION_REVOKED": "Сессия была отозвана.",
     "MALFORMED_AUTHORIZATION": "Заголовок Authorization имеет неверный формат.",
-    "INVALID_TOKEN": "Токен аутентификации недействителен или просрочен.",
     "TOKEN_MISSING": "Требуется токен аутентификации."
   },
   "reauthentication": {

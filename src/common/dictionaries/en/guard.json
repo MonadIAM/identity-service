@@ -10,7 +10,6 @@
   "authn": {
     "SESSION_REVOKED": "The session has been revoked.",
     "MALFORMED_AUTHORIZATION": "The Authorization header is malformed.",
-    "INVALID_TOKEN": "The authentication token is invalid or expired.",
     "TOKEN_MISSING": "An authentication token is required."
   },
   "reauthentication": {

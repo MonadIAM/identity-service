@@ -33,6 +33,7 @@
     "REFRESH_TOKEN_INVALID_CLAIMS": "Проверка claim'а \"{claim}\" refresh-токена не пройдена.",
     "REFRESH_TOKEN_MALFORMED": "Refresh-токен имеет некорректный формат.",
     "INVALID_ID_TOKEN": "id_token_hint недействителен.",
+    "ID_TOKEN_EXPIRED": "Срок действия id_token_hint истёк.",
     "ID_TOKEN_INVALID_SIGNATURE": "Не удалось проверить подпись id_token_hint.",
     "ID_TOKEN_INVALID_CLAIMS": "Проверка claim'а \"{claim}\" id_token_hint не пройдена.",
     "ID_TOKEN_MALFORMED": "id_token_hint имеет некорректный формат."
@@ -50,5 +51,13 @@
       "CODE_EXCHANGE_FAILED": "Не удалось обменять код GitHub OAuth.",
       "PROFILE_FETCH_FAILED": "Не удалось получить профиль GitHub OAuth."
     }
+  },
+  "kafka-retry": {
+    "HANDLER_NOT_REGISTERED": "Для топика {topic} не зарегистрирован обработчик повторов."
+  },
+  "schema-registry": {
+    "ENCODE_FAILED": "Не удалось закодировать сообщение для subject {subject}: {reason}.",
+    "DECODE_FAILED": "Не удалось декодировать сообщение для subject {subject}: {reason}.",
+    "MESSAGE_INVALID": "Сообщение для subject {subject} не соответствует схеме. Некорректные поля: {fields}."
   }
 }
