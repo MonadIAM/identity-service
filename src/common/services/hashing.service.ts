@@ -2,6 +2,8 @@ import { needsRehash, verify, hash } from "argon2";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+import { Argon2Type } from "~common/enums";
+
 @Injectable({ scope: Scope.DEFAULT })
 export class HashingService implements CommonServices.Hashing.Contract {
     private readonly options: CommonServices.Hashing.Options;
@@ -43,22 +45,22 @@ export class HashingService implements CommonServices.Hashing.Contract {
 
     private buildArgon2Options(): CommonServices.Hashing.Options {
         return {
-            type: this.resolveType(this.config.getOrThrow<string>("ARGON2_TYPE")),
+            type: this.resolveType(this.config.getOrThrow<Argon2Type>("ARGON2_TYPE")),
 
-            memoryCost: Number(this.config.getOrThrow<string>("ARGON2_MEMORY_COST_KIB")),
-            parallelism: Number(this.config.getOrThrow<string>("ARGON2_PARALLELISM")),
-            timeCost: Number(this.config.getOrThrow<string>("ARGON2_TIME_COST")),
+            memoryCost: this.config.getOrThrow<number>("ARGON2_MEMORY_COST_KIB"),
+            parallelism: this.config.getOrThrow<number>("ARGON2_PARALLELISM"),
+            timeCost: this.config.getOrThrow<number>("ARGON2_TIME_COST"),
 
-            hashLength: Number(this.config.getOrThrow<string>("ARGON2_HASH_LENGTH")),
-            version: Number(this.config.getOrThrow<string>("ARGON2_VERSION")),
+            hashLength: this.config.getOrThrow<number>("ARGON2_HASH_LENGTH"),
+            version: this.config.getOrThrow<number>("ARGON2_VERSION"),
         };
     }
 
-    private resolveType(raw: string): CommonServices.Hashing.Options["type"] {
-        switch (raw.toLowerCase()) {
-            case "argon2d":
+    private resolveType(type: Argon2Type): CommonServices.Hashing.Options["type"] {
+        switch (type) {
+            case Argon2Type.ARGON2D:
                 return 0;
-            case "argon2i":
+            case Argon2Type.ARGON2I:
                 return 1;
             default:
                 return 2;

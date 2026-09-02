@@ -1,5 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import ms, { StringValue } from "ms";
 
 import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
@@ -19,7 +20,7 @@ import { PasswordMapper } from "../mappers";
 export class PasswordCommands implements Commands.Password.Contract {
     private readonly mapper: Commands.Mappers.Password.Contract;
     private readonly dictionaryPath = "commands.password";
-    private readonly historyCheckDays: number;
+    private readonly historyCheckWindowMs: number;
     private readonly resource = "Password";
 
     public constructor(
@@ -42,7 +43,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         private readonly configService: ConfigService,
     ) {
         this.mapper = new PasswordMapper();
-        this.historyCheckDays = this.configService.getOrThrow<number>("PASSWORD_HISTORY_CHECK_DAYS");
+        this.historyCheckWindowMs = ms(this.configService.getOrThrow<StringValue>("PASSWORD_HISTORY_CHECK_DAYS"));
     }
 
     public async change(props: Commands.Password.Change.Props): Commands.Password.Change.Result {
@@ -227,8 +228,7 @@ export class PasswordCommands implements Commands.Password.Contract {
         props: Commands.Password.CheckPasswordHistory.Props,
     ): Commands.Password.CheckPasswordHistory.Result {
         const { password, account } = props;
-        const since = new Date();
-        since.setDate(since.getDate() - this.historyCheckDays);
+        const since = new Date(Date.now() - this.historyCheckWindowMs);
 
         const history = await this.passwordHistoryRepository.find({
             where: { account, setAt: { $gte: since } },

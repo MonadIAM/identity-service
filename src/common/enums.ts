@@ -13,3 +13,11 @@ export enum PasswordValidationMode {
     SIMPLE = "simple", // Legacy composition rules (digit + uppercase + special character) — explicitly against
     /* eslint-enable prettier/prettier */
 }
+
+export enum Argon2Type {
+    /* eslint-disable prettier/prettier */
+    ARGON2ID = "argon2id",
+    ARGON2I  = "argon2i",
+    ARGON2D  = "argon2d",
+    /* eslint-enable prettier/prettier */
+}

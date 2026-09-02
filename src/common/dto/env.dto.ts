@@ -2,7 +2,7 @@ import { DiagLogLevel } from "@opentelemetry/api";
 import { ValidateIf } from "class-validator";
 import { type StringValue } from "ms";
 
-import { PasswordValidationMode, NodeEnv } from "~common/enums";
+import { PasswordValidationMode, Argon2Type, NodeEnv } from "~common/enums";
 import { Validator } from "~common/validator";
 
 export class EnvironmentVariablesDTO {
@@ -28,13 +28,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public APP_PORT: number;
-
-    @Validator.IsString()
-    declare public GRPC_HOST: string;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public GRPC_PORT: number;
 
     @Validator.IsPositiveInt()
     declare public THROTTLE_LIMIT: number;
@@ -81,13 +74,16 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsBoolean()
-    declare public LOKI_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public LOKI_ENABLED?: boolean;
 
     @Validator.IsString()
-    declare public LOKI_URL: string;
+    @ValidateIf((o) => o.LOKI_ENABLED)
+    declare public LOKI_URL?: string;
 
     @Validator.IsPositiveInt()
-    declare public LOKI_BATCH_INTERVAL: number;
+    @ValidateIf((o) => o.LOKI_ENABLED)
+    declare public LOKI_BATCH_INTERVAL?: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - common
@@ -103,7 +99,8 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_PASSWORD: string;
 
     @Validator.IsBoolean()
-    declare public POSTGRES_SSL_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public POSTGRES_SSL_ENABLED?: boolean;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_POOL_MAX: number;
@@ -113,10 +110,6 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
-    declare public POSTGRES_VAULT_CREDENTIALS_PATH?: string;
 
     @Validator.IsBoolean()
     @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
@@ -162,12 +155,6 @@ export class EnvironmentVariablesDTO {
     @Validator.Max(65535)
     declare public POSTGRES_READ_PORT: number;
 
-    @Validator.IsPositiveInt()
-    declare public POSTGRES_READ_POOL_MAX: number;
-
-    @Validator.IsMsString()
-    declare public POSTGRES_READ_POOL_IDLE_MS: StringValue;
-
     // ---------------------------------------------------------------------------
     // Redis
     // ---------------------------------------------------------------------------
@@ -194,12 +181,9 @@ export class EnvironmentVariablesDTO {
     @Validator.Min(0)
     declare public REDIS_DB_QUEUE: number;
 
-    @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
-    declare public REDIS_VAULT_RUNTIME_PATH?: string;
-
     @Validator.IsBoolean()
-    declare public REDIS_TLS_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public REDIS_TLS_ENABLED?: boolean;
 
     @Validator.IsBoolean()
     @ValidateIf((o) => o.REDIS_TLS_ENABLED)
@@ -243,10 +227,12 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_DLQ_RETRY_JITTER: StringValue;
 
     @Validator.IsBoolean()
-    declare public KAFKA_SSL_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public KAFKA_SSL_ENABLED?: boolean;
 
     @Validator.IsBoolean()
-    declare public KAFKA_SASL_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public KAFKA_SASL_ENABLED?: boolean;
 
     @Validator.IsBoolean()
     @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
@@ -280,7 +266,8 @@ export class EnvironmentVariablesDTO {
     declare public SCHEMA_REGISTRY_URL: string;
 
     @Validator.IsBoolean()
-    declare public SCHEMA_REGISTRY_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public SCHEMA_REGISTRY_ENABLED?: boolean;
 
     // ---------------------------------------------------------------------------
     // Network
@@ -329,20 +316,11 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public VAULT_TRANSIT_ACCESS_KEY: string;
 
-    @Validator.IsPositiveInt()
-    declare public VAULT_TRANSIT_ACCESS_RETAIN_VERSIONS: number;
-
     @Validator.IsString()
     declare public VAULT_TRANSIT_REFRESH_KEY: string;
 
-    @Validator.IsPositiveInt()
-    declare public VAULT_TRANSIT_REFRESH_RETAIN_VERSIONS: number;
-
     @Validator.IsString()
     declare public VAULT_TRANSIT_ID_KEY: string;
-
-    @Validator.IsPositiveInt()
-    declare public VAULT_TRANSIT_ID_RETAIN_VERSIONS: number;
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_TOTP_KEY: string;
@@ -355,15 +333,6 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_AUDIT_LOG_KEY: string;
-
-    @Validator.IsString()
-    declare public VAULT_KV_MOUNT: string;
-
-    @Validator.IsString()
-    declare public VAULT_KV_OAUTH_PATH: string;
-
-    @Validator.IsString()
-    declare public VAULT_KV_RUNTIME_PATH: string;
 
     @Validator.Max(65535)
     @Validator.IsPositiveInt()
@@ -452,10 +421,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public OAUTH_GITHUB_REDIRECT_URI: string;
 
-    @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
-    declare public OAUTH_VAULT_PATH?: string;
-
     // ---------------------------------------------------------------------------
     // BullMQ - cleanup
     // ---------------------------------------------------------------------------
@@ -492,8 +457,8 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     // Hashing (Argon2)
-    @Validator.IsString()
-    declare public ARGON2_TYPE: string;
+    @Validator.IsEnum(Argon2Type)
+    declare public ARGON2_TYPE: Argon2Type;
 
     @Validator.IsPositiveInt()
     declare public ARGON2_MEMORY_COST_KIB: number;
