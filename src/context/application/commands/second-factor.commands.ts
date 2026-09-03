@@ -1,11 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { NotificationTopicAction, ActionType, EntityType, KafkaTopic, SecondFactorType } from "~context/enums";
+import { HASHING_SERVICE, CRYPTO_SERVICE, TOTP_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
 
@@ -32,6 +31,8 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
+        @Inject(TOTP_SERVICE)
+        private readonly totpService: CommonServices.TOTP.PublicContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
     ) {
@@ -39,8 +40,8 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
     }
 
     public async create(props: Commands.SecondFactor.Create.Props): Commands.SecondFactor.Create.Result {
-        const secret = new Secret({ size: 20 });
-        const ciphertext = await this.secondFactorSecretService.encrypt({ secret: secret.base32 });
+        const secret = this.totpService.createSecret();
+        const ciphertext = await this.secondFactorSecretService.encrypt({ secret });
         const type = SecondFactorType.TOTP;
 
         const factor = await this.transactionalService.run({
@@ -79,13 +80,9 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             },
         });
 
-        const totp = new TOTP({
-            label: props.actor,
-            issuer: "MonadIAM",
-            secret,
-        });
+        const uri = this.totpService.createURI({ label: props.actor, secret });
 
-        return { id: factor.id, uri: totp.toString() };
+        return { id: factor.id, uri };
     }
 
     public async verify(props: Commands.SecondFactor.Verify.Props): Commands.SecondFactor.Verify.Result {
@@ -120,8 +117,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                     secret: factor.secret,
                 });
 
-                const totp = new TOTP({ secret: Secret.fromBase32(plaintext) });
-                const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
+                const isValid = this.totpService.verify({ secret: plaintext, code: props.input.code });
 
                 if (!isValid) {
                     throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });

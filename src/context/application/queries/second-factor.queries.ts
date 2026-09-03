@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { TOTP, Secret } from "otpauth";
 
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
+import { TOTP_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -21,6 +21,8 @@ export class SecondFactorQueries implements Queries.SecondFactor.Contract {
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
         @Inject(SECOND_FACTOR_SERVICE)
         private readonly secondFactorService: Services.SecondFactor.QueryContract,
+        @Inject(TOTP_SERVICE)
+        private readonly totpService: CommonServices.TOTP.PublicContract,
     ) {}
 
     public findMany(props: Queries.SecondFactor.FindMany.Props): Queries.SecondFactor.FindMany.Result {
@@ -51,13 +53,9 @@ export class SecondFactorQueries implements Queries.SecondFactor.Contract {
                     this.secondFactorService.rewrap({ input: { factor, secret: ciphertext }, transaction });
                 }
 
-                const totp = new TOTP({
-                    secret: Secret.fromBase32(plaintext),
-                    label: props.actor,
-                    issuer: "MonadIAM",
-                });
+                const uri = this.totpService.createURI({ label: props.actor, secret: plaintext });
 
-                result = { id: factor.id, uri: totp.toString() };
+                result = { id: factor.id, uri };
             },
         });
 

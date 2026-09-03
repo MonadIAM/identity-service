@@ -1,6 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { TOTP, Secret } from "otpauth";
 import ms, { StringValue } from "ms";
 
 import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
@@ -8,7 +7,7 @@ import { ReauthenticationTopicAction, EntityType, KafkaTopic, ActionType } from 
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
-import { HASHING_SERVICE } from "~common/services";
+import { HASHING_SERVICE, TOTP_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { ReauthenticationMapper } from "../mappers";
@@ -29,10 +28,12 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
         private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.PublicContract,
-        @Inject(SECOND_FACTOR_SERVICE)
-        private readonly secondFactorService: Services.SecondFactor.CommandContract,
+        @Inject(TOTP_SERVICE)
+        private readonly totpService: CommonServices.TOTP.PublicContract,
         @Inject(SECOND_FACTOR_SECRET_SERVICE)
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
+        @Inject(SECOND_FACTOR_SERVICE)
+        private readonly secondFactorService: Services.SecondFactor.CommandContract,
         protected readonly configService: ConfigService,
     ) {
         this.ttl = ms(this.configService.getOrThrow<StringValue>("REAUTHENTICATION_TTL")) / 1e3;
@@ -108,8 +109,8 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
                 const { ciphertext, plaintext } = await this.secondFactorSecretService.resolve({
                     secret: factor.secret,
                 });
-                const totp = new TOTP({ secret: Secret.fromBase32(plaintext) });
-                const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
+
+                const isValid = this.totpService.verify({ secret: plaintext, code: props.input.code });
 
                 if (!isValid) {
                     throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });

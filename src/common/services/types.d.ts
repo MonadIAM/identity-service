@@ -1,3 +1,4 @@
+import { TOTP as OriginTOTP } from "otpauth";
 import { JWTPayload, JWK } from "jose";
 import { HashOptions } from "argon2";
 
@@ -233,6 +234,59 @@ declare global {
                 };
 
                 type Result = Promise<string>;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
+
+        namespace TOTP {
+            interface Contract extends PublicContract, InternalContract {}
+
+            interface InternalContract {
+                generate: Generate.Signature;
+            }
+
+            namespace Generate {
+                type Props = {
+                    secret: string;
+                    label?: string;
+                };
+
+                type Result = OriginTOTP;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            interface PublicContract {
+                createSecret: CreateSecret.Signature;
+                createURI: CreateURI.Signature;
+                verify: VerifyTOTP.Signature;
+            }
+
+            namespace CreateSecret {
+                type Result = string;
+
+                type Signature = () => Result;
+            }
+
+            namespace CreateURI {
+                type Props = {
+                    secret: string;
+                    label: string;
+                };
+
+                type Result = string;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace VerifyTOTP {
+                type Props = {
+                    secret: string;
+                    code: string;
+                };
+
+                type Result = boolean;
 
                 type Signature = (props: Props) => Result;
             }

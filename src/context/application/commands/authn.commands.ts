@@ -1,9 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { TOTP, Secret } from "otpauth";
 
 import { IDENTIFIER_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
+import { HASHING_SERVICE, CRYPTO_SERVICE, TOTP_SERVICE } from "~common/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
 import {
@@ -50,6 +49,8 @@ export class AuthnCommands implements Commands.Authn.Contract {
         private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
+        @Inject(TOTP_SERVICE)
+        private readonly totpService: CommonServices.TOTP.PublicContract,
     ) {
         this.mapper = new AuthnMapper();
     }
@@ -206,8 +207,8 @@ export class AuthnCommands implements Commands.Authn.Contract {
                 const { ciphertext, plaintext } = await this.secondFactorSecretService.resolve({
                     secret: factor.secret,
                 });
-                const totp = new TOTP({ secret: Secret.fromBase32(plaintext) });
-                const isValid = totp.validate({ token: props.input.code, window: 1 }) !== null;
+
+                const isValid = this.totpService.verify({ secret: plaintext, code: props.input.code });
 
                 if (!isValid) {
                     throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
