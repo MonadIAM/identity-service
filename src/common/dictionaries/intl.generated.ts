@@ -278,6 +278,7 @@ export type I18nTranslations = {
             "ID_TOKEN_INVALID_SIGNATURE": string;
             "ID_TOKEN_INVALID_CLAIMS": string;
             "ID_TOKEN_MALFORMED": string;
+            "KEY_VERSION_UNAVAILABLE": string;
         };
         "vault": {
             "REQUEST_FAILED": string;

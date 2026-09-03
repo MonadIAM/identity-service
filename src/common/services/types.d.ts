@@ -313,6 +313,10 @@ declare global {
 
             interface InternalContract {
                 resolveVerificationFailure: ResolveVerificationFailure.Signature;
+                selectVerifiableVersions: SelectVerifiableVersions.Signature;
+                getVerificationJWKS: GetVerificationJWKS.Signature;
+                describeKeyVersion: DescribeKeyVersion.Signature;
+                pruneJWKCache: PruneJWKCache.Signature;
                 sign: Sign.Signature;
             }
 
@@ -327,6 +331,48 @@ declare global {
                     messageKey: Intl.Key;
                     description: string;
                 };
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace SelectVerifiableVersions {
+                type Props = {
+                    key: Awaited<CommonServices.VaultTransit.GetKey.Result>;
+                };
+
+                type Result = CommonServices.VaultTransit.KeyVersion[];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace GetVerificationJWKS {
+                type Props = string;
+
+                type Result = Promise<{
+                    keys: JWK[];
+                }>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace DescribeKeyVersion {
+                type Props = {
+                    keyVersion: CommonServices.VaultTransit.KeyVersion;
+                    name: string;
+                };
+
+                type Result = Promise<JWK>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace PruneJWKCache {
+                type Props = {
+                    versions: CommonServices.VaultTransit.KeyVersion[];
+                    name: string;
+                };
+
+                type Result = void;
 
                 type Signature = (props: Props) => Result;
             }
@@ -351,11 +397,11 @@ declare global {
                 computePairwiseSubject: ComputePairwiseSubject.Signature;
                 signRefreshToken: SignRefreshToken.Signature;
                 signAccessToken: SignAccessToken.Signature;
+                getPublicJWKS: GetPublicJWKS.Signature;
                 verifyRefresh: VerifyToken.Signature;
                 verifyIdToken: VerifyToken.Signature;
                 verifyAccess: VerifyToken.Signature;
                 signIdToken: SignIdToken.Signature;
-                getJWKS: GetJWKS.Signature;
             }
 
             namespace ComputePairwiseSubject {
@@ -389,6 +435,14 @@ declare global {
                 type Signature = (props: Props) => Result;
             }
 
+            namespace GetPublicJWKS {
+                type Result = Promise<{
+                    keys: JWK[];
+                }>;
+
+                type Signature = () => Result;
+            }
+
             namespace SignIdToken {
                 type Props = {
                     payload: JWTPayload;
@@ -411,16 +465,6 @@ declare global {
                 type Result = Promise<JWTPayload>;
 
                 type Signature = (props: Props) => Result;
-            }
-
-            namespace GetJWKS {
-                type Props = string;
-
-                type Result = Promise<{
-                    keys: JWK[];
-                }>;
-
-                type Signature = (props?: Props) => Result;
             }
         }
 

@@ -65,7 +65,7 @@ export class DiscoveryController {
             "Publishes verification keys as a JWK Set (RFC 7517), using JWA algorithm identifiers (RFC 7518, ES256) for keys used in JWS-signed tokens (RFC 7515).",
         security: [],
     })
-    public getJWKS(): CommonServices.JWT.GetJWKS.Result {
-        return this.jwtService.getJWKS();
+    public getJWKS(): CommonServices.JWT.GetPublicJWKS.Result {
+        return this.jwtService.getPublicJWKS();
     }
 }

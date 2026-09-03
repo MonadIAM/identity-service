@@ -36,7 +36,8 @@
     "ID_TOKEN_EXPIRED": "The id_token_hint has expired.",
     "ID_TOKEN_INVALID_SIGNATURE": "The id_token_hint signature could not be verified.",
     "ID_TOKEN_INVALID_CLAIMS": "The id_token_hint \"{claim}\" claim failed validation.",
-    "ID_TOKEN_MALFORMED": "The id_token_hint is malformed."
+    "ID_TOKEN_MALFORMED": "The id_token_hint is malformed.",
+    "KEY_VERSION_UNAVAILABLE": "The requested signing key version is unavailable in Vault Transit."
   },
   "vault": {
     "REQUEST_FAILED": "Vault Transit request failed.",

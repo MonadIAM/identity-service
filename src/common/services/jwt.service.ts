@@ -1,4 +1,4 @@
-import { base64url, createLocalJWKSet, errors, exportJWK, importSPKI, jwtVerify } from "jose";
+import { base64url, calculateJwkThumbprint, createLocalJWKSet, errors, exportJWK, importSPKI, jwtVerify, JWK } from "jose";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { randomUUID, createHash } from "node:crypto";
 import { ConfigService } from "@nestjs/config";
@@ -24,6 +24,10 @@ export class JWTService implements CommonServices.JWT.Contract {
     private readonly idTTL: number;
     private readonly issuer: string;
 
+    private readonly jwkCache = new Map<string, JWK>();
+    private readonly keyTTL = new Map<string, number>();
+
+    private readonly clockSkew = ms("5m");
     private readonly algorithm = "ES256";
 
     public constructor(
@@ -41,6 +45,10 @@ export class JWTService implements CommonServices.JWT.Contract {
         this.issuer = this.config.getOrThrow<string>("JWT_ISSUER");
         this.refreshAudience = `${this.issuer}:authn`;
         this.accessAudience = `${this.issuer}:api`;
+
+        this.keyTTL.set(this.refreshKey, this.refreshTTL);
+        this.keyTTL.set(this.accessKey, this.accessTTL);
+        this.keyTTL.set(this.idKey, this.idTTL);
     }
 
     public async computePairwiseSubject(
@@ -102,7 +110,8 @@ export class JWTService implements CommonServices.JWT.Contract {
 
     public async verifyRefresh(props: CommonServices.JWT.VerifyToken.Props): CommonServices.JWT.VerifyToken.Result {
         try {
-            const { payload } = await jwtVerify(props.token, createLocalJWKSet(await this.getJWKS(this.refreshKey)), {
+            const jwks = createLocalJWKSet(await this.getVerificationJWKS(this.refreshKey));
+            const { payload } = await jwtVerify(props.token, jwks, {
                 requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
                 audience: this.refreshAudience,
                 algorithms: [this.algorithm],
@@ -119,7 +128,8 @@ export class JWTService implements CommonServices.JWT.Contract {
 
     public async verifyAccess(props: CommonServices.JWT.VerifyToken.Props): CommonServices.JWT.VerifyToken.Result {
         try {
-            const { payload } = await jwtVerify(props.token, createLocalJWKSet(await this.getJWKS(this.accessKey)), {
+            const jwks = createLocalJWKSet(await this.getVerificationJWKS(this.accessKey));
+            const { payload } = await jwtVerify(props.token, jwks, {
                 requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
                 audience: this.accessAudience,
                 algorithms: [this.algorithm],
@@ -142,7 +152,8 @@ export class JWTService implements CommonServices.JWT.Contract {
 
     public async verifyIdToken(props: CommonServices.JWT.VerifyToken.Props): CommonServices.JWT.VerifyToken.Result {
         try {
-            const { payload } = await jwtVerify(props.token, createLocalJWKSet(await this.getJWKS(this.idKey)), {
+            const jwks = createLocalJWKSet(await this.getVerificationJWKS(this.idKey));
+            const { payload } = await jwtVerify(props.token, jwks, {
                 requiredClaims: ["sub", "sid", "aud", "exp", "iat"],
                 algorithms: [this.algorithm],
                 issuer: this.issuer,
@@ -159,19 +170,10 @@ export class JWTService implements CommonServices.JWT.Contract {
         }
     }
 
-    public async getJWKS(props?: CommonServices.JWT.GetJWKS.Props): CommonServices.JWT.GetJWKS.Result {
-        const name = props ?? this.accessKey;
-        const key = await this.vaultTransitService.getKey({ name });
-        const keys = await Promise.all(
-            key.versions.map(async ({ publicKey, version }) => ({
-                ...(await exportJWK(await importSPKI(publicKey, this.algorithm))),
-                kid: `${name}:v${version}`,
-                alg: this.algorithm,
-                use: "sig",
-            })),
-        );
+    public async getPublicJWKS(): CommonServices.JWT.GetPublicJWKS.Result {
+        const sets = await Promise.all([this.accessKey, this.idKey].map((name) => this.getVerificationJWKS(name)));
 
-        return { keys };
+        return { keys: sets.flatMap(({ keys }) => keys) };
     }
 
     public resolveVerificationFailure(
@@ -224,16 +226,87 @@ export class JWTService implements CommonServices.JWT.Contract {
         }
     }
 
+    public selectVerifiableVersions(
+        props: CommonServices.JWT.SelectVerifiableVersions.Props,
+    ): CommonServices.JWT.SelectVerifiableVersions.Result {
+        const ttl = this.keyTTL.get(props.key.name) ?? Number.POSITIVE_INFINITY;
+        const versions = [...props.key.versions].sort((left, right) => left.version - right.version);
+        const deadline = Date.now() - ttl - this.clockSkew;
+
+        return versions.filter((version, index) => {
+            const successor = versions[index + 1];
+
+            return !successor || version.version === props.key.latestVersion || Date.parse(successor.createdAt) > deadline;
+        });
+    }
+
+    public async getVerificationJWKS(
+        props: CommonServices.JWT.GetVerificationJWKS.Props,
+    ): CommonServices.JWT.GetVerificationJWKS.Result {
+        const key = await this.vaultTransitService.getKey({ name: props });
+        const versions = this.selectVerifiableVersions({ key });
+
+        this.pruneJWKCache({ versions: key.versions, name: props });
+
+        return {
+            keys: await Promise.all(versions.map((keyVersion) => this.describeKeyVersion({ name: props, keyVersion }))),
+        };
+    }
+
+    public async describeKeyVersion(
+        props: CommonServices.JWT.DescribeKeyVersion.Props,
+    ): CommonServices.JWT.DescribeKeyVersion.Result {
+        const { keyVersion, name } = props;
+        const cacheKey = `${name}:v${keyVersion.version}`;
+        const cached = this.jwkCache.get(cacheKey);
+
+        if (cached) {
+            return cached;
+        } else {
+            const jwk = await exportJWK(await importSPKI(keyVersion.publicKey, this.algorithm));
+            const entry: JWK = {
+                ...jwk,
+                kid: await calculateJwkThumbprint(jwk, "sha256"),
+                alg: this.algorithm,
+                use: "sig",
+            };
+
+            this.jwkCache.set(cacheKey, entry);
+
+            return entry;
+        }
+    }
+
+    public pruneJWKCache(props: CommonServices.JWT.PruneJWKCache.Props): CommonServices.JWT.PruneJWKCache.Result {
+        const prefix = `${props.name}:v`;
+        const live = new Set(props.versions.map(({ version }) => `${prefix}${version}`));
+
+        for (const cacheKey of this.jwkCache.keys()) {
+            if (cacheKey.startsWith(prefix) && !live.has(cacheKey)) {
+                this.jwkCache.delete(cacheKey);
+            }
+        }
+    }
+
     public async sign({ payload, props }: CommonServices.JWT.Sign.Props): CommonServices.JWT.Sign.Result {
         const key = await this.vaultTransitService.getKey({ name: props.key });
         const now = Math.floor(Date.now() / 1e3);
         const version = key.latestVersion;
 
+        const latest = key.versions.find((candidate) => candidate.version === version);
+        if (!latest) {
+            throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.KEY_VERSION_UNAVAILABLE` });
+        }
+
+        this.pruneJWKCache({ versions: key.versions, name: props.key });
+
+        const { kid } = await this.describeKeyVersion({ name: props.key, keyVersion: latest });
+
         const header = base64url.encode(
             JSON.stringify({
-                kid: `${props.key}:v${version}`,
                 alg: this.algorithm,
                 typ: props.type,
+                kid,
             }),
         );
 

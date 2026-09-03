@@ -36,7 +36,8 @@
     "ID_TOKEN_EXPIRED": "Срок действия id_token_hint истёк.",
     "ID_TOKEN_INVALID_SIGNATURE": "Не удалось проверить подпись id_token_hint.",
     "ID_TOKEN_INVALID_CLAIMS": "Проверка claim'а \"{claim}\" id_token_hint не пройдена.",
-    "ID_TOKEN_MALFORMED": "id_token_hint имеет некорректный формат."
+    "ID_TOKEN_MALFORMED": "id_token_hint имеет некорректный формат.",
+    "KEY_VERSION_UNAVAILABLE": "Запрошенная версия ключа подписи недоступна в Vault Transit."
   },
   "vault": {
     "REQUEST_FAILED": "Запрос к Vault Transit завершился ошибкой.",
