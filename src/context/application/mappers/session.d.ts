@@ -9,6 +9,7 @@ declare namespace Commands {
             interface Contract extends PublicContract {}
 
             interface PublicContract {
+                refreshBlacklistPayload: RefreshBlacklistPayload.Signature;
                 notificationPayload: NotificationPayload.Signature;
                 blacklistPayload: BlacklistPayload.Signature;
             }
@@ -23,6 +24,14 @@ declare namespace Commands {
 
             namespace BlacklistPayload {
                 type Props = CreateResult | { sessions: Entities.Session[] };
+
+                type Result = Services.Session.Create.RevokedSession[];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace RefreshBlacklistPayload {
+                type Props = Commands.Session.Refresh.ExecuteResult;
 
                 type Result = Services.Session.Create.RevokedSession[];
 

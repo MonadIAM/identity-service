@@ -1,4 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { LockMode } from "@mikro-orm/postgresql";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
@@ -126,91 +127,91 @@ export class SessionCommands implements Commands.Session.Contract {
             return cachedResult;
         } else {
             const payload = await this.jwtService.verifyRefresh({ token: props.input.refreshToken });
-
-            const session = await this.sessionRepository.findUnique({
-                where: { id: payload.sid as string },
-                options: { populate: ["account"] },
-            });
-
-            if (!session) {
-                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.SESSION_NOT_FOUND` });
-            }
-
-            if (props.input.client !== session.client || payload.client_id !== session.client) {
-                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
-            }
-
-            session.isExpired();
-
             const tokenHash = this.cryptoService.hashToken({ token: props.input.refreshToken });
 
-            if (tokenHash !== session.refreshTokenHash) {
-                await this.transactionalService.run({
-                    resource: this.resource,
-                    outbox: {
-                        payloadMapper: this.mapper.blacklistPayload,
-                        destinationTopic: KafkaTopic.BLACKLIST,
-                        actionType: BlacklistTopicAction.ADD,
-                    },
-                    audit: {
-                        entityType: EntityType.SESSION,
-                        actionType: ActionType.REVOKE,
-                        context: props.context,
-                        input: { session: session.id },
-                    },
-                    execute: (transaction) => {
-                        this.sessionService.purge({ input: { sessions: [session] }, transaction });
-                        return { sessions: [session] };
-                    },
-                });
-
-                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.REFRESH_TOKEN_REUSE_DETECTED` });
-            }
-
-            const refreshToken = await this.jwtService.signRefreshToken({
-                payload: {
-                    client_id: session.client,
-                    sub: session.account.id,
-                    realms: session.realms,
-                    sid: session.id,
-                },
-            });
-
-            await this.transactionalService.run({
+            const outcome = await this.transactionalService.run<Commands.Session.Refresh.ExecuteResult>({
                 resource: this.resource,
+                outbox: {
+                    payloadMapper: this.mapper.refreshBlacklistPayload,
+                    destinationTopic: KafkaTopic.BLACKLIST,
+                    actionType: BlacklistTopicAction.ADD,
+                },
                 audit: {
+                    input: { session: payload.sid as string },
                     entityType: EntityType.SESSION,
                     actionType: ActionType.REFRESH,
-                    input: { session: session.id },
                     context: props.context,
                 },
-                execute: (transaction) => {
-                    transaction.merge(session);
-                    session.refresh(this.cryptoService.hashToken({ token: refreshToken }));
+                execute: async (transaction): Promise<Commands.Session.Refresh.ExecuteResult> => {
+                    const session = await this.sessionRepository.findUnique({
+                        options: { populate: ["account"], lockMode: LockMode.PESSIMISTIC_WRITE },
+                        where: { id: payload.sid as string },
+                        transaction,
+                    });
+
+                    if (!session) {
+                        throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.SESSION_NOT_FOUND` });
+                    }
+
+                    if (props.input.client !== session.client || payload.client_id !== session.client) {
+                        throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
+                    }
+
+                    session.isExpired();
+
+                    if (tokenHash === session.refreshTokenHash) {
+                        const refreshToken = await this.jwtService.signRefreshToken({
+                            payload: {
+                                client_id: session.client,
+                                sub: session.account.id,
+                                realms: session.realms,
+                                sid: session.id,
+                            },
+                        });
+
+                        transaction.merge(session);
+                        session.refresh(this.cryptoService.hashToken({ token: refreshToken }));
+
+                        const accessToken = await this.jwtService.signAccessToken({
+                            payload: {
+                                auth_time: Math.floor(session.createdAt.getTime() / 1e3),
+                                ...(session.scope ? { scope: session.scope } : {}),
+                                client_id: session.client,
+                                sub: session.account.id,
+                                realms: session.realms,
+                                acr: session.acr,
+                                sid: session.id,
+                            },
+                        });
+
+                        return { kind: "ROTATED", accessToken, refreshToken };
+                    } else {
+                        const raceCachedResult = await this.refreshIdempotencyService.get({ key: idempotencyKey });
+                        if (raceCachedResult) {
+                            return { kind: "REPLAYED", result: raceCachedResult };
+                        } else {
+                            this.sessionService.purge({ input: { sessions: [session] }, transaction });
+                            return { kind: "REUSE_DETECTED", sessions: [session] };
+                        }
+                    }
                 },
             });
 
-            const accessToken = await this.jwtService.signAccessToken({
-                payload: {
-                    auth_time: Math.floor(session.createdAt.getTime() / 1e3),
-                    ...(session.scope ? { scope: session.scope } : {}),
-                    client_id: session.client,
-                    sub: session.account.id,
-                    realms: session.realms,
-                    acr: session.acr,
-                    sid: session.id,
-                },
-            });
-
-            const result: Awaited<Commands.Session.Refresh.Result> = {
-                message: `${this.dictionaryPath}.REFRESHED`,
-                refreshToken,
-                accessToken,
-            };
-
-            await this.refreshIdempotencyService.set({ key: idempotencyKey, result });
-
-            return result;
+            switch (outcome.kind) {
+                case "ROTATED": {
+                    const result: Awaited<Commands.Session.Refresh.Result> = {
+                        message: `${this.dictionaryPath}.REFRESHED`,
+                        refreshToken: outcome.refreshToken,
+                        accessToken: outcome.accessToken,
+                    };
+                    await this.refreshIdempotencyService.set({ key: idempotencyKey, result });
+                    return result;
+                }
+                case "REPLAYED":
+                    return outcome.result;
+                default:
+                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.REFRESH_TOKEN_REUSE_DETECTED` });
+            }
         }
     }
 

@@ -33,6 +33,11 @@ declare namespace Commands {
                 };
             };
 
+            type ExecuteResult =
+                | { kind: "ROTATED"; accessToken: string; refreshToken: string }
+                | { kind: "REUSE_DETECTED"; sessions: Entities.Session[] }
+                | { kind: "REPLAYED"; result: Awaited<Result> };
+
             type Result = Promise<MessageResult & Services.Session.Create.Tokens>;
 
             type Signature = (props: Props) => Result;
@@ -45,9 +50,9 @@ declare namespace Commands {
                     realms: string[];
                     account: string;
                     client: string;
+                    nonce?: string;
                     scope: string;
                     acr: string;
-                    nonce?: string;
                 };
             };
 
