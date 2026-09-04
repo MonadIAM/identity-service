@@ -7,9 +7,9 @@ export class SessionMapper implements Commands.Mappers.Session.Contract {
         this.sessionTTL = sessionTTL;
     }
 
-    public notificationPayload(
+    public notificationPayload = (
         props: Commands.Mappers.Session.NotificationPayload.Props,
-    ): Commands.Mappers.Session.NotificationPayload.Result {
+    ): Commands.Mappers.Session.NotificationPayload.Result => {
         return {
             input: {
                 sourceService: PlatformService.IDENTITY_SERVICE,
@@ -20,11 +20,11 @@ export class SessionMapper implements Commands.Mappers.Session.Contract {
                 language: "en",
             },
         };
-    }
+    };
 
-    public blacklistPayload(
+    public blacklistPayload = (
         props: Commands.Mappers.Session.BlacklistPayload.Props,
-    ): Commands.Mappers.Session.BlacklistPayload.Result {
+    ): Commands.Mappers.Session.BlacklistPayload.Result => {
         if ("sessions" in props) {
             return props.sessions.map(({ id, lastRefreshedAt }) => ({
                 expiresAt: Math.round(lastRefreshedAt.getTime() + this.sessionTTL * 1e3),
@@ -33,5 +33,5 @@ export class SessionMapper implements Commands.Mappers.Session.Contract {
         } else {
             return props.revokedSessions;
         }
-    }
+    };
 }

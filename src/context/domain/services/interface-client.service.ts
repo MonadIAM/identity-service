@@ -1,4 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { TokenGrantType } from "~context/enums";
@@ -10,17 +11,21 @@ import { InterfaceClient } from "../entities";
 export class InterfaceClientService implements Services.InterfaceClient.Contract {
     private readonly dictionaryPath = "services.interface-client";
     private readonly grantTypes: TokenGrantType[] = [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN];
+    private readonly redirectUriLimit: number;
 
     public constructor(
         @Inject(INTERFACE_CLIENT_REPOSITORY)
         private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
-    ) {}
+        configService: ConfigService,
+    ) {
+        this.redirectUriLimit = configService.getOrThrow<number>("INTERFACE_CLIENT_REDIRECT_URI_LIMIT");
+    }
 
     public async create(props: Services.InterfaceClient.Create.Props): Services.InterfaceClient.Create.Result {
         const { transaction, input } = props;
 
-        this.validateRedirectUri(input.redirectUri);
-        this.validateRedirectUri(input.authAddress);
+        this.validateRedirectUris(input.redirectUris);
+        this.validateAuthAddress(input.authAddress);
 
         const limitExceeded = await this.interfaceClientRepository.wouldExceedApplicationLimit({
             application: input.application.id,
@@ -40,12 +45,12 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
     public update(props: Services.InterfaceClient.Update.Props): Services.InterfaceClient.Update.Result {
         const { entity, patch } = props;
 
-        if (patch.redirectUri !== undefined) {
-            this.validateRedirectUri(patch.redirectUri);
+        if (patch.redirectUris) {
+            this.validateRedirectUris(patch.redirectUris);
         }
 
         if (patch.authAddress) {
-            this.validateRedirectUri(patch.authAddress);
+            this.validateAuthAddress(patch.authAddress);
         }
 
         entity.update(patch);
@@ -86,6 +91,24 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
         }
     }
 
+    private validateRedirectUris(redirectUris: string[]): void {
+        if (!redirectUris.length) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REDIRECT_URI_REQUIRED` });
+        }
+
+        if (redirectUris.length > this.redirectUriLimit) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REDIRECT_URI_LIMIT_EXCEEDED` });
+        }
+
+        if (new Set(redirectUris).size !== redirectUris.length) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REDIRECT_URI_DUPLICATED` });
+        }
+
+        for (const redirectUri of redirectUris) {
+            this.validateRedirectUri(redirectUri);
+        }
+    }
+
     private validateRedirectUri(redirectUri: string): void {
         try {
             if (!redirectUri.length) {
@@ -105,6 +128,16 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
             } else {
                 throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.INVALID_REDIRECT_URI` });
             }
+        }
+    }
+
+    private validateAuthAddress(authAddress: string): void {
+        if (!authAddress.length) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.AUTH_ADDRESS_REQUIRED` });
+        }
+
+        if (!URL.canParse(authAddress)) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.INVALID_AUTH_ADDRESS` });
         }
     }
 }

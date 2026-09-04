@@ -14,9 +14,13 @@
   },
   "interface-client": {
     "APPLICATION_LIMIT_EXCEEDED": "The interface client limit for this application has been reached.",
-    "REDIRECT_URI_REQUIRED": "The redirect URI is required.",
+    "REDIRECT_URI_REQUIRED": "At least one redirect URI is required.",
+    "REDIRECT_URI_LIMIT_EXCEEDED": "The redirect URI limit for this client has been reached.",
+    "REDIRECT_URI_DUPLICATED": "The redirect URI list must not contain duplicates.",
     "INVALID_REDIRECT_URI": "The redirect URI is invalid.",
-    "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "The redirect URI must not contain a fragment."
+    "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "The redirect URI must not contain a fragment.",
+    "AUTH_ADDRESS_REQUIRED": "The auth address is required.",
+    "INVALID_AUTH_ADDRESS": "The auth address is invalid."
   },
   "service-client": {
     "APPLICATION_LIMIT_EXCEEDED": "The service client limit for this application has been reached."

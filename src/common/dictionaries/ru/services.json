@@ -14,9 +14,13 @@
   },
   "interface-client": {
     "APPLICATION_LIMIT_EXCEEDED": "Достигнут лимит interface-клиентов для этого приложения.",
-    "REDIRECT_URI_REQUIRED": "Redirect URI обязателен.",
+    "REDIRECT_URI_REQUIRED": "Требуется хотя бы один redirect URI.",
+    "REDIRECT_URI_LIMIT_EXCEEDED": "Достигнут лимит redirect URI для этого клиента.",
+    "REDIRECT_URI_DUPLICATED": "Список redirect URI не должен содержать дубликаты.",
     "INVALID_REDIRECT_URI": "Redirect URI недействителен.",
-    "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "Redirect URI не должен содержать fragment."
+    "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "Redirect URI не должен содержать fragment.",
+    "AUTH_ADDRESS_REQUIRED": "Auth address обязателен.",
+    "INVALID_AUTH_ADDRESS": "Auth address недействителен."
   },
   "service-client": {
     "APPLICATION_LIMIT_EXCEEDED": "Достигнут лимит service-клиентов для этого приложения."

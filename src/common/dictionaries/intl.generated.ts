@@ -256,8 +256,12 @@ export type I18nTranslations = {
         "interface-client": {
             "APPLICATION_LIMIT_EXCEEDED": string;
             "REDIRECT_URI_REQUIRED": string;
+            "REDIRECT_URI_LIMIT_EXCEEDED": string;
+            "REDIRECT_URI_DUPLICATED": string;
             "INVALID_REDIRECT_URI": string;
             "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": string;
+            "AUTH_ADDRESS_REQUIRED": string;
+            "INVALID_AUTH_ADDRESS": string;
         };
         "service-client": {
             "APPLICATION_LIMIT_EXCEEDED": string;

@@ -10,6 +10,12 @@ export class TokenResultDTO {
     @ApiPropertyOptional({ type: String })
     declare public accessToken?: string;
 
+    @Validator.ExposeAs("refresh_token")
+    @Validator.IsOptional()
+    @Validator.IsString()
+    @ApiPropertyOptional({ type: String })
+    declare public refreshToken?: string;
+
     @Validator.ExposeAs("token_type")
     @Validator.IsOptional()
     @Validator.IsString()

@@ -1,11 +1,11 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Query, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+import { Extract, FormatResponse, Public, Swagger } from "~common/decorators";
 import { FEDERATED_AUTHN_COMMANDS } from "~context/application/commands";
-import { Extract, Public, Swagger } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 
-import { FederatedAuthorizeQueryDTO, FederatedCallbackQueryDTO } from "../dto/federated-authn";
+import { FederatedAuthorizeQueryDTO, FederatedCallbackQueryDTO, FederatedCallbackResultDTO } from "../dto/federated-authn";
 
 const {
     INTERNAL_SERVER_ERROR,
@@ -47,6 +47,7 @@ export class FederatedAuthnController {
     @Get("callback")
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
+    @FormatResponse(FederatedCallbackResultDTO)
     @ApiOperation({
         summary: "Handle federated authentication callback",
         description:

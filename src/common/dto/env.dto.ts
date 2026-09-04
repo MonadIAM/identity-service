@@ -54,6 +54,15 @@ export class EnvironmentVariablesDTO {
     declare public ACCESS_CONTROL_SERVICE_URL: string;
 
     @Validator.IsString()
+    declare public NOTIFICATION_SERVICE_URL: string;
+
+    @Validator.IsString()
+    declare public TEMPLATE_SERVICE_URL: string;
+
+    @Validator.IsUUID("4")
+    declare public DOCS_OAUTH_CLIENT_ID: string;
+
+    @Validator.IsString()
     declare public ACCESS_CONTROL_GRPC_URL: string;
 
     // ---------------------------------------------------------------------------
@@ -395,6 +404,9 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     declare public INTERFACE_CLIENT_PER_APPLICATION_LIMIT: number;
+
+    @Validator.IsPositiveInt()
+    declare public INTERFACE_CLIENT_REDIRECT_URI_LIMIT: number;
 
     @Validator.IsPositiveInt()
     declare public SERVICE_CLIENT_PER_APPLICATION_LIMIT: number;

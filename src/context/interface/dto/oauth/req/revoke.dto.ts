@@ -16,4 +16,15 @@ export class RevokeBodyDTO {
         description: "Also accepted as `client` for backward compatibility.",
     })
     declare public client: string;
+
+    @Expose()
+    @Validator.FromAlias("token", "refresh_token", "refreshToken")
+    @Validator.IsString()
+    @ApiProperty({
+        required: true,
+        type: String,
+        name: "token",
+        description: "Refresh token to revoke. `refresh_token` and `refreshToken` are accepted for compatibility.",
+    })
+    declare public token: string;
 }

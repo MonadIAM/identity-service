@@ -866,9 +866,9 @@
           "enumItems": [],
           "mappedType": "text"
         },
-        "redirect_uri": {
-          "name": "redirect_uri",
-          "type": "text",
+        "redirect_uris": {
+          "name": "redirect_uris",
+          "type": "text[]",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -881,7 +881,7 @@
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "text"
+          "mappedType": "array"
         },
         "updated_at": {
           "name": "updated_at",

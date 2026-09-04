@@ -28,9 +28,10 @@ export class InterfaceClientDTO {
     declare public description?: string;
 
     @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    declare public redirectUri: string;
+    @Validator.IsArray()
+    @Validator.IsString({ each: true })
+    @ApiProperty({ required: true, type: String, isArray: true })
+    declare public redirectUris: string[];
 
     @Expose()
     @Validator.IsString()

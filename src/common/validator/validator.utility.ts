@@ -1,6 +1,6 @@
 import { Expose, Transform } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
-import { ValidateIf } from "class-validator";
+import { Allow, ValidateIf } from "class-validator";
 
 import { PasswordValidationMode } from "~common/enums";
 
@@ -93,7 +93,12 @@ export abstract class Validator extends StandardValidationDecorators {
     }
 
     public static FromAlias(...keys: string[]): PropertyDecorator {
-        return Transform(({ obj }) => keys.map((key) => obj[key]).find((value) => value !== undefined));
+        const read = Transform(({ obj }) => keys.map((key) => obj[key]).find((value) => value !== undefined));
+
+        return function applyFromAlias(target: object, propertyKey: string | symbol): void {
+            read(target, propertyKey);
+            keys.filter((key) => key !== propertyKey).forEach((key) => Allow()(target, key));
+        };
     }
 
     public static ExposeAs(wireName: string): PropertyDecorator {

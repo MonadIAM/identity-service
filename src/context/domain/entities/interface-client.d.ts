@@ -13,7 +13,7 @@ declare global {
 
                 name: string;
                 application: Entities.Application;
-                redirectUri: string;
+                redirectUris: string[];
                 authAddress: string;
                 grantTypes: TokenGrantType[];
                 description?: string;
@@ -33,7 +33,7 @@ declare global {
 
             type ConstructorProps = {
                 name: string;
-                redirectUri: string;
+                redirectUris: string[];
                 authAddress: string;
                 grantTypes: TokenGrantType[];
                 application: Entities.Application;
@@ -45,7 +45,7 @@ declare global {
             };
 
             type ChangeDataProps = {
-                redirectUri?: string;
+                redirectUris?: string[];
                 authAddress?: string;
                 description?: string;
                 name?: string;

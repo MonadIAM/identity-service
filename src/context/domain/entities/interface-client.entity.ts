@@ -13,10 +13,10 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
 
     public name: string;
     public application: Entities.Application;
-    public redirectUri: string;
     public authAddress: string;
-    public grantTypes: TokenGrantType[];
     public description?: string;
+    public redirectUris: string[];
+    public grantTypes: TokenGrantType[];
 
     public applicationVersion: number;
     public isSystemManaged: boolean;
@@ -32,9 +32,9 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
         this.isApplicationRevoked = props.isApplicationRevoked ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
+        this.redirectUris = props.redirectUris;
         this.application = props.application;
         this.description = props.description;
-        this.redirectUri = props.redirectUri;
         this.authAddress = props.authAddress;
         this.grantTypes = props.grantTypes;
         this.name = props.name;
@@ -53,9 +53,17 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
 
         let affected = 0;
         for (const [key, value] of Object.typedEntries(patch)) {
-            if (typeof value !== "undefined" && value !== this[key]) {
-                (this[key] as unknown) = value;
-                ++affected;
+            if (typeof value !== "undefined") {
+                const current = this[key];
+                const isChanged =
+                    Array.isArray(current) && Array.isArray(value)
+                        ? current.length !== value.length || current.some((item, index) => item !== value[index])
+                        : current !== value;
+
+                if (isChanged) {
+                    (this[key] as unknown) = value;
+                    ++affected;
+                }
             }
         }
 

@@ -3,7 +3,7 @@ import { ThrottlerGuard } from "@nestjs/throttler";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 
-import { FormatResponseInterceptor, PendingTokenInterceptor, AuthnTokenInterceptor } from "~common/interceptors";
+import { FormatResponseInterceptor, PendingTokenInterceptor } from "~common/interceptors";
 import { TransactionManagerModule } from "~common/transaction-manager";
 
 import { ReauthenticationGuard, PermissionGuard, AuthnGuard } from "./infrastructure/guards";
@@ -40,10 +40,6 @@ import { QUERIES } from "./application/queries";
         {
             provide: APP_INTERCEPTOR,
             useClass: PendingTokenInterceptor,
-        },
-        {
-            provide: APP_INTERCEPTOR,
-            useClass: AuthnTokenInterceptor,
         },
         {
             provide: APP_GUARD,

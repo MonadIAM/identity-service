@@ -52,7 +52,7 @@ export class SessionService implements Services.Session.Contract {
         }));
 
         const session = new Session({
-            expiresAt: this.resolveExpiry(),
+            expiresAt: new Date(Number(new Date()) + this.sessionExpiryDays * 1e3),
             userAgent: input.userAgent,
             account: input.account,
             client: input.client,
@@ -123,10 +123,5 @@ export class SessionService implements Services.Session.Contract {
         for (const session of input.sessions) {
             transaction.remove(session);
         }
-    }
-
-    private resolveExpiry(): Date {
-        const expiry = new Date(Number(new Date()) + this.sessionExpiryDays);
-        return expiry;
     }
 }

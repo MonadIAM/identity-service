@@ -50,7 +50,7 @@ declare namespace Services {
                 input: {
                     description?: string;
                     application: Entities.Application;
-                    redirectUri: string;
+                    redirectUris: string[];
                     authAddress: string;
                     name: string;
                 };
@@ -65,7 +65,7 @@ declare namespace Services {
             type Props = {
                 entity: Entities.InterfaceClient;
                 patch: {
-                    redirectUri?: string;
+                    redirectUris?: string[];
                     authAddress?: string;
                     description?: string;
                     name?: string;

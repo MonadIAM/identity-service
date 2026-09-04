@@ -32,9 +32,9 @@ declare namespace Commands {
                 realm: string;
                 input: {
                     authAddress: string;
-                    description?: string;
                     application: string;
-                    redirectUri: string;
+                    description?: string;
+                    redirectUris: string[];
                     name: string;
                 };
             };
@@ -51,8 +51,8 @@ declare namespace Commands {
                 actor: string;
                 realm: string;
                 input: {
+                    redirectUris?: string[];
                     description?: string;
-                    redirectUri?: string;
                     authAddress?: string;
                     name?: string;
                 };

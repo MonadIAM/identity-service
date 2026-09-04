@@ -32,10 +32,10 @@ export const InterfaceClientSchema = new EntitySchema<InterfaceClient>({
         },
 
         name: { type: "text" },
-        description: { type: "text", nullable: true },
-        redirectUri: { type: "text" },
         authAddress: { type: "text" },
+        description: { type: "text", nullable: true },
         grantTypes: { type: "array", enum: true, items: () => TokenGrantType, array: true },
+        redirectUris: { type: "array" },
 
         applicationVersion: { type: "int" },
         isSystemManaged: { type: "boolean" },

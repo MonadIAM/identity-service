@@ -33,9 +33,12 @@ export class UpdateBodyDTO {
 
     @Expose()
     @Validator.IsOptional()
-    @Validator.IsString()
-    @ApiProperty({ required: false, type: String })
-    declare public redirectUri?: string;
+    @Validator.IsArray()
+    @Validator.ArrayMinSize(1)
+    @Validator.IsUniqueArray()
+    @Validator.IsString({ each: true })
+    @ApiProperty({ required: false, type: String, isArray: true })
+    declare public redirectUris?: string[];
 
     @Expose()
     @Validator.IsOptional()

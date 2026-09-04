@@ -116,9 +116,9 @@ declare global {
 
             namespace Revoke {
                 type Props = {
-                    refreshToken?: string;
                     context: Extract.Meta;
                     client: string;
+                    token: string;
                 };
 
                 type Result = Promise<void>;

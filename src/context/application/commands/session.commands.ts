@@ -194,6 +194,7 @@ export class SessionCommands implements Commands.Session.Contract {
     }
 
     public async revoke(props: Commands.Session.Revoke.Props): Commands.Session.Revoke.Result {
+        const { input, actor, session } = props;
         let isLogout = false;
         await this.transactionalService.run({
             resource: this.resource,
@@ -210,22 +211,22 @@ export class SessionCommands implements Commands.Session.Contract {
             execute: async (transaction) => {
                 let sessions: Entities.Session[];
 
-                if ("refreshToken" in props.input) {
+                if ("token" in input) {
                     const session = await this.sessionRepository.findUnique({
                         where: {
-                            refreshTokenHash: this.cryptoService.hashToken({ token: props.input.refreshToken }),
-                            account: props.actor,
+                            refreshTokenHash: this.cryptoService.hashToken({ token: input.token }),
+                            account: actor,
                         },
                         transaction,
                     });
 
                     sessions = session ? [session] : [];
                 } else {
-                    isLogout = !props.input.sessions?.length;
+                    isLogout = !input.sessions?.length;
                     sessions = await this.sessionRepository.find({
                         where: {
-                            id: props.input.sessions?.length ? { $in: props.input.sessions } : props.session,
-                            account: props.actor,
+                            id: input.sessions?.length ? { $in: input.sessions } : session,
+                            account: actor,
                         },
                         transaction,
                     });

@@ -9,7 +9,7 @@ import { Application } from "./application.entity";
 function createInterfaceClient(overrides?: Partial<Entities.InterfaceClient.ConstructorProps>): InterfaceClient {
     return new InterfaceClient({
         name: "Web App",
-        redirectUri: "https://example.com/callback",
+        redirectUris: ["https://example.com/callback"],
         authAddress: "https://example.com",
         grantTypes: [TokenGrantType.AUTHORIZATION_CODE],
         application: {} as Application,
@@ -24,14 +24,14 @@ describe("InterfaceClient Entity", () => {
 
             const interfaceClient = createInterfaceClient({
                 name: "SPA",
-                redirectUri: "https://spa.example.com/callback",
+                redirectUris: ["https://spa.example.com/callback"],
                 authAddress: "https://spa.example.com",
                 grantTypes: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],
                 application,
             });
 
             expect(interfaceClient.name).toBe("SPA");
-            expect(interfaceClient.redirectUri).toBe("https://spa.example.com/callback");
+            expect(interfaceClient.redirectUris).toEqual(["https://spa.example.com/callback"]);
             expect(interfaceClient.authAddress).toBe("https://spa.example.com");
             expect(interfaceClient.grantTypes).toEqual([TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN]);
             expect(interfaceClient.application).toBe(application);
@@ -101,17 +101,33 @@ describe("InterfaceClient Entity", () => {
 
         it("should update multiple fields at once", () => {
             const interfaceClient = createInterfaceClient({
-                redirectUri: "https://old.example.com/callback",
+                redirectUris: ["https://old.example.com/callback"],
                 authAddress: "https://old.example.com",
             });
 
             interfaceClient.update({
-                redirectUri: "https://new.example.com/callback",
+                redirectUris: ["https://new.example.com/callback", "https://new.example.com/silent"],
                 authAddress: "https://new.example.com",
             });
 
-            expect(interfaceClient.redirectUri).toBe("https://new.example.com/callback");
+            expect(interfaceClient.redirectUris).toEqual([
+                "https://new.example.com/callback",
+                "https://new.example.com/silent",
+            ]);
             expect(interfaceClient.authAddress).toBe("https://new.example.com");
+        });
+
+        it("should not treat an identical redirect URI list as a change", () => {
+            const interfaceClient = createInterfaceClient({
+                redirectUris: ["https://example.com/callback", "https://example.com/silent"],
+            });
+
+            expect(() =>
+                interfaceClient.update({
+                    redirectUris: ["https://example.com/callback", "https://example.com/silent"],
+                }),
+            ).toThrow();
+            expect(interfaceClient.updatedAt).toBeUndefined();
         });
 
         it("should skip unchanged fields", () => {

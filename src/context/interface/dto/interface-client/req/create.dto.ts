@@ -31,9 +31,12 @@ export class CreateBodyDTO {
     declare public description?: string;
 
     @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    declare public redirectUri: string;
+    @Validator.IsArray()
+    @Validator.ArrayMinSize(1)
+    @Validator.IsUniqueArray()
+    @Validator.IsString({ each: true })
+    @ApiProperty({ required: true, type: String, isArray: true })
+    declare public redirectUris: string[];
 
     @Expose()
     @Validator.IsString()

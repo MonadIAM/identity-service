@@ -50,7 +50,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             });
         }
 
-        if (client.redirectUri !== props.input.redirectUri) {
+        if (!client.redirectUris.includes(props.input.redirectUri)) {
             throw Exception.badRequest({
                 messageKey: `${this.dictionaryPath}.INVALID_REDIRECT_URI`,
                 code: ErrorCode.INVALID_REQUEST,
@@ -141,7 +141,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             });
         }
 
-        if (client.redirectUri !== props.input.redirectUri) {
+        if (!client.redirectUris.includes(props.input.redirectUri)) {
             throw Exception.badRequest({
                 messageKey: `${this.dictionaryPath}.INVALID_REDIRECT_URI`,
                 code: ErrorCode.INVALID_REQUEST,
@@ -190,37 +190,33 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     }
 
     public async revoke(props: Commands.OAuth.Revoke.Props): Commands.OAuth.Revoke.Result {
-        const { refreshToken, client, context } = props;
+        const { token, client, context } = props;
 
-        if (refreshToken) {
-            const clientEntity = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: client } });
+        const clientEntity = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: client } });
 
-            if (clientEntity.isRevoked) {
-                throw Exception.badRequest({
-                    messageKey: `${this.dictionaryPath}.CLIENT_REVOKED`,
-                    code: ErrorCode.INVALID_CLIENT,
-                });
-            }
+        if (clientEntity.isRevoked) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_REVOKED`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
+        }
 
-            if (clientEntity.isApplicationRevoked) {
-                throw Exception.badRequest({
-                    messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
-                    code: ErrorCode.INVALID_CLIENT,
-                });
-            }
+        if (clientEntity.isApplicationRevoked) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
+        }
 
-            const payload: Nullable<JWTPayload> = await this.jwtService
-                .verifyRefresh({ token: refreshToken })
-                .catch(() => null);
+        const payload: Nullable<JWTPayload> = await this.jwtService.verifyRefresh({ token }).catch(() => null);
 
-            if (payload?.client_id === client) {
-                await this.sessionCommands.revoke({
-                    session: payload.sid as string,
-                    actor: payload.sub as string,
-                    input: { refreshToken },
-                    context,
-                });
-            }
+        if (payload?.client_id === client) {
+            await this.sessionCommands.revoke({
+                session: payload.sid as string,
+                actor: payload.sub as string,
+                input: { token },
+                context,
+            });
         }
     }
 
@@ -238,8 +234,8 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         if (input.postLogoutRedirectUri) {
             const client = await this.interfaceClientRepository.findUnique({ where: { id: payload.aud as string } });
 
-            if (client?.redirectUri === input.postLogoutRedirectUri) {
-                const url = new URL(client.redirectUri);
+            if (client?.redirectUris.includes(input.postLogoutRedirectUri)) {
+                const url = new URL(input.postLogoutRedirectUri);
 
                 if (input.state) {
                     url.searchParams.set("state", input.state);

@@ -15,7 +15,7 @@ export class OAuthStateCacheService implements InfrastructureServices.OAuthState
         private readonly redis: Redis,
         private readonly configService: ConfigService,
     ) {
-        this.ttl = ms(this.configService.getOrThrow<StringValue>("OAUTH_STATE_TTL"));
+        this.ttl = ms(this.configService.getOrThrow<StringValue>("OAUTH_STATE_TTL")) / 1e3;
     }
 
     public async set(

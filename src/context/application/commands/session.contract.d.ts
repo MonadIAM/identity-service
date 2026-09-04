@@ -58,7 +58,7 @@ declare namespace Commands {
 
         namespace Revoke {
             type Props = {
-                input: { refreshToken: string } | { sessions?: string[] };
+                input: { token: string } | { sessions?: string[] };
                 context: Extract.Meta;
                 session: string;
                 actor: string;

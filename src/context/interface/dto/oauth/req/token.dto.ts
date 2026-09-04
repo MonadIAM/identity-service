@@ -59,4 +59,15 @@ export class TokenBodyDTO {
         description: "Also accepted as `codeVerifier` for backward compatibility.",
     })
     declare public codeVerifier: string;
+
+    @Expose()
+    @Validator.FromAlias("refresh_token", "refreshToken")
+    @ValidateIf(({ grantType }) => grantType === TokenGrantType.REFRESH_TOKEN)
+    @Validator.IsString()
+    @ApiPropertyOptional({
+        type: String,
+        name: "refresh_token",
+        description: "Also accepted as `refreshToken` for backward compatibility.",
+    })
+    declare public refreshToken?: string;
 }

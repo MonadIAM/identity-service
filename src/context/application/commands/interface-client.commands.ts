@@ -51,8 +51,8 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                 const entity = await this.interfaceClientService.create({
                     transaction,
                     input: {
+                        redirectUris: input.redirectUris,
                         description: input.description,
-                        redirectUri: input.redirectUri,
                         authAddress: input.authAddress,
                         name: input.name,
                         application,
@@ -84,7 +84,7 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
 
                 this.interfaceClientService.update({
                     patch: {
-                        redirectUri: input.redirectUri,
+                        redirectUris: input.redirectUris,
                         authAddress: input.authAddress,
                         description: input.description,
                         name: input.name,

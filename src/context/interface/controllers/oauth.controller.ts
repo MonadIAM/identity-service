@@ -15,7 +15,7 @@ import {
     Res,
 } from "@nestjs/common";
 
-import { Extract, FormatResponse, Tokens, Public, Swagger } from "~common/decorators";
+import { Extract, FormatResponse, Public, Swagger } from "~common/decorators";
 import { OAUTH_COMMANDS } from "~context/application/commands";
 import { OAUTH_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
@@ -98,11 +98,10 @@ export class OAuthController {
     public token(
         @Body(BootstrapPipes.oauthValidationPipe) input: TokenBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-        @Tokens.Refresh() refreshToken?: string,
     ): Commands.OAuth.Token.Result {
         return this.oauthCommands.token({
-            input: { ...input, refreshToken },
             context,
+            input,
         });
     }
 
@@ -131,11 +130,9 @@ export class OAuthController {
     public revoke(
         @Body(BootstrapPipes.oauthValidationPipe) input: RevokeBodyDTO,
         @Extract.Meta() context: Extract.Meta,
-        @Tokens.Refresh() refreshToken?: string,
     ): Commands.OAuth.Revoke.Result {
         return this.oauthCommands.revoke({
-            client: input.client,
-            refreshToken,
+            ...input,
             context,
         });
     }
