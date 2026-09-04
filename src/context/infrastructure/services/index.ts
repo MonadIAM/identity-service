@@ -1,5 +1,6 @@
 import { ClassProvider } from "@nestjs/common";
 
+import { SessionRefreshIdempotencyService } from "./session-refresh-idempotency.service";
 import { ReauthenticationCacheService } from "./reauthentication-cache.service";
 import { SecondFactorSecretService } from "./second-factor-secret.service";
 import { AuthorizationCacheService } from "./authorization-cache.service";
@@ -11,6 +12,7 @@ import { ScriptLoaderService } from "./script-loader.service";
 import { AccessCacheService } from "./access-cache.service";
 import { OTPCacheService } from "./otp-cache.service";
 import {
+    SESSION_REFRESH_IDEMPOTENCY_SERVICE,
     REAUTHENTICATION_CACHE_SERVICE,
     SECOND_FACTOR_SECRET_SERVICE,
     AUTHORIZATION_CACHE_SERVICE,
@@ -24,6 +26,10 @@ import {
 } from "./tokens";
 
 export const INFRASTRUCTURE_SERVICES: ClassProvider[] = [
+    {
+        provide: SESSION_REFRESH_IDEMPOTENCY_SERVICE,
+        useClass: SessionRefreshIdempotencyService,
+    },
     {
         provide: REAUTHENTICATION_CACHE_SERVICE,
         useClass: ReauthenticationCacheService,
@@ -67,6 +73,7 @@ export const INFRASTRUCTURE_SERVICES: ClassProvider[] = [
 ];
 
 export {
+    SESSION_REFRESH_IDEMPOTENCY_SERVICE,
     REAUTHENTICATION_CACHE_SERVICE,
     SECOND_FACTOR_SECRET_SERVICE,
     AUTHORIZATION_CACHE_SERVICE,

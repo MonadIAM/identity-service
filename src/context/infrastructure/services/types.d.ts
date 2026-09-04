@@ -445,5 +445,41 @@ declare global {
                 type Signature = (props: Props) => Result;
             }
         }
+
+        namespace SessionRefreshIdempotency {
+            type Result = {
+                refreshToken: string;
+                accessToken: string;
+                message: Intl.Key;
+            };
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                get: Get.Signature;
+                set: Set.Signature;
+            }
+
+            namespace Get {
+                type Props = {
+                    key: string;
+                };
+
+                type Result = Promise<Nullable<SessionRefreshIdempotency.Result>>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Set {
+                type Props = {
+                    key: string;
+                    result: SessionRefreshIdempotency.Result;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
     }
 }

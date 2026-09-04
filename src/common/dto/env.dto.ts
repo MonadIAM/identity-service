@@ -510,6 +510,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public SESSION_MAX_ACTIVE_COUNT: number;
 
+    @Validator.IsMsString()
+    declare public SESSION_REFRESH_IDEMPOTENCY_TTL: StringValue;
+
     // Password
     @Validator.IsEnum(PasswordValidationMode)
     declare public PASSWORD_VALIDATION_MODE: PasswordValidationMode;
