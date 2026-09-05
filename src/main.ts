@@ -6,9 +6,7 @@ import { NestFactory } from "@nestjs/core";
 import cookie from "@fastify/cookie";
 import { Logger } from "nestjs-pino";
 
-import { BootstrapReference } from "~bootstrap/reference.bootstrap";
-import { BootstrapSecurity } from "~bootstrap/security.bootstrap";
-import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
+import { BootstrapReference, BootstrapSecurity, BootstrapPipes } from "~bootstrap";
 import { KAFKA_CONFIG } from "~infrastructure/kafka";
 
 import { MainModule } from "./main.module";

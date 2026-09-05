@@ -1,13 +1,14 @@
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import apiReference from "@scalar/fastify-api-reference";
 import { readFileSync } from "fs";
 import { join } from "path";
 
+import { name, version } from "~root/package.json";
 import { OidcScope } from "~context/enums";
 import { NodeEnv } from "~common/enums";
 
-import { name, version } from "../../package.json";
+import { ReferenceAutomation } from "./automation";
 
 const PAGE_TITLE = "MonadIAM | API Docs";
 const SECURITY_SCHEME = "identity";
@@ -26,6 +27,7 @@ const REFERENCE_TAGS: Record<string, string> = {
     FederatedAuthn: "Federated authentication through external OpenID Connect providers (OpenID Connect Core 1.0).",
     Account: "Account lifecycle management, including registration, verification, suspension, restoration, and self-service access.",
     Realm: "Realm membership workflow operations owned by identity-service.",
+    Membership: "Read access to active realm memberships and closed membership history, scoped to the current account, a single realm, or the entire installation.",
     Invite: "Account invitation workflows for joining realms: creation, acceptance, declination, and cancellation.",
     Identifier: "Management of account identifiers such as email or phone: creation, verification, and notification/visibility preferences.",
     Profile: "Self-service profile updates for account-owned personal and presentation data.",
@@ -48,43 +50,42 @@ export abstract class BootstrapReference {
     private constructor() {}
 
     public static async registerReference(application: NestFastifyApplication): Promise<void> {
-        if (process.env.NODE_ENV === NodeEnv.PRODUCTION) {
-            return;
+        if (process.env.NODE_ENV !== NodeEnv.PRODUCTION) {
+            const description = readFileSync(join(__dirname, "../../assets/description.md"), "utf-8");
+            const favicon = readFileSync(join(__dirname, "../../assets/favicon.svg"), "utf-8");
+
+            const config = new DocumentBuilder()
+                .setDescription(description)
+                .setVersion(version)
+                .setTitle(name)
+                .addOAuth2(this.securityScheme(), SECURITY_SCHEME)
+                .addSecurityRequirements(SECURITY_SCHEME);
+
+            Object.entries(REFERENCE_TAGS).forEach(([name, description]) => {
+                config.addTag(name, description);
+            });
+
+            const document = SwaggerModule.createDocument(application, config.build());
+
+            this.publishDocument(application, document);
+
+            await application.register(apiReference, {
+                routePrefix: REFERENCE_ROUTE,
+                configuration: {
+                    customFetch: ReferenceAutomation.customFetch,
+                    favicon: `data:image/svg+xml;base64,${Buffer.from(favicon).toString("base64")}`,
+                    showDeveloperTools: "never",
+                    pageTitle: PAGE_TITLE,
+                    proxyUrl: "",
+                    sources: this.sources(document),
+                    agent: { disabled: true },
+                    mcp: { disabled: true },
+                    withDefaultFonts: false,
+                    hideClientButton: true,
+                    persistAuth: true,
+                },
+            });
         }
-
-        const description = readFileSync(join(__dirname, "../assets/description.md"), "utf-8");
-        const favicon = readFileSync(join(__dirname, "../assets/favicon.svg"), "utf-8");
-
-        const config = new DocumentBuilder()
-            .setDescription(description)
-            .setVersion(version)
-            .setTitle(name)
-            .addOAuth2(this.securityScheme(), SECURITY_SCHEME)
-            .addSecurityRequirements(SECURITY_SCHEME);
-
-        Object.entries(REFERENCE_TAGS).forEach(([name, description]) => {
-            config.addTag(name, description);
-        });
-
-        const document = SwaggerModule.createDocument(application, config.build());
-
-        this.publishDocument(application, document);
-
-        await application.register(apiReference, {
-            routePrefix: REFERENCE_ROUTE,
-            configuration: {
-                pageTitle: PAGE_TITLE,
-                favicon: `data:image/svg+xml;base64,${Buffer.from(favicon).toString("base64")}`,
-                showDeveloperTools: "never",
-                proxyUrl: "",
-                sources: this.sources(document),
-                agent: { disabled: true },
-                mcp: { disabled: true },
-                withDefaultFonts: false,
-                hideClientButton: true,
-                persistAuth: true,
-            },
-        });
     }
 
     private static publishDocument(application: NestFastifyApplication, document: object): void {

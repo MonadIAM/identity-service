@@ -6,11 +6,11 @@ declare global {
             type PkceMode = "SHA-256" | "plain" | "no";
 
             type Source = {
+                default?: boolean;
                 content?: object;
-                url?: string;
                 title: string;
                 slug: string;
-                default?: boolean;
+                url?: string;
             };
 
             type OAuthFlow = OAuthFlowObject & {
@@ -22,6 +22,16 @@ declare global {
                 "x-default-scopes": string[];
                 flows: { authorizationCode: OAuthFlow };
             };
+
+            namespace Automation {
+                type FetchCallback = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
+                type JsonObject = UnknownObject;
+
+                type Configuration = {
+                    customFetch: FetchCallback;
+                };
+            }
         }
     }
 }
