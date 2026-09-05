@@ -90,7 +90,6 @@ export class OAuthController {
         UNPROCESSABLE_ENTITY,
         SERVICE_UNAVAILABLE,
         REQUEST_TIMEOUT,
-        UNAUTHORIZED,
         BAD_REQUEST,
         FORBIDDEN,
         CONFLICT,

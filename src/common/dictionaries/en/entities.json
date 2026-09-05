@@ -56,6 +56,6 @@
     "SYSTEM_MANAGED_IMMUTABLE": "A system-managed ServiceClient cannot be modified through this operation."
   },
   "session": {
-    "EXPIRED": "The session is expired."
+    "SESSION_EXPIRED": "The session has expired."
   }
 }

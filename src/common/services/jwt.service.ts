@@ -122,7 +122,7 @@ export class JWTService implements CommonServices.JWT.Contract {
             return payload;
         } catch (error) {
             const { messageKey, params } = this.resolveVerificationFailure({ tokenType: "REFRESH", error });
-            throw Exception.unauthorized({ messageKey, params });
+            throw Exception.badRequest({ messageKey, params, code: ErrorCode.INVALID_GRANT });
         }
     }
 

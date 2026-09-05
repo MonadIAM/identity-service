@@ -88,7 +88,14 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 },
             });
         } else {
-            const client = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: props.input.client } });
+            const client = await this.interfaceClientRepository.findUnique({ where: { id: props.input.client } });
+
+            if (!client) {
+                throw Exception.badRequest({
+                    messageKey: `${this.dictionaryPath}.CLIENT_NOT_FOUND`,
+                    code: ErrorCode.INVALID_CLIENT,
+                });
+            }
 
             if (client.isRevoked) {
                 throw Exception.badRequest({
@@ -122,10 +129,17 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     }
 
     public async authorizationCode(props: Commands.OAuth.AuthorizationCode.Props): Commands.OAuth.AuthorizationCode.Result {
-        const client = await this.interfaceClientRepository.findUniqueOrThrow({
+        const client = await this.interfaceClientRepository.findUnique({
             options: { populate: ["application"] },
             where: { id: props.input.client },
         });
+
+        if (!client) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.CLIENT_NOT_FOUND`,
+                code: ErrorCode.INVALID_CLIENT,
+            });
+        }
 
         if (client.isRevoked) {
             throw Exception.badRequest({

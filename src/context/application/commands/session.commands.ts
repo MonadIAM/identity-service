@@ -8,7 +8,7 @@ import { SESSION_REFRESH_IDEMPOTENCY_SERVICE } from "~context/infrastructure/ser
 import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
-import { Exception } from "~common/exceptions";
+import { ErrorCode, Exception } from "~common/exceptions";
 import {
     NotificationTopicAction,
     BlacklistTopicAction,
@@ -114,7 +114,10 @@ export class SessionCommands implements Commands.Session.Contract {
 
     public async refresh(props: Commands.Session.Refresh.Props): Commands.Session.Refresh.Result {
         if (!props.input.refreshToken) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN`,
+                code: ErrorCode.INVALID_REQUEST,
+            });
         }
 
         const idempotencyKey = this.cryptoService.hashToken({
@@ -150,11 +153,17 @@ export class SessionCommands implements Commands.Session.Contract {
                     });
 
                     if (!session) {
-                        throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.SESSION_NOT_FOUND` });
+                        throw Exception.badRequest({
+                            messageKey: `${this.dictionaryPath}.SESSION_NOT_FOUND`,
+                            code: ErrorCode.INVALID_GRANT,
+                        });
                     }
 
                     if (props.input.client !== session.client || payload.client_id !== session.client) {
-                        throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN` });
+                        throw Exception.badRequest({
+                            messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN`,
+                            code: ErrorCode.INVALID_GRANT,
+                        });
                     }
 
                     session.isExpired();
@@ -210,7 +219,10 @@ export class SessionCommands implements Commands.Session.Contract {
                 case "REPLAYED":
                     return outcome.result;
                 default:
-                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.REFRESH_TOKEN_REUSE_DETECTED` });
+                    throw Exception.badRequest({
+                        messageKey: `${this.dictionaryPath}.REFRESH_TOKEN_REUSE_DETECTED`,
+                        code: ErrorCode.INVALID_GRANT,
+                    });
             }
         }
     }

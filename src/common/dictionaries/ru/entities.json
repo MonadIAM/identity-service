@@ -56,6 +56,6 @@
     "SYSTEM_MANAGED_IMMUTABLE": "Системный ServiceClient нельзя изменить этой операцией."
   },
   "session": {
-    "EXPIRED": "Сессия истекла."
+    "SESSION_EXPIRED": "Сессия истекла."
   }
 }

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { Exception } from "~common/exceptions";
+import { ErrorCode, Exception } from "~common/exceptions";
 
 export class Session implements Entities.Session.Contract {
     private static readonly dictionaryPath = "entities.session";
@@ -46,7 +46,10 @@ export class Session implements Entities.Session.Contract {
 
     public isExpired(): void {
         if (this.expiresAt < new Date()) {
-            throw Exception.invariantViolation({ messageKey: `${Session.dictionaryPath}.EXPIRED` });
+            throw Exception.badRequest({
+                messageKey: `${Session.dictionaryPath}.SESSION_EXPIRED`,
+                code: ErrorCode.INVALID_GRANT,
+            });
         }
     }
 }

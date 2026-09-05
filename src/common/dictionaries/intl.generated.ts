@@ -69,6 +69,7 @@ export type I18nTranslations = {
             "INVALID_AUTHORIZATION_REQUEST": string;
             "CLIENT_REVOKED": string;
             "CLIENT_APPLICATION_REVOKED": string;
+            "CLIENT_NOT_FOUND": string;
             "INVALID_GRANT": string;
             "INVALID_REDIRECT_URI": string;
             "INSUFFICIENT_SCOPE": string;
@@ -209,7 +210,7 @@ export type I18nTranslations = {
             "SYSTEM_MANAGED_IMMUTABLE": string;
         };
         "session": {
-            "EXPIRED": string;
+            "SESSION_EXPIRED": string;
         };
     };
     "global": {
