@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body, Post, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
 import { INVITE_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { ManageGetListQueryDTO, ManageGetListBodyDTO, ManageGetByIdQueryDTO, InviteDTO, ListDTO } from "../dto/invite";
@@ -22,7 +21,6 @@ const { INVITE_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("Invite")
 @Controller("/invite/manage")
-@UseInterceptors(MonitoringInterceptor)
 export class InviteManageController {
     public constructor(
         @Inject(INVITE_QUERIES)

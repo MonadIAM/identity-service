@@ -50,7 +50,7 @@ export abstract class BootstrapReference {
     private constructor() {}
 
     public static async registerReference(application: NestFastifyApplication): Promise<void> {
-        if (process.env.NODE_ENV !== NodeEnv.PRODUCTION) {
+        if (process.env.NODE_ENV === NodeEnv.LOCAL) {
             const description = readFileSync(join(__dirname, "../../assets/description.md"), "utf-8");
             const favicon = readFileSync(join(__dirname, "../../assets/favicon.svg"), "utf-8");
 

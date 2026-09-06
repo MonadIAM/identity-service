@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Query, Body } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Delete, Inject, Query, Body } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { MEMBERSHIP_COMMANDS } from "~context/application/commands";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -24,7 +23,6 @@ const {
 
 @ApiTags("Realm")
 @Controller("/realm")
-@UseInterceptors(MonitoringInterceptor)
 export class RealmController {
     public constructor(
         @Inject(MEMBERSHIP_COMMANDS)

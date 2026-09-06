@@ -6,7 +6,7 @@ import { NestFactory } from "@nestjs/core";
 import cookie from "@fastify/cookie";
 import { Logger } from "nestjs-pino";
 
-import { BootstrapReference, BootstrapSecurity, BootstrapPipes } from "~bootstrap";
+import { BootstrapReference, BootstrapSecurity, BootstrapPipes, BootstrapMetrics } from "~bootstrap";
 import { KAFKA_CONFIG } from "~infrastructure/kafka";
 
 import { MainModule } from "./main.module";
@@ -37,6 +37,7 @@ async function bootstrap(): Promise<void> {
     });
 
     BootstrapPipes.applyGlobalPipes(application);
+    BootstrapMetrics.registerMetricsHooks(application);
     await BootstrapReference.registerReference(application);
     await BootstrapSecurity.registerSecurityPlugins(application);
 

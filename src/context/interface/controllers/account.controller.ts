@@ -1,11 +1,10 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Body, Post, Get, Query } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Header, Inject, Body, Post, Get, Query } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
 import { PermissionCode, ResponseViewType } from "~context/enums";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { ACCOUNT_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 
 import {
@@ -40,7 +39,6 @@ const {
 
 @ApiTags("Account")
 @Controller("/account")
-@UseInterceptors(MonitoringInterceptor)
 export class AccountController {
     public constructor(
         @Inject(ACCOUNT_COMMANDS)

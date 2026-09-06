@@ -1,10 +1,9 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Delete, Body, Post, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Header, Inject, Delete, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, RequirePermission, SensitiveThrottle, Tokens, Public, Swagger } from "~common/decorators";
 import { REAUTHENTICATION_COMMANDS, SESSION_COMMANDS, AUTHN_COMMANDS } from "~context/application/commands";
 import { SESSION_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -40,7 +39,6 @@ const {
 
 @ApiTags("Authn")
 @Controller("/authn")
-@UseInterceptors(MonitoringInterceptor)
 export class AuthnController {
     public constructor(
         @Inject(REAUTHENTICATION_COMMANDS)

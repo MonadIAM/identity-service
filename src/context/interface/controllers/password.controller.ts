@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
 import { PASSWORD_COMMANDS } from "~context/application/commands";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -25,7 +24,6 @@ const {
 
 @ApiTags("Password")
 @Controller("/password")
-@UseInterceptors(MonitoringInterceptor)
 export class PasswordController {
     public constructor(
         @Inject(PASSWORD_COMMANDS)

@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body, Post } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Query, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { MEMBERSHIP_HISTORY_QUERIES, MEMBERSHIP_QUERIES } from "~context/application/queries";
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import {
@@ -21,7 +20,6 @@ const { MEMBERSHIP_READ_ABSOLUTE, MEMBERSHIP_HISTORY_READ_ABSOLUTE } = Permissio
 
 @ApiTags("Membership")
 @Controller()
-@UseInterceptors(MonitoringInterceptor)
 export class MembershipManageController {
     public constructor(
         @Inject(MEMBERSHIP_QUERIES)

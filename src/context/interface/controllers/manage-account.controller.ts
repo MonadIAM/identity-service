@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body, Post, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
 import { ACCOUNT_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { ManageGetListQueryDTO, ManageGetListBodyDTO, ManageGetByIdQueryDTO, AccountDTO, ListDTO } from "../dto/account";
@@ -22,7 +21,6 @@ const { ACCOUNT_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("Account")
 @Controller("/account/manage")
-@UseInterceptors(MonitoringInterceptor)
 export class AccountManageController {
     public constructor(
         @Inject(ACCOUNT_QUERIES)

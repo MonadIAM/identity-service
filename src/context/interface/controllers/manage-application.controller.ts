@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body, Post, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
 import { APPLICATION_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import {
@@ -28,7 +27,6 @@ const { APPLICATION_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("Application")
 @Controller("/application/manage")
-@UseInterceptors(MonitoringInterceptor)
 export class ApplicationManageController {
     public constructor(
         @Inject(APPLICATION_QUERIES)

@@ -1,8 +1,7 @@
 export enum NodeEnv {
     /* eslint-disable prettier/prettier */
-    DEVELOPMENT = "development",
-    PRODUCTION  = "production",
     LOCAL       = "local",
+    STAND       = "stand",
     /* eslint-enable prettier/prettier */
 }
 
@@ -20,4 +19,19 @@ export enum Argon2Type {
     ARGON2I  = "argon2i",
     ARGON2D  = "argon2d",
     /* eslint-enable prettier/prettier */
+}
+
+export enum OTelTracesSampler {
+    PARENTBASED_TRACEIDRATIO = "parentbased_traceidratio",
+    PARENTBASED_ALWAYS_OFF = "parentbased_always_off",
+    PARENTBASED_ALWAYS_ON = "parentbased_always_on",
+    TRACEIDRATIO = "traceidratio",
+    ALWAYS_OFF = "always_off",
+    ALWAYS_ON = "always_on",
+}
+
+export enum OTelLogsExporter {
+    CONSOLE = "console",
+    OTLP = "otlp",
+    NONE = "none",
 }

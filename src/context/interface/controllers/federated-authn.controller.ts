@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Query, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Header, Inject, Query, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, Public, Swagger } from "~common/decorators";
 import { FEDERATED_AUTHN_COMMANDS } from "~context/application/commands";
-import { MonitoringInterceptor } from "~common/interceptors";
 
 import { FederatedAuthorizeQueryDTO, FederatedCallbackQueryDTO, FederatedCallbackResultDTO } from "../dto/federated-authn";
 
@@ -21,7 +20,6 @@ const {
 
 @ApiTags("FederatedAuthn")
 @Controller("/authn/federated")
-@UseInterceptors(MonitoringInterceptor)
 export class FederatedAuthnController {
     public constructor(
         @Inject(FEDERATED_AUTHN_COMMANDS)

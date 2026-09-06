@@ -1,21 +1,8 @@
+import { Controller, HttpStatus, HttpCode, Delete, Header, Inject, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import {
-    UseInterceptors,
-    Controller,
-    HttpStatus,
-    HttpCode,
-    Delete,
-    Header,
-    Inject,
-    Query,
-    Body,
-    Post,
-    Get,
-} from "@nestjs/common";
 
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
 import { SECOND_FACTOR_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 import {
@@ -63,7 +50,6 @@ const {
 
 @ApiTags("SecondFactor")
 @Controller("/second-factor")
-@UseInterceptors(MonitoringInterceptor)
 export class SecondFactorController {
     public constructor(
         @Inject(SECOND_FACTOR_COMMANDS)

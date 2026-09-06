@@ -1,10 +1,9 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Header, Inject, Post, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Header, Inject, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Reauthentication, Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { RECOVERY_CODE_COMMANDS } from "~context/application/commands";
 import { RECOVERY_CODE_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { RegenerateResultDTO, StatusResultDTO } from "../dto/recovery-code";
@@ -24,7 +23,6 @@ const {
 
 @ApiTags("RecoveryCodes")
 @Controller("/recovery-codes")
-@UseInterceptors(MonitoringInterceptor)
 export class RecoveryCodeController {
     public constructor(
         @Inject(RECOVERY_CODE_COMMANDS)

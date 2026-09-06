@@ -1,22 +1,9 @@
+import { Controller, HttpStatus, HttpCode, Inject, Delete, Patch, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import {
-    UseInterceptors,
-    Controller,
-    HttpStatus,
-    HttpCode,
-    Inject,
-    Delete,
-    Patch,
-    Query,
-    Body,
-    Post,
-    Get,
-} from "@nestjs/common";
 
 import { Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { SERVICE_CLIENT_COMMANDS } from "~context/application/commands";
 import { SERVICE_CLIENT_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -62,7 +49,6 @@ const {
 
 @ApiTags("ServiceClient")
 @Controller("/service-client")
-@UseInterceptors(MonitoringInterceptor)
 export class ServiceClientController {
     public constructor(
         @Inject(SERVICE_CLIENT_COMMANDS)

@@ -1,10 +1,9 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Patch, Query, Body, Post, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Patch, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { INVITE_COMMANDS } from "~context/application/commands";
 import { INVITE_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -36,7 +35,6 @@ const {
 
 @ApiTags("Invite")
 @Controller("/invite")
-@UseInterceptors(MonitoringInterceptor)
 export class InviteController {
     public constructor(
         @Inject(INVITE_COMMANDS)

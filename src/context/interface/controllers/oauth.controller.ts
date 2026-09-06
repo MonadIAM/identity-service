@@ -1,24 +1,10 @@
+import { Controller, HttpStatus, HttpCode, Redirect, Header, Inject, Query, Body, Post, Get, Res } from "@nestjs/common";
 import { ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { type FastifyReply } from "fastify";
-import {
-    UseInterceptors,
-    Controller,
-    HttpStatus,
-    HttpCode,
-    Redirect,
-    Header,
-    Inject,
-    Query,
-    Body,
-    Post,
-    Get,
-    Res,
-} from "@nestjs/common";
 
 import { Extract, FormatResponse, Public, Swagger } from "~common/decorators";
 import { OAUTH_COMMANDS } from "~context/application/commands";
 import { OAUTH_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
 import {
@@ -45,7 +31,6 @@ const {
 
 @ApiTags("OAuth")
 @Controller("/oauth")
-@UseInterceptors(MonitoringInterceptor)
 export class OAuthController {
     public constructor(
         @Inject(OAUTH_COMMANDS)

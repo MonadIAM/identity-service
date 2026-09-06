@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body, Post } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Query, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { MEMBERSHIP_HISTORY_QUERIES, MEMBERSHIP_QUERIES } from "~context/application/queries";
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import {
@@ -30,7 +29,6 @@ const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUES
 
 @ApiTags("Membership")
 @Controller()
-@UseInterceptors(MonitoringInterceptor)
 export class MembershipController {
     public constructor(
         @Inject(MEMBERSHIP_QUERIES)

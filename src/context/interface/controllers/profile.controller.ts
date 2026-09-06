@@ -1,9 +1,8 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Body, Patch } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Body, Patch } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, RequirePermission, Swagger } from "~common/decorators";
 import { PROFILE_COMMANDS } from "~context/application/commands";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -25,7 +24,6 @@ const {
 
 @ApiTags("Profile")
 @Controller("/profile")
-@UseInterceptors(MonitoringInterceptor)
 export class ProfileController {
     public constructor(
         @Inject(PROFILE_COMMANDS)
