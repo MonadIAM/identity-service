@@ -29,6 +29,7 @@ export const SecondFactorSchema = new EntitySchema<SecondFactor>({
         secret: { type: "text" },
         name: { type: "text", nullable: true },
 
+        lastAcceptedTOTPStep: { type: "bigint", fieldName: "last_accepted_totp_step", nullable: true },
         confirmedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
     },

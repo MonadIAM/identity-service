@@ -2203,6 +2203,23 @@
           "enumItems": [],
           "mappedType": "uuid"
         },
+        "last_accepted_totp_step": {
+          "name": "last_accepted_totp_step",
+          "type": "bigint",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "bigint"
+        },
         "name": {
           "name": "name",
           "type": "text",

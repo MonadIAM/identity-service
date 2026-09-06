@@ -9,6 +9,7 @@ export class SecondFactor implements Entities.SecondFactor.Contract {
     public id: string;
     public createdAt: Date;
     public confirmedAt?: Date;
+    public lastAcceptedTOTPStep?: number;
 
     public type: SecondFactorType;
     public secret: string;
@@ -37,5 +38,14 @@ export class SecondFactor implements Entities.SecondFactor.Contract {
 
     public rewrap(secret: string): void {
         this.secret = secret;
+    }
+
+    public acceptTOTP(step: number): boolean {
+        if (this.lastAcceptedTOTPStep !== undefined && step <= this.lastAcceptedTOTPStep) {
+            return false;
+        } else {
+            this.lastAcceptedTOTPStep = step;
+            return true;
+        }
     }
 }

@@ -8,6 +8,7 @@ declare global {
             interface PublicContract {
                 create: Create.Signature;
                 rewrap: Rewrap.Signature;
+                acceptTOTP: AcceptTOTP.Signature;
                 verify: Verify.Signature;
                 purge: Purge.Signature;
                 reset: Reset.Signature;
@@ -29,6 +30,20 @@ declare global {
                 };
 
                 type Result = Entities.SecondFactor;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace AcceptTOTP {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    input: {
+                        factor: Entities.SecondFactor;
+                        step: number;
+                    };
+                };
+
+                type Result = boolean;
 
                 type Signature = (props: Props) => Result;
             }

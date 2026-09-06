@@ -9,6 +9,7 @@ declare global {
                 id: string;
                 createdAt: Date;
                 confirmedAt?: Date;
+                lastAcceptedTOTPStep?: number;
 
                 type: SecondFactorType;
                 secret: string;
@@ -17,6 +18,7 @@ declare global {
                 account: Entities.Account;
 
                 rewrap(secret: string): void;
+                acceptTOTP(step: number): boolean;
                 confirm(): void;
             }
 

@@ -19,7 +19,15 @@ export class TOTPService implements CommonServices.TOTP.Contract {
     }
 
     public verify(props: CommonServices.TOTP.VerifyTOTP.Props): CommonServices.TOTP.VerifyTOTP.Result {
-        return this.generate({ secret: props.secret }).validate({ token: props.code, window: this.window }) !== null;
+        const timestamp = Date.now();
+        const totp = this.generate({ secret: props.secret });
+        const delta = totp.validate({ token: props.code, timestamp, window: this.window });
+
+        if (delta === null) {
+            return null;
+        } else {
+            return { step: totp.counter({ timestamp }) + delta };
+        }
     }
 
     public generate(props: CommonServices.TOTP.Generate.Props): CommonServices.TOTP.Generate.Result {

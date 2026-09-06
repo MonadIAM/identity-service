@@ -1,4 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { LockMode } from "@mikro-orm/postgresql";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
@@ -95,6 +96,7 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
             },
             execute: async (transaction) => {
                 const factor = await this.secondFactorRepository.findUnique({
+                    options: { lockMode: LockMode.PESSIMISTIC_WRITE },
                     where: {
                         confirmedAt: { $ne: null },
                         account: props.actor,
@@ -110,9 +112,18 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
                     secret: factor.secret,
                 });
 
-                const isValid = this.totpService.verify({ secret: plaintext, code: props.input.code });
+                const verification = this.totpService.verify({ secret: plaintext, code: props.input.code });
 
-                if (!isValid) {
+                if (!verification) {
+                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
+                }
+
+                const accepted = this.secondFactorService.acceptTOTP({
+                    input: { factor, step: verification.step },
+                    transaction,
+                });
+
+                if (!accepted) {
                     throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
                 }
 

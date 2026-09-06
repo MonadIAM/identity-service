@@ -38,6 +38,14 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
         transaction.merge(input.factor);
     }
 
+    public acceptTOTP(props: Services.SecondFactor.AcceptTOTP.Props): Services.SecondFactor.AcceptTOTP.Result {
+        const { transaction, input } = props;
+        const accepted = input.factor.acceptTOTP(input.step);
+        transaction.merge(input.factor);
+
+        return accepted;
+    }
+
     public purge(props: Services.SecondFactor.Purge.Props): Services.SecondFactor.Purge.Result {
         const { transaction, input } = props;
 

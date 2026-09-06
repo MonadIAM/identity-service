@@ -286,7 +286,9 @@ declare global {
                     code: string;
                 };
 
-                type Result = boolean;
+                type Result = Nullable<{
+                    step: number;
+                }>;
 
                 type Signature = (props: Props) => Result;
             }
