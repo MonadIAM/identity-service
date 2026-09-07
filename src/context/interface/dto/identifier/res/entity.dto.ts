@@ -19,7 +19,7 @@ export class IdentifierDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    declare public value: string;
+    declare public identity: string;
 
     @Expose()
     @ApiProperty({ required: false, type: String })

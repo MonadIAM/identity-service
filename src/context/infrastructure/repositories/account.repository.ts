@@ -34,11 +34,11 @@ export class AccountRepository
 
             // NOTE[SQL-01]: see NOTES.md#SQL-01
             let dataQuery = knex
-                .select({ id: "a.id", status: "a.status", displayName: "p.display_name", identifier: "i.value" })
+                .select({ id: "a.id", status: "a.status", displayName: "p.display_name", identifier: "i.identity" })
                 .from({ a: "identity.account" })
                 .leftJoin({ p: "identity.profile" }, "p.account_id", "a.id")
                 .joinRaw(
-                    "LEFT JOIN LATERAL (SELECT value FROM identity.identifier WHERE account_id = a.id AND value % ? ORDER BY similarity(value, ?) DESC LIMIT 1) i ON true",
+                    "LEFT JOIN LATERAL (SELECT identity FROM identity.identifier WHERE account_id = a.id AND identity % ? ORDER BY similarity(identity, ?) DESC LIMIT 1) i ON true",
                     [term, term],
                 )
                 .limit(pagination.elementsPerPage)
@@ -50,13 +50,13 @@ export class AccountRepository
 
             if (term) {
                 dataQuery = dataQuery
-                    .whereRaw("p.display_name % ? OR i.value IS NOT NULL", [term])
-                    .orderByRaw("GREATEST(similarity(p.display_name, ?), COALESCE(similarity(i.value, ?), 0)) DESC", [
+                    .whereRaw("p.display_name % ? OR i.identity IS NOT NULL", [term])
+                    .orderByRaw("GREATEST(similarity(p.display_name, ?), COALESCE(similarity(i.identity, ?), 0)) DESC", [
                         term,
                         term,
                     ]);
                 countQuery = countQuery.whereRaw(
-                    "p.display_name % ? OR EXISTS (SELECT 1 FROM identity.identifier WHERE account_id = a.id AND value % ?)",
+                    "p.display_name % ? OR EXISTS (SELECT 1 FROM identity.identifier WHERE account_id = a.id AND identity % ?)",
                     [term, term],
                 );
             } else {

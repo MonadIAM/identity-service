@@ -40,8 +40,8 @@ export class IdentifierRepository
                 .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
 
             if (term) {
-                builder.andWhere("i.value % ? OR p.display_name % ?", [term, term]).orderBy({
-                    [raw("GREATEST(similarity(i.value, ?), similarity(p.display_name, ?))", [term, term])]: "DESC",
+                builder.andWhere("i.identity % ? OR p.display_name % ?", [term, term]).orderBy({
+                    [raw("GREATEST(similarity(i.identity, ?), similarity(p.display_name, ?))", [term, term])]: "DESC",
                 });
             } else {
                 builder.orderBy({ "i.identity": "ASC" });
