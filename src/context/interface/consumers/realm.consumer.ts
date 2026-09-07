@@ -4,6 +4,7 @@ import { RealmTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
 import { KafkaTopicBuilder, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { APPLICATION_COMMANDS } from "~context/application/commands";
 import { CONSUMER_META } from "~context/constants";
 import { Exception } from "~common/exceptions";
@@ -16,6 +17,8 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
     public constructor(
         @Inject(APPLICATION_COMMANDS)
         private readonly applicationCommands: Commands.Application.ConsumerContract,
+        @Inject(KafkaMetricsRecorder)
+        private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
         @Inject(KAFKA_RETRY_REGISTRY)
@@ -90,5 +93,11 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
                 },
             }),
         );
+
+        if (retryable) {
+            this.kafkaMetrics.recordRetry({ topic: KafkaTopic.REALM, error });
+        } else {
+            this.kafkaMetrics.recordDead({ topic: KafkaTopic.REALM, error });
+        }
     }
 }

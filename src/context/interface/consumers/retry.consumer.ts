@@ -3,6 +3,7 @@ import { Controller, Inject, Logger } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
 import { KafkaTopicBuilder, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { KAFKA_RETRY_QUEUE } from "~context/infrastructure/queues";
 import { KafkaTopic } from "~context/enums";
 
@@ -18,10 +19,12 @@ export class RetryConsumer implements Consumers.Retry.Contract {
     private readonly logger = new Logger(RetryConsumer.name);
 
     public constructor(
-        @Inject(KAFKA_RETRY_QUEUE)
-        private readonly kafkaRetryQueue: Queues.KafkaRetry.Contract,
+        @Inject(KafkaMetricsRecorder)
+        private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
+        @Inject(KAFKA_RETRY_QUEUE)
+        private readonly kafkaRetryQueue: Queues.KafkaRetry.Contract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
@@ -48,5 +51,6 @@ export class RetryConsumer implements Consumers.Retry.Contract {
         const { message, error } = props;
         this.logger.warn(`Rejected retry envelope for topic "${message.originalTopic}": ${String(error)}`);
         await lastValueFrom(this.kafkaClient.emit(`${message.originalTopic}-dead`, { value: message }));
+        this.kafkaMetrics.recordDead({ topic: message.originalTopic, error });
     }
 }

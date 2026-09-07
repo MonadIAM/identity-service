@@ -3,6 +3,7 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { Global, Module } from "@nestjs/common";
 
 import { CredentialsWatcher } from "./utils/credentials-watcher";
+import { PostgreSQLPoolRegistry } from "./pool.registry";
 import { MikroOrmConfig } from "./database.config";
 
 @Global()
@@ -31,7 +32,7 @@ import { MikroOrmConfig } from "./database.config";
             }),
         }),
     ],
-    providers: [MikroOrmConfig, CredentialsWatcher],
-    exports: [MikroOrmConfig],
+    providers: [PostgreSQLPoolRegistry, MikroOrmConfig, CredentialsWatcher],
+    exports: [PostgreSQLPoolRegistry, MikroOrmConfig],
 })
 export class DatabaseModule {}

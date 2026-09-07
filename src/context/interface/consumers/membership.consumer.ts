@@ -4,6 +4,7 @@ import { MembershipTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
 import { KafkaTopicBuilder, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { MEMBERSHIP_COMMANDS } from "~context/application/commands";
 import { CONSUMER_META } from "~context/constants";
 import { Exception } from "~common/exceptions";
@@ -14,6 +15,8 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
     private readonly logger = new Logger(MembershipConsumer.name);
 
     public constructor(
+        @Inject(KafkaMetricsRecorder)
+        private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(MEMBERSHIP_COMMANDS)
         private readonly membershipCommands: Commands.Membership.ConsumerContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
@@ -90,5 +93,11 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
                 },
             }),
         );
+
+        if (retryable) {
+            this.kafkaMetrics.recordRetry({ topic: KafkaTopic.MEMBERSHIP, error });
+        } else {
+            this.kafkaMetrics.recordDead({ topic: KafkaTopic.MEMBERSHIP, error });
+        }
     }
 }
