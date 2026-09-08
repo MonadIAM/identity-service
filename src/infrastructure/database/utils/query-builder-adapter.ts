@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
 import { PublicOrdinalOperator, PublicStringOperator } from "../enums";
 
@@ -13,7 +13,11 @@ export class QueryBuilderAdapter {
         return query;
     }
 
-    public static applyStringFilter(query: ORM.QueryBuilder, filter: StringFilterDTO, column: string): void {
+    public static applyStringFilter(
+        query: ORM.QueryBuilder,
+        filter: StringFilterDTO | LinkFilterDTO,
+        column: string,
+    ): void {
         if (Array.isArray(filter.value)) {
             switch (filter.operator) {
                 case PublicStringOperator.IN:
@@ -96,6 +100,16 @@ export class QueryBuilderAdapter {
         } else {
             const defaultColumn = `${tableAlias}.${this.toSnakeCase(basicSort[0])}`;
             query.orderBy(defaultColumn, basicSort[1]);
+        }
+
+        let hasIDOrder = false;
+
+        for (const key in sort) {
+            hasIDOrder = sort[key] ? key === "id" || key === `${tableAlias}.id` : false;
+        }
+
+        if (!hasIDOrder) {
+            query.orderBy(`${tableAlias}.id`, QueryOrder.ASC);
         }
     }
 

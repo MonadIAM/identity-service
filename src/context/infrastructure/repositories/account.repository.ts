@@ -38,7 +38,7 @@ export class AccountRepository
                 .from({ a: "identity.account" })
                 .leftJoin({ p: "identity.profile" }, "p.account_id", "a.id")
                 .joinRaw(
-                    "LEFT JOIN LATERAL (SELECT identity FROM identity.identifier WHERE account_id = a.id AND identity % ? ORDER BY similarity(identity, ?) DESC LIMIT 1) i ON true",
+                    "LEFT JOIN LATERAL (SELECT identity FROM identity.identifier WHERE account_id = a.id AND identity % ? ORDER BY similarity(identity, ?) DESC, identity ASC, id ASC LIMIT 1) i ON true",
                     [term, term],
                 )
                 .limit(pagination.elementsPerPage)
@@ -54,13 +54,15 @@ export class AccountRepository
                     .orderByRaw("GREATEST(similarity(p.display_name, ?), COALESCE(similarity(i.identity, ?), 0)) DESC", [
                         term,
                         term,
-                    ]);
+                    ])
+                    .orderBy("p.display_name", "asc")
+                    .orderBy("a.id", "asc");
                 countQuery = countQuery.whereRaw(
                     "p.display_name % ? OR EXISTS (SELECT 1 FROM identity.identifier WHERE account_id = a.id AND identity % ?)",
                     [term, term],
                 );
             } else {
-                dataQuery = dataQuery.orderBy("p.display_name", "asc");
+                dataQuery = dataQuery.orderBy("p.display_name", "asc").orderBy("a.id", "asc");
             }
 
             const dataSQL = dataQuery.toSQL();
@@ -109,7 +111,9 @@ export class AccountRepository
                 Account,
                 {
                     status: AccountStatus.ACTIVE,
-                    [raw("COALESCE(last_active_at, updated_at, created_at)")]: { $lt: expirationDate },
+                    [raw((alias) => `COALESCE(${alias}.last_active_at, ${alias}.updated_at, ${alias}.created_at)`)]: {
+                        $lt: expirationDate,
+                    },
                 },
                 { limit: batchSize },
             );

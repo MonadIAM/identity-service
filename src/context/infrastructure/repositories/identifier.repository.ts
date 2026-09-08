@@ -40,11 +40,15 @@ export class IdentifierRepository
                 .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
 
             if (term) {
-                builder.andWhere("i.identity % ? OR p.display_name % ?", [term, term]).orderBy({
-                    [raw("GREATEST(similarity(i.identity, ?), similarity(p.display_name, ?))", [term, term])]: "DESC",
-                });
+                builder.andWhere("i.identity % ? OR p.display_name % ?", [term, term]).orderBy([
+                    {
+                        [raw("GREATEST(similarity(i.identity, ?), similarity(p.display_name, ?))", [term, term])]: "DESC",
+                    },
+                    { "i.identity": "ASC" },
+                    { "i.id": "ASC" },
+                ]);
             } else {
-                builder.orderBy({ "i.identity": "ASC" });
+                builder.orderBy({ "i.identity": "ASC", "i.id": "ASC" });
             }
 
             return await builder.getResultAndCount();
