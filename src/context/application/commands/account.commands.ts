@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { isEmail } from "class-validator";
 
-import { ACCOUNT_REPOSITORY, IDENTIFIER_REPOSITORY, INVITE_REPOSITORY } from "~context/infrastructure/repositories";
 import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE, INVITE_SERVICE } from "~context/domain/services";
+import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
@@ -13,7 +13,6 @@ import {
     AccountSubject,
     IdentifierType,
     AccountStatus,
-    InviteStatus,
     ActionType,
     EntityType,
     KafkaTopic,
@@ -32,10 +31,6 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.PublicContract,
-        @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.PublicContract,
-        @Inject(INVITE_REPOSITORY)
-        private readonly inviteRepository: Repositories.Invite.PublicContract,
         @Inject(RECOVERY_CODE_SERVICE)
         private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
         @Inject(ACCOUNT_SERVICE)
@@ -103,29 +98,29 @@ export class AccountCommands implements Commands.Account.Contract {
 
         if (identifier.isVerified) {
             throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
+        } else {
+            const otp = this.cryptoService.generateOTP();
+
+            await this.otpCacheService.set({
+                value: identifier.account.id,
+                purpose: "verification",
+                key: otp,
+            });
+
+            await this.transactionalService.emit({
+                payload: this.mapper.notificationPayload({ account: identifier.account.id, otp }),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+                resource: this.resource,
+                audit: {
+                    actionType: ActionType.REGENERATE,
+                    entityType: EntityType.ACCOUNT,
+                    ...props,
+                },
+            });
+
+            return { message: `${this.dictionaryPath}.CODE_RESENT` };
         }
-
-        const otp = this.cryptoService.generateOTP();
-
-        await this.otpCacheService.set({
-            value: identifier.account.id,
-            purpose: "verification",
-            key: otp,
-        });
-
-        await this.transactionalService.emit({
-            payload: this.mapper.notificationPayload({ account: identifier.account.id, otp }),
-            actionType: NotificationTopicAction.CREATE,
-            destinationTopic: KafkaTopic.NOTIFICATION,
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.ACCOUNT,
-                actionType: ActionType.REGENERATE,
-                ...props,
-            },
-        });
-
-        return { message: `${this.dictionaryPath}.CODE_RESENT` };
     }
 
     public async verify(props: Commands.Account.Verify.Props): Commands.Account.Verify.Result {
@@ -134,47 +129,45 @@ export class AccountCommands implements Commands.Account.Contract {
             key: props.input.code,
         });
 
-        if (!cachedAccount) {
+        if (cachedAccount) {
+            const codes = this.cryptoService.generateRecoveryCodes();
+            const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
+
+            await this.transactionalService.run({
+                resource: this.resource,
+                outbox: {
+                    payloadMapper: this.mapper.accountPayload,
+                    actionType: AccountTopicAction.CREATE,
+                    destinationTopic: KafkaTopic.ACCOUNT,
+                },
+                audit: {
+                    entityType: EntityType.ACCOUNT,
+                    actionType: ActionType.VERIFY,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const account = await this.accountService.verify({
+                        input: { account: cachedAccount },
+                        transaction,
+                    });
+
+                    this.recoveryCodeService.generate({
+                        transaction,
+                        input: { account, hashes: hashedCodes },
+                    });
+
+                    return { account };
+                },
+            });
+
+            return {
+                message: `${this.dictionaryPath}.VERIFIED`,
+                codes,
+            };
+        } else {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
         }
-
-        const codes = this.cryptoService.generateRecoveryCodes();
-        const hashedCodes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
-
-        await this.transactionalService.run({
-            resource: this.resource,
-            outbox: {
-                payloadMapper: this.mapper.accountPayload,
-                actionType: AccountTopicAction.CREATE,
-                destinationTopic: KafkaTopic.ACCOUNT,
-            },
-            audit: {
-                entityType: EntityType.ACCOUNT,
-                actionType: ActionType.VERIFY,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const account = await this.accountRepository.findUniqueOrThrow({
-                    where: { id: cachedAccount },
-                    transaction,
-                });
-
-                this.accountService.verify({ input: { account } });
-
-                this.recoveryCodeService.generate({
-                    transaction,
-                    input: { account, hashes: hashedCodes },
-                });
-
-                return { account };
-            },
-        });
-
-        return {
-            message: `${this.dictionaryPath}.VERIFIED`,
-            codes,
-        };
     }
 
     public async deactivate(props: Commands.Account.Deactivate.Props): Commands.Account.Deactivate.Result {
@@ -187,15 +180,7 @@ export class AccountCommands implements Commands.Account.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const account = await this.accountRepository.findUniqueOrThrow({
-                    options: { populate: ["sessions"] },
-                    where: { id: props.actor },
-                    transaction,
-                });
-
-                const sessions = account.sessions.getItems();
-
-                this.accountService.deactivate({ transaction, input: { account, sessions } });
+                await this.accountService.deactivate({ input: { account: props.actor }, transaction });
             },
         });
 
@@ -212,24 +197,8 @@ export class AccountCommands implements Commands.Account.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const account = await this.accountRepository.findUniqueOrThrow({
-                    options: { populate: ["sessions"] },
-                    where: { id: props.input.account },
-                    transaction,
-                });
-
-                const sessions = account.sessions.getItems();
-
-                this.accountService.suspend({ transaction, input: { account, sessions } });
-
-                const pendingInvites = await this.inviteRepository.find({
-                    where: { status: InviteStatus.PENDING, $or: [{ invitee: account }, { inviter: account }] },
-                    transaction,
-                });
-
-                for (const invite of pendingInvites) {
-                    this.inviteService.invalidate({ entity: invite });
-                }
+                await this.accountService.suspend({ input: { account: props.input.account }, transaction });
+                await this.inviteService.invalidatePending({ input: { account: props.input.account }, transaction });
             },
         });
 
@@ -246,12 +215,7 @@ export class AccountCommands implements Commands.Account.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const account = await this.accountRepository.findUniqueOrThrow({
-                    where: { id: props.input.account },
-                    transaction,
-                });
-
-                this.accountService.unsuspend({ input: { account } });
+                await this.accountService.unsuspend({ input: { account: props.input.account }, transaction });
             },
         });
 

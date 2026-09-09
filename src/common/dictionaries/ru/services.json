@@ -1,6 +1,8 @@
 {
   "identifier": {
-    "CANNOT_REMOVE_LAST_VERIFIED": "Нельзя удалить последний подтвержденный идентификатор."
+    "CANNOT_REMOVE_LAST_VERIFIED": "Нельзя удалить последний подтвержденный идентификатор.",
+
+    "ALREADY_VERIFIED": "Идентификатор уже подтверждён."
   },
   "authorization-cache": {
     "CODE_ALLOCATION_FAILED": "Не удалось выделить уникальный код авторизации."
@@ -10,7 +12,9 @@
     "SCRIPT_NOT_LOADED": "Lua-скрипт не загружен: {script}."
   },
   "application": {
-    "REALM_LIMIT_EXCEEDED": "Достигнут лимит приложений для этого realm."
+    "REALM_LIMIT_EXCEEDED": "Достигнут лимит приложений для этого realm.",
+
+    "APPLICATIONS_NOT_FOUND": "Часть указанных приложений не найдена."
   },
   "interface-client": {
     "APPLICATION_LIMIT_EXCEEDED": "Достигнут лимит interface-клиентов для этого приложения.",
@@ -20,10 +24,38 @@
     "INVALID_REDIRECT_URI": "Redirect URI недействителен.",
     "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "Redirect URI не должен содержать fragment.",
     "AUTH_ADDRESS_REQUIRED": "Auth address обязателен.",
-    "INVALID_AUTH_ADDRESS": "Auth address недействителен."
+    "INVALID_AUTH_ADDRESS": "Auth address недействителен.",
+
+    "CLIENTS_NOT_FOUND": "Часть указанных клиентов не найдена."
   },
   "service-client": {
-    "APPLICATION_LIMIT_EXCEEDED": "Достигнут лимит service-клиентов для этого приложения."
+    "APPLICATION_LIMIT_EXCEEDED": "Достигнут лимит service-клиентов для этого приложения.",
+
+    "CLIENTS_NOT_FOUND": "Часть указанных клиентов не найдена."
+  },
+  "invite": {
+    "INVITEE_ALREADY_MEMBER": "Приглашаемый уже является участником этого realm."
+  },
+  "second-factor": {
+    "TOTP_FACTOR_EXISTS": "TOTP-фактор уже настроен для этой учётной записи.",
+
+    "INVALID_TOTP_CODE": "Код второго фактора недействителен.",
+    "NO_ACTIVE_2FA": "Для этой учетной записи нет активного второго фактора.",
+    "INVALID_CODE": "Мастер-код недействителен."
+  },
+  "session": {
+    "SESSION_NOT_FOUND": "Сессия не найдена.",
+    "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен.",
+    "ACCOUNT_NOT_AUTHENTICATABLE": "Учетная запись не может создать сессию."
+  },
+  "password": {
+    "NO_PASSWORD_SET": "Для этой учетной записи не задан пароль.",
+    "INVALID_CURRENT_PASSWORD": "Текущий пароль недействителен.",
+    "RECENTLY_USED": "Этот пароль использовался недавно.",
+    "INVALID_RECOVERY_CODE": "Код восстановления недействителен."
+  },
+  "membership": {
+    "MEMBERSHIP_NOT_FOUND": "Указанная учётная запись не является участником этого realm."
   },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",

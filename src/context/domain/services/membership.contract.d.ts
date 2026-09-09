@@ -3,19 +3,27 @@ declare namespace Services {
         interface Contract extends CommandContract {}
 
         interface CommandContract {
-            create: Create.Signature;
-            revoke: Revoke.Signature;
+            confirm: Confirm.Signature;
+            exclude: Exclude.Signature;
         }
 
-        namespace Create {
+        namespace Confirm {
+            type Join = {
+                joinedAt: number;
+                account: string;
+                invite: string;
+                role: string;
+            };
+
+            type Leave = {
+                account: string;
+            };
+
             type Props = {
                 transaction: ORM.EntityManager;
-                input: {
-                    account: Entities.Account;
-                    invitedBy: string;
-                    joinedAt: Date;
-                    realm: string;
-                };
+                input: Join | Leave;
+                actor: string;
+                realm: string;
             };
 
             type Result = Promise<void>;
@@ -23,7 +31,7 @@ declare namespace Services {
             type Signature = (props: Props) => Result;
         }
 
-        namespace Revoke {
+        namespace Exclude {
             type Props = {
                 transaction: ORM.EntityManager;
                 input: {
@@ -32,7 +40,7 @@ declare namespace Services {
                 };
             };
 
-            type Result = Promise<void>;
+            type Result = Promise<Entities.Membership>;
 
             type Signature = (props: Props) => Result;
         }

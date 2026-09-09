@@ -1,10 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { INTERFACE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
 import { InterfaceClientTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { INTERFACE_CLIENT_SERVICE } from "~context/domain/services";
-import { Exception } from "~common/exceptions";
 
 import { InterfaceClientMapper } from "../mappers";
 
@@ -17,10 +15,6 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(INTERFACE_CLIENT_REPOSITORY)
-        private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
-        @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(INTERFACE_CLIENT_SERVICE)
         private readonly interfaceClientService: Services.InterfaceClient.CommandContract,
     ) {
@@ -43,19 +37,15 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             },
             changeLog: true,
             execute: async (transaction) => {
-                const application = await this.applicationRepository.findUniqueOrThrow({
-                    where: { id: input.application, realm },
-                    transaction,
-                });
-
                 const entity = await this.interfaceClientService.create({
                     transaction,
+                    realm,
                     input: {
                         redirectUris: input.redirectUris,
                         description: input.description,
                         authAddress: input.authAddress,
+                        application: input.application,
                         name: input.name,
-                        application,
                     },
                 });
 
@@ -77,19 +67,16 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.interfaceClientRepository.findUniqueOrThrow({
-                    where: { id: client, application: { realm } },
-                    transaction,
-                });
-
-                this.interfaceClientService.update({
+                await this.interfaceClientService.update({
                     patch: {
                         redirectUris: input.redirectUris,
                         authAddress: input.authAddress,
                         description: input.description,
                         name: input.name,
                     },
-                    entity,
+                    id: client,
+                    transaction,
+                    realm,
                 });
             },
         });
@@ -113,17 +100,12 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.interfaceClientRepository.find({
-                    where: { id: { $in: input.clients }, application: { realm } },
-                    options: { populate: ["application"] },
+                const entities = await this.interfaceClientService.revoke({
+                    identifiers: input.clients,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.clients.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
-                }
-
-                this.interfaceClientService.revoke({ entities });
                 return { entities, isRevoked: true, actor };
             },
         });
@@ -151,17 +133,12 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.interfaceClientRepository.find({
-                    where: { id: { $in: input.clients }, application: { realm } },
-                    options: { populate: ["application"] },
+                const entities = await this.interfaceClientService.restore({
+                    identifiers: input.clients,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.clients.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
-                }
-
-                this.interfaceClientService.restore({ entities });
                 return { entities, isRevoked: false, actor };
             },
         });
@@ -189,17 +166,12 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.interfaceClientRepository.find({
-                    where: { id: { $in: input.clients }, application: { realm } },
-                    options: { populate: ["application"] },
+                const entities = await this.interfaceClientService.purge({
+                    identifiers: input.clients,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.clients.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
-                }
-
-                this.interfaceClientService.purge({ transaction, entities });
                 return { entities, isRevoked: true, actor };
             },
         });

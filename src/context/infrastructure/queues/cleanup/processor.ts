@@ -4,8 +4,8 @@ import { AccountTopicAction } from "@monadiam/shared";
 import { Job } from "bullmq";
 
 import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE, INVITE_SERVICE } from "~context/domain/services";
-import { ACCOUNT_REPOSITORY, INVITE_REPOSITORY } from "~context/infrastructure/repositories";
-import { CleanupJob, KafkaTopic, AccountStatus, InviteStatus } from "~context/enums";
+import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 
 import { CLEANUP_QUEUE } from "../tokens";
@@ -22,8 +22,6 @@ export class CleanupProcessor extends WorkerHost {
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
-        @Inject(INVITE_REPOSITORY)
-        private readonly inviteRepository: Repositories.Invite.PublicContract,
         @Inject(CHANGE_LOG_SERVICE)
         private readonly changeLogService: Services.ChangeLog.ProcessorContract,
         @Inject(AUDIT_LOG_SERVICE)
@@ -149,17 +147,7 @@ export class CleanupProcessor extends WorkerHost {
             const expired = await this.transactionalService.run<Entities.Invite[]>({
                 resource: "Invite",
                 execute: async (transaction) => {
-                    const invites = await this.inviteRepository.find({
-                        where: { status: InviteStatus.PENDING, createdAt: { $lt: expirationDate } },
-                        options: { limit: batchSize },
-                        transaction,
-                    });
-
-                    for (const invite of invites) {
-                        this.inviteService.expire({ entity: invite });
-                    }
-
-                    return invites;
+                    return await this.inviteService.expire({ input: { expirationDate, batchSize }, transaction });
                 },
             });
 

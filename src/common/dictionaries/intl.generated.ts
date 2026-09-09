@@ -23,8 +23,6 @@ export type I18nTranslations = {
             "INVALID_OR_EXPIRED_CODE": string;
             "PENDING_2FA_TOKEN_MISSING": string;
             "EXPIRED_PENDING_2FA": string;
-            "NO_ACTIVE_2FA": string;
-            "INVALID_TOTP_CODE": string;
             "ACCOUNT_SUSPENDED": string;
             "ACCOUNT_NOT_VERIFIED": string;
             "PASSWORD_VERIFIED": string;
@@ -34,8 +32,6 @@ export type I18nTranslations = {
             "NO_PASSWORD_SET": string;
             "INVALID_PASSWORD": string;
             "REAUTHENTICATED": string;
-            "NO_ACTIVE_2FA": string;
-            "INVALID_TOTP_CODE": string;
         };
         "identifier": {
             "CREATED": string;
@@ -52,11 +48,9 @@ export type I18nTranslations = {
             "DECLINED": string;
             "CANCELLED": string;
             "INVALID_STATUS": string;
-            "INVITEE_ALREADY_MEMBER": string;
         };
         "membership": {
             "EXCLUSION_REQUESTED": string;
-            "MEMBERSHIP_NOT_FOUND": string;
         };
         "federated-authn": {
             "INVALID_STATE": string;
@@ -83,7 +77,6 @@ export type I18nTranslations = {
             "BULK_RESTORED_COUNT": string;
             "PURGED": string;
             "BULK_PURGED_COUNT": string;
-            "APPLICATIONS_NOT_FOUND": string;
         };
         "interface-client": {
             "CREATED": string;
@@ -94,7 +87,6 @@ export type I18nTranslations = {
             "BULK_RESTORED_COUNT": string;
             "PURGED": string;
             "BULK_PURGED_COUNT": string;
-            "CLIENTS_NOT_FOUND": string;
         };
         "service-client": {
             "CREATED": string;
@@ -105,17 +97,12 @@ export type I18nTranslations = {
             "BULK_RESTORED_COUNT": string;
             "PURGED": string;
             "BULK_PURGED_COUNT": string;
-            "CLIENTS_NOT_FOUND": string;
         };
         "password": {
-            "NO_PASSWORD_SET": string;
-            "INVALID_CURRENT_PASSWORD": string;
             "CHANGED": string;
             "RESET_CODE_SENT": string;
             "INVALID_OR_EXPIRED_CODE": string;
             "RESET": string;
-            "INVALID_RECOVERY_CODE": string;
-            "RECENTLY_USED": string;
         };
         "profile": {
             "UPDATED": string;
@@ -124,18 +111,13 @@ export type I18nTranslations = {
             "REGENERATED": string;
         };
         "second-factor": {
-            "TOTP_FACTOR_EXISTS": string;
-            "INVALID_TOTP_CODE": string;
             "VERIFIED": string;
             "PURGED": string;
-            "INVALID_CODE": string;
             "RESET": string;
         };
         "session": {
-            "ACCOUNT_NOT_AUTHENTICATABLE": string;
             "INVALID_REFRESH_TOKEN": string;
             "REFRESH_TOKEN_REUSE_DETECTED": string;
-            "SESSION_NOT_FOUND": string;
             "REFRESHED": string;
             "LOGOUT": string;
             "REVOKED": string;
@@ -243,6 +225,7 @@ export type I18nTranslations = {
     "services": {
         "identifier": {
             "CANNOT_REMOVE_LAST_VERIFIED": string;
+            "ALREADY_VERIFIED": string;
         };
         "authorization-cache": {
             "CODE_ALLOCATION_FAILED": string;
@@ -253,6 +236,7 @@ export type I18nTranslations = {
         };
         "application": {
             "REALM_LIMIT_EXCEEDED": string;
+            "APPLICATIONS_NOT_FOUND": string;
         };
         "interface-client": {
             "APPLICATION_LIMIT_EXCEEDED": string;
@@ -263,9 +247,34 @@ export type I18nTranslations = {
             "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": string;
             "AUTH_ADDRESS_REQUIRED": string;
             "INVALID_AUTH_ADDRESS": string;
+            "CLIENTS_NOT_FOUND": string;
         };
         "service-client": {
             "APPLICATION_LIMIT_EXCEEDED": string;
+            "CLIENTS_NOT_FOUND": string;
+        };
+        "invite": {
+            "INVITEE_ALREADY_MEMBER": string;
+        };
+        "second-factor": {
+            "TOTP_FACTOR_EXISTS": string;
+            "INVALID_TOTP_CODE": string;
+            "NO_ACTIVE_2FA": string;
+            "INVALID_CODE": string;
+        };
+        "session": {
+            "SESSION_NOT_FOUND": string;
+            "INVALID_REFRESH_TOKEN": string;
+            "ACCOUNT_NOT_AUTHENTICATABLE": string;
+        };
+        "password": {
+            "NO_PASSWORD_SET": string;
+            "INVALID_CURRENT_PASSWORD": string;
+            "RECENTLY_USED": string;
+            "INVALID_RECOVERY_CODE": string;
+        };
+        "membership": {
+            "MEMBERSHIP_NOT_FOUND": string;
         };
         "jwt": {
             "INVALID_ACCESS_TOKEN": string;

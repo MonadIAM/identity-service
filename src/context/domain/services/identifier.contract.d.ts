@@ -11,12 +11,14 @@ declare namespace Services {
 
         namespace TogglePublicContact {
             type Props = {
+                transaction: ORM.EntityManager;
                 input: {
-                    identifier: Entities.Identifier;
+                    identifier: string;
+                    account: string;
                 };
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
@@ -26,11 +28,11 @@ declare namespace Services {
                 transaction: ORM.EntityManager;
                 input: {
                     identifier: Omit<Entities.Identifier.ConstructorProps, "account">;
-                    account: Entities.Account;
+                    account: Entities.Account | string;
                 };
             };
 
-            type Result = Entities.Identifier;
+            type Result = Promise<Entities.Identifier>;
 
             type Signature = (props: Props) => Result;
         }
@@ -39,11 +41,11 @@ declare namespace Services {
             type Props = {
                 transaction: ORM.EntityManager;
                 input: {
-                    identifier: Entities.Identifier;
+                    identifier: string;
                 };
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
@@ -52,7 +54,7 @@ declare namespace Services {
             type Props = {
                 transaction: ORM.EntityManager;
                 input: {
-                    identifier: Entities.Identifier;
+                    identifier: string;
                     account: string;
                     reason?: string;
                 };

@@ -11,12 +11,12 @@ declare namespace Services {
             type Props = {
                 transaction: ORM.EntityManager;
                 input: {
-                    account: Entities.Account;
                     hashes: string[];
+                    account: string;
                 };
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }

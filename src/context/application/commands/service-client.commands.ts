@@ -1,10 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { SERVICE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
 import { ServiceClientTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { SERVICE_CLIENT_SERVICE } from "~context/domain/services";
-import { Exception } from "~common/exceptions";
 
 import { ServiceClientMapper } from "../mappers";
 
@@ -17,10 +15,6 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(SERVICE_CLIENT_REPOSITORY)
-        private readonly serviceClientRepository: Repositories.ServiceClient.PublicContract,
-        @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(SERVICE_CLIENT_SERVICE)
         private readonly serviceClientService: Services.ServiceClient.CommandContract,
     ) {
@@ -43,19 +37,15 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const application = await this.applicationRepository.findUniqueOrThrow({
-                    where: { id: input.application, realm },
-                    transaction,
-                });
-
                 const serviceClient = await this.serviceClientService.create({
                     transaction,
+                    realm,
                     input: {
                         allowedAddresses: input.allowedAddresses,
                         description: input.description,
+                        application: input.application,
                         code: input.code,
                         name: input.name,
-                        application,
                     },
                 });
 
@@ -77,18 +67,15 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.serviceClientRepository.findUniqueOrThrow({
-                    where: { id: input.client, application: { realm } },
-                    transaction,
-                });
-
-                this.serviceClientService.update({
+                await this.serviceClientService.update({
                     patch: {
                         allowedAddresses: input.allowedAddresses,
                         description: input.description,
                         name: input.name,
                     },
-                    entity,
+                    id: input.client,
+                    transaction,
+                    realm,
                 });
             },
         });
@@ -112,17 +99,12 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.serviceClientRepository.find({
-                    where: { id: { $in: input.clients }, application: { realm } },
-                    options: { populate: ["application"] },
+                const entities = await this.serviceClientService.revoke({
+                    identifiers: input.clients,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.clients.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
-                }
-
-                this.serviceClientService.revoke({ entities });
                 return { serviceClients: entities, actor };
             },
         });
@@ -152,17 +134,12 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.serviceClientRepository.find({
-                    where: { id: { $in: input.clients }, application: { realm } },
-                    options: { populate: ["application"] },
+                const entities = await this.serviceClientService.restore({
+                    identifiers: input.clients,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.clients.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
-                }
-
-                this.serviceClientService.restore({ entities });
                 return { serviceClients: entities, actor };
             },
         });
@@ -192,17 +169,12 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.serviceClientRepository.find({
-                    where: { id: { $in: input.clients }, application: { realm } },
-                    options: { populate: ["application"] },
+                const entities = await this.serviceClientService.purge({
+                    identifiers: input.clients,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.clients.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
-                }
-
-                this.serviceClientService.purge({ transaction, entities });
                 return { serviceClients: entities, actor };
             },
         });

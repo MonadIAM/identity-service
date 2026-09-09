@@ -1,10 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { InterfaceClientTopicAction, ServiceClientTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { APPLICATION_SERVICE } from "~context/domain/services";
-import { Exception } from "~common/exceptions";
 
 import { ApplicationMapper } from "../mappers";
 
@@ -17,8 +15,6 @@ export class ApplicationCommands implements Commands.Application.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.PublicContract,
         @Inject(APPLICATION_SERVICE)
         private readonly applicationService: Services.Application.CommandContract,
     ) {
@@ -60,20 +56,14 @@ export class ApplicationCommands implements Commands.Application.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.applicationRepository.findUniqueOrThrow({
-                    where: {
-                        id: input.application,
-                        realm: realm,
-                    },
-                    transaction,
-                });
-
-                this.applicationService.update({
+                await this.applicationService.update({
                     patch: {
                         description: input.description,
                         name: input.name,
                     },
-                    entity,
+                    id: input.application,
+                    transaction,
+                    realm,
                 });
             },
         });
@@ -104,20 +94,11 @@ export class ApplicationCommands implements Commands.Application.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.applicationRepository.find({
-                    where: {
-                        id: { $in: input.applications },
-                        realm,
-                    },
-                    options: { populate: ["interfaceClients", "serviceClients"] },
+                const entities = await this.applicationService.revoke({
+                    identifiers: input.applications,
                     transaction,
+                    realm,
                 });
-
-                if (entities.length < input.applications.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
-                } else {
-                    this.applicationService.revoke({ entities });
-                }
 
                 return { entities, isRevoked: true, actor };
             },
@@ -153,20 +134,11 @@ export class ApplicationCommands implements Commands.Application.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.applicationRepository.find({
-                    where: {
-                        id: { $in: props.input.applications },
-                        realm: props.realm,
-                    },
-                    options: { populate: ["interfaceClients", "serviceClients"] },
+                const entities = await this.applicationService.restore({
+                    identifiers: props.input.applications,
+                    realm: props.realm,
                     transaction,
                 });
-
-                if (entities.length < props.input.applications.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
-                } else {
-                    this.applicationService.restore({ entities });
-                }
 
                 return { entities, isRevoked: false, actor };
             },
@@ -176,40 +148,6 @@ export class ApplicationCommands implements Commands.Application.Contract {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
-        }
-    }
-
-    public async purge(props: Commands.Application.Purge.Props): Commands.Application.Purge.Result {
-        const entities = await this.transactionalService.run({
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.APPLICATION,
-                actionType: ActionType.PURGE,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const entities = await this.applicationRepository.find({
-                    where: {
-                        id: { $in: props.input.applications },
-                        realm: props.realm,
-                    },
-                    transaction,
-                });
-
-                if (entities.length < props.input.applications.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
-                } else {
-                    this.applicationService.purge({ transaction, entities });
-                    return entities;
-                }
-            },
-        });
-
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-        } else {
-            return { message: `${this.dictionaryPath}.PURGED` };
         }
     }
 
@@ -236,13 +174,12 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 },
             ],
             execute: async (transaction) => {
-                const entities = await this.applicationRepository.find({
-                    options: { populate: ["interfaceClients", "serviceClients"] },
-                    where: { realm },
+                const entities = await this.applicationService.applyRealmRevocation({
+                    version: input.version,
                     transaction,
+                    realm,
                 });
 
-                this.applicationService.applyRealmRevocation({ entities, version: input.version });
                 return { entities, isRevoked: true, actor };
             },
         });
@@ -271,16 +208,40 @@ export class ApplicationCommands implements Commands.Application.Contract {
                 },
             ],
             execute: async (transaction) => {
-                const entities = await this.applicationRepository.find({
-                    options: { populate: ["interfaceClients", "serviceClients"] },
-                    where: { realm },
+                const entities = await this.applicationService.applyRealmRestore({
+                    version: input.version,
                     transaction,
+                    realm,
                 });
 
-                this.applicationService.applyRealmRestore({ entities, version: input.version });
                 return { entities, isRevoked: false, actor };
             },
         });
+    }
+
+    public async purge(props: Commands.Application.Purge.Props): Commands.Application.Purge.Result {
+        const entities = await this.transactionalService.run({
+            resource: this.resource,
+            audit: {
+                entityType: EntityType.APPLICATION,
+                actionType: ActionType.PURGE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                return await this.applicationService.purge({
+                    identifiers: props.input.applications,
+                    realm: props.realm,
+                    transaction,
+                });
+            },
+        });
+
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
+        }
     }
 
     public async purgeRealm(props: Commands.Application.PurgeRealm.Props): Commands.Application.PurgeRealm.Result {
@@ -295,8 +256,7 @@ export class ApplicationCommands implements Commands.Application.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.applicationRepository.find({ transaction, where: { realm } });
-                this.applicationService.purgeRealm({ transaction, entities, version });
+                await this.applicationService.purgeRealm({ transaction, version, realm });
             },
         });
     }

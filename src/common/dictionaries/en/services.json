@@ -1,6 +1,8 @@
 {
   "identifier": {
-    "CANNOT_REMOVE_LAST_VERIFIED": "The last verified identifier cannot be removed."
+    "CANNOT_REMOVE_LAST_VERIFIED": "The last verified identifier cannot be removed.",
+
+    "ALREADY_VERIFIED": "Identifier is already verified."
   },
   "authorization-cache": {
     "CODE_ALLOCATION_FAILED": "Failed to allocate a unique authorization code."
@@ -10,7 +12,9 @@
     "SCRIPT_NOT_LOADED": "Lua script is not loaded: {script}."
   },
   "application": {
-    "REALM_LIMIT_EXCEEDED": "The application limit for this realm has been reached."
+    "REALM_LIMIT_EXCEEDED": "The application limit for this realm has been reached.",
+
+    "APPLICATIONS_NOT_FOUND": "Some of the specified applications were not found."
   },
   "interface-client": {
     "APPLICATION_LIMIT_EXCEEDED": "The interface client limit for this application has been reached.",
@@ -20,10 +24,38 @@
     "INVALID_REDIRECT_URI": "The redirect URI is invalid.",
     "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "The redirect URI must not contain a fragment.",
     "AUTH_ADDRESS_REQUIRED": "The auth address is required.",
-    "INVALID_AUTH_ADDRESS": "The auth address is invalid."
+    "INVALID_AUTH_ADDRESS": "The auth address is invalid.",
+
+    "CLIENTS_NOT_FOUND": "Some of the specified clients were not found."
   },
   "service-client": {
-    "APPLICATION_LIMIT_EXCEEDED": "The service client limit for this application has been reached."
+    "APPLICATION_LIMIT_EXCEEDED": "The service client limit for this application has been reached.",
+
+    "CLIENTS_NOT_FOUND": "Some of the specified clients were not found."
+  },
+  "invite": {
+    "INVITEE_ALREADY_MEMBER": "The invitee is already a member of this realm."
+  },
+  "second-factor": {
+    "TOTP_FACTOR_EXISTS": "A TOTP factor is already configured for this account.",
+
+    "INVALID_TOTP_CODE": "The second-factor code is invalid.",
+    "NO_ACTIVE_2FA": "No active second factor is available for this account.",
+    "INVALID_CODE": "The master code is invalid."
+  },
+  "session": {
+    "SESSION_NOT_FOUND": "The session was not found.",
+    "INVALID_REFRESH_TOKEN": "The refresh token is invalid.",
+    "ACCOUNT_NOT_AUTHENTICATABLE": "The account cannot create a session."
+  },
+  "password": {
+    "NO_PASSWORD_SET": "No password is set for this account.",
+    "INVALID_CURRENT_PASSWORD": "The current password is invalid.",
+    "RECENTLY_USED": "This password was used recently.",
+    "INVALID_RECOVERY_CODE": "The recovery code is invalid."
+  },
+  "membership": {
+    "MEMBERSHIP_NOT_FOUND": "The specified account is not a member of this realm."
   },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "The access token is invalid or expired.",

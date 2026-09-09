@@ -16,8 +16,6 @@
     "INVALID_OR_EXPIRED_CODE": "The one-time password is invalid or expired.",
     "PENDING_2FA_TOKEN_MISSING": "A pending 2FA verification token is required.",
     "EXPIRED_PENDING_2FA": "The pending 2FA verification session is expired.",
-    "NO_ACTIVE_2FA": "No active second factor is available for this account.",
-    "INVALID_TOTP_CODE": "The second-factor code is invalid.",
     "ACCOUNT_SUSPENDED": "The account is suspended.",
     "ACCOUNT_NOT_VERIFIED": "The account is not verified.",
     "PASSWORD_VERIFIED": "The password was verified. Second-factor verification is required.",
@@ -26,9 +24,7 @@
   "reauthentication": {
     "NO_PASSWORD_SET": "No password is set for this account.",
     "INVALID_PASSWORD": "The password is invalid.",
-    "REAUTHENTICATED": "Identity successfully reauthenticated.",
-    "NO_ACTIVE_2FA": "No active second factor is available for this account.",
-    "INVALID_TOTP_CODE": "The second-factor code is invalid."
+    "REAUTHENTICATED": "Identity successfully reauthenticated."
   },
   "identifier": {
     "CREATED": "Identifier successfully created.",
@@ -44,12 +40,10 @@
     "ACCEPTANCE_REQUESTED": "Invite acceptance successfully requested.",
     "DECLINED": "Invite successfully declined.",
     "CANCELLED": "Invite successfully cancelled.",
-    "INVALID_STATUS": "The requested invite status transition is not supported.",
-    "INVITEE_ALREADY_MEMBER": "The specified account is already a member of this realm."
+    "INVALID_STATUS": "The requested invite status transition is not supported."
   },
   "membership": {
-    "EXCLUSION_REQUESTED": "Realm exclusion successfully requested.",
-    "MEMBERSHIP_NOT_FOUND": "The specified account is not a member of this realm."
+    "EXCLUSION_REQUESTED": "Realm exclusion successfully requested."
   },
   "federated-authn": {
     "INVALID_STATE": "The OAuth state is invalid or expired.",
@@ -75,8 +69,7 @@
     "RESTORED": "Application successfully restored.",
     "BULK_RESTORED_COUNT": "{count} applications successfully restored.",
     "PURGED": "Application successfully deleted.",
-    "BULK_PURGED_COUNT": "{count} applications successfully deleted.",
-    "APPLICATIONS_NOT_FOUND": "One or more applications were not found."
+    "BULK_PURGED_COUNT": "{count} applications successfully deleted."
   },
   "interface-client": {
     "CREATED": "Interface client successfully created.",
@@ -86,8 +79,7 @@
     "RESTORED": "Interface client successfully restored.",
     "BULK_RESTORED_COUNT": "{count} interface clients successfully restored.",
     "PURGED": "Interface client successfully deleted.",
-    "BULK_PURGED_COUNT": "{count} interface clients successfully deleted.",
-    "CLIENTS_NOT_FOUND": "One or more interface clients were not found."
+    "BULK_PURGED_COUNT": "{count} interface clients successfully deleted."
   },
   "service-client": {
     "CREATED": "Service client successfully created.",
@@ -97,18 +89,13 @@
     "RESTORED": "Service client successfully restored.",
     "BULK_RESTORED_COUNT": "{count} service clients successfully restored.",
     "PURGED": "Service client successfully deleted.",
-    "BULK_PURGED_COUNT": "{count} service clients successfully deleted.",
-    "CLIENTS_NOT_FOUND": "One or more service clients were not found."
+    "BULK_PURGED_COUNT": "{count} service clients successfully deleted."
   },
   "password": {
-    "NO_PASSWORD_SET": "No password is set for this account.",
-    "INVALID_CURRENT_PASSWORD": "The current password is invalid.",
     "CHANGED": "Password successfully changed.",
     "RESET_CODE_SENT": "Password reset code successfully sent.",
     "INVALID_OR_EXPIRED_CODE": "The password reset code is invalid or expired.",
-    "RESET": "Password successfully reset.",
-    "INVALID_RECOVERY_CODE": "The recovery code is invalid.",
-    "RECENTLY_USED": "This password was used recently."
+    "RESET": "Password successfully reset."
   },
   "profile": {
     "UPDATED": "Profile successfully updated."
@@ -117,18 +104,13 @@
     "REGENERATED": "Recovery codes successfully regenerated."
   },
   "second-factor": {
-    "TOTP_FACTOR_EXISTS": "A TOTP factor already exists for this account.",
-    "INVALID_TOTP_CODE": "The second-factor code is invalid.",
     "VERIFIED": "Second factor successfully verified.",
     "PURGED": "Second factor successfully deleted.",
-    "INVALID_CODE": "The master code is invalid.",
     "RESET": "Second factors successfully reset."
   },
   "session": {
-    "ACCOUNT_NOT_AUTHENTICATABLE": "The account cannot create a session.",
     "INVALID_REFRESH_TOKEN": "The refresh token is invalid.",
     "REFRESH_TOKEN_REUSE_DETECTED": "This refresh token was already rotated. The session has been revoked as a precaution.",
-    "SESSION_NOT_FOUND": "The session was not found.",
     "REFRESHED": "Session refreshed.",
     "LOGOUT": "Signed out from the current session.",
     "REVOKED": "Selected sessions have been signed out.",

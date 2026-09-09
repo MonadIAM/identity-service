@@ -1,7 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, HASHING_SERVICE } from "~common/services";
 import { RECOVERY_CODE_SERVICE } from "~context/domain/services";
@@ -17,8 +16,6 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(RECOVERY_CODE_SERVICE)
         private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
         @Inject(HASHING_SERVICE)
@@ -47,17 +44,11 @@ export class RecoveryCodeCommands implements Commands.RecoveryCode.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const account = await this.accountRepository.findUniqueOrThrow({
-                    options: { populate: ["recoveryCodes"] },
-                    where: { id: props.actor },
-                    transaction,
-                });
-
-                this.recoveryCodeService.regenerate({
+                await this.recoveryCodeService.regenerate({
                     transaction,
                     input: {
                         hashes: hashedCodes,
-                        account: account,
+                        account: props.actor,
                     },
                 });
 

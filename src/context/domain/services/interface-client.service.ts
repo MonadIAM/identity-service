@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
+import { INTERFACE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
 import { TokenGrantType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
@@ -16,82 +16,119 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
     public constructor(
         @Inject(INTERFACE_CLIENT_REPOSITORY)
         private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
+        @Inject(APPLICATION_REPOSITORY)
+        private readonly applicationRepository: Repositories.Application.PublicContract,
         configService: ConfigService,
     ) {
         this.redirectUriLimit = configService.getOrThrow<number>("INTERFACE_CLIENT_REDIRECT_URI_LIMIT");
     }
 
     public async create(props: Services.InterfaceClient.Create.Props): Services.InterfaceClient.Create.Result {
-        const { transaction, input } = props;
+        const { transaction, realm, input } = props;
 
-        this.validateRedirectUris(input.redirectUris);
-        this.validateAuthAddress(input.authAddress);
+        this.validateRedirectUris({ redirectUris: input.redirectUris });
+        this.validateAuthAddress({ authAddress: input.authAddress });
+
+        const application = await this.applicationRepository.findUniqueOrThrow({
+            where: { id: input.application, realm },
+            transaction,
+        });
 
         const limitExceeded = await this.interfaceClientRepository.wouldExceedApplicationLimit({
-            application: input.application.id,
+            application: application.id,
             transaction,
         });
 
         if (limitExceeded) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.APPLICATION_LIMIT_EXCEEDED` });
+        } else {
+            const entity = new InterfaceClient({ ...input, grantTypes: [...this.grantTypes], application });
+            transaction.persist(entity);
+            return entity;
         }
-
-        const entity = new InterfaceClient({ ...input, grantTypes: [...this.grantTypes] });
-        transaction.persist(entity);
-
-        return entity;
     }
 
-    public update(props: Services.InterfaceClient.Update.Props): Services.InterfaceClient.Update.Result {
-        const { entity, patch } = props;
+    public async update(props: Services.InterfaceClient.Update.Props): Services.InterfaceClient.Update.Result {
+        const { transaction, realm, patch, id } = props;
+        const entity = await this.interfaceClientRepository.findUniqueOrThrow({
+            where: { id, application: { realm } },
+            transaction,
+        });
 
         if (patch.redirectUris) {
-            this.validateRedirectUris(patch.redirectUris);
+            this.validateRedirectUris({ redirectUris: patch.redirectUris });
         }
 
         if (patch.authAddress) {
-            this.validateAuthAddress(patch.authAddress);
+            this.validateAuthAddress({ authAddress: patch.authAddress });
         }
 
         entity.update(patch);
     }
 
-    public revoke(props: Services.InterfaceClient.Revoke.Props): Services.InterfaceClient.Revoke.Result {
-        for (const entity of props.entities) {
-            entity.revoke();
+    public async revoke(props: Services.InterfaceClient.Revoke.Props): Services.InterfaceClient.Revoke.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.interfaceClientRepository.find({
+            where: { id: { $in: identifiers }, application: { realm } },
+            options: { populate: ["application"] },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.revoke();
+            }
+
+            return entities;
         }
     }
 
-    public restore(props: Services.InterfaceClient.Restore.Props): Services.InterfaceClient.Restore.Result {
-        for (const entity of props.entities) {
-            entity.restore();
+    public async restore(props: Services.InterfaceClient.Restore.Props): Services.InterfaceClient.Restore.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.interfaceClientRepository.find({
+            where: { id: { $in: identifiers }, application: { realm } },
+            options: { populate: ["application"] },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.restore();
+            }
+
+            return entities;
         }
     }
 
-    public purge(props: Services.InterfaceClient.Purge.Props): Services.InterfaceClient.Purge.Result {
-        for (const entity of props.entities) {
-            entity.canPurge();
-            props.transaction.remove(entity);
+    public async purge(props: Services.InterfaceClient.Purge.Props): Services.InterfaceClient.Purge.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.interfaceClientRepository.find({
+            where: { id: { $in: identifiers }, application: { realm } },
+            options: { populate: ["application"] },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.canPurge();
+                transaction.remove(entity);
+            }
+
+            return entities;
         }
     }
 
-    public applyApplicationRevocation(
-        props: Services.InterfaceClient.ApplyApplicationRevocation.Props,
-    ): Services.InterfaceClient.ApplyApplicationRevocation.Result {
-        for (const entity of props.entities) {
-            entity.applyApplicationRevocation(props.version);
-        }
-    }
+    public validateRedirectUris(
+        props: Services.InterfaceClient.ValidateRedirectUris.Props,
+    ): Services.InterfaceClient.ValidateRedirectUris.Result {
+        const { redirectUris } = props;
 
-    public applyApplicationRestore(
-        props: Services.InterfaceClient.ApplyApplicationRestore.Props,
-    ): Services.InterfaceClient.ApplyApplicationRestore.Result {
-        for (const entity of props.entities) {
-            entity.applyApplicationRestore(props.version);
-        }
-    }
-
-    private validateRedirectUris(redirectUris: string[]): void {
         if (!redirectUris.length) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REDIRECT_URI_REQUIRED` });
         }
@@ -105,11 +142,15 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
         }
 
         for (const redirectUri of redirectUris) {
-            this.validateRedirectUri(redirectUri);
+            this.validateRedirectUri({ redirectUri });
         }
     }
 
-    private validateRedirectUri(redirectUri: string): void {
+    public validateRedirectUri(
+        props: Services.InterfaceClient.ValidateRedirectUri.Props,
+    ): Services.InterfaceClient.ValidateRedirectUri.Result {
+        const { redirectUri } = props;
+
         try {
             if (!redirectUri.length) {
                 throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REDIRECT_URI_REQUIRED` });
@@ -131,7 +172,11 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
         }
     }
 
-    private validateAuthAddress(authAddress: string): void {
+    public validateAuthAddress(
+        props: Services.InterfaceClient.ValidateAuthAddress.Props,
+    ): Services.InterfaceClient.ValidateAuthAddress.Result {
+        const { authAddress } = props;
+
         if (!authAddress.length) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.AUTH_ADDRESS_REQUIRED` });
         }

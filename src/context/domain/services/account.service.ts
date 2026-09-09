@@ -1,9 +1,16 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
+
+import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 
 import { Account, Identifier, Password, Profile } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountService implements Services.Account.Contract {
+    public constructor(
+        @Inject(ACCOUNT_REPOSITORY)
+        private readonly accountRepository: Repositories.Account.PublicContract,
+    ) {}
+
     public create(props: Services.Account.Create.Props): Services.Account.Create.Result {
         const { transaction, input } = props;
         const account = new Account({
@@ -58,41 +65,59 @@ export class AccountService implements Services.Account.Contract {
         return account;
     }
 
-    public deactivate(props: Services.Account.Deactivate.Props): Services.Account.Deactivate.Result {
+    public async verify(props: Services.Account.Verify.Props): Services.Account.Verify.Result {
         const { transaction, input } = props;
-        for (const session of input.sessions) {
+        const account = await this.accountRepository.findUniqueOrThrow({
+            where: { id: input.account },
+            transaction,
+        });
+
+        account.activate();
+
+        return account;
+    }
+
+    public async deactivate(props: Services.Account.Deactivate.Props): Services.Account.Deactivate.Result {
+        const { transaction, input } = props;
+        const account = await this.accountRepository.findUniqueOrThrow({
+            options: { populate: ["sessions"] },
+            where: { id: input.account },
+            transaction,
+        });
+
+        for (const session of account.sessions.getItems()) {
             transaction.remove(session);
         }
 
-        input.account.deactivate();
+        account.deactivate();
     }
 
-    public suspend(props: Services.Account.Suspend.Props): Services.Account.Suspend.Result {
+    public async suspend(props: Services.Account.Suspend.Props): Services.Account.Suspend.Result {
         const { transaction, input } = props;
-        for (const session of input.sessions) {
+        const account = await this.accountRepository.findUniqueOrThrow({
+            options: { populate: ["sessions"] },
+            where: { id: input.account },
+            transaction,
+        });
+
+        for (const session of account.sessions.getItems()) {
             transaction.remove(session);
         }
 
-        input.account.suspend();
+        account.suspend();
+
+        return account;
     }
 
-    public purge(props: Services.Account.Purge.Props): Services.Account.Purge.Result {
+    public async unsuspend(props: Services.Account.Unsuspend.Props): Services.Account.Unsuspend.Result {
         const { transaction, input } = props;
-        transaction.remove(input.account);
-    }
+        const account = await this.accountRepository.findUniqueOrThrow({
+            where: { id: input.account },
+            transaction,
+        });
 
-    public verify(props: Services.Account.Verify.Props): Services.Account.Verify.Result {
-        const { input } = props;
-        input.account.activate();
-    }
+        account.unsuspend();
 
-    public unsuspend(props: Services.Account.Unsuspend.Props): Services.Account.Unsuspend.Result {
-        const { input } = props;
-        input.account.unsuspend();
-    }
-
-    public restore(props: Services.Account.Restore.Props): Services.Account.Restore.Result {
-        const { input } = props;
-        input.account.restore();
+        return account;
     }
 }

@@ -3,47 +3,48 @@ import { SecondFactorType } from "~context/enums";
 declare global {
     namespace Services {
         namespace SecondFactor {
-            interface Contract extends PublicContract {}
+            interface Contract extends PublicContract, InternalContract {}
+
+            interface CommandContract extends PublicContract {}
+
+            interface InternalContract {
+                acceptCode: AcceptCode.Signature;
+            }
+
+            namespace AcceptCode {
+                type Props = {
+                    input: {
+                        factor: Entities.SecondFactor;
+                        code: string;
+                    };
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
 
             interface PublicContract {
+                reauthenticate: Reauthenticate.Signature;
+                authenticate: Authenticate.Signature;
                 create: Create.Signature;
-                rewrap: Rewrap.Signature;
-                acceptTOTP: AcceptTOTP.Signature;
                 verify: Verify.Signature;
                 purge: Purge.Signature;
                 reset: Reset.Signature;
             }
 
-            interface QueryContract extends Pick<PublicContract, "rewrap"> {}
-
-            interface CommandContract extends PublicContract {}
-
             namespace Create {
                 type Props = {
                     transaction: ORM.EntityManager;
                     input: {
-                        account: Entities.Account;
                         type: SecondFactorType;
+                        account: string;
                         secret: string;
                         name: string;
                     };
                 };
 
-                type Result = Entities.SecondFactor;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace AcceptTOTP {
-                type Props = {
-                    transaction: ORM.EntityManager;
-                    input: {
-                        factor: Entities.SecondFactor;
-                        step: number;
-                    };
-                };
-
-                type Result = boolean;
+                type Result = Promise<Entities.SecondFactor>;
 
                 type Signature = (props: Props) => Result;
             }
@@ -52,26 +53,43 @@ declare global {
                 type Props = {
                     transaction: ORM.EntityManager;
                     input: {
-                        factor: Entities.SecondFactor;
                         masterCodeHash: string;
+                        account: string;
+                        factor: string;
+                        code: string;
                     };
                 };
 
-                type Result = void;
+                type Result = Promise<Entities.SecondFactor>;
 
                 type Signature = (props: Props) => Result;
             }
 
-            namespace Rewrap {
+            namespace Authenticate {
                 type Props = {
                     transaction: ORM.EntityManager;
                     input: {
-                        factor: Entities.SecondFactor;
-                        secret: string;
+                        account: string;
+                        factor: string;
+                        code: string;
                     };
                 };
 
-                type Result = void;
+                type Result = Promise<Entities.SecondFactor>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Reauthenticate {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    input: {
+                        account: string;
+                        code: string;
+                    };
+                };
+
+                type Result = Promise<Entities.SecondFactor>;
 
                 type Signature = (props: Props) => Result;
             }
@@ -80,12 +98,12 @@ declare global {
                 type Props = {
                     transaction: ORM.EntityManager;
                     input: {
-                        factors: Entities.SecondFactor[];
+                        account: string;
                         target: string;
                     };
                 };
 
-                type Result = void;
+                type Result = Promise<void>;
 
                 type Signature = (props: Props) => Result;
             }
@@ -94,11 +112,12 @@ declare global {
                 type Props = {
                     transaction: ORM.EntityManager;
                     input: {
-                        account: Entities.Account;
+                        identifier: string;
+                        code: string;
                     };
                 };
 
-                type Result = void;
+                type Result = Promise<Entities.Account>;
 
                 type Signature = (props: Props) => Result;
             }

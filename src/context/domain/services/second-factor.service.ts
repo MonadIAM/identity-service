@@ -1,58 +1,138 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
+import { LockMode } from "@mikro-orm/postgresql";
+
+import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
+import { HASHING_SERVICE, TOTP_SERVICE } from "~common/services";
+import { Exception } from "~common/exceptions";
 
 import { MasterCode, SecondFactor } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class SecondFactorService implements Services.SecondFactor.Contract {
-    public create(props: Services.SecondFactor.Create.Props): Services.SecondFactor.Create.Result {
+    private readonly dictionaryPath = "services.second-factor";
+
+    public constructor(
+        @Inject(SECOND_FACTOR_SECRET_SERVICE)
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
+        @Inject(SECOND_FACTOR_REPOSITORY)
+        private readonly secondFactorRepository: Repositories.SecondFactor.PublicContract,
+        @Inject(IDENTIFIER_REPOSITORY)
+        private readonly identifierRepository: Repositories.Identifier.PublicContract,
+        @Inject(ACCOUNT_REPOSITORY)
+        private readonly accountRepository: Repositories.Account.PublicContract,
+        @Inject(HASHING_SERVICE)
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
+        @Inject(TOTP_SERVICE)
+        private readonly totpService: CommonServices.TOTP.PublicContract,
+    ) {}
+
+    public async create(props: Services.SecondFactor.Create.Props): Services.SecondFactor.Create.Result {
         const { transaction, input } = props;
-        const factor = new SecondFactor({
-            account: input.account,
-            secret: input.secret,
-            type: input.type,
-            name: input.name,
+        const [account, existingFactor] = await Promise.all([
+            this.accountRepository.findUniqueOrThrow({
+                where: { id: input.account },
+                transaction,
+            }),
+            this.secondFactorRepository.findUnique({
+                where: { account: input.account, type: input.type },
+                transaction,
+            }),
+        ]);
+
+        if (existingFactor) {
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.TOTP_FACTOR_EXISTS` });
+        } else {
+            const factor = new SecondFactor({
+                secret: input.secret,
+                type: input.type,
+                name: input.name,
+                account,
+            });
+
+            transaction.persist(factor);
+
+            return factor;
+        }
+    }
+
+    public async verify(props: Services.SecondFactor.Verify.Props): Services.SecondFactor.Verify.Result {
+        const { transaction, input } = props;
+        const factor = await this.secondFactorRepository.findUniqueOrThrow({
+            options: { populate: ["account.masterCode"], lockMode: LockMode.PESSIMISTIC_WRITE },
+            where: { id: input.factor, account: input.account },
+            transaction,
         });
 
-        transaction.persist(factor);
+        await this.acceptCode({ input: { factor, code: input.code } });
+
+        factor.confirm();
+
+        if (!factor.account.masterCode) {
+            transaction.persist(
+                new MasterCode({
+                    hash: input.masterCodeHash,
+                    account: factor.account,
+                }),
+            );
+        }
 
         return factor;
     }
 
-    public verify(props: Services.SecondFactor.Verify.Props): Services.SecondFactor.Verify.Result {
+    public async authenticate(props: Services.SecondFactor.Authenticate.Props): Services.SecondFactor.Authenticate.Result {
         const { transaction, input } = props;
-        input.factor.confirm();
+        const factor = await this.secondFactorRepository.findUnique({
+            options: { populate: ["account"], lockMode: LockMode.PESSIMISTIC_WRITE },
+            where: {
+                confirmedAt: { $ne: null },
+                account: input.account,
+                id: input.factor,
+            },
+            transaction,
+        });
 
-        if (!input.factor.account.masterCode) {
-            transaction.persist(
-                new MasterCode({
-                    hash: input.masterCodeHash,
-                    account: input.factor.account,
-                }),
-            );
+        if (factor) {
+            await this.acceptCode({ input: { factor, code: input.code } });
+            return factor;
+        } else {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.NO_ACTIVE_2FA` });
         }
     }
 
-    public rewrap(props: Services.SecondFactor.Rewrap.Props): Services.SecondFactor.Rewrap.Result {
+    public async reauthenticate(
+        props: Services.SecondFactor.Reauthenticate.Props,
+    ): Services.SecondFactor.Reauthenticate.Result {
         const { transaction, input } = props;
-        input.factor.rewrap(input.secret);
-        transaction.merge(input.factor);
+        const factor = await this.secondFactorRepository.findUnique({
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE },
+            where: {
+                confirmedAt: { $ne: null },
+                account: input.account,
+            },
+            transaction,
+        });
+
+        if (factor) {
+            await this.acceptCode({ input: { factor, code: input.code } });
+            return factor;
+        } else {
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_ACTIVE_2FA` });
+        }
     }
 
-    public acceptTOTP(props: Services.SecondFactor.AcceptTOTP.Props): Services.SecondFactor.AcceptTOTP.Result {
+    public async purge(props: Services.SecondFactor.Purge.Props): Services.SecondFactor.Purge.Result {
         const { transaction, input } = props;
-        const accepted = input.factor.acceptTOTP(input.step);
-        transaction.merge(input.factor);
-
-        return accepted;
-    }
-
-    public purge(props: Services.SecondFactor.Purge.Props): Services.SecondFactor.Purge.Result {
-        const { transaction, input } = props;
+        const factors = await this.secondFactorRepository.find({
+            options: { populate: ["account.masterCode"] },
+            where: { account: input.account },
+            transaction,
+        });
 
         let masterCode: Optional<Entities.MasterCode>;
         let remaining = 0;
 
-        for (const factor of input.factors) {
+        for (const factor of factors) {
             if (factor.id === input.target) {
                 ({ masterCode } = factor.account);
                 transaction.remove(factor);
@@ -66,14 +146,56 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
         }
     }
 
-    public reset(props: Services.SecondFactor.Reset.Props): Services.SecondFactor.Reset.Result {
+    public async reset(props: Services.SecondFactor.Reset.Props): Services.SecondFactor.Reset.Result {
         const { transaction, input } = props;
-        for (const factor of input.account.secondFactors.getItems()) {
-            transaction.remove(factor);
-        }
+        const identifier = await this.identifierRepository.findUnique({
+            options: { populate: ["account.masterCode", "account.secondFactors"] },
+            where: { identity: input.identifier },
+            transaction,
+        });
 
-        if (input.account.masterCode) {
-            transaction.remove(input.account.masterCode);
+        if (identifier?.account?.masterCode) {
+            const isValid = await this.hashingService.verify({
+                storedHash: identifier.account.masterCode.hash,
+                value: input.code,
+            });
+
+            if (isValid) {
+                for (const factor of identifier.account.secondFactors.getItems()) {
+                    transaction.remove(factor);
+                }
+
+                transaction.remove(identifier.account.masterCode);
+
+                return identifier.account;
+            } else {
+                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CODE` });
+            }
+        } else {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CODE` });
+        }
+    }
+
+    public async acceptCode(props: Services.SecondFactor.AcceptCode.Props): Services.SecondFactor.AcceptCode.Result {
+        const { input } = props;
+        const { ciphertext, plaintext } = await this.secondFactorSecretService.resolve({
+            secret: input.factor.secret,
+        });
+
+        const verification = this.totpService.verify({ secret: plaintext, code: input.code });
+
+        if (verification) {
+            const accepted = input.factor.acceptTOTP(verification.step);
+
+            if (accepted) {
+                if (ciphertext) {
+                    input.factor.rewrap(ciphertext);
+                }
+            } else {
+                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
+            }
+        } else {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
         }
     }
 }

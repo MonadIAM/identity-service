@@ -1,6 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ACCOUNT_REPOSITORY, INVITE_REPOSITORY, MEMBERSHIP_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { INVITE_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
@@ -24,12 +23,6 @@ export class InviteCommands implements Commands.Invite.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(INVITE_REPOSITORY)
-        private readonly inviteRepository: Repositories.Invite.PublicContract,
-        @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.PublicContract,
-        @Inject(MEMBERSHIP_REPOSITORY)
-        private readonly membershipRepository: Repositories.Membership.PublicContract,
         @Inject(INVITE_SERVICE)
         private readonly inviteService: Services.Invite.CommandContract,
     ) {
@@ -53,28 +46,8 @@ export class InviteCommands implements Commands.Invite.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const [invitee, inviter] = await Promise.all([
-                    this.accountRepository.findUniqueOrThrow({
-                        where: { id: input.invitee },
-                        transaction,
-                    }),
-                    this.accountRepository.findUniqueOrThrow({
-                        where: { id: actor },
-                        transaction,
-                    }),
-                ]);
-
-                const membership = await this.membershipRepository.findUnique({
-                    where: { account: invitee, realm },
-                    transaction,
-                });
-
-                if (membership) {
-                    throw Exception.conflict({ messageKey: `${this.dictionaryPath}.INVITEE_ALREADY_MEMBER` });
-                }
-
-                const entity = this.inviteService.create({
-                    input: { invitee, inviter, realm, role: input.role },
+                const entity = await this.inviteService.create({
+                    input: { invitee: input.invitee, inviter: actor, realm, role: input.role },
                     transaction,
                 });
 
@@ -114,23 +87,10 @@ export class InviteCommands implements Commands.Invite.Contract {
                 ...props,
             },
             execute: async (transaction) => {
-                const entity = await this.inviteRepository.findUniqueOrThrow({
-                    where: { id: input.invite, invitee: actor },
+                const entity = await this.inviteService.accept({
+                    input: { invite: input.invite, invitee: actor },
                     transaction,
                 });
-
-                if (entity.status !== InviteStatus.PENDING) {
-                    throw Exception.invariantViolation({ messageKey: "entities.invite.CANNOT_ACCEPT_INACTIVE" });
-                }
-
-                const membership = await this.membershipRepository.findUnique({
-                    where: { account: actor, realm: entity.realm },
-                    transaction,
-                });
-
-                if (membership) {
-                    throw Exception.conflict({ messageKey: `${this.dictionaryPath}.INVITEE_ALREADY_MEMBER` });
-                }
 
                 return { invites: [entity] };
             },
@@ -156,12 +116,10 @@ export class InviteCommands implements Commands.Invite.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.inviteRepository.findUniqueOrThrow({
-                    where: { id: input.invite, inviter: actor },
+                const entity = await this.inviteService.cancel({
+                    input: { invite: input.invite, inviter: actor },
                     transaction,
                 });
-
-                this.inviteService.cancel({ entity });
 
                 return { invites: [entity] };
             },
@@ -182,12 +140,10 @@ export class InviteCommands implements Commands.Invite.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.inviteRepository.findUniqueOrThrow({
-                    where: { id: input.invite, invitee: actor },
+                const entity = await this.inviteService.decline({
+                    input: { invite: input.invite, invitee: actor },
                     transaction,
                 });
-
-                this.inviteService.decline({ entity });
 
                 return [entity];
             },

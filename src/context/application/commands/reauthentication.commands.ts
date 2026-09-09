@@ -1,14 +1,12 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { LockMode } from "@mikro-orm/postgresql";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { ACCOUNT_REPOSITORY, SECOND_FACTOR_REPOSITORY } from "~context/infrastructure/repositories";
 import { ReauthenticationTopicAction, EntityType, KafkaTopic, ActionType } from "~context/enums";
-import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
+import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
-import { HASHING_SERVICE, TOTP_SERVICE } from "~common/services";
+import { HASHING_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { ReauthenticationMapper } from "../mappers";
@@ -23,16 +21,10 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(SECOND_FACTOR_REPOSITORY)
-        private readonly secondFactorRepository: Repositories.SecondFactor.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(HASHING_SERVICE)
         private readonly hashingService: CommonServices.Hashing.PublicContract,
-        @Inject(TOTP_SERVICE)
-        private readonly totpService: CommonServices.TOTP.PublicContract,
-        @Inject(SECOND_FACTOR_SECRET_SERVICE)
-        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
         @Inject(SECOND_FACTOR_SERVICE)
         private readonly secondFactorService: Services.SecondFactor.CommandContract,
         protected readonly configService: ConfigService,
@@ -49,32 +41,32 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
             where: { id: props.actor },
         });
 
-        if (!account.password) {
+        if (account.password) {
+            const isValid = await this.hashingService.verify({
+                storedHash: account.password.hash,
+                value: props.input.password,
+            });
+
+            if (isValid) {
+                await this.transactionalService.emit({
+                    payload: this.mapper.grantPayload({ session: props.session, expiresAt: Date.now() + this.ttl * 1e3 }),
+                    destinationTopic: KafkaTopic.REAUTHENTICATION,
+                    actionType: ReauthenticationTopicAction.GRANT,
+                    resource: this.resource,
+                    audit: {
+                        entityType: EntityType.SESSION,
+                        actionType: ActionType.GRANT,
+                        ...props,
+                    },
+                });
+
+                return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
+            } else {
+                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_PASSWORD` });
+            }
+        } else {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_PASSWORD_SET` });
         }
-
-        const isValid = await this.hashingService.verify({
-            storedHash: account.password.hash,
-            value: props.input.password,
-        });
-
-        if (!isValid) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_PASSWORD` });
-        }
-
-        await this.transactionalService.emit({
-            payload: this.mapper.grantPayload({ session: props.session, expiresAt: Date.now() + this.ttl * 1e3 }),
-            destinationTopic: KafkaTopic.REAUTHENTICATION,
-            actionType: ReauthenticationTopicAction.GRANT,
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.SESSION,
-                actionType: ActionType.GRANT,
-                ...props,
-            },
-        });
-
-        return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
     }
 
     public async bySecondFactor(
@@ -95,41 +87,10 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
                 ...props,
             },
             execute: async (transaction) => {
-                const factor = await this.secondFactorRepository.findUnique({
-                    options: { lockMode: LockMode.PESSIMISTIC_WRITE },
-                    where: {
-                        confirmedAt: { $ne: null },
-                        account: props.actor,
-                    },
+                await this.secondFactorService.reauthenticate({
+                    input: { account: props.actor, code: props.input.code },
                     transaction,
                 });
-
-                if (!factor) {
-                    throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_ACTIVE_2FA` });
-                }
-
-                const { ciphertext, plaintext } = await this.secondFactorSecretService.resolve({
-                    secret: factor.secret,
-                });
-
-                const verification = this.totpService.verify({ secret: plaintext, code: props.input.code });
-
-                if (!verification) {
-                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
-                }
-
-                const accepted = this.secondFactorService.acceptTOTP({
-                    input: { factor, step: verification.step },
-                    transaction,
-                });
-
-                if (!accepted) {
-                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
-                }
-
-                if (ciphertext) {
-                    this.secondFactorService.rewrap({ input: { factor, secret: ciphertext }, transaction });
-                }
 
                 return { session: props.session, expiresAt };
             },

@@ -24,71 +24,137 @@ export class ApplicationService implements Services.Application.Contract {
 
         if (limitExceeded) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REALM_LIMIT_EXCEEDED` });
-        }
-
-        const entity = new Application({ ...input });
-        transaction.persist(entity);
-
-        return entity;
-    }
-
-    public update(props: Services.Application.Update.Props): Services.Application.Update.Result {
-        props.entity.update(props.patch);
-    }
-
-    public revoke(props: Services.Application.Revoke.Props): Services.Application.Revoke.Result {
-        for (const entity of props.entities) {
-            entity.revoke();
-        }
-
-        this.cascadeRevokeChildren(props.entities);
-    }
-
-    public restore(props: Services.Application.Restore.Props): Services.Application.Restore.Result {
-        for (const entity of props.entities) {
-            entity.restore();
-        }
-
-        this.cascadeRestoreChildren(props.entities);
-    }
-
-    public purge(props: Services.Application.Purge.Props): Services.Application.Purge.Result {
-        for (const entity of props.entities) {
-            entity.canPurge();
-            props.transaction.remove(entity);
+        } else {
+            const entity = new Application({ ...input });
+            transaction.persist(entity);
+            return entity;
         }
     }
 
-    public applyRealmRevocation(
+    public async update(props: Services.Application.Update.Props): Services.Application.Update.Result {
+        const { transaction, realm, patch, id } = props;
+        const entity = await this.applicationRepository.findUniqueOrThrow({
+            where: { id, realm },
+            transaction,
+        });
+
+        entity.update(patch);
+    }
+
+    public async revoke(props: Services.Application.Revoke.Props): Services.Application.Revoke.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.applicationRepository.find({
+            options: { populate: ["interfaceClients", "serviceClients"] },
+            where: { id: { $in: identifiers }, realm },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.revoke();
+            }
+
+            this.cascadeRevocation({ entities });
+
+            return entities;
+        }
+    }
+
+    public async restore(props: Services.Application.Restore.Props): Services.Application.Restore.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.applicationRepository.find({
+            options: { populate: ["interfaceClients", "serviceClients"] },
+            where: { id: { $in: identifiers }, realm },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.restore();
+            }
+
+            this.cascadeRestore({ entities });
+
+            return entities;
+        }
+    }
+
+    public async applyRealmRevocation(
         props: Services.Application.ApplyRealmRevocation.Props,
     ): Services.Application.ApplyRealmRevocation.Result {
-        for (const entity of props.entities) {
-            entity.applyRealmRevocation(props.version);
+        const { transaction, version, realm } = props;
+        const entities = await this.applicationRepository.find({
+            options: { populate: ["interfaceClients", "serviceClients"] },
+            where: { realm },
+            transaction,
+        });
+
+        for (const entity of entities) {
+            entity.applyRealmRevocation(version);
         }
 
-        this.cascadeRevokeChildren(props.entities);
+        this.cascadeRevocation({ entities });
+
+        return entities;
     }
 
-    public applyRealmRestore(
+    public async applyRealmRestore(
         props: Services.Application.ApplyRealmRestore.Props,
     ): Services.Application.ApplyRealmRestore.Result {
-        for (const entity of props.entities) {
-            entity.applyRealmRestore(props.version);
+        const { transaction, version, realm } = props;
+        const entities = await this.applicationRepository.find({
+            options: { populate: ["interfaceClients", "serviceClients"] },
+            where: { realm },
+            transaction,
+        });
+
+        for (const entity of entities) {
+            entity.applyRealmRestore(version);
         }
 
-        this.cascadeRestoreChildren(props.entities);
+        this.cascadeRestore({ entities });
+
+        return entities;
     }
 
-    public purgeRealm(props: Services.Application.PurgeRealm.Props): Services.Application.PurgeRealm.Result {
-        for (const entity of props.entities) {
-            if (props.version > entity.realmVersion && !entity.isSystemManaged) {
-                props.transaction.remove(entity);
+    public async purge(props: Services.Application.Purge.Props): Services.Application.Purge.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.applicationRepository.find({
+            where: { id: { $in: identifiers }, realm },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.canPurge();
+                transaction.remove(entity);
+            }
+
+            return entities;
+        }
+    }
+
+    public async purgeRealm(props: Services.Application.PurgeRealm.Props): Services.Application.PurgeRealm.Result {
+        const { transaction, version, realm } = props;
+        const entities = await this.applicationRepository.find({ transaction, where: { realm } });
+
+        for (const entity of entities) {
+            if (version > entity.realmVersion && !entity.isSystemManaged) {
+                transaction.remove(entity);
             }
         }
     }
 
-    private cascadeRevokeChildren(entities: Entities.Application[]): void {
-        for (const application of entities) {
+    public cascadeRevocation(
+        props: Services.Application.CascadeRevocation.Props,
+    ): Services.Application.CascadeRevocation.Result {
+        for (const application of props.entities) {
             for (const client of application.interfaceClients) {
                 client.applyApplicationRevocation(application.version);
             }
@@ -99,8 +165,8 @@ export class ApplicationService implements Services.Application.Contract {
         }
     }
 
-    private cascadeRestoreChildren(entities: Entities.Application[]): void {
-        for (const application of entities) {
+    public cascadeRestore(props: Services.Application.CascadeRestore.Props): Services.Application.CascadeRestore.Result {
+        for (const application of props.entities) {
             for (const client of application.interfaceClients) {
                 client.applyApplicationRestore(application.version);
             }

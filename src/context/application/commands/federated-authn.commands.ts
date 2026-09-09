@@ -3,8 +3,8 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SERVICE } from "~common/services";
 import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
-import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
+import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 import {
@@ -28,6 +28,8 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
     private readonly resource = "Account";
 
     public constructor(
+        @Inject(OAUTH_STATE_CACHE_SERVICE)
+        private readonly oauthStateCacheService: InfrastructureServices.OAuthStateCache.PublicContract,
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(IDENTIFIER_REPOSITORY)
@@ -40,8 +42,6 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         private readonly sessionService: Services.Session.CommandContract,
         @Inject(ACCOUNT_SERVICE)
         private readonly accountService: Services.Account.CommandContract,
-        @Inject(OAUTH_STATE_CACHE_SERVICE)
-        private readonly oauthStateCacheService: InfrastructureServices.OAuthStateCache.PublicContract,
         @Inject(GOOGLE_OAUTH_SERVICE)
         private readonly googleOAuthService: CommonServices.GoogleOAuth.PublicContract,
         @Inject(GITHUB_OAUTH_SERVICE)
@@ -68,56 +68,56 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         const { context, input } = props;
         const cached = await this.oauthStateCacheService.consume({ state: input.state });
 
-        if (cached?.provider !== input.provider) {
+        if (cached?.provider === input.provider) {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_STATE` });
-        }
+        } else {
+            const oauthService = this.resolveProvider({ provider: input.provider });
+            const { access_token } = await oauthService.exchangeCode(input.code);
+            const profile = await oauthService.fetchProfile(access_token);
 
-        const oauthService = this.resolveProvider({ provider: input.provider });
-        const { access_token } = await oauthService.exchangeCode(input.code);
-        const profile = await oauthService.fetchProfile(access_token);
+            const identity: Commands.FederatedAuthn.Identity = {
+                providerUserId: profile.providerUserId,
+                emailVerified: profile.emailVerified,
+                provider: input.provider,
+                email: profile.email,
+                profile: {
+                    displayName: profile.displayName,
+                    pictureUrl: profile.pictureUrl,
+                },
+            };
 
-        const identity: Commands.FederatedAuthn.Identity = {
-            providerUserId: profile.providerUserId,
-            emailVerified: profile.emailVerified,
-            provider: input.provider,
-            email: profile.email,
-            profile: {
-                displayName: profile.displayName,
-                pictureUrl: profile.pictureUrl,
-            },
-        };
-
-        const oauthIdentifier = await this.identifierRepository.findUnique({
-            options: { populate: ["account"] },
-            where: {
-                providerUserId: identity.providerUserId,
-                provider: identity.provider,
-            },
-        });
-
-        if (oauthIdentifier) {
-            return this.authenticateExisting({
-                input: { account: oauthIdentifier.account },
-                context,
+            const oauthIdentifier = await this.identifierRepository.findUnique({
+                options: { populate: ["account"] },
+                where: {
+                    providerUserId: identity.providerUserId,
+                    provider: identity.provider,
+                },
             });
+
+            if (oauthIdentifier) {
+                return this.authenticateExisting({
+                    input: { account: oauthIdentifier.account },
+                    context,
+                });
+            } else {
+                const emailIdentifier =
+                    identity.email && identity.emailVerified
+                        ? await this.identifierRepository.findUnique({
+                              where: { type: IdentifierType.EMAIL, identity: identity.email },
+                              options: { populate: ["account"] },
+                          })
+                        : null;
+
+                if (emailIdentifier) {
+                    return this.attachToExisting({
+                        context,
+                        input: { ...identity, account: emailIdentifier.account },
+                    });
+                } else {
+                    return this.provision({ context, input: identity });
+                }
+            }
         }
-
-        const emailIdentifier =
-            identity.email && identity.emailVerified
-                ? await this.identifierRepository.findUnique({
-                      where: { type: IdentifierType.EMAIL, identity: identity.email },
-                      options: { populate: ["account"] },
-                  })
-                : null;
-
-        if (emailIdentifier) {
-            return this.attachToExisting({
-                context,
-                input: { ...identity, account: emailIdentifier.account },
-            });
-        }
-
-        return this.provision({ context, input: identity });
     }
 
     public async authenticateExisting(
@@ -174,8 +174,8 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 ...props,
             },
             changeLog: true,
-            execute: (transaction) => {
-                this.identifierService.create({
+            execute: async (transaction) => {
+                await this.identifierService.create({
                     transaction,
                     input: {
                         account: props.input.account,
@@ -189,7 +189,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     },
                 });
 
-                return this.sessionService.create({
+                return await this.sessionService.create({
                     transaction,
                     input: {
                         acr: AuthenticationContextClass.FEDERATED,
@@ -237,8 +237,8 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                         additionalIdentifier:
                             props.input.email && props.input.emailVerified
                                 ? {
-                                      type: IdentifierType.EMAIL,
                                       identity: props.input.email,
+                                      type: IdentifierType.EMAIL,
                                       isVerified: true,
                                   }
                                 : undefined,
@@ -249,8 +249,8 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 });
 
                 this.recoveryCodeService.generate({
-                    transaction,
                     input: { account, hashes },
+                    transaction,
                 });
 
                 return this.sessionService.create({
@@ -258,10 +258,10 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     input: {
                         acr: AuthenticationContextClass.FEDERATED,
                         userAgent: props.context.userAgent,
+                        scope: DEFAULT_OAUTH_SCOPE,
                         realms: [SYSTEM_REALM_ID],
                         client: Client.WEB_DEV,
                         ip: props.context.ip,
-                        scope: DEFAULT_OAUTH_SCOPE,
                         account,
                     },
                 });

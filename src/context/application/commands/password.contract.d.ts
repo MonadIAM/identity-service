@@ -1,33 +1,6 @@
 declare namespace Commands {
     namespace Password {
-        interface Contract extends InternalContract, ControllerContract {}
-
-        interface InternalContract {
-            findMatchingRecoveryCode: FindMatchingRecoveryCode.Signature;
-            checkPasswordHistory: CheckPasswordHistory.Signature;
-        }
-
-        namespace FindMatchingRecoveryCode {
-            type Props = {
-                codes: Entities.RecoveryCode[];
-                plaintext: string;
-            };
-
-            type Result = Promise<Nullable<Entities.RecoveryCode>>;
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace CheckPasswordHistory {
-            type Props = {
-                password: string;
-                account: string;
-            };
-
-            type Result = Promise<void>;
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends ControllerContract {}
 
         interface ControllerContract {
             resetByRecoveryCode: ResetByRecoveryCode.Signature;

@@ -1,6 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { isString } from "class-validator";
 
-import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
+import { IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
 
 import { Identifier } from "../entities";
@@ -12,16 +13,22 @@ export class IdentifierService implements Services.Identifier.Contract {
     public constructor(
         @Inject(IDENTIFIER_REPOSITORY)
         private readonly identifierRepository: Repositories.Identifier.PublicContract,
+        @Inject(ACCOUNT_REPOSITORY)
+        private readonly accountRepository: Repositories.Account.PublicContract,
     ) {}
 
-    public create(props: Services.Identifier.Create.Props): Services.Identifier.Create.Result {
+    public async create(props: Services.Identifier.Create.Props): Services.Identifier.Create.Result {
         const { transaction, input } = props;
+        const account = isString(input.account)
+            ? await this.accountRepository.findUniqueOrThrow({ where: { id: input.account }, transaction })
+            : input.account;
+
         const identifierEntity = new Identifier({
             providerUserId: input.identifier.providerUserId,
             provider: input.identifier.provider,
             identity: input.identifier.identity,
             type: input.identifier.type,
-            account: input.account,
+            account,
         });
 
         transaction.persist(identifierEntity);
@@ -29,22 +36,42 @@ export class IdentifierService implements Services.Identifier.Contract {
         return identifierEntity;
     }
 
-    public verify(props: Services.Identifier.Verify.Props): Services.Identifier.Verify.Result {
-        const { input } = props;
-        input.identifier.verify();
+    public async verify(props: Services.Identifier.Verify.Props): Services.Identifier.Verify.Result {
+        const { transaction, input } = props;
+        const identifier = await this.identifierRepository.findUniqueOrThrow({
+            where: { id: input.identifier },
+            transaction,
+        });
+
+        if (identifier.isVerified) {
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ALREADY_VERIFIED` });
+        } else {
+            identifier.verify();
+        }
     }
 
-    public togglePublicContact(
+    public async togglePublicContact(
         props: Services.Identifier.TogglePublicContact.Props,
     ): Services.Identifier.TogglePublicContact.Result {
-        const { input } = props;
-        input.identifier.togglePublicContact();
+        const { transaction, input } = props;
+        const identifier = await this.identifierRepository.findUniqueOrThrow({
+            where: { id: input.identifier, account: input.account },
+            transaction,
+        });
+
+        identifier.togglePublicContact();
     }
 
     public async purge(props: Services.Identifier.Purge.Props): Services.Identifier.Purge.Result {
         const { transaction, input } = props;
+        const identifier = await this.identifierRepository.findUniqueOrThrow({
+            where: { id: input.identifier, account: input.account },
+            options: { populate: ["account.password"] },
+            transaction,
+        });
+
         const isLastVerifiedIdentifier = await this.identifierRepository.isLastVerifiedIdentifier({
-            identifier: input.identifier.id,
+            identifier: identifier.id,
             account: input.account,
             transaction,
         });
@@ -52,7 +79,7 @@ export class IdentifierService implements Services.Identifier.Contract {
         if (isLastVerifiedIdentifier) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_REMOVE_LAST_VERIFIED` });
         } else {
-            transaction.remove(input.identifier);
+            transaction.remove(identifier);
         }
     }
 }

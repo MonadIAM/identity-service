@@ -1,22 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { LockMode } from "@mikro-orm/postgresql";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { SESSION_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { NotificationTopicAction, BlacklistTopicAction, EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { SESSION_REFRESH_IDEMPOTENCY_SERVICE } from "~context/infrastructure/services";
-import { ACCOUNT_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
+import { SESSION_SERVICE } from "~context/domain/services";
 import { ErrorCode, Exception } from "~common/exceptions";
-import {
-    NotificationTopicAction,
-    BlacklistTopicAction,
-    AccountStatus,
-    EntityType,
-    KafkaTopic,
-    ActionType,
-} from "~context/enums";
 
 import { SessionMapper } from "../mappers";
 
@@ -32,12 +23,6 @@ export class SessionCommands implements Commands.Session.Contract {
         private readonly refreshIdempotencyService: InfrastructureServices.SessionRefreshIdempotency.PublicContract,
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(SESSION_REPOSITORY)
-        private readonly sessionRepository: Repositories.Session.PublicContract,
-        @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.PublicContract,
-        @Inject(ACCOUNT_SERVICE)
-        private readonly accountService: Services.Account.CommandContract,
         @Inject(SESSION_SERVICE)
         private readonly sessionService: Services.Session.CommandContract,
         @Inject(CRYPTO_SERVICE)
@@ -72,32 +57,17 @@ export class SessionCommands implements Commands.Session.Contract {
                 input: props.input,
             },
             execute: async (transaction) => {
-                const account = await this.accountRepository.findUniqueOrThrow({
-                    where: { id: props.input.account },
-                    transaction,
-                });
-
-                if (account.status === AccountStatus.SUSPENDED || account.status === AccountStatus.PENDING) {
-                    throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_AUTHENTICATABLE` });
-                }
-
-                if (account.status === AccountStatus.DEACTIVATED) {
-                    this.accountService.restore({ input: { account } });
-                }
-
-                account.touch();
-
                 const result = await this.sessionService.create({
                     transaction,
                     input: {
                         userAgent: props.context.userAgent,
+                        account: props.input.account,
                         client: props.input.client,
                         realms: props.input.realms,
                         scope: props.input.scope,
                         nonce: props.input.nonce,
                         ip: props.context.ip,
                         acr: props.input.acr,
-                        account,
                     },
                 });
 
@@ -146,61 +116,29 @@ export class SessionCommands implements Commands.Session.Contract {
                     context: props.context,
                 },
                 execute: async (transaction): Promise<Commands.Session.Refresh.ExecuteResult> => {
-                    const session = await this.sessionRepository.findUnique({
-                        options: { populate: ["account"], lockMode: LockMode.PESSIMISTIC_WRITE },
-                        where: { id: payload.sid as string },
+                    const rotation = await this.sessionService.refresh({
+                        input: {
+                            session: payload.sid as string,
+                            client: props.input.client,
+                            tokenHash,
+                        },
                         transaction,
                     });
 
-                    if (!session) {
-                        throw Exception.badRequest({
-                            messageKey: `${this.dictionaryPath}.SESSION_NOT_FOUND`,
-                            code: ErrorCode.INVALID_GRANT,
-                        });
-                    }
-
-                    if (props.input.client !== session.client || payload.client_id !== session.client) {
-                        throw Exception.badRequest({
-                            messageKey: `${this.dictionaryPath}.INVALID_REFRESH_TOKEN`,
-                            code: ErrorCode.INVALID_GRANT,
-                        });
-                    }
-
-                    session.isExpired();
-
-                    if (tokenHash === session.refreshTokenHash) {
-                        const refreshToken = await this.jwtService.signRefreshToken({
-                            payload: {
-                                client_id: session.client,
-                                sub: session.account.id,
-                                realms: session.realms,
-                                sid: session.id,
-                            },
-                        });
-
-                        transaction.merge(session);
-                        session.refresh(this.cryptoService.hashToken({ token: refreshToken }));
-
-                        const accessToken = await this.jwtService.signAccessToken({
-                            payload: {
-                                auth_time: Math.floor(session.createdAt.getTime() / 1e3),
-                                ...(session.scope ? { scope: session.scope } : {}),
-                                client_id: session.client,
-                                sub: session.account.id,
-                                realms: session.realms,
-                                acr: session.acr,
-                                sid: session.id,
-                            },
-                        });
-
-                        return { kind: "ROTATED", accessToken, refreshToken };
+                    if (rotation.kind === "ROTATED") {
+                        return rotation;
                     } else {
                         const raceCachedResult = await this.refreshIdempotencyService.get({ key: idempotencyKey });
+
                         if (raceCachedResult) {
                             return { kind: "REPLAYED", result: raceCachedResult };
                         } else {
-                            this.sessionService.purge({ input: { sessions: [session] }, transaction });
-                            return { kind: "REUSE_DETECTED", sessions: [session] };
+                            const sessions = await this.sessionService.revoke({
+                                input: { sessions: [rotation.session] },
+                                transaction,
+                            });
+
+                            return { kind: "REUSE_DETECTED", sessions };
                         }
                     }
                 },
@@ -229,7 +167,8 @@ export class SessionCommands implements Commands.Session.Contract {
 
     public async revoke(props: Commands.Session.Revoke.Props): Commands.Session.Revoke.Result {
         const { input, actor, session } = props;
-        let isLogout = false;
+        const isLogout = !("token" in input) && !input.sessions?.length;
+
         await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -243,31 +182,11 @@ export class SessionCommands implements Commands.Session.Contract {
                 ...props,
             },
             execute: async (transaction) => {
-                let sessions: Entities.Session[];
-
-                if ("token" in input) {
-                    const session = await this.sessionRepository.findUnique({
-                        where: {
-                            refreshTokenHash: this.cryptoService.hashToken({ token: input.token }),
-                            account: actor,
-                        },
-                        transaction,
-                    });
-
-                    sessions = session ? [session] : [];
-                } else {
-                    isLogout = !input.sessions?.length;
-                    sessions = await this.sessionRepository.find({
-                        where: {
-                            id: input.sessions?.length ? { $in: input.sessions } : session,
-                            account: actor,
-                        },
-                        transaction,
-                    });
-                }
-
-                this.sessionService.purge({
-                    input: { sessions },
+                const sessions = await this.sessionService.revoke({
+                    input:
+                        "token" in input
+                            ? { account: actor, token: input.token }
+                            : { account: actor, current: session, sessions: input.sessions },
                     transaction,
                 });
 
@@ -296,18 +215,7 @@ export class SessionCommands implements Commands.Session.Contract {
                 ...props,
             },
             execute: async (transaction) => {
-                const account = await this.accountRepository.findUniqueOrThrow({
-                    options: { populate: ["sessions"] },
-                    where: { id: props.actor },
-                    transaction,
-                });
-
-                const sessions = account.sessions.getItems();
-
-                this.sessionService.purge({
-                    input: { sessions },
-                    transaction,
-                });
+                const sessions = await this.sessionService.revokeAll({ input: { account: props.actor }, transaction });
 
                 return { sessions };
             },

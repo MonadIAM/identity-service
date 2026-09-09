@@ -1,13 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { LockMode } from "@mikro-orm/postgresql";
 
-import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { NotificationTopicAction, ActionType, EntityType, KafkaTopic, SecondFactorType } from "~context/enums";
 import { HASHING_SERVICE, CRYPTO_SERVICE, TOTP_SERVICE } from "~common/services";
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { SECOND_FACTOR_SERVICE } from "~context/domain/services";
-import { Exception } from "~common/exceptions";
 
 import { SecondFactorMapper } from "../mappers";
 
@@ -18,14 +15,10 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
     private readonly resource = "SecondFactor";
 
     public constructor(
+        @Inject(SECOND_FACTOR_SECRET_SERVICE)
+        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(SECOND_FACTOR_REPOSITORY)
-        private readonly secondFactorRepository: Repositories.SecondFactor.PublicContract,
-        @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.PublicContract,
-        @Inject(ACCOUNT_REPOSITORY)
-        private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(SECOND_FACTOR_SERVICE)
         private readonly secondFactorService: Services.SecondFactor.CommandContract,
         @Inject(HASHING_SERVICE)
@@ -34,8 +27,6 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
         @Inject(TOTP_SERVICE)
         private readonly totpService: CommonServices.TOTP.PublicContract,
-        @Inject(SECOND_FACTOR_SECRET_SERVICE)
-        private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
     ) {
         this.mapper = new SecondFactorMapper();
     }
@@ -54,27 +45,12 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const [account, existingFactor] = await Promise.all([
-                    this.accountRepository.findUniqueOrThrow({
-                        where: { id: props.actor },
-                        transaction,
-                    }),
-                    this.secondFactorRepository.findUnique({
-                        where: { account: props.actor, type },
-                        transaction,
-                    }),
-                ]);
-
-                if (existingFactor) {
-                    throw Exception.conflict({ messageKey: `${this.dictionaryPath}.TOTP_FACTOR_EXISTS` });
-                }
-
-                return this.secondFactorService.create({
+                return await this.secondFactorService.create({
                     transaction,
                     input: {
                         name: props.input.name,
+                        account: props.actor,
                         secret: ciphertext,
-                        account,
                         type,
                     },
                 });
@@ -105,42 +81,17 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const factor = await this.secondFactorRepository.findUniqueOrThrow({
-                    options: { populate: ["account.masterCode"], lockMode: LockMode.PESSIMISTIC_WRITE },
-                    where: {
-                        id: props.input.factor,
+                const factor = await this.secondFactorService.verify({
+                    input: {
+                        factor: props.input.factor,
+                        code: props.input.code,
                         account: props.actor,
+                        masterCodeHash,
                     },
                     transaction,
                 });
 
-                const { ciphertext, plaintext } = await this.secondFactorSecretService.resolve({
-                    secret: factor.secret,
-                });
-
-                const verification = this.totpService.verify({ secret: plaintext, code: props.input.code });
-
-                if (!verification) {
-                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
-                }
-
-                const accepted = this.secondFactorService.acceptTOTP({
-                    input: { factor, step: verification.step },
-                    transaction,
-                });
-
-                if (!accepted) {
-                    throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOTP_CODE` });
-                }
-
                 hasMasterCode = Boolean(factor.account.masterCode);
-                if (ciphertext) {
-                    this.secondFactorService.rewrap({ input: { factor, secret: ciphertext }, transaction });
-                }
-                this.secondFactorService.verify({
-                    input: { factor, masterCodeHash },
-                    transaction,
-                });
 
                 return { account: props.actor };
             },
@@ -152,51 +103,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
         };
     }
 
-    public async purge(props: Commands.SecondFactor.Purge.Props): Commands.SecondFactor.Purge.Result {
-        await this.transactionalService.run({
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.SECOND_FACTOR,
-                actionType: ActionType.PURGE,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const factors = await this.secondFactorRepository.find({
-                    options: { populate: ["account.masterCode"] },
-                    where: { account: props.actor },
-                    transaction,
-                });
-
-                this.secondFactorService.purge({
-                    input: { target: props.input.factor, factors },
-                    transaction,
-                });
-            },
-        });
-
-        return { message: `${this.dictionaryPath}.PURGED` };
-    }
-
     public async reset(props: Commands.SecondFactor.Reset.Props): Commands.SecondFactor.Reset.Result {
-        const identifier = await this.identifierRepository.findUnique({
-            options: { populate: ["account.masterCode", "account.secondFactors"] },
-            where: { identity: props.input.identifier },
-        });
-
-        if (!identifier?.account?.masterCode) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CODE` });
-        }
-
-        const isValid = await this.hashingService.verify({
-            storedHash: identifier.account.masterCode.hash,
-            value: props.input.code,
-        });
-
-        if (!isValid) {
-            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CODE` });
-        }
-
         await this.transactionalService.run({
             resource: this.resource,
             outbox: {
@@ -210,17 +117,36 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                 ...props,
             },
             changeLog: true,
-            execute: (transaction) => {
-                transaction.merge(identifier.account);
-                this.secondFactorService.reset({
-                    input: { account: identifier.account },
+            execute: async (transaction) => {
+                const account = await this.secondFactorService.reset({
+                    input: { identifier: props.input.identifier, code: props.input.code },
                     transaction,
                 });
 
-                return { account: identifier.account.id };
+                return { account: account.id };
             },
         });
 
         return { message: `${this.dictionaryPath}.RESET` };
+    }
+
+    public async purge(props: Commands.SecondFactor.Purge.Props): Commands.SecondFactor.Purge.Result {
+        await this.transactionalService.run({
+            resource: this.resource,
+            audit: {
+                entityType: EntityType.SECOND_FACTOR,
+                actionType: ActionType.PURGE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                await this.secondFactorService.purge({
+                    input: { target: props.input.factor, account: props.actor },
+                    transaction,
+                });
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.PURGED` };
     }
 }

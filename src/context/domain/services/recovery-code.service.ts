@@ -1,9 +1,16 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
+
+import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 
 import { RecoveryCode } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RecoveryCodeService implements Services.RecoveryCode.Contract {
+    public constructor(
+        @Inject(ACCOUNT_REPOSITORY)
+        private readonly accountRepository: Repositories.Account.PublicContract,
+    ) {}
+
     public generate(props: Services.RecoveryCode.Generate.Props): Services.RecoveryCode.Generate.Result {
         const { transaction, input } = props;
         for (const hash of input.hashes) {
@@ -11,12 +18,18 @@ export class RecoveryCodeService implements Services.RecoveryCode.Contract {
         }
     }
 
-    public regenerate(props: Services.RecoveryCode.Regenerate.Props): Services.RecoveryCode.Regenerate.Result {
+    public async regenerate(props: Services.RecoveryCode.Regenerate.Props): Services.RecoveryCode.Regenerate.Result {
         const { transaction, input } = props;
-        for (const code of input.account.recoveryCodes) {
+        const account = await this.accountRepository.findUniqueOrThrow({
+            options: { populate: ["recoveryCodes"] },
+            where: { id: input.account },
+            transaction,
+        });
+
+        for (const code of account.recoveryCodes) {
             transaction.remove(code);
         }
 
-        this.generate({ transaction, input });
+        this.generate({ transaction, input: { hashes: input.hashes, account } });
     }
 }

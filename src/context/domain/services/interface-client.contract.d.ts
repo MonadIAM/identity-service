@@ -1,10 +1,44 @@
 declare namespace Services {
     namespace InterfaceClient {
-        interface Contract extends CommandContract {}
+        interface Contract extends InternalContract, CommandContract {}
+
+        interface InternalContract {
+            validateRedirectUris: ValidateRedirectUris.Signature;
+            validateRedirectUri: ValidateRedirectUri.Signature;
+            validateAuthAddress: ValidateAuthAddress.Signature;
+        }
+
+        namespace ValidateRedirectUris {
+            type Props = {
+                redirectUris: string[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ValidateRedirectUri {
+            type Props = {
+                redirectUri: string;
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ValidateAuthAddress {
+            type Props = {
+                authAddress: string;
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
 
         interface CommandContract {
-            applyApplicationRevocation: ApplyApplicationRevocation.Signature;
-            applyApplicationRestore: ApplyApplicationRestore.Signature;
             restore: Restore.Signature;
             create: Create.Signature;
             update: Update.Signature;
@@ -12,34 +46,14 @@ declare namespace Services {
             purge: Purge.Signature;
         }
 
-        namespace ApplyApplicationRevocation {
-            type Props = {
-                entities: Entities.InterfaceClient[];
-                version: number;
-            };
-
-            type Result = void;
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace ApplyApplicationRestore {
-            type Props = {
-                entities: Entities.InterfaceClient[];
-                version: number;
-            };
-
-            type Result = void;
-
-            type Signature = (props: Props) => Result;
-        }
-
         namespace Restore {
             type Props = {
-                entities: Entities.InterfaceClient[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.InterfaceClient[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -47,9 +61,10 @@ declare namespace Services {
         namespace Create {
             type Props = {
                 transaction: ORM.EntityManager;
+                realm: string;
                 input: {
                     description?: string;
-                    application: Entities.Application;
+                    application: string;
                     redirectUris: string[];
                     authAddress: string;
                     name: string;
@@ -63,26 +78,30 @@ declare namespace Services {
 
         namespace Update {
             type Props = {
-                entity: Entities.InterfaceClient;
+                transaction: ORM.EntityManager;
                 patch: {
                     redirectUris?: string[];
                     authAddress?: string;
                     description?: string;
                     name?: string;
                 };
+                realm: string;
+                id: string;
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
             type Props = {
-                entities: Entities.InterfaceClient[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.InterfaceClient[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -90,10 +109,11 @@ declare namespace Services {
         namespace Purge {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.InterfaceClient[];
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.InterfaceClient[]>;
 
             type Signature = (props: Props) => Result;
         }

@@ -3,8 +3,6 @@ declare namespace Services {
         interface Contract extends CommandContract {}
 
         interface CommandContract {
-            applyApplicationRevocation: ApplyApplicationRevocation.Signature;
-            applyApplicationRestore: ApplyApplicationRestore.Signature;
             restore: Restore.Signature;
             create: Create.Signature;
             update: Update.Signature;
@@ -12,34 +10,14 @@ declare namespace Services {
             purge: Purge.Signature;
         }
 
-        namespace ApplyApplicationRevocation {
-            type Props = {
-                entities: Entities.ServiceClient[];
-                version: number;
-            };
-
-            type Result = void;
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace ApplyApplicationRestore {
-            type Props = {
-                entities: Entities.ServiceClient[];
-                version: number;
-            };
-
-            type Result = void;
-
-            type Signature = (props: Props) => Result;
-        }
-
         namespace Restore {
             type Props = {
-                entities: Entities.ServiceClient[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.ServiceClient[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -47,10 +25,11 @@ declare namespace Services {
         namespace Create {
             type Props = {
                 transaction: ORM.EntityManager;
+                realm: string;
                 input: {
                     allowedAddresses?: string[];
                     description?: string;
-                    application: Entities.Application;
+                    application: string;
                     code: string;
                     name: string;
                 };
@@ -63,25 +42,29 @@ declare namespace Services {
 
         namespace Update {
             type Props = {
-                entity: Entities.ServiceClient;
+                transaction: ORM.EntityManager;
                 patch: {
                     allowedAddresses?: string[];
                     description?: string;
                     name?: string;
                 };
+                realm: string;
+                id: string;
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
             type Props = {
-                entities: Entities.ServiceClient[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.ServiceClient[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -89,10 +72,11 @@ declare namespace Services {
         namespace Purge {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.ServiceClient[];
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.ServiceClient[]>;
 
             type Signature = (props: Props) => Result;
         }

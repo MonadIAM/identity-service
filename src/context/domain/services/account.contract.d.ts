@@ -9,47 +9,33 @@ declare global {
                 deactivate: Deactivate.Signature;
                 unsuspend: Unsuspend.Signature;
                 suspend: Suspend.Signature;
-                restore: Restore.Signature;
                 create: Create.Signature;
                 verify: Verify.Signature;
-                purge: Purge.Signature;
             }
 
             namespace Deactivate {
                 type Props = {
                     transaction: ORM.EntityManager;
                     input: {
-                        sessions: Entities.Session[];
-                        account: Entities.Account;
+                        account: string;
                     };
                 };
 
-                type Result = void;
+                type Result = Promise<void>;
 
                 type Signature = (props: Props) => Result;
             }
 
             namespace Unsuspend {
                 type Props = {
+                    transaction: ORM.EntityManager;
                     input: {
-                        account: Entities.Account;
+                        account: string;
                         reason?: string;
                     };
                 };
 
-                type Result = void;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Restore {
-                type Props = {
-                    input: {
-                        account: Entities.Account;
-                    };
-                };
-
-                type Result = void;
+                type Result = Promise<Entities.Account>;
 
                 type Signature = (props: Props) => Result;
             }
@@ -58,12 +44,11 @@ declare global {
                 type Props = {
                     transaction: ORM.EntityManager;
                     input: {
-                        sessions: Entities.Session[];
-                        account: Entities.Account;
+                        account: string;
                     };
                 };
 
-                type Result = void;
+                type Result = Promise<Entities.Account>;
 
                 type Signature = (props: Props) => Result;
             }
@@ -88,26 +73,13 @@ declare global {
 
             namespace Verify {
                 type Props = {
-                    input: {
-                        account: Entities.Account;
-                    };
-                };
-
-                type Result = void;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Purge {
-                type Props = {
                     transaction: ORM.EntityManager;
                     input: {
-                        account: Entities.Account;
-                        reason?: string;
+                        account: string;
                     };
                 };
 
-                type Result = void;
+                type Result = Promise<Entities.Account>;
 
                 type Signature = (props: Props) => Result;
             }

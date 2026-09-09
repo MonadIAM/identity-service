@@ -8,13 +8,14 @@ declare namespace Services {
 
         namespace Update {
             type Props = {
+                transaction: ORM.EntityManager;
                 input: {
-                    profile: Entities.Profile;
                     patch: Entities.Profile.ChangeDataProps;
+                    account: string;
                 };
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
