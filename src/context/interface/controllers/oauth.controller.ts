@@ -98,7 +98,7 @@ export class OAuthController {
     @ApiOperation({
         summary: "Revoke a refresh token",
         description:
-            "Token revocation per RFC 7009. Per §2.2, an invalid, expired, or already-revoked token still yields a 200 response; only client-level errors (not found, revoked, realm revoked) are returned as errors.",
+            "Token revocation per RFC 7009. This endpoint accepts refresh tokens and the optional `token_type_hint=refresh_token`; unsupported hints return `unsupported_token_type`. Per §2.2, an invalid, expired, or already-revoked refresh token still yields a 200 response; only client-level errors (not found, revoked, realm revoked) are returned as errors.",
         security: [],
     })
     @Swagger.OAuthExceptions(

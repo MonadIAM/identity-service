@@ -66,6 +66,7 @@ export type I18nTranslations = {
             "CLIENT_NOT_FOUND": string;
             "INVALID_GRANT": string;
             "INVALID_REDIRECT_URI": string;
+            "UNSUPPORTED_TOKEN_TYPE": string;
             "INSUFFICIENT_SCOPE": string;
         };
         "application": {

@@ -59,6 +59,7 @@
     "CLIENT_NOT_FOUND": "The OAuth client was not found.",
     "INVALID_GRANT": "The authorization code is invalid, expired, or does not match the request.",
     "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client.",
+    "UNSUPPORTED_TOKEN_TYPE": "The requested token type is not supported by this revocation endpoint.",
     "INSUFFICIENT_SCOPE": "This access token was not issued with the openid scope."
   },
   "application": {

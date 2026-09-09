@@ -1,6 +1,6 @@
 import { FastifyReply } from "fastify";
 
-import { OAuthResponseType, CodeChallengeMethod, TokenGrantType } from "~context/enums";
+import { OAuthResponseType, OAuthTokenTypeHint, CodeChallengeMethod, TokenGrantType } from "~context/enums";
 
 declare global {
     namespace Commands {
@@ -116,6 +116,7 @@ declare global {
 
             namespace Revoke {
                 type Props = {
+                    tokenTypeHint?: OAuthTokenTypeHint;
                     context: Extract.Meta;
                     client: string;
                     token: string;

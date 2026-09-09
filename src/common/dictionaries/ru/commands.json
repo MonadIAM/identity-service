@@ -59,6 +59,7 @@
     "CLIENT_NOT_FOUND": "OAuth-клиент не найден.",
     "INVALID_GRANT": "Код авторизации недействителен, просрочен или не соответствует запросу.",
     "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента.",
+    "UNSUPPORTED_TOKEN_TYPE": "Запрошенный тип токена не поддерживается этим revocation endpoint.",
     "INSUFFICIENT_SCOPE": "Этот access-токен выдан без scope openid."
   },
   "application": {

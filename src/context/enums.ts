@@ -63,6 +63,11 @@ export enum TokenGrantType {
     REFRESH_TOKEN = "refresh_token",
 }
 
+export enum OAuthTokenTypeHint {
+    REFRESH_TOKEN = "refresh_token",
+    ACCESS_TOKEN = "access_token",
+}
+
 export enum OAuthResponseType {
     CODE = "code",
 }

@@ -39,6 +39,7 @@ export enum ErrorCode {
     INVALID_CLIENT = "invalid_client",
     INVALID_GRANT = "invalid_grant",
     UNSUPPORTED_GRANT_TYPE = "unsupported_grant_type",
+    UNSUPPORTED_TOKEN_TYPE = "unsupported_token_type",
     CORS_ORIGIN_REQUIRED = "cors_origin_required",
     CORS_ORIGIN_FORBIDDEN = "cors_origin_forbidden",
     METHOD_NOT_ALLOWED = "method_not_allowed",

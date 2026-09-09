@@ -3,12 +3,12 @@ import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 import { JWTPayload } from "jose";
 
-import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
-import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories/tokens";
+import { AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
-import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
+import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services/tokens";
+import { OAuthTokenTypeHint, TokenGrantType } from "~context/enums";
 import { ErrorCode, Exception } from "~common/exceptions";
-import { TokenGrantType } from "~context/enums";
 
 import { SESSION_COMMANDS } from "./tokens";
 
@@ -16,6 +16,7 @@ import { SESSION_COMMANDS } from "./tokens";
 export class OAuthCommands implements Commands.OAuth.Contract {
     private readonly dictionaryPath = "commands.oauth";
     private readonly accessTokenTTL: number;
+    private readonly issuer: string;
 
     public constructor(
         private readonly configService: ConfigService,
@@ -31,6 +32,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         private readonly jwtService: CommonServices.JWT.PublicContract,
     ) {
         this.accessTokenTTL = ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3;
+        this.issuer = this.configService.getOrThrow<string>("JWT_ISSUER");
     }
 
     public async authorize(props: Commands.OAuth.Authorize.Props): Commands.OAuth.Authorize.Result {
@@ -204,7 +206,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
     }
 
     public async revoke(props: Commands.OAuth.Revoke.Props): Commands.OAuth.Revoke.Result {
-        const { token, client, context } = props;
+        const { tokenTypeHint, token, client, context } = props;
 
         const clientEntity = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: client } });
 
@@ -219,6 +221,13 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             throw Exception.badRequest({
                 messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
                 code: ErrorCode.INVALID_CLIENT,
+            });
+        }
+
+        if (tokenTypeHint && tokenTypeHint !== OAuthTokenTypeHint.REFRESH_TOKEN) {
+            throw Exception.badRequest({
+                messageKey: `${this.dictionaryPath}.UNSUPPORTED_TOKEN_TYPE`,
+                code: ErrorCode.UNSUPPORTED_TOKEN_TYPE,
             });
         }
 
@@ -285,6 +294,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             const url = new URL(issued.request.redirectUri);
             url.searchParams.set("state", issued.request.state);
             url.searchParams.set("code", issued.code);
+            url.searchParams.set("iss", this.issuer);
 
             return { authorizationUrl: url.toString() };
         } else {

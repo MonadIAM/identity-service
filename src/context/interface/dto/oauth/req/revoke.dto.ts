@@ -1,6 +1,7 @@
-import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
+import { OAuthTokenTypeHint } from "~context/enums";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "OAuthRevokeBody" })
@@ -27,4 +28,16 @@ export class RevokeBodyDTO {
         description: "Refresh token to revoke. `refresh_token` and `refreshToken` are accepted for compatibility.",
     })
     declare public token: string;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.FromAlias("token_type_hint", "tokenTypeHint")
+    @Validator.IsString()
+    @ApiPropertyOptional({
+        enum: OAuthTokenTypeHint,
+        name: "token_type_hint",
+        description:
+            "Optional RFC 7009 token type hint. This endpoint currently supports `refresh_token`; unsupported hints return `unsupported_token_type`.",
+    })
+    declare public tokenTypeHint?: OAuthTokenTypeHint;
 }
