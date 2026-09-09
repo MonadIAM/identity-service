@@ -1,30 +1,49 @@
-import { INestApplication, ValidationError, ValidationPipe } from "@nestjs/common";
+import { INestApplication, ValidationError, ValidationPipe, ValidationPipeOptions } from "@nestjs/common";
 
-import { Exception } from "~common/exceptions";
+import { Exception, ErrorCode } from "~common/exceptions";
 
 export abstract class BootstrapPipes {
-    public static readonly exceptionFactory = (validationErrors: ValidationError[]): Exception => {
-        const details = this.formatValidationErrors(validationErrors);
-        return Exception.validationFailed(details);
-    };
-
-    public static readonly oauthValidationPipe = new ValidationPipe({
-        exceptionFactory: BootstrapPipes.exceptionFactory,
+    public static readonly oauthValidationPipe = BootstrapPipes.createValidationPipe({
+        exceptionFactory: BootstrapPipes.validationExceptionFactory,
         transformOptions: { excludeExtraneousValues: true },
-        forbidNonWhitelisted: true,
-        whitelist: true,
-        transform: true,
     });
 
-    public static applyGlobalPipes(application: INestApplication): void {
+    public static readonly oauthTokenValidationPipe = BootstrapPipes.createValidationPipe({
+        exceptionFactory: BootstrapPipes.oauthTokenValidationExceptionFactory,
+        transformOptions: { excludeExtraneousValues: true },
+    });
+
+    public static readonly applyGlobalPipes = (application: INestApplication): void => {
         application.useGlobalPipes(
-            new ValidationPipe({
-                exceptionFactory: BootstrapPipes.exceptionFactory,
-                forbidNonWhitelisted: true,
-                whitelist: true,
-                transform: true,
+            BootstrapPipes.createValidationPipe({
+                exceptionFactory: BootstrapPipes.validationExceptionFactory,
             }),
         );
+    };
+
+    private static validationExceptionFactory(validationErrors: ValidationError[]): Exception {
+        const details = BootstrapPipes.formatValidationErrors(validationErrors);
+        return Exception.validationFailed(details);
+    }
+
+    private static oauthTokenValidationExceptionFactory(validationErrors: ValidationError[]): Exception {
+        const details = BootstrapPipes.formatValidationErrors(validationErrors);
+        return Exception.badRequest({
+            messageKey: "commands.oauth.INVALID_REQUEST",
+            code: ErrorCode.INVALID_REQUEST,
+            details,
+        });
+    }
+
+    private static createValidationPipe(
+        options: Pick<ValidationPipeOptions, "exceptionFactory" | "transformOptions">,
+    ): ValidationPipe {
+        return new ValidationPipe({
+            ...options,
+            forbidNonWhitelisted: true,
+            whitelist: true,
+            transform: true,
+        });
     }
 
     private static formatValidationErrors(errors: ValidationError[]): Exception.ValidationDetail[] {
@@ -55,6 +74,7 @@ export abstract class BootstrapPipes {
         for (const error of errors) {
             collect(error);
         }
+
         return results;
     }
 }

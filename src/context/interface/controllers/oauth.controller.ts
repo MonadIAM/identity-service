@@ -70,17 +70,9 @@ export class OAuthController {
             Issues a Bearer-type access token (RFC 6750) as a JWT (RFC 7519) conforming to the OAuth 2.0 Access Token profile (RFC 9068).`,
         security: [],
     })
-    @Swagger.OAuthExceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        BAD_REQUEST,
-        FORBIDDEN,
-        CONFLICT,
-    )
+    @Swagger.OAuthExceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, BAD_REQUEST, FORBIDDEN, CONFLICT)
     public token(
-        @Body(BootstrapPipes.oauthValidationPipe) input: TokenBodyDTO,
+        @Body(BootstrapPipes.oauthTokenValidationPipe) input: TokenBodyDTO,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.OAuth.Token.Result {
         return this.oauthCommands.token({

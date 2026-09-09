@@ -53,6 +53,7 @@
     "UNSUPPORTED_PROVIDER": "The OAuth provider is not supported."
   },
   "oauth": {
+    "INVALID_REQUEST": "The request is missing a required parameter or is otherwise malformed.",
     "INVALID_AUTHORIZATION_REQUEST": "The authorization request is invalid or expired.",
     "CLIENT_REVOKED": "The OAuth client is revoked.",
     "CLIENT_APPLICATION_REVOKED": "The application linked to this OAuth client is revoked.",

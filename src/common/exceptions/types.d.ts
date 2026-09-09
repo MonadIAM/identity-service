@@ -41,7 +41,8 @@ declare global {
             headers?: Headers;
         };
 
-        type StatusProps = Pick<Props, "messageKey" | "params" | "headers"> & Partial<Pick<Props, "code">>;
+        type StatusProps = Pick<Props, "messageKey" | "params" | "headers" | "details" | "cause"> &
+            Partial<Pick<Props, "code">>;
 
         type ResponseBody = {
             /* eslint-disable prettier/prettier */

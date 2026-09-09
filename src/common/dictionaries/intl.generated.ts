@@ -60,6 +60,7 @@ export type I18nTranslations = {
             "UNSUPPORTED_PROVIDER": string;
         };
         "oauth": {
+            "INVALID_REQUEST": string;
             "INVALID_AUTHORIZATION_REQUEST": string;
             "CLIENT_REVOKED": string;
             "CLIENT_APPLICATION_REVOKED": string;
