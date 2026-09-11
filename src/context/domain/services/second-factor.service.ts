@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { LockMode } from "@mikro-orm/postgresql";
 
 import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
-import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services";
+import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services/tokens";
 import { HASHING_SERVICE, TOTP_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 

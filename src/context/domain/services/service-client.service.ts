@@ -50,13 +50,14 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
 
     public async revoke(props: Services.ServiceClient.Revoke.Props): Services.ServiceClient.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.serviceClientRepository.find({
-            where: { id: { $in: identifiers }, application: { realm } },
+            where: { id: { $in: unique }, application: { realm } },
             options: { populate: ["application"] },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -69,13 +70,14 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
 
     public async restore(props: Services.ServiceClient.Restore.Props): Services.ServiceClient.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.serviceClientRepository.find({
-            where: { id: { $in: identifiers }, application: { realm } },
+            where: { id: { $in: unique }, application: { realm } },
             options: { populate: ["application"] },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -88,13 +90,14 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
 
     public async purge(props: Services.ServiceClient.Purge.Props): Services.ServiceClient.Purge.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.serviceClientRepository.find({
-            where: { id: { $in: identifiers }, application: { realm } },
+            where: { id: { $in: unique }, application: { realm } },
             options: { populate: ["application"] },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.CLIENTS_NOT_FOUND` });
         } else {
             for (const entity of entities) {

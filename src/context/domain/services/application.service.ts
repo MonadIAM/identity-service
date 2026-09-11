@@ -43,13 +43,14 @@ export class ApplicationService implements Services.Application.Contract {
 
     public async revoke(props: Services.Application.Revoke.Props): Services.Application.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.applicationRepository.find({
             options: { populate: ["interfaceClients", "serviceClients"] },
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -64,13 +65,14 @@ export class ApplicationService implements Services.Application.Contract {
 
     public async restore(props: Services.Application.Restore.Props): Services.Application.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.applicationRepository.find({
             options: { populate: ["interfaceClients", "serviceClients"] },
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -123,12 +125,13 @@ export class ApplicationService implements Services.Application.Contract {
 
     public async purge(props: Services.Application.Purge.Props): Services.Application.Purge.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.applicationRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.APPLICATIONS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
