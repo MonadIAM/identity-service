@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { postgresSuite } from "~testing/integration/postgres.suite";
-import { CoreFixture } from "~testing/fixtures/core.fixture";
+import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { SecondFactorType } from "~context/enums";
 
 import { SecondFactorRepository } from "./second-factor.repository";

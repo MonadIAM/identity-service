@@ -1,6 +1,6 @@
-import { AccountTopicAction } from "@monadiam/shared";
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { DriverException } from "@mikro-orm/postgresql";
+import { AccountTopicAction } from "@monadiam/shared";
 
 import { TransactionalUnitHelpers } from "~testing/unit/transaction-manager/transactional.helpers";
 import { AuditLog, Outbox } from "~common/transaction-manager/entities";
@@ -407,19 +407,6 @@ describe("TransactionalService", () => {
     });
 
     describe("emit", () => {
-        it("persists only outbox without audit", async () => {
-            const { service, transactional } = helpers.service();
-
-            await service.emit({
-                payload: { account: "00000000-0000-4000-8000-000000000010" },
-                actionType: AccountTopicAction.CREATE,
-                destinationTopic: KafkaTopic.ACCOUNT,
-            });
-
-            expect(transactional.persist).toHaveBeenCalledTimes(1);
-            expect(transactional.flush).toHaveBeenCalledTimes(1);
-        });
-
         it("persists audit, archive and outbox with change log disabled", async () => {
             const operationContext = helpers.operationContext();
             const runSpy = jest.spyOn(operationContext, "run");
@@ -455,6 +442,7 @@ describe("TransactionalService", () => {
                     },
                     actionType: AccountTopicAction.CREATE,
                     destinationTopic: KafkaTopic.ACCOUNT,
+                    audit: AUDIT_PROPS,
                 }),
             ).rejects.toBe(error);
         });

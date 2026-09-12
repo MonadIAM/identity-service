@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { ConfigService } from "@nestjs/config";
 
-import { InterfaceClientFixture } from "~testing/fixtures/interface-client.fixture";
+import { InterfaceClientFixture } from "~testing/integration/repositories/interface-client.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 import { TokenGrantType } from "~context/enums";
 

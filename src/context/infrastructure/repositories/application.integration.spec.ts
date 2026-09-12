@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { ConfigService } from "@nestjs/config";
 import { randomUUID } from "node:crypto";
 
-import { ApplicationFixture } from "~testing/fixtures/application.fixture";
+import { ApplicationFixture } from "~testing/integration/repositories/application.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 
 import { ApplicationRepository } from "./application.repository";

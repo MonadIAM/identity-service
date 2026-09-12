@@ -2,7 +2,7 @@ import { UniqueConstraintViolationException } from "@mikro-orm/core";
 import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
-import { MembershipHistoryFixture } from "~testing/fixtures/membership-history.fixture";
+import { MembershipHistoryFixture } from "~testing/integration/repositories/membership-history.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 
 import { MembershipHistoryRepository } from "./membership-history.repository";

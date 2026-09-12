@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
-import { RecoveryCodeFixture } from "~testing/fixtures/recovery-code.fixture";
+import { RecoveryCodeFixture } from "~testing/integration/repositories/recovery-code.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 
 import { RecoveryCodeRepository } from "./recovery-code.repository";

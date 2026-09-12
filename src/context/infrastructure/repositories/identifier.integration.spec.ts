@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { IdentifierFixture } from "~testing/fixtures/identifier.fixture";
+import { IdentifierFixture } from "~testing/integration/repositories/identifier.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 
 import { IdentifierRepository } from "./identifier.repository";

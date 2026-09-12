@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
 import { postgresSuite } from "~testing/integration/postgres.suite";
-import { SessionFixture } from "~testing/fixtures/session.fixture";
+import { SessionFixture } from "~testing/integration/repositories/session.fixture";
 
 import { SessionRepository } from "./session.repository";
 

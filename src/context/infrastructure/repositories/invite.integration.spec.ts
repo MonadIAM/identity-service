@@ -3,7 +3,7 @@ import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
 import { postgresSuite } from "~testing/integration/postgres.suite";
-import { InviteFixture } from "~testing/fixtures/invite.fixture";
+import { InviteFixture } from "~testing/integration/repositories/invite.fixture";
 
 import { InviteRepository } from "./invite.repository";
 

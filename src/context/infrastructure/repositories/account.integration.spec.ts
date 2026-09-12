@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { AccountFixture } from "~testing/fixtures/account.fixture";
+import { AccountFixture } from "~testing/integration/repositories/account.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 import { AccountStatus, AccountSubject } from "~context/enums";
 import {
