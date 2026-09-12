@@ -1,7 +1,7 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Inject } from "@nestjs/common";
 
-import { ExceptionMapper } from "~common/exceptions";
+import { Exception, ExceptionMapper } from "~common/exceptions";
 
 import { LOG_MASKING_SERVICE, OUTBOX_SERVICE } from "./tokens";
 import { OperationContext } from "../utilities";
@@ -48,7 +48,12 @@ export class TransactionalService implements TransactionManager.Service.Contract
                 });
             }
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, params.resource);
+            if (error instanceof Exception) {
+                throw error;
+            } else {
+                const mapped = ExceptionMapper.fromORM(error, params.resource);
+                throw ExceptionMapper.isORM(mapped) ? mapped : error;
+            }
         }
     }
 
@@ -66,8 +71,8 @@ export class TransactionalService implements TransactionManager.Service.Contract
                         changeLogEnabled: params.changeLog ?? false,
                         auditEntry: entity.id,
                     },
-                    () =>
-                        writeManager.transactional(async (transaction) => {
+                    async () => {
+                        return await writeManager.transactional(async (transaction) => {
                             if (entity.input) {
                                 entity.input = await this.logMaskingService.maskAuditLog({ input: entity.input });
                             }
@@ -79,7 +84,8 @@ export class TransactionalService implements TransactionManager.Service.Contract
                             transaction.persist(this.outboxService.buildAuditLogArchive(entity));
 
                             return await this.executeWithEffects({ transaction, params });
-                        }),
+                        });
+                    },
                 );
             } else {
                 return await writeManager.transactional(async (transaction) => {
@@ -87,7 +93,12 @@ export class TransactionalService implements TransactionManager.Service.Contract
                 });
             }
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, params.resource);
+            if (error instanceof Exception) {
+                throw error;
+            } else {
+                const mapped = ExceptionMapper.fromORM(error, params.resource);
+                throw ExceptionMapper.isORM(mapped) ? mapped : error;
+            }
         }
     }
 
@@ -110,7 +121,6 @@ export class TransactionalService implements TransactionManager.Service.Contract
         props: TransactionManager.Service.PersistOutboxEvents.Props<T>,
     ): TransactionManager.Service.PersistOutboxEvents.Result {
         const { transaction, params, result } = props;
-
         if (params.outbox) {
             const entries = [params.outbox].flat();
 
