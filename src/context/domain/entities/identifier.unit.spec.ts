@@ -34,6 +34,13 @@ describe("Identifier Entity", () => {
             expect(identifier.isPublicContact).toBe(false);
         });
 
+        it("should verify when the constructor receives the verified flag", () => {
+            const identifier = createIdentifier({ isVerified: true });
+
+            expect(identifier.isVerified).toBe(true);
+            expect(identifier.verifiedAt).toBeInstanceOf(Date);
+        });
+
         it("should auto-generate id and createdAt", () => {
             const identifier = createIdentifier();
 

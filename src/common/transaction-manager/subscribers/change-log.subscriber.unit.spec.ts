@@ -261,28 +261,26 @@ describe("ChangeLogSubscriber", () => {
         });
     });
 
-    it("does not persist delete changes without original entity", async () => {
-        const operationContext = helpers.operationContext();
-        const { subscriber } = helpers.subscriber({ operationContext });
-        const transaction = helpers.transaction();
-        const uow = helpers.uow({
-            changeSets: [
-                helpers.changeSet({
-                    type: ChangeSetType.DELETE,
-                    payload: {},
-                }),
-            ],
+    it("builds delete deltas from entity values when original entity is absent", async () => {
+        const account = {
+            id: "00000000-0000-4000-8000-000000000002",
+            status: "ACTIVE",
+        };
+        const changeLog = await helpers.flushSingleChangeLog({
+            changeSet: helpers.changeSet({
+                entity: { name: "Deleted Name", account },
+                type: ChangeSetType.DELETE,
+                payload: {},
+            }),
         });
 
-        await operationContext.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, () =>
-            subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
-        );
-
-        expect(transaction.persist).not.toHaveBeenCalled();
-        expect(uow.computeChangeSet).not.toHaveBeenCalled();
+        expect(changeLog.delta).toEqual({
+            name: { old: "Deleted Name", new: null },
+            account: { old: account, new: null },
+        });
     });
 
-    it("does not persist composite primary keys into the uuid entity field", async () => {
+    it("persists composite primary keys into the text entity field", async () => {
         const operationContext = helpers.operationContext();
         const { subscriber } = helpers.subscriber({ operationContext });
         const transaction = helpers.transaction();
@@ -301,8 +299,15 @@ describe("ChangeLogSubscriber", () => {
             subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
         );
 
-        expect(transaction.persist).not.toHaveBeenCalled();
-        expect(uow.computeChangeSet).not.toHaveBeenCalled();
+        const changeLog = transaction.persist.mock.calls[0][0];
+
+        expect(changeLog).toEqual(
+            expect.objectContaining({
+                entity: ["00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002", "1"].join(":"),
+                entityType: "AccountClosure",
+            }),
+        );
+        expect(uow.computeChangeSet).toHaveBeenCalledWith(changeLog);
     });
 
     it("does not process change sets added while persisting archive entities", async () => {

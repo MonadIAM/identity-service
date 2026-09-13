@@ -36,6 +36,10 @@ export class Identifier implements Entities.Identifier.Contract {
         this.provider = props.provider;
 
         this.account = props.account;
+
+        if (props.isVerified) {
+            this.verify();
+        }
     }
 
     public togglePublicContact(): void {
