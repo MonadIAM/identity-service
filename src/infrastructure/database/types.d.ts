@@ -1,7 +1,7 @@
+import { AliasableExpression, SelectQueryBuilder, Compilable } from "kysely";
 import { ConfigService } from "@nestjs/config";
 import { Pool as PostgreSQLPool } from "pg";
 import { StringValue } from "ms";
-import { Knex } from "knex";
 import {
     EntityDictionary as OriginEntityDictionary,
     EventSubscriber as OriginEventSubscriber,
@@ -34,9 +34,13 @@ declare global {
 
         type Loaded<E, P extends string = never, F extends string = "*"> = OriginLoaded<E, P, F>;
 
+        type QueryBuilder<D, T extends keyof D, O> = SelectQueryBuilder<D, T, O>;
+
         type ChangeSet<E extends OriginAnyEntity> = OriginChangeSet<E>;
 
         type Collection<E extends object> = OriginCollection<E>;
+
+        type Query<O> = AliasableExpression<O> & Compilable<O>;
 
         type EntityDictionary<E> = OriginEntityDictionary<E>;
 
@@ -60,19 +64,17 @@ declare global {
 
         type EntityKey<E> = OriginEntityKey<E>;
 
-        type QueryBuilder = Knex.QueryBuilder;
-
         type UnknownType = OriginUnknownType;
 
         type UnitOfWork = OriginUnitOfWork;
-
-        type JoinClause = Knex.JoinClause;
 
         type AnyEntity = OriginAnyEntity;
 
         type Options = OriginOptions;
 
-        type RawColumnValue = Maybe<string | number | boolean | bigint | Date>;
+        type RawScalarValue = string | number | boolean | bigint | Date;
+
+        type RawColumnValue = Maybe<RawScalarValue | readonly RawScalarValue[]>;
 
         type CamelToSnakeCase<S extends string> = S extends `${infer Head}${infer Tail}`
             ? `${Head extends Uppercase<Head> ? "_" : ""}${Lowercase<Head>}${CamelToSnakeCase<Tail>}`
@@ -80,6 +82,18 @@ declare global {
 
         type Raw<E> = {
             [K in keyof E as E[K] extends RawColumnValue ? CamelToSnakeCase<K & string> : never]: E[K];
+        };
+
+        type ForeignKeys<Entity> = {
+            [
+                Key in keyof Entity as Entity[Key] extends RawColumnValue
+                    ? never
+                    : Entity[Key] extends ORM.Collection<ORM.AnyEntity>
+                      ? never
+                      : Entity[Key] extends (...args: never[]) => unknown
+                        ? never
+                        : `${CamelToSnakeCase<Key & string>}_id`
+            ]: string;
         };
 
         type OperatorMap<T> = {
@@ -93,6 +107,33 @@ declare global {
             $lt?: T;
             $eq?: T;
             $ne?: T;
+        };
+
+        type Columns<Entity> = Raw<Entity> & ForeignKeys<Entity>;
+
+        type AccountColumns = Omit<
+            Columns<Entities.Account>,
+            "is2_f_a_enforced" | "master_code_id" | "password_id" | "profile_id"
+        > & {
+            is_2fa_enforced: boolean;
+        };
+
+        type Database = {
+            "identity.account": AccountColumns;
+            "identity.application": Columns<Entities.Application>;
+            "identity.identifier": Columns<Entities.Identifier>;
+            "identity.interface_client": Columns<Entities.InterfaceClient>;
+            "identity.invite": Columns<Entities.Invite>;
+            "identity.master_code": Columns<Entities.MasterCode>;
+            "identity.membership": Columns<Entities.Membership>;
+            "identity.membership_history": Columns<Entities.MembershipHistory>;
+            "identity.password": Columns<Entities.Password>;
+            "identity.password_history": Columns<Entities.PasswordHistory>;
+            "identity.profile": Columns<Entities.Profile>;
+            "identity.recovery_code": Columns<Entities.RecoveryCode>;
+            "identity.second_factor": Columns<Entities.SecondFactor>;
+            "identity.service_client": Columns<Entities.ServiceClient>;
+            "identity.session": Columns<Entities.Session>;
         };
 
         type ConnectionKind = "write" | "read";

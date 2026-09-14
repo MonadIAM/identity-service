@@ -1,8 +1,9 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { raw } from "@mikro-orm/postgresql";
+import { sql } from "kysely";
 
-import { knex } from "~infrastructure/database/utils";
+import { kysely } from "~infrastructure/database/utils";
 import { ExceptionMapper } from "~common/exceptions";
 import { Account } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
@@ -33,46 +34,67 @@ export class AccountRepository
             const entityManager = this.readManager.fork();
 
             // NOTE[SQL-01]: see NOTES.md#SQL-01
-            let dataQuery = knex
-                .select({ id: "a.id", status: "a.status", displayName: "p.display_name", identifier: "i.identity" })
-                .from({ a: "identity.account" })
-                .leftJoin({ p: "identity.profile" }, "p.account_id", "a.id")
-                .joinRaw(
-                    "LEFT JOIN LATERAL (SELECT identity FROM identity.identifier WHERE account_id = a.id AND identity % ? ORDER BY similarity(identity, ?) DESC, identity ASC, id ASC LIMIT 1) i ON true",
-                    [term, term],
+            const dataQuery = kysely
+                .selectFrom("identity.account as a")
+                .leftJoin("identity.profile as p", "p.account_id", "a.id")
+                .leftJoinLateral(
+                    (eb) =>
+                        eb
+                            .selectFrom("identity.identifier as identifier")
+                            .select("identifier.identity")
+                            .whereRef("identifier.account_id", "=", "a.id")
+                            .where(sql<boolean>`identifier.identity % ${term}`)
+                            .orderBy(sql<number>`similarity(identifier.identity, ${term})`, "desc")
+                            .orderBy("identifier.identity", "asc")
+                            .orderBy("identifier.id", "asc")
+                            .limit(1)
+                            .as("i"),
+                    (join) => join.onTrue(),
                 )
+                .select(["a.id", "a.status", "p.display_name as displayName", "i.identity as identifier"])
                 .limit(pagination.elementsPerPage)
-                .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+                .offset((pagination.currentPage - 1) * pagination.elementsPerPage)
+                .$if(Boolean(term), (query) =>
+                    query
+                        .where((eb) => eb.or([sql<boolean>`p.display_name % ${term}`, eb("i.identity", "is not", null)]))
+                        .orderBy(
+                            sql<number>`GREATEST(similarity(p.display_name, ${term}), COALESCE(similarity(i.identity, ${term}), 0))`,
+                            "desc",
+                        ),
+                )
+                .orderBy("p.display_name", "asc")
+                .orderBy("a.id", "asc")
+                .compile();
 
-            let countQuery = knex
-                .from({ a: "identity.account" })
-                .leftJoin({ p: "identity.profile" }, "p.account_id", "a.id");
-
-            if (term) {
-                dataQuery = dataQuery
-                    .whereRaw("p.display_name % ? OR i.identity IS NOT NULL", [term])
-                    .orderByRaw("GREATEST(similarity(p.display_name, ?), COALESCE(similarity(i.identity, ?), 0)) DESC", [
-                        term,
-                        term,
-                    ])
-                    .orderBy("p.display_name", "asc")
-                    .orderBy("a.id", "asc");
-                countQuery = countQuery.whereRaw(
-                    "p.display_name % ? OR EXISTS (SELECT 1 FROM identity.identifier WHERE account_id = a.id AND identity % ?)",
-                    [term, term],
-                );
-            } else {
-                dataQuery = dataQuery.orderBy("p.display_name", "asc").orderBy("a.id", "asc");
-            }
-
-            const dataSQL = dataQuery.toSQL();
-            const countSQL = countQuery.count("a.id as total").toSQL();
+            const countQuery = kysely
+                .selectFrom("identity.account as a")
+                .leftJoin("identity.profile as p", "p.account_id", "a.id")
+                .$if(Boolean(term), (query) =>
+                    query.where((eb) =>
+                        eb.or([
+                            sql<boolean>`p.display_name % ${term}`,
+                            eb.exists(
+                                eb
+                                    .selectFrom("identity.identifier as identifier")
+                                    .select(sql<number>`1`.as("matched"))
+                                    .whereRef("identifier.account_id", "=", "a.id")
+                                    .where(sql<boolean>`identifier.identity % ${term}`),
+                            ),
+                        ]),
+                    ),
+                )
+                .select((eb) => eb.fn.count("a.id").as("total"))
+                .compile();
 
             const [rows, countRow] = await Promise.all([
-                entityManager.execute<Repositories.Account.GetLookupList.Row[]>(dataSQL.sql, [...dataSQL.bindings], "all"),
+                entityManager.execute<Repositories.Account.GetLookupList.Row[]>(
+                    dataQuery.sql,
+                    [...dataQuery.parameters],
+                    "all",
+                ),
                 entityManager.execute<Repositories.Account.GetLookupList.CountRow>(
-                    countSQL.sql,
-                    [...countSQL.bindings],
+                    countQuery.sql,
+                    [...countQuery.parameters],
                     "get",
                 ),
             ]);
