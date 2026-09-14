@@ -152,15 +152,17 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async revokeRealm(props: Commands.Application.RevokeRealm.Props): Commands.Application.RevokeRealm.Result {
-        const { actor, realm, input } = props;
-        await this.transactionalService.run({
+        const { incoming, context, actor, realm, input } = props;
+        await this.transactionalService.consume({
             resource: this.resource,
             audit: {
                 entityType: EntityType.APPLICATION,
                 actionType: ActionType.REVOKE,
-                ...props,
+                context,
+                actor,
+                realm,
+                input,
             },
-            changeLog: true,
             outbox: [
                 {
                     payloadMapper: this.mapper.interfaceClientOutboxPayload,
@@ -173,6 +175,8 @@ export class ApplicationCommands implements Commands.Application.Contract {
                     destinationTopic: KafkaTopic.SERVICE_CLIENT,
                 },
             ],
+            changeLog: true,
+            incoming,
             execute: async (transaction) => {
                 const entities = await this.applicationService.applyRealmRevocation({
                     version: input.version,
@@ -186,15 +190,17 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async restoreRealm(props: Commands.Application.RestoreRealm.Props): Commands.Application.RestoreRealm.Result {
-        const { actor, realm, input } = props;
-        await this.transactionalService.run({
+        const { incoming, context, actor, realm, input } = props;
+        await this.transactionalService.consume({
             resource: this.resource,
             audit: {
                 entityType: EntityType.APPLICATION,
                 actionType: ActionType.RESTORE,
-                ...props,
+                context,
+                actor,
+                realm,
+                input,
             },
-            changeLog: true,
             outbox: [
                 {
                     payloadMapper: this.mapper.interfaceClientOutboxPayload,
@@ -207,6 +213,8 @@ export class ApplicationCommands implements Commands.Application.Contract {
                     destinationTopic: KafkaTopic.SERVICE_CLIENT,
                 },
             ],
+            changeLog: true,
+            incoming,
             execute: async (transaction) => {
                 const entities = await this.applicationService.applyRealmRestore({
                     version: input.version,
@@ -245,16 +253,20 @@ export class ApplicationCommands implements Commands.Application.Contract {
     }
 
     public async purgeRealm(props: Commands.Application.PurgeRealm.Props): Commands.Application.PurgeRealm.Result {
-        const { realm, input } = props;
+        const { incoming, context, actor, realm, input } = props;
         const { version } = input;
-        await this.transactionalService.run({
+        await this.transactionalService.consume({
             resource: this.resource,
             audit: {
                 entityType: EntityType.APPLICATION,
                 actionType: ActionType.PURGE,
-                ...props,
+                context,
+                actor,
+                realm,
+                input,
             },
             changeLog: true,
+            incoming,
             execute: async (transaction) => {
                 await this.applicationService.purgeRealm({ transaction, version, realm });
             },

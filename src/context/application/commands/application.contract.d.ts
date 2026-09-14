@@ -10,6 +10,7 @@ declare namespace Commands {
 
         namespace RestoreRealm {
             type Props = {
+                incoming: TransactionManager.Service.IncomingMessage;
                 actor: string;
                 realm: string;
                 context: Extract.Meta;
@@ -25,6 +26,7 @@ declare namespace Commands {
 
         namespace RevokeRealm {
             type Props = {
+                incoming: TransactionManager.Service.IncomingMessage;
                 actor: string;
                 realm: string;
                 context: Extract.Meta;
@@ -40,6 +42,7 @@ declare namespace Commands {
 
         namespace PurgeRealm {
             type Props = {
+                incoming: TransactionManager.Service.IncomingMessage;
                 actor: string;
                 realm: string;
                 context: Extract.Meta;

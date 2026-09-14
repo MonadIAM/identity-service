@@ -313,6 +313,9 @@ export type I18nTranslations = {
         "kafka-retry": {
             "HANDLER_NOT_REGISTERED": string;
         };
+        "kafka-incoming": {
+            "EVENT_MISSING": string;
+        };
         "schema-registry": {
             "ENCODE_FAILED": string;
             "DECODE_FAILED": string;

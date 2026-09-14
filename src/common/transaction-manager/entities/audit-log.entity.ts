@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-export class AuditLog implements SystemEntities.AuditLog.Contract {
+export class AuditLog {
     public id: string;
     public createdAt: Date;
 

@@ -11,6 +11,7 @@ export class CleanupScheduler {
     private readonly changeLogRetentionTTL: StringValue;
     private readonly auditLogRetentionTTL: StringValue;
     private readonly inactiveAccountTTL: StringValue;
+    private readonly inboxRetentionTTL: StringValue;
     private readonly pendingAccountTTL: StringValue;
     private readonly pendingInviteTTL: StringValue;
     private readonly batchSize: number;
@@ -23,6 +24,7 @@ export class CleanupScheduler {
         this.changeLogRetentionTTL = this.configService.getOrThrow<StringValue>("CHANGE_LOG_RETENTION_TTL");
         this.auditLogRetentionTTL = this.configService.getOrThrow<StringValue>("AUDIT_LOG_RETENTION_TTL");
         this.inactiveAccountTTL = this.configService.getOrThrow<StringValue>("INACTIVE_ACCOUNT_TTL");
+        this.inboxRetentionTTL = this.configService.getOrThrow<StringValue>("INBOX_RETENTION_TTL");
         this.pendingAccountTTL = this.configService.getOrThrow<StringValue>("PENDING_ACCOUNT_TTL");
         this.pendingInviteTTL = this.configService.getOrThrow<StringValue>("PENDING_INVITE_TTL");
         this.batchSize = this.configService.getOrThrow<number>("CLEANUP_BATCH_SIZE");
@@ -30,55 +32,84 @@ export class CleanupScheduler {
 
     @Cron(CronExpression.EVERY_HOUR)
     public async schedulePendingAccountsCleanup(): Promise<void> {
+        const now = new Date();
         await this.cleanupQueue.schedule({
             job: CleanupJob.PENDING_ACCOUNTS,
             data: {
-                olderThanMs: ms(this.pendingAccountTTL),
+                expirationDate: now.getTime() - ms(this.pendingAccountTTL),
+                event: `${CleanupJob.PENDING_ACCOUNTS}.${now.toISOString().slice(0, 13)}`,
                 batchSize: this.batchSize,
+                batch: 0,
             },
         });
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_1AM)
     public async scheduleInactiveAccountsCleanup(): Promise<void> {
+        const now = new Date();
         await this.cleanupQueue.schedule({
             job: CleanupJob.INACTIVE_ACCOUNTS,
             data: {
-                olderThanMs: ms(this.inactiveAccountTTL),
+                expirationDate: now.getTime() - ms(this.inactiveAccountTTL),
+                event: `${CleanupJob.INACTIVE_ACCOUNTS}.${now.toISOString().slice(0, 10)}`,
                 batchSize: this.batchSize,
+                batch: 0,
             },
         });
     }
 
     @Cron(CronExpression.EVERY_HOUR)
     public async schedulePendingInvitesCleanup(): Promise<void> {
+        const now = new Date();
         await this.cleanupQueue.schedule({
             job: CleanupJob.PENDING_INVITES,
             data: {
-                olderThanMs: ms(this.pendingInviteTTL),
+                expirationDate: now.getTime() - ms(this.pendingInviteTTL),
+                event: `${CleanupJob.PENDING_INVITES}.${now.toISOString().slice(0, 13)}`,
                 batchSize: this.batchSize,
+                batch: 0,
             },
         });
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_2AM)
     public async scheduleAuditLogCleanup(): Promise<void> {
+        const now = new Date();
         await this.cleanupQueue.schedule({
             job: CleanupJob.AUDIT_LOG,
             data: {
-                olderThanMs: ms(this.auditLogRetentionTTL),
+                expirationDate: now.getTime() - ms(this.auditLogRetentionTTL),
+                event: `${CleanupJob.AUDIT_LOG}.${now.toISOString().slice(0, 10)}`,
                 batchSize: this.batchSize,
+                batch: 0,
             },
         });
     }
 
     @Cron(CronExpression.EVERY_DAY_AT_3AM)
     public async scheduleChangeLogCleanup(): Promise<void> {
+        const now = new Date();
         await this.cleanupQueue.schedule({
             job: CleanupJob.CHANGE_LOG,
             data: {
-                olderThanMs: ms(this.changeLogRetentionTTL),
+                expirationDate: now.getTime() - ms(this.changeLogRetentionTTL),
+                event: `${CleanupJob.CHANGE_LOG}.${now.toISOString().slice(0, 10)}`,
                 batchSize: this.batchSize,
+                batch: 0,
+            },
+        });
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_4AM)
+    public async scheduleInboxCleanup(): Promise<void> {
+        const now = new Date();
+        await this.cleanupQueue.schedule({
+            job: CleanupJob.INBOX,
+            data: {
+                expirationDate: now.getTime() - ms(this.inboxRetentionTTL),
+                event: `${CleanupJob.INBOX}.${now.toISOString().slice(0, 10)}`,
+                batchSize: this.batchSize,
+                batch: 0,
             },
         });
     }

@@ -5,6 +5,7 @@ import { MembershipHistoryService } from "~context/domain/services/membership-hi
 import { AccountRepository } from "~context/infrastructure/repositories/account.repository";
 import { InviteRepository } from "~context/infrastructure/repositories/invite.repository";
 import { IntegrationServiceMockBank } from "~testing/integration/service-mock-bank";
+import { InboxService } from "~common/transaction-manager/services/inbox.service";
 import { MembershipService } from "~context/domain/services/membership.service";
 import { ChangeLogSubscriber } from "~common/transaction-manager/subscribers";
 import { OperationContext } from "~common/transaction-manager/utilities";
@@ -36,6 +37,7 @@ export class MembershipIntegrationHelpers
             ),
             transactionalService: new TransactionalService(
                 writeManager,
+                new InboxService(),
                 logMaskingService,
                 outboxService,
                 operationContext,

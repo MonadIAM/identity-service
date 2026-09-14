@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-export class ChangeLog implements SystemEntities.ChangeLog.Contract {
+export class ChangeLog {
     public id: string;
     public createdAt: Date;
 

@@ -49,16 +49,20 @@ export class MembershipCommands implements Commands.Membership.Contract {
     }
 
     public async confirm(props: Commands.Membership.Confirm.Props): Commands.Membership.Confirm.Result {
-        const { actor, realm, input } = props;
+        const { incoming, context, actor, realm, input } = props;
 
-        await this.transactionalService.run({
+        await this.transactionalService.consume({
             resource: this.resource,
             audit: {
                 actionType: "invite" in input ? ActionType.ACCEPT : ActionType.EXCLUDE,
                 entityType: EntityType.MEMBERSHIP,
-                ...props,
+                context,
+                actor,
+                realm,
+                input,
             },
             changeLog: true,
+            incoming,
             execute: async (transaction) => {
                 await this.membershipService.confirm({ transaction, input, actor, realm });
             },
@@ -66,16 +70,20 @@ export class MembershipCommands implements Commands.Membership.Contract {
     }
 
     public async reject(props: Commands.Membership.Reject.Props): Commands.Membership.Reject.Result {
-        const { input } = props;
+        const { incoming, context, actor, realm, input } = props;
 
-        await this.transactionalService.run({
+        await this.transactionalService.consume({
             resource: this.resource,
             audit: {
                 entityType: EntityType.INVITE,
                 actionType: ActionType.CANCEL,
-                ...props,
+                context,
+                actor,
+                realm,
+                input,
             },
             changeLog: true,
+            incoming,
             execute: async (transaction) => {
                 await this.inviteService.cancel({ input: { invite: input.invite }, transaction });
             },

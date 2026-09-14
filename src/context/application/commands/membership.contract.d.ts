@@ -41,6 +41,7 @@ declare namespace Commands {
                 input:
                     | Topics.Membership.JoinConfirmedMessage["payload"]["input"]
                     | Topics.Membership.LeaveConfirmedMessage["payload"]["input"];
+                incoming: TransactionManager.Service.IncomingMessage;
                 context: Extract.Meta;
                 actor: string;
                 realm: string;
@@ -54,6 +55,7 @@ declare namespace Commands {
         namespace Reject {
             type Props = {
                 input: Topics.Membership.JoinRejectedMessage["payload"]["input"];
+                incoming: TransactionManager.Service.IncomingMessage;
                 context: Extract.Meta;
                 actor: string;
                 realm: string;

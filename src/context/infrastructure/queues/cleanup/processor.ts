@@ -4,9 +4,9 @@ import { AccountTopicAction } from "@monadiam/shared";
 import { Job } from "bullmq";
 
 import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE, INVITE_SERVICE } from "~context/domain/services";
+import { INBOX_SERVICE, TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
-import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 
 import { CLEANUP_QUEUE } from "../tokens";
 import { BullQueue } from "../enums";
@@ -19,7 +19,9 @@ export class CleanupProcessor extends WorkerHost {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
+        @Inject(INBOX_SERVICE)
+        private readonly inboxService: TransactionManager.Inbox.ProcessorContract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.Contract,
         @Inject(CHANGE_LOG_SERVICE)
@@ -40,6 +42,7 @@ export class CleanupProcessor extends WorkerHost {
         [CleanupJob.PENDING_INVITES]: (job: Job) => this.cleanupPendingInvites(job),
         [CleanupJob.CHANGE_LOG]: (job: Job) => this.cleanupChangeLog(job),
         [CleanupJob.AUDIT_LOG]: (job: Job) => this.cleanupAuditLog(job),
+        [CleanupJob.INBOX]: (job: Job) => this.cleanupInbox(job),
     };
 
     public process(job: Job): Promise<Queues.Cleanup.Result> {
@@ -47,9 +50,8 @@ export class CleanupProcessor extends WorkerHost {
     }
 
     private async cleanupPendingAccounts(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
-        const { olderThanMs, batchSize } = job.data;
-
-        const expirationDate = new Date(Date.now() - olderThanMs);
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
         this.logger.log(`Cleaning up pending accounts older than ${expirationDate.toISOString()}`);
 
         try {
@@ -89,9 +91,8 @@ export class CleanupProcessor extends WorkerHost {
     }
 
     private async cleanupInactiveAccounts(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
-        const { olderThanMs, batchSize } = job.data;
-
-        const expirationDate = new Date(Date.now() - olderThanMs);
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
         this.logger.log(`Cleaning up inactive accounts older than ${expirationDate.toISOString()}`);
 
         try {
@@ -138,9 +139,8 @@ export class CleanupProcessor extends WorkerHost {
     }
 
     private async cleanupPendingInvites(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
-        const { olderThanMs, batchSize } = job.data;
-
-        const expirationDate = new Date(Date.now() - olderThanMs);
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
         this.logger.log(`Cleaning up pending invites older than ${expirationDate.toISOString()}`);
 
         try {
@@ -165,9 +165,8 @@ export class CleanupProcessor extends WorkerHost {
     }
 
     private async cleanupAuditLog(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
-        const { olderThanMs, batchSize } = job.data;
-
-        const expirationDate = new Date(Date.now() - olderThanMs);
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
         this.logger.log(`Cleaning up audit log entries older than ${expirationDate.toISOString()}`);
 
         try {
@@ -190,9 +189,8 @@ export class CleanupProcessor extends WorkerHost {
     }
 
     private async cleanupChangeLog(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
-        const { olderThanMs, batchSize } = job.data;
-
-        const expirationDate = new Date(Date.now() - olderThanMs);
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
         this.logger.log(`Cleaning up change log entries older than ${expirationDate.toISOString()}`);
 
         try {
@@ -210,6 +208,33 @@ export class CleanupProcessor extends WorkerHost {
             }
         } catch (error) {
             this.logger.error("Failed to clean up change log entries", error);
+            throw error;
+        }
+    }
+
+    private async cleanupInbox(job: Job<Queues.Cleanup.RetentionJobData>): Promise<Queues.Cleanup.Result> {
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
+        this.logger.log(`Cleaning up inbox entries older than ${expirationDate.toISOString()}`);
+
+        try {
+            let cleaned = 0;
+            await this.transactionalService.run({
+                resource: "Inbox",
+                execute: async (transaction) => {
+                    cleaned = await this.inboxService.clean({ transaction, expirationDate, batchSize });
+                },
+            });
+
+            if (cleaned) {
+                this.logger.log(`Deleted ${cleaned} inbox entries.`);
+                return this.scheduleNextBatch(job, cleaned === batchSize);
+            } else {
+                this.logger.log("No inbox entries to clean up.");
+                return { deleted: 0, nextBatch: false };
+            }
+        } catch (error) {
+            this.logger.error("Failed to clean up inbox entries", error);
             throw error;
         }
     }
