@@ -5,14 +5,12 @@ import {
     PasswordHistory,
     SecondFactor,
     RecoveryCode,
-    Membership,
     Identifier,
     MasterCode,
     Password,
     Profile,
     Session,
     Account,
-    Invite,
 } from "~context/domain/entities";
 
 export const AccountSchema = new EntitySchema<Account>({
@@ -75,24 +73,6 @@ export const AccountSchema = new EntitySchema<Account>({
             kind: "1:m",
             entity: () => Session,
             mappedBy: "account",
-        },
-
-        memberships: {
-            kind: "1:m",
-            entity: () => Membership,
-            mappedBy: "account",
-        },
-
-        receivedInvites: {
-            kind: "1:m",
-            entity: () => Invite,
-            mappedBy: "invitee",
-        },
-
-        sentInvites: {
-            kind: "1:m",
-            entity: () => Invite,
-            mappedBy: "inviter",
         },
 
         lastActiveAt: { type: "timestamptz", length: 3, nullable: true },

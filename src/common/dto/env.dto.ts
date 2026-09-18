@@ -450,9 +450,6 @@ export class EnvironmentVariablesDTO {
     declare public PENDING_ACCOUNT_TTL: StringValue;
 
     @Validator.IsMsString()
-    declare public PENDING_INVITE_TTL: StringValue;
-
-    @Validator.IsMsString()
     declare public AUDIT_LOG_RETENTION_TTL: StringValue;
 
     @Validator.IsMsString()

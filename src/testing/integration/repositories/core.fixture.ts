@@ -4,7 +4,6 @@ import { randomUUID } from "node:crypto";
 import { AuditLog, ChangeLog } from "~common/transaction-manager/entities";
 import { DeltaChanges } from "~common/transaction-manager/value-objects";
 import {
-    MembershipHistory,
     InterfaceClient,
     PasswordHistory,
     RecoveryCode,
@@ -13,12 +12,10 @@ import {
     Application,
     Identifier,
     MasterCode,
-    Membership,
     Password,
     Profile,
     Session,
     Account,
-    Invite,
 } from "~context/domain/entities";
 import {
     AuthenticationContextClass,
@@ -175,33 +172,6 @@ export class CoreFixture implements Fixtures.Core.Contract {
         return await this.persist(code);
     }
 
-    public async createMembership(props: Fixtures.Core.CreateMembership.Props): Fixtures.Core.CreateMembership.Result {
-        const membership = new Membership({
-            joinedAt: props.joinedAt ?? new Date("2026-01-01T00:00:00.000Z"),
-            invitedBy: props.invitedBy ?? randomUUID(),
-            realm: props.realm ?? randomUUID(),
-            account: props.account,
-        });
-
-        return await this.persist(membership);
-    }
-
-    public async createMembershipHistory(
-        props: Fixtures.Core.CreateMembershipHistory.Props = {},
-    ): Fixtures.Core.CreateMembershipHistory.Result {
-        const history = new MembershipHistory({
-            joinedAt: props.joinedAt ?? new Date("2026-01-01T00:00:00.000Z"),
-            invitedBy: props.invitedBy ?? randomUUID(),
-            account: props.account ?? randomUUID(),
-            realm: props.realm ?? randomUUID(),
-        });
-
-        history.excludedBy = props.excludedBy;
-        history.leaveAt = props.leaveAt;
-
-        return await this.persist(history);
-    }
-
     public async createPassword(props: Fixtures.Core.CreatePassword.Props): Fixtures.Core.CreatePassword.Result {
         const password = new Password({
             hash: props.hash ?? this.nextCode("password-hash"),
@@ -251,17 +221,6 @@ export class CoreFixture implements Fixtures.Core.Contract {
         }
 
         return await this.persist(secondFactor);
-    }
-
-    public async createInvite(props: Fixtures.Core.CreateInvite.Props): Fixtures.Core.CreateInvite.Result {
-        const invite = new Invite({
-            realm: props.realm ?? randomUUID(),
-            role: props.role ?? randomUUID(),
-            invitee: props.invitee,
-            inviter: props.inviter,
-        });
-
-        return await this.persist(invite);
     }
 
     public async createAuditLog(props: Fixtures.Core.CreateAuditLog.Props = {}): Fixtures.Core.CreateAuditLog.Result {

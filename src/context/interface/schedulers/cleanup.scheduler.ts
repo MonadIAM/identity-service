@@ -13,7 +13,6 @@ export class CleanupScheduler {
     private readonly inactiveAccountTTL: StringValue;
     private readonly inboxRetentionTTL: StringValue;
     private readonly pendingAccountTTL: StringValue;
-    private readonly pendingInviteTTL: StringValue;
     private readonly batchSize: number;
 
     public constructor(
@@ -26,7 +25,6 @@ export class CleanupScheduler {
         this.inactiveAccountTTL = this.configService.getOrThrow<StringValue>("INACTIVE_ACCOUNT_TTL");
         this.inboxRetentionTTL = this.configService.getOrThrow<StringValue>("INBOX_RETENTION_TTL");
         this.pendingAccountTTL = this.configService.getOrThrow<StringValue>("PENDING_ACCOUNT_TTL");
-        this.pendingInviteTTL = this.configService.getOrThrow<StringValue>("PENDING_INVITE_TTL");
         this.batchSize = this.configService.getOrThrow<number>("CLEANUP_BATCH_SIZE");
     }
 
@@ -52,20 +50,6 @@ export class CleanupScheduler {
             data: {
                 expirationDate: now.getTime() - ms(this.inactiveAccountTTL),
                 event: `${CleanupJob.INACTIVE_ACCOUNTS}.${now.toISOString().slice(0, 10)}`,
-                batchSize: this.batchSize,
-                batch: 0,
-            },
-        });
-    }
-
-    @Cron(CronExpression.EVERY_HOUR)
-    public async schedulePendingInvitesCleanup(): Promise<void> {
-        const now = new Date();
-        await this.cleanupQueue.schedule({
-            job: CleanupJob.PENDING_INVITES,
-            data: {
-                expirationDate: now.getTime() - ms(this.pendingInviteTTL),
-                event: `${CleanupJob.PENDING_INVITES}.${now.toISOString().slice(0, 13)}`,
                 batchSize: this.batchSize,
                 batch: 0,
             },

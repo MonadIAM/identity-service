@@ -124,10 +124,7 @@ declare global {
             "identity.application": Columns<Entities.Application>;
             "identity.identifier": Columns<Entities.Identifier>;
             "identity.interface_client": Columns<Entities.InterfaceClient>;
-            "identity.invite": Columns<Entities.Invite>;
             "identity.master_code": Columns<Entities.MasterCode>;
-            "identity.membership": Columns<Entities.Membership>;
-            "identity.membership_history": Columns<Entities.MembershipHistory>;
             "identity.password": Columns<Entities.Password>;
             "identity.password_history": Columns<Entities.PasswordHistory>;
             "identity.profile": Columns<Entities.Profile>;

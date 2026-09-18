@@ -1,4 +1,3 @@
-export { MembershipHistory } from "./membership-history.entity";
 export { PasswordHistory } from "./password-history.entity";
 export { InterfaceClient } from "./interface-client.entity";
 export { ServiceClient } from "./service-client.entity";
@@ -6,10 +5,8 @@ export { RecoveryCode } from "./recovery-code.entity";
 export { SecondFactor } from "./second-factor.entity";
 export { Application } from "./application.entity";
 export { MasterCode } from "./master-code.entity";
-export { Membership } from "./membership.entity";
 export { Identifier } from "./identifier.entity";
 export { Password } from "./password.entity";
 export { Session } from "./session.entity";
 export { Profile } from "./profile.entity";
 export { Account } from "./account.entity";
-export { Invite } from "./invite.entity";

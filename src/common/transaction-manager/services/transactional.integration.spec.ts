@@ -35,7 +35,7 @@ describe("TransactionalService integration", () => {
     const INCOMING_MESSAGE = {
         source: { topic: "source-topic", partition: 0, offset: "42" },
         event: "00000000-0000-4000-8000-000000000001",
-        consumerKey: "identity.membership.v1",
+        consumerKey: "identity.account.v1",
     };
 
     it("commits inbox and effects exactly once", async () => {

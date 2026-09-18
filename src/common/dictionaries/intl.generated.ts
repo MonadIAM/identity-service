@@ -42,16 +42,6 @@ export type I18nTranslations = {
             "PUBLIC_CONTACT_TOGGLED": string;
             "PURGED": string;
         };
-        "invite": {
-            "CREATED": string;
-            "ACCEPTANCE_REQUESTED": string;
-            "DECLINED": string;
-            "CANCELLED": string;
-            "INVALID_STATUS": string;
-        };
-        "membership": {
-            "EXCLUSION_REQUESTED": string;
-        };
         "federated-authn": {
             "INVALID_STATE": string;
             "SIGNED_IN": string;
@@ -158,16 +148,6 @@ export type I18nTranslations = {
             "PUBLIC_CONTACT_REQUIRES_VERIFICATION": string;
             "ALREADY_VERIFIED": string;
         };
-        "invite": {
-            "CANNOT_CANCEL_INACTIVE": string;
-            "CANNOT_ACCEPT_INACTIVE": string;
-            "CANNOT_DECLINE_INACTIVE": string;
-            "CANNOT_EXPIRE_INACTIVE": string;
-            "CANNOT_INVALIDATE_INACTIVE": string;
-        };
-        "membership-history": {
-            "ALREADY_CLOSED": string;
-        };
         "interface-client": {
             "CANNOT_UPDATE_REVOKED": string;
             "NO_CHANGES_DETECTED": string;
@@ -255,9 +235,6 @@ export type I18nTranslations = {
             "APPLICATION_LIMIT_EXCEEDED": string;
             "CLIENTS_NOT_FOUND": string;
         };
-        "invite": {
-            "INVITEE_ALREADY_MEMBER": string;
-        };
         "second-factor": {
             "TOTP_FACTOR_EXISTS": string;
             "INVALID_TOTP_CODE": string;
@@ -274,9 +251,6 @@ export type I18nTranslations = {
             "INVALID_CURRENT_PASSWORD": string;
             "RECENTLY_USED": string;
             "INVALID_RECOVERY_CODE": string;
-        };
-        "membership": {
-            "MEMBERSHIP_NOT_FOUND": string;
         };
         "jwt": {
             "INVALID_ACCESS_TOKEN": string;

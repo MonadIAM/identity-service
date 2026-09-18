@@ -1,4 +1,3 @@
-export const MEMBERSHIP_HISTORY_REPOSITORY = Symbol("Repositories.MembershipHistory.Contract");
 export const PASSWORD_HISTORY_REPOSITORY = Symbol("Repositories.PasswordHistory.Contract");
 export const INTERFACE_CLIENT_REPOSITORY = Symbol("Repositories.InterfaceClient.Contract");
 export const SERVICE_CLIENT_REPOSITORY = Symbol("Repositories.ServiceClient.Contract");
@@ -6,7 +5,6 @@ export const SECOND_FACTOR_REPOSITORY = Symbol("Repositories.SecondFactor.Contra
 export const RECOVERY_CODE_REPOSITORY = Symbol("Repositories.RecoveryCode.Contract");
 export const APPLICATION_REPOSITORY = Symbol("Repositories.Application.Contract");
 export const MASTER_CODE_REPOSITORY = Symbol("Repositories.MasterCode.Contract");
-export const MEMBERSHIP_REPOSITORY = Symbol("Repositories.Membership.Contract");
 export const IDENTIFIER_REPOSITORY = Symbol("Repositories.Identifier.Contract");
 export const CHANGE_LOG_REPOSITORY = Symbol("Repositories.ChangeLog.Contract");
 export const AUDIT_LOG_REPOSITORY = Symbol("Repositories.AuditLog.Contract");
@@ -14,4 +12,3 @@ export const PASSWORD_REPOSITORY = Symbol("Repositories.Password.Contract");
 export const SESSION_REPOSITORY = Symbol("Repositories.Session.Contract");
 export const PROFILE_REPOSITORY = Symbol("Repositories.Profile.Contract");
 export const ACCOUNT_REPOSITORY = Symbol("Repositories.Account.Contract");
-export const INVITE_REPOSITORY = Symbol("Repositories.Invite.Contract");

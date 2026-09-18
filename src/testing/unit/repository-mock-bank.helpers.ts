@@ -10,26 +10,16 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
         const account = props.account ?? this.createAccount();
 
         return {
-            membershipHistories: this.membershipHistoryRepository(),
             applications: this.applicationRepository(application),
             passwordHistories: this.passwordHistoryRepository(),
             interfaceClients: this.interfaceClientRepository(),
             serviceClients: this.serviceClientRepository(),
             secondFactors: this.secondFactorRepository(),
             accounts: this.accountRepository(account),
-            memberships: this.membershipRepository(),
             identifiers: this.identifierRepository(),
             changeLogs: this.changeLogRepository(),
             auditLogs: this.auditLogRepository(),
             sessions: this.sessionRepository(),
-            invites: this.inviteRepository(),
-        };
-    }
-
-    private membershipHistoryRepository(): Unit.Domain.RepositoryMocks.Base {
-        return {
-            ...this.baseRepository("MembershipHistory"),
-            findUnique: jest.fn(() => Promise.resolve(null)),
         };
     }
 
@@ -73,14 +63,6 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
         };
     }
 
-    private membershipRepository(): Unit.Domain.RepositoryMocks.Base {
-        return {
-            ...this.baseRepository("Membership"),
-            findUnique: jest.fn(() => Promise.resolve(null)),
-            find: jest.fn(() => Promise.resolve([])),
-        };
-    }
-
     private identifierRepository(): Unit.Domain.RepositoryMocks.Identifier {
         return {
             ...this.baseRepository("Identifier"),
@@ -119,14 +101,6 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
         return {
             ...this.baseRepository("Session"),
             lockByAccount: jest.fn(() => Promise.resolve([])),
-            findUnique: jest.fn(() => Promise.resolve(null)),
-            find: jest.fn(() => Promise.resolve([])),
-        };
-    }
-
-    private inviteRepository(): Unit.Domain.RepositoryMocks.Base {
-        return {
-            ...this.baseRepository("Invite"),
             findUnique: jest.fn(() => Promise.resolve(null)),
             find: jest.fn(() => Promise.resolve([])),
         };

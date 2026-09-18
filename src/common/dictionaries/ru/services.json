@@ -33,9 +33,6 @@
 
     "CLIENTS_NOT_FOUND": "Часть указанных клиентов не найдена."
   },
-  "invite": {
-    "INVITEE_ALREADY_MEMBER": "Приглашаемый уже является участником этого realm."
-  },
   "second-factor": {
     "TOTP_FACTOR_EXISTS": "TOTP-фактор уже настроен для этой учётной записи.",
 
@@ -53,9 +50,6 @@
     "INVALID_CURRENT_PASSWORD": "Текущий пароль недействителен.",
     "RECENTLY_USED": "Этот пароль использовался недавно.",
     "INVALID_RECOVERY_CODE": "Код восстановления недействителен."
-  },
-  "membership": {
-    "MEMBERSHIP_NOT_FOUND": "Указанная учётная запись не является участником этого realm."
   },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",

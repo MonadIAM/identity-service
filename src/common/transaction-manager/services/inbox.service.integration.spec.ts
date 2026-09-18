@@ -14,7 +14,7 @@ describe("InboxService integration", () => {
 
     it("claims an event once per consumer", async () => {
         const incoming: TransactionManager.Service.IncomingMessage = {
-            consumerKey: "identity.membership.v1",
+            consumerKey: "identity.account.v1",
             event: "event-1",
             source: { topic: "source-topic", partition: 2, offset: "42" },
         };
@@ -48,7 +48,7 @@ describe("InboxService integration", () => {
             await suite.transaction((transaction) =>
                 suite.repository().claim({
                     transaction,
-                    incoming: { consumerKey: "identity.membership.v1", event },
+                    incoming: { consumerKey: "identity.account.v1", event },
                 }),
             );
         }

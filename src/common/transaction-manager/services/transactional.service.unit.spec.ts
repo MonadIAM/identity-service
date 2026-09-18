@@ -273,7 +273,7 @@ describe("TransactionalService", () => {
 
     describe("consume", () => {
         const incoming: TransactionManager.Service.IncomingMessage = {
-            consumerKey: "identity.membership.v1",
+            consumerKey: "identity.account.v1",
             event: "00000000-0000-4000-8000-000000000001",
             source: { topic: "source-topic", partition: 0, offset: "42" },
         };
@@ -327,7 +327,7 @@ describe("TransactionalService", () => {
             const inbox = helpers.inboxContract({ claim: () => Promise.reject(error) });
             const { service } = helpers.service({ inbox });
 
-            await expect(service.consume({ incoming, execute, resource: "Membership" })).rejects.toThrow(
+            await expect(service.consume({ incoming, execute, resource: "Account" })).rejects.toThrow(
                 "db.INTERNAL_DRIVER_ERROR",
             );
             expect(execute).not.toHaveBeenCalled();

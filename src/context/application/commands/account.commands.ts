@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { isEmail } from "class-validator";
 
-import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE, INVITE_SERVICE } from "~context/domain/services";
+import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE } from "~context/domain/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -35,8 +35,6 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
         @Inject(ACCOUNT_SERVICE)
         private readonly accountService: Services.Account.CommandContract,
-        @Inject(INVITE_SERVICE)
-        private readonly inviteService: Services.Invite.CommandContract,
         @Inject(OTP_CACHE_SERVICE)
         private readonly otpCacheService: InfrastructureServices.OTPCache.PublicContract,
         @Inject(HASHING_SERVICE)
@@ -198,7 +196,6 @@ export class AccountCommands implements Commands.Account.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 await this.accountService.suspend({ input: { account: props.input.account }, transaction });
-                await this.inviteService.invalidatePending({ input: { account: props.input.account }, transaction });
             },
         });
 

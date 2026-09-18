@@ -4,7 +4,6 @@ declare global {
     namespace Fixtures {
         namespace Core {
             interface Contract {
-                createMembershipHistory: CreateMembershipHistory.Signature;
                 createInterfaceClient: CreateInterfaceClient.Signature;
                 createPasswordHistory: CreatePasswordHistory.Signature;
                 createServiceClient: CreateServiceClient.Signature;
@@ -13,14 +12,12 @@ declare global {
                 createApplication: CreateApplication.Signature;
                 createIdentifier: CreateIdentifier.Signature;
                 createMasterCode: CreateMasterCode.Signature;
-                createMembership: CreateMembership.Signature;
                 createChangeLog: CreateChangeLog.Signature;
                 createAuditLog: CreateAuditLog.Signature;
                 createPassword: CreatePassword.Signature;
                 createProfile: CreateProfile.Signature;
                 createSession: CreateSession.Signature;
                 createAccount: CreateAccount.Signature;
-                createInvite: CreateInvite.Signature;
             }
 
             namespace CreateAccount {
@@ -134,33 +131,6 @@ declare global {
                 type Signature = (props: Props) => Result;
             }
 
-            namespace CreateMembership {
-                type Props = Omit<
-                    Partial<Entities.Membership.ConstructorProps>,
-                    "account" | "invitedBy" | "joinedAt" | "realm"
-                > & {
-                    account: Entities.Account;
-                    invitedBy?: string;
-                    joinedAt?: Date;
-                    realm?: string;
-                };
-
-                type Result = Promise<Entities.Membership>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace CreateMembershipHistory {
-                type Props = Partial<Entities.MembershipHistory.ConstructorProps> & {
-                    excludedBy?: string;
-                    leaveAt?: Date;
-                };
-
-                type Result = Promise<Entities.MembershipHistory>;
-
-                type Signature = (props?: Props) => Result;
-            }
-
             namespace CreatePassword {
                 type Props = Omit<Partial<Entities.Password.ConstructorProps>, "account" | "hash"> & {
                     account: Entities.Account;
@@ -209,19 +179,6 @@ declare global {
                 };
 
                 type Result = Promise<Entities.SecondFactor>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace CreateInvite {
-                type Props = Omit<Partial<Entities.Invite.ConstructorProps>, "invitee" | "inviter" | "realm" | "role"> & {
-                    invitee: Entities.Account;
-                    inviter: Entities.Account;
-                    realm?: string;
-                    role?: string;
-                };
-
-                type Result = Promise<Entities.Invite>;
 
                 type Signature = (props: Props) => Result;
             }

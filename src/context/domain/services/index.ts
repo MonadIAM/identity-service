@@ -1,12 +1,10 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { MembershipHistoryService } from "./membership-history.service";
 import { InterfaceClientService } from "./interface-client.service";
 import { ServiceClientService } from "./service-client.service";
 import { RecoveryCodeService } from "./recovery-code.service";
 import { SecondFactorService } from "./second-factor.service";
 import { ApplicationService } from "./application.service";
-import { MembershipService } from "./membership.service";
 import { IdentifierService } from "./identifier.service";
 import { ChangeLogService } from "./change-log.service";
 import { AuditLogService } from "./audit-log.service";
@@ -14,15 +12,12 @@ import { PasswordService } from "./password.service";
 import { AccountService } from "./account.service";
 import { SessionService } from "./session.service";
 import { ProfileService } from "./profile.service";
-import { InviteService } from "./invite.service";
 import {
-    MEMBERSHIP_HISTORY_SERVICE,
     INTERFACE_CLIENT_SERVICE,
     SERVICE_CLIENT_SERVICE,
     SECOND_FACTOR_SERVICE,
     RECOVERY_CODE_SERVICE,
     APPLICATION_SERVICE,
-    MEMBERSHIP_SERVICE,
     IDENTIFIER_SERVICE,
     CHANGE_LOG_SERVICE,
     AUDIT_LOG_SERVICE,
@@ -30,14 +25,9 @@ import {
     ACCOUNT_SERVICE,
     SESSION_SERVICE,
     PROFILE_SERVICE,
-    INVITE_SERVICE,
 } from "./tokens";
 
 export const DOMAIN_SERVICES: ClassProvider[] = [
-    {
-        provide: MEMBERSHIP_HISTORY_SERVICE,
-        useClass: MembershipHistoryService,
-    },
     {
         provide: INTERFACE_CLIENT_SERVICE,
         useClass: InterfaceClientService,
@@ -57,10 +47,6 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
     {
         provide: APPLICATION_SERVICE,
         useClass: ApplicationService,
-    },
-    {
-        provide: MEMBERSHIP_SERVICE,
-        useClass: MembershipService,
     },
     {
         provide: IDENTIFIER_SERVICE,
@@ -90,20 +76,14 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
         provide: PROFILE_SERVICE,
         useClass: ProfileService,
     },
-    {
-        provide: INVITE_SERVICE,
-        useClass: InviteService,
-    },
 ];
 
 export {
-    MEMBERSHIP_HISTORY_SERVICE,
     INTERFACE_CLIENT_SERVICE,
     SERVICE_CLIENT_SERVICE,
     SECOND_FACTOR_SERVICE,
     RECOVERY_CODE_SERVICE,
     APPLICATION_SERVICE,
-    MEMBERSHIP_SERVICE,
     IDENTIFIER_SERVICE,
     CHANGE_LOG_SERVICE,
     AUDIT_LOG_SERVICE,
@@ -111,5 +91,4 @@ export {
     ACCOUNT_SERVICE,
     SESSION_SERVICE,
     PROFILE_SERVICE,
-    INVITE_SERVICE,
 };

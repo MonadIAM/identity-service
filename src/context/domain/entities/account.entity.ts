@@ -26,9 +26,6 @@ export class Account implements Entities.Account.Contract {
     public secondFactors = new Collection<Entities.SecondFactor>(this);
     public recoveryCodes = new Collection<Entities.RecoveryCode>(this);
     public passwordHistory = new Collection<Entities.PasswordHistory>(this);
-    public memberships = new Collection<Entities.Membership>(this);
-    public receivedInvites = new Collection<Entities.Invite>(this);
-    public sentInvites = new Collection<Entities.Invite>(this);
 
     public constructor(props: Entities.Account.ConstructorProps) {
         this.createdAt = new Date();

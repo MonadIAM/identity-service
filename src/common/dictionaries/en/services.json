@@ -33,9 +33,6 @@
 
     "CLIENTS_NOT_FOUND": "Some of the specified clients were not found."
   },
-  "invite": {
-    "INVITEE_ALREADY_MEMBER": "The invitee is already a member of this realm."
-  },
   "second-factor": {
     "TOTP_FACTOR_EXISTS": "A TOTP factor is already configured for this account.",
 
@@ -53,9 +50,6 @@
     "INVALID_CURRENT_PASSWORD": "The current password is invalid.",
     "RECENTLY_USED": "This password was used recently.",
     "INVALID_RECOVERY_CODE": "The recovery code is invalid."
-  },
-  "membership": {
-    "MEMBERSHIP_NOT_FOUND": "The specified account is not a member of this realm."
   },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "The access token is invalid or expired.",

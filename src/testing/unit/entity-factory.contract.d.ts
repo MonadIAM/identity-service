@@ -5,14 +5,12 @@ declare global {
         namespace Domain {
             namespace EntityFactory {
                 interface Contract {
-                    readonly createMembershipHistory: CreateMembershipHistory.Signature;
                     readonly createInterfaceClient: CreateInterfaceClient.Signature;
                     readonly createPasswordHistory: CreatePasswordHistory.Signature;
                     readonly createServiceClient: CreateServiceClient.Signature;
                     readonly createSecondFactor: CreateSecondFactor.Signature;
                     readonly createRecoveryCode: CreateRecoveryCode.Signature;
                     readonly createApplication: CreateApplication.Signature;
-                    readonly createMembership: CreateMembership.Signature;
                     readonly createMasterCode: CreateMasterCode.Signature;
                     readonly createIdentifier: CreateIdentifier.Signature;
                     readonly createChangeLog: CreateChangeLog.Signature;
@@ -22,7 +20,6 @@ declare global {
                     readonly createAccount: CreateAccount.Signature;
                     readonly createProfile: CreateProfile.Signature;
                     readonly createSession: CreateSession.Signature;
-                    readonly createInvite: CreateInvite.Signature;
                 }
 
                 namespace CreateAccount {
@@ -117,30 +114,6 @@ declare global {
                     type Props = Partial<Entities.ServiceClient.Contract>;
 
                     type Result = Entities.ServiceClient;
-
-                    type Signature = (props?: Props) => Result;
-                }
-
-                namespace CreateInvite {
-                    type Props = Partial<Entities.Invite.Contract>;
-
-                    type Result = Entities.Invite;
-
-                    type Signature = (props?: Props) => Result;
-                }
-
-                namespace CreateMembership {
-                    type Props = Partial<Entities.Membership.Contract>;
-
-                    type Result = Entities.Membership;
-
-                    type Signature = (props?: Props) => Result;
-                }
-
-                namespace CreateMembershipHistory {
-                    type Props = Partial<Entities.MembershipHistory.Contract>;
-
-                    type Result = Entities.MembershipHistory;
 
                     type Signature = (props?: Props) => Result;
                 }

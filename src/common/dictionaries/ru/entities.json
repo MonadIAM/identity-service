@@ -20,16 +20,6 @@
     "PUBLIC_CONTACT_REQUIRES_VERIFICATION": "Для публичной видимости контакта требуется подтвержденный идентификатор.",
     "ALREADY_VERIFIED": "Идентификатор уже подтвержден."
   },
-  "invite": {
-    "CANNOT_CANCEL_INACTIVE": "Невозможно отозвать приглашение: оно уже неактуально.",
-    "CANNOT_ACCEPT_INACTIVE": "Невозможно принять приглашение: оно уже неактуально.",
-    "CANNOT_DECLINE_INACTIVE": "Невозможно отклонить приглашение: оно уже неактуально.",
-    "CANNOT_EXPIRE_INACTIVE": "Невозможно погасить срок приглашения: оно уже неактуально.",
-    "CANNOT_INVALIDATE_INACTIVE": "Невозможно аннулировать приглашение: оно уже неактуально."
-  },
-  "membership-history": {
-    "ALREADY_CLOSED": "Запись истории членства уже закрыта."
-  },
   "interface-client": {
     "CANNOT_UPDATE_REVOKED": "Отозванный InterfaceClient нельзя изменить.",
     "NO_CHANGES_DETECTED": "InterfaceClient уже соответствует переданным изменениям.",

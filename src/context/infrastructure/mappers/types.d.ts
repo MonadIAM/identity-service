@@ -21,7 +21,7 @@ declare global {
             }
 
             namespace Account {
-                type DefaultFilters = {
+                type Filters = {
                     updatedAt?: OrdinalFilterDTO<Date>;
                     createdAt?: OrdinalFilterDTO<Date>;
                     subject?: StringFilterDTO;
@@ -32,12 +32,6 @@ declare global {
                     id?: StringFilterDTO;
                     is2FAEnforced?: boolean;
                 };
-
-                type ManageFilters = DefaultFilters & {
-                    realm?: LinkFilterDTO;
-                };
-
-                type Filters = DefaultFilters & ManageFilters;
 
                 type Sort = {
                     createdAt?: QueryOrder;
@@ -115,34 +109,6 @@ declare global {
                     verifiedAt?: QueryOrder;
                     lastUsedAt?: QueryOrder;
                     createdAt?: QueryOrder;
-                };
-
-                interface Types {
-                    Filters: Filters;
-                    Sort: Sort;
-                }
-            }
-
-            namespace Invite {
-                type DefaultFilters = {
-                    updatedAt?: OrdinalFilterDTO<Date>;
-                    createdAt?: OrdinalFilterDTO<Date>;
-                    status?: StringFilterDTO;
-                    realm?: LinkFilterDTO;
-                    role?: LinkFilterDTO;
-                    id?: StringFilterDTO;
-                };
-
-                type ManageFilters = DefaultFilters & {
-                    invitee?: LinkFilterDTO;
-                    inviter?: LinkFilterDTO;
-                };
-
-                type Filters = DefaultFilters & ManageFilters;
-
-                type Sort = {
-                    createdAt?: QueryOrder;
-                    updatedAt?: QueryOrder;
                 };
 
                 interface Types {
@@ -327,68 +293,6 @@ declare global {
                     updatedAt?: QueryOrder;
                     createdAt?: QueryOrder;
                     name?: QueryOrder;
-                };
-
-                interface Types {
-                    Filters: Filters;
-                    Sort: Sort;
-                }
-            }
-
-            namespace Membership {
-                type PersonalFilters = {
-                    joinedAt?: OrdinalFilterDTO<Date>;
-                    createdAt?: OrdinalFilterDTO<Date>;
-                    realm?: LinkFilterDTO;
-                };
-
-                type CommonFilters = {
-                    joinedAt?: OrdinalFilterDTO<Date>;
-                    createdAt?: OrdinalFilterDTO<Date>;
-                    account?: LinkFilterDTO;
-                    invitedBy?: LinkFilterDTO;
-                };
-
-                type ManageFilters = CommonFilters & {
-                    realm?: LinkFilterDTO;
-                };
-
-                type Filters = PersonalFilters & CommonFilters & ManageFilters;
-
-                type Sort = {
-                    createdAt?: QueryOrder;
-                    joinedAt?: QueryOrder;
-                };
-
-                interface Types {
-                    Filters: Filters;
-                    Sort: Sort;
-                }
-            }
-
-            namespace MembershipHistory {
-                type DefaultFilters = {
-                    joinedAt?: OrdinalFilterDTO<Date>;
-                    leaveAt?: OrdinalFilterDTO<Date>;
-                    createdAt?: OrdinalFilterDTO<Date>;
-                    realm?: LinkFilterDTO;
-                    id?: StringFilterDTO;
-                };
-
-                type ManageFilters = DefaultFilters & {
-                    account?: LinkFilterDTO;
-                    invitedBy?: LinkFilterDTO;
-                    excludedBy?: LinkFilterDTO;
-                };
-
-                type CommonFilters = ManageFilters;
-
-                type Filters = DefaultFilters & ManageFilters;
-
-                type Sort = {
-                    createdAt?: QueryOrder;
-                    joinedAt?: QueryOrder;
-                    leaveAt?: QueryOrder;
                 };
 
                 interface Types {

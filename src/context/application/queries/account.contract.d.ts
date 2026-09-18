@@ -12,20 +12,11 @@ declare global {
             }
 
             namespace FindUnique {
-                type ManageProps = {
+                type Props = {
                     mode: QueryMode.MANAGE;
                     view: ResponseViewType;
                     account: string;
                 };
-
-                type DefaultProps = {
-                    mode: QueryMode.DEFAULT;
-                    view: ResponseViewType;
-                    account: string;
-                    realm: string;
-                };
-
-                type Props = DefaultProps | ManageProps;
 
                 type Result = Promise<Entities.Account>;
 
@@ -33,24 +24,13 @@ declare global {
             }
 
             namespace FindMany {
-                type ManageProps = {
-                    filters: Repositories.Mappers.Account.ManageFilters;
+                type Props = {
+                    filters: Repositories.Mappers.Account.Filters;
                     sort: Repositories.Mappers.Account.Sort;
                     mode: QueryMode.MANAGE;
                     pagination: Pagination;
                     view: ResponseViewType;
                 };
-
-                type DefaultProps = {
-                    filters: Repositories.Mappers.Account.DefaultFilters;
-                    sort: Repositories.Mappers.Account.Sort;
-                    mode: QueryMode.DEFAULT;
-                    pagination: Pagination;
-                    view: ResponseViewType;
-                    realm: string;
-                };
-
-                type Props = DefaultProps | ManageProps;
 
                 type Result = Promise<[Entities.Account[], number]>;
 

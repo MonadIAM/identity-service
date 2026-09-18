@@ -57,17 +57,14 @@ declare namespace Unit {
             interface Contract {
                 readonly interfaceClients: InterfaceClient;
                 readonly serviceClients: ServiceClient;
-                readonly membershipHistories: Base;
                 readonly applications: Application;
                 readonly passwordHistories: Base;
                 readonly identifiers: Identifier;
                 readonly secondFactors: Base;
-                readonly memberships: Base;
                 readonly accounts: Account;
                 readonly sessions: Session;
                 readonly changeLogs: Base;
                 readonly auditLogs: Base;
-                readonly invites: Base;
             }
         }
     }

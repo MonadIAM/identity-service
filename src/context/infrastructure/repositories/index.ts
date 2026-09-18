@@ -1,6 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { MembershipHistoryRepository } from "./membership-history.repository";
 import { PasswordHistoryRepository } from "./password-history.repository";
 import { InterfaceClientRepository } from "./interface-client.repository";
 import { ServiceClientRepository } from "./service-client.repository";
@@ -8,7 +7,6 @@ import { RecoveryCodeRepository } from "./recovery-code.repository";
 import { SecondFactorRepository } from "./second-factor.repository";
 import { ApplicationRepository } from "./application.repository";
 import { MasterCodeRepository } from "./master-code.repository";
-import { MembershipRepository } from "./membership.repository";
 import { IdentifierRepository } from "./identifier.repository";
 import { ChangeLogRepository } from "./change-log.repository";
 import { AuditLogRepository } from "./audit-log.repository";
@@ -16,9 +14,7 @@ import { PasswordRepository } from "./password.repository";
 import { SessionRepository } from "./session.repository";
 import { ProfileRepository } from "./profile.repository";
 import { AccountRepository } from "./account.repository";
-import { InviteRepository } from "./invite.repository";
 import {
-    MEMBERSHIP_HISTORY_REPOSITORY,
     PASSWORD_HISTORY_REPOSITORY,
     INTERFACE_CLIENT_REPOSITORY,
     SERVICE_CLIENT_REPOSITORY,
@@ -26,7 +22,6 @@ import {
     RECOVERY_CODE_REPOSITORY,
     APPLICATION_REPOSITORY,
     MASTER_CODE_REPOSITORY,
-    MEMBERSHIP_REPOSITORY,
     IDENTIFIER_REPOSITORY,
     CHANGE_LOG_REPOSITORY,
     AUDIT_LOG_REPOSITORY,
@@ -34,14 +29,9 @@ import {
     SESSION_REPOSITORY,
     PROFILE_REPOSITORY,
     ACCOUNT_REPOSITORY,
-    INVITE_REPOSITORY,
 } from "./tokens";
 
 export const REPOSITORIES: ClassProvider[] = [
-    {
-        provide: MEMBERSHIP_HISTORY_REPOSITORY,
-        useClass: MembershipHistoryRepository,
-    },
     {
         provide: PASSWORD_HISTORY_REPOSITORY,
         useClass: PasswordHistoryRepository,
@@ -71,10 +61,6 @@ export const REPOSITORIES: ClassProvider[] = [
         useClass: MasterCodeRepository,
     },
     {
-        provide: MEMBERSHIP_REPOSITORY,
-        useClass: MembershipRepository,
-    },
-    {
         provide: IDENTIFIER_REPOSITORY,
         useClass: IdentifierRepository,
     },
@@ -102,14 +88,9 @@ export const REPOSITORIES: ClassProvider[] = [
         provide: ACCOUNT_REPOSITORY,
         useClass: AccountRepository,
     },
-    {
-        provide: INVITE_REPOSITORY,
-        useClass: InviteRepository,
-    },
 ];
 
 export {
-    MEMBERSHIP_HISTORY_REPOSITORY,
     PASSWORD_HISTORY_REPOSITORY,
     INTERFACE_CLIENT_REPOSITORY,
     SERVICE_CLIENT_REPOSITORY,
@@ -117,7 +98,6 @@ export {
     RECOVERY_CODE_REPOSITORY,
     APPLICATION_REPOSITORY,
     MASTER_CODE_REPOSITORY,
-    MEMBERSHIP_REPOSITORY,
     IDENTIFIER_REPOSITORY,
     CHANGE_LOG_REPOSITORY,
     AUDIT_LOG_REPOSITORY,
@@ -125,5 +105,4 @@ export {
     SESSION_REPOSITORY,
     PROFILE_REPOSITORY,
     ACCOUNT_REPOSITORY,
-    INVITE_REPOSITORY,
 };

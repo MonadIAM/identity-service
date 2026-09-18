@@ -10,7 +10,6 @@ import { KafkaTopic } from "~context/enums";
 const RETRY_TOPICS = [
     KafkaTopicBuilder.retry(KafkaTopic.REAUTHENTICATION),
     KafkaTopicBuilder.retry(KafkaTopic.ACCESS_CACHE),
-    KafkaTopicBuilder.retry(KafkaTopic.MEMBERSHIP),
     KafkaTopicBuilder.retry(KafkaTopic.REALM),
 ];
 

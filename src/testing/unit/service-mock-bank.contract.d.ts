@@ -47,13 +47,7 @@ declare namespace Unit {
                 encrypt: Mock;
             };
 
-            type MembershipHistoryService = {
-                create: Mock;
-                close: Mock;
-            };
-
             interface Contract {
-                readonly membershipHistoryService: MembershipHistoryService;
                 readonly secondFactorSecret: SecondFactorSecret;
                 readonly hashing: Hashing;
                 readonly crypto: Crypto;

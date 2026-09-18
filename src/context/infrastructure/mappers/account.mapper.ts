@@ -27,10 +27,6 @@ export class AccountMapper implements Repositories.Mappers.Contract<Entities.Acc
             where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
 
-        if (filters.realm) {
-            where.memberships = { realm: ORMAdapter.applyStringFilter(filters.realm) };
-        }
-
         if (filters.name) {
             where.profile = { displayName: ORMAdapter.applyStringFilter(filters.name) };
         }

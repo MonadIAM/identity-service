@@ -5,19 +5,11 @@ import { RepositoryMockBank } from "./repository-mock-bank.helpers";
 export class ServiceMockBank extends RepositoryMockBank implements Unit.Domain.ServiceMockBank.Contract {
     public services(): Unit.Domain.ServiceMocks.Contract {
         return {
-            membershipHistoryService: this.membershipHistoryService(),
             secondFactorSecret: this.secondFactorSecret(),
             hashing: this.hashing(),
             crypto: this.crypto(),
             totp: this.totp(),
             jwt: this.jwt(),
-        };
-    }
-
-    private membershipHistoryService(): Unit.Domain.ServiceMocks.MembershipHistoryService {
-        return {
-            create: jest.fn(() => Promise.resolve()),
-            close: jest.fn(() => Promise.resolve()),
         };
     }
 

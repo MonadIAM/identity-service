@@ -1,4 +1,4 @@
-import { Controller, HttpStatus, HttpCode, Header, Inject, Body, Post, Get, Query } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Header, Inject, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
@@ -8,21 +8,16 @@ import { ACCOUNT_QUERIES } from "~context/application/queries";
 import { SuccessMessageDTO } from "~common/dto";
 
 import {
-    GetListQueryDTO,
-    GetByIdQueryDTO,
     VerifyResultDTO,
     SuspendBodyDTO,
     RestoreBodyDTO,
-    GetListBodyDTO,
     SignupBodyDTO,
     VerifyBodyDTO,
     ResendBodyDTO,
     AccountDTO,
-    ListDTO,
 } from "../dto/account";
 
-const { ACCOUNT_READ_PERSONAL, ACCOUNT_READ_COMMON, ACCOUNT_READ_ABSOLUTE, ACCOUNT_SUSPEND, ACCOUNT_RESTORE } =
-    PermissionCode;
+const { ACCOUNT_READ_PERSONAL, ACCOUNT_SUSPEND, ACCOUNT_RESTORE } = PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
@@ -57,54 +52,8 @@ export class AccountController {
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findMe(@Extract.Session() { account }: Extract.Session.Auth): Queries.Account.FindUnique.Result {
+    public findMe(@Extract.Session() { account }: Extract.Session.Auth): Queries.Account.FindMe.Result {
         return this.accountQueries.findMe({ account, view: ResponseViewType.DETAILED });
-    }
-
-    @Get()
-    @HttpCode(OK)
-    @FormatResponse(AccountDTO)
-    @RequirePermission(ACCOUNT_READ_ABSOLUTE, ACCOUNT_READ_COMMON)
-    @ApiResponse({ status: OK, type: AccountDTO })
-    @ApiOperation({
-        security: [{ identity: [] }],
-        summary: "Get account by ID",
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        NOT_FOUND,
-        FORBIDDEN,
-    )
-    public findUnique(@Query() { account, realm, view, mode }: GetByIdQueryDTO): Queries.Account.FindUnique.Result {
-        return this.accountQueries.findUnique({ account, realm, view, mode });
-    }
-
-    @HttpCode(OK)
-    @Post("list")
-    @FormatResponse(ListDTO)
-    @RequirePermission(ACCOUNT_READ_ABSOLUTE, ACCOUNT_READ_COMMON)
-    @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({
-        summary: "Get paginated list of realm member accounts",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        FORBIDDEN,
-    )
-    public findMany(
-        @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { realm, view, mode }: GetListQueryDTO,
-    ): Queries.Account.FindMany.Result {
-        return this.accountQueries.findMany({ pagination, filters, realm, sort, view, mode });
     }
 
     @Public()

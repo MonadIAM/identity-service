@@ -24,26 +24,9 @@ export enum AccountStatus {
     /* eslint-enable prettier/prettier */
 }
 
-export enum InviteStatus {
-    /* eslint-disable prettier/prettier */
-    INVALIDATED = "INVALIDATED",
-    CANCELLED   = "CANCELLED",
-    ACCEPTED    = "ACCEPTED",
-    DECLINED    = "DECLINED",
-    EXPIRED     = "EXPIRED",
-    PENDING     = "PENDING",
-    /* eslint-enable prettier/prettier */
-}
-
-export enum InviteQueryScope {
-    AS_INVITER = "AS_INVITER",
-    AS_INVITEE = "AS_INVITEE",
-}
-
 export enum QueryMode {
     /* eslint-disable prettier/prettier */
     DEFAULT = "DEFAULT",
-    COMMON  = "COMMON",
     MANAGE  = "MANAGE",
     /* eslint-enable prettier/prettier */
 }
@@ -102,16 +85,10 @@ export enum ActionType {
     /* eslint-disable prettier/prettier */
     DEACTIVATE = "DEACTIVATE",
     REGENERATE = "REGENERATE",
-    INVALIDATE = "INVALIDATE",
-    DECLINE    = "DECLINE",
-    EXCLUDE    = "EXCLUDE",
     SIGN_IN    = "SIGN_IN",
     SIGN_UP    = "SIGN_UP",
     REFRESH    = "REFRESH",
     RESTORE    = "RESTORE",
-    ACCEPT     = "ACCEPT",
-    CANCEL     = "CANCEL",
-    EXPIRE     = "EXPIRE",
     CREATE     = "CREATE",
     UPDATE     = "UPDATE",
     REVOKE     = "REVOKE",
@@ -133,12 +110,10 @@ export enum EntityType {
     APPLICATION      = "APPLICATION",
     MASTER_CODE      = "MASTER_CODE",
     IDENTIFIER       = "IDENTIFIER",
-    MEMBERSHIP       = "MEMBERSHIP",
     PASSWORD         = "PASSWORD",
     PROFILE          = "PROFILE",
     SESSION          = "SESSION",
     ACCOUNT          = "ACCOUNT",
-    INVITE           = "INVITE",
     /* eslint-enable prettier/prettier */
 }
 
@@ -146,7 +121,6 @@ export enum CleanupJob {
     /* eslint-disable prettier/prettier */
     INACTIVE_ACCOUNTS = "cleanup-inactive-accounts",
     PENDING_ACCOUNTS  = "cleanup-pending-accounts",
-    PENDING_INVITES   = "cleanup-pending-invites",
     CHANGE_LOG        = "cleanup-change-log",
     AUDIT_LOG         = "cleanup-audit-log",
     INBOX             = "cleanup-inbox",

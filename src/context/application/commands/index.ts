@@ -7,13 +7,11 @@ import { ServiceClientCommands } from "./service-client.commands";
 import { RecoveryCodeCommands } from "./recovery-code.commands";
 import { SecondFactorCommands } from "./second-factor.commands";
 import { ApplicationCommands } from "./application.commands";
-import { MembershipCommands } from "./membership.commands";
 import { IdentifierCommands } from "./identifier.commands";
 import { PasswordCommands } from "./password.commands";
 import { AccountCommands } from "./account.commands";
 import { ProfileCommands } from "./profile.commands";
 import { SessionCommands } from "./session.commands";
-import { InviteCommands } from "./invite.commands";
 import { OAuthCommands } from "./oauth.commands";
 import { AuthnCommands } from "./authn.commands";
 import {
@@ -24,13 +22,11 @@ import {
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
     APPLICATION_COMMANDS,
-    MEMBERSHIP_COMMANDS,
     IDENTIFIER_COMMANDS,
     PASSWORD_COMMANDS,
     ACCOUNT_COMMANDS,
     PROFILE_COMMANDS,
     SESSION_COMMANDS,
-    INVITE_COMMANDS,
     OAUTH_COMMANDS,
     AUTHN_COMMANDS,
 } from "./tokens";
@@ -65,10 +61,6 @@ export const COMMANDS: ClassProvider[] = [
         useClass: ApplicationCommands,
     },
     {
-        provide: MEMBERSHIP_COMMANDS,
-        useClass: MembershipCommands,
-    },
-    {
         provide: IDENTIFIER_COMMANDS,
         useClass: IdentifierCommands,
     },
@@ -89,10 +81,6 @@ export const COMMANDS: ClassProvider[] = [
         useClass: SessionCommands,
     },
     {
-        provide: INVITE_COMMANDS,
-        useClass: InviteCommands,
-    },
-    {
         provide: OAUTH_COMMANDS,
         useClass: OAuthCommands,
     },
@@ -110,13 +98,11 @@ export {
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
     APPLICATION_COMMANDS,
-    MEMBERSHIP_COMMANDS,
     IDENTIFIER_COMMANDS,
     PASSWORD_COMMANDS,
     ACCOUNT_COMMANDS,
     PROFILE_COMMANDS,
     SESSION_COMMANDS,
-    INVITE_COMMANDS,
     OAUTH_COMMANDS,
     AUTHN_COMMANDS,
 };

@@ -1,14 +1,11 @@
-export const MEMBERSHIP_HISTORY_QUERIES = Symbol("Queries.MembershipHistory.Contract");
 export const INTERFACE_CLIENT_QUERIES = Symbol("Queries.InterfaceClient.Contract");
 export const SERVICE_CLIENT_QUERIES = Symbol("Queries.ServiceClient.Contract");
 export const RECOVERY_CODE_QUERIES = Symbol("Queries.RecoveryCode.Contract");
 export const SECOND_FACTOR_QUERIES = Symbol("Queries.SecondFactor.Contract");
 export const APPLICATION_QUERIES = Symbol("Queries.Application.Contract");
-export const MEMBERSHIP_QUERIES = Symbol("Queries.Membership.Contract");
 export const IDENTIFIER_QUERIES = Symbol("Queries.Identifier.Contract");
 export const CHANGE_LOG_QUERIES = Symbol("Queries.ChangeLog.Contract");
 export const AUDIT_LOG_QUERIES = Symbol("Queries.AuditLog.Contract");
 export const ACCOUNT_QUERIES = Symbol("Queries.Account.Contract");
 export const SESSION_QUERIES = Symbol("Queries.Session.Contract");
-export const INVITE_QUERIES = Symbol("Queries.Invite.Contract");
 export const OAUTH_QUERIES = Symbol("Queries.OAuth.Contract");

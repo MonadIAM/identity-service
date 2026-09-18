@@ -3,7 +3,7 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { AccountTopicAction } from "@monadiam/shared";
 import { Job } from "bullmq";
 
-import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE, INVITE_SERVICE } from "~context/domain/services";
+import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/domain/services";
 import { INBOX_SERVICE, TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
@@ -28,8 +28,6 @@ export class CleanupProcessor extends WorkerHost {
         private readonly changeLogService: Services.ChangeLog.ProcessorContract,
         @Inject(AUDIT_LOG_SERVICE)
         private readonly auditLogService: Services.AuditLog.ProcessorContract,
-        @Inject(INVITE_SERVICE)
-        private readonly inviteService: Services.Invite.CommandContract,
         @Inject(CLEANUP_QUEUE)
         private readonly cleanupQueue: Queues.Cleanup.Contract,
     ) {
@@ -39,7 +37,6 @@ export class CleanupProcessor extends WorkerHost {
     private readonly handlers: Record<CleanupJob, Queues.Cleanup.Handler> = {
         [CleanupJob.INACTIVE_ACCOUNTS]: (job: Job) => this.cleanupInactiveAccounts(job),
         [CleanupJob.PENDING_ACCOUNTS]: (job: Job) => this.cleanupPendingAccounts(job),
-        [CleanupJob.PENDING_INVITES]: (job: Job) => this.cleanupPendingInvites(job),
         [CleanupJob.CHANGE_LOG]: (job: Job) => this.cleanupChangeLog(job),
         [CleanupJob.AUDIT_LOG]: (job: Job) => this.cleanupAuditLog(job),
         [CleanupJob.INBOX]: (job: Job) => this.cleanupInbox(job),
@@ -134,32 +131,6 @@ export class CleanupProcessor extends WorkerHost {
             }
         } catch (error) {
             this.logger.error("Failed to clean up inactive accounts", error);
-            throw error;
-        }
-    }
-
-    private async cleanupPendingInvites(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
-        const { expirationDate: expirationTimestamp, batchSize } = job.data;
-        const expirationDate = new Date(expirationTimestamp);
-        this.logger.log(`Cleaning up pending invites older than ${expirationDate.toISOString()}`);
-
-        try {
-            const expired = await this.transactionalService.run<Entities.Invite[]>({
-                resource: "Invite",
-                execute: async (transaction) => {
-                    return await this.inviteService.expire({ input: { expirationDate, batchSize }, transaction });
-                },
-            });
-
-            if (expired.length) {
-                this.logger.log(`Expired ${expired.length} pending invites.`);
-                return this.scheduleNextBatch(job, expired.length === batchSize);
-            } else {
-                this.logger.log("No pending invites to clean up.");
-                return { deleted: 0, nextBatch: false };
-            }
-        } catch (error) {
-            this.logger.error("Failed to clean up pending invites", error);
             throw error;
         }
     }

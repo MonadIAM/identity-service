@@ -35,16 +35,6 @@
     "PUBLIC_CONTACT_TOGGLED": "Identifier public contact visibility successfully toggled.",
     "PURGED": "Identifier successfully deleted."
   },
-  "invite": {
-    "CREATED": "Invite successfully sent.",
-    "ACCEPTANCE_REQUESTED": "Invite acceptance successfully requested.",
-    "DECLINED": "Invite successfully declined.",
-    "CANCELLED": "Invite successfully cancelled.",
-    "INVALID_STATUS": "The requested invite status transition is not supported."
-  },
-  "membership": {
-    "EXCLUSION_REQUESTED": "Realm exclusion successfully requested."
-  },
   "federated-authn": {
     "INVALID_STATE": "The OAuth state is invalid or expired.",
     "SIGNED_IN": "Signed in successfully.",
