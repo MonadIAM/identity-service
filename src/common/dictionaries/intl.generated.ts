@@ -261,9 +261,6 @@ export type I18nTranslations = {
                 "PROFILE_FETCH_FAILED": string;
             };
         };
-        "kafka-retry": {
-            "HANDLER_NOT_REGISTERED": string;
-        };
         "kafka-incoming": {
             "EVENT_MISSING": string;
         };

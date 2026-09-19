@@ -8,7 +8,7 @@ savePrefix: ""
 overrides:
   "@opentelemetry/instrumentation-ioredis@^0.69.0": "0.70.0"
 allowBuilds:
-  "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/f1a1cf1b180bdb0d63a49fe0f16022a93e662730": true
+  "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/5e2d2c5fc0adf81fcd311f20b5becef33eb2dc99": true
   "@launchql/protobufjs": true
   "msgpackr-extract": true
   "unrs-resolver": true

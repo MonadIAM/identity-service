@@ -3,18 +3,11 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { RealmTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
-import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
+import { KAFKA_RETRY_SERVICE, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE, KafkaIncomingMapper } from "~infrastructure/kafka";
+import { KAFKA_METRICS_RECORDER } from "~observability/metrics/tokens";
 import { REALM_COMMANDS } from "~context/application/commands";
 import { CONSUMER_META } from "~context/constants";
-import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
-import {
-    KAFKA_SCHEMA_REGISTRY,
-    KAFKA_RETRY_REGISTRY,
-    KafkaIncomingMapper,
-    KafkaTopicBuilder,
-    KAFKA_SERVICE,
-} from "~infrastructure/kafka";
 
 @Controller()
 export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
@@ -23,25 +16,20 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
     private readonly consumerKey = "identity.realm.v1";
 
     public constructor(
-        @Inject(REALM_COMMANDS)
-        private readonly realmCommands: Commands.Realm.ConsumerContract,
-        @Inject(KafkaMetricsRecorder)
+        @Inject(KAFKA_METRICS_RECORDER)
         private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
-        @Inject(KAFKA_RETRY_REGISTRY)
-        private readonly retryRegistry: Kafka.RetryRegistry.Contract,
+        @Inject(REALM_COMMANDS)
+        private readonly realmCommands: Commands.Realm.ConsumerContract,
+        @Inject(KAFKA_RETRY_SERVICE)
+        private readonly kafkaRetry: Kafka.Retry.Contract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
 
     public async onModuleInit(): Promise<void> {
         await this.kafkaClient.connect();
-        this.retryRegistry.register({
-            consumerKey: this.consumerKey,
-            topic: KafkaTopic.REALM,
-            handler: this,
-        });
     }
 
     private readonly handlers: Consumers.Realm.Handlers = {
@@ -73,16 +61,28 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
         @Payload() message: Consumers.Realm.Message,
         @Ctx() context: KafkaContext,
     ): Consumers.Realm.Handle.Result {
-        const incoming = this.incomingMapper.map({ consumerKey: this.consumerKey, context });
-        try {
-            await this.process({ incoming, message });
-        } catch (error) {
-            await this.reject({ incoming, message, error });
-        }
+        const incoming = {
+            consumerKey: this.consumerKey,
+            event: this.incomingMapper.reference({ context }),
+        };
+        await this.kafkaRetry.execute({
+            topic: KafkaTopic.REALM,
+            heartbeat: context.getHeartbeat(),
+            process: () =>
+                this.process({
+                    incoming: this.incomingMapper.map({ consumerKey: this.consumerKey, context }),
+                    message,
+                }),
+            reject: (error) => this.reject({ incoming, message, error }),
+        });
     }
 
     public async process(props: Consumers.Realm.Process.Props): Consumers.Realm.Process.Result {
-        const { incoming, message } = props;
+        const { incoming } = props;
+        const message = await this.schemaRegistry.decode<Consumers.Realm.Message>({
+            topic: KafkaTopic.REALM,
+            value: props.message,
+        });
         this.schemaRegistry.validate({ topic: KafkaTopic.REALM, value: message });
         const handler = this.handlers[message.actionType];
         if (handler) {
@@ -94,14 +94,10 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
 
     public async reject(props: Consumers.Realm.Reject.Props): Consumers.Realm.Reject.Result {
         const { incoming, message, error } = props;
-        const retryable = Exception.isRetryable(error);
-
-        if (!retryable) {
-            this.logger.warn(`Non-retryable error in realm consumer: ${String(error)}`);
-        }
+        this.logger.warn(`Rejected message in realm consumer: ${String(error)}`);
 
         await lastValueFrom(
-            this.kafkaClient.emit(retryable ? KafkaTopicBuilder.retry(KafkaTopic.REALM) : KafkaTopic.REALM_DEAD, {
+            this.kafkaClient.emit(KafkaTopic.REALM_DEAD, {
                 key: incoming.event,
                 value: {
                     originalTopic: KafkaTopic.REALM,
@@ -111,10 +107,6 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
             }),
         );
 
-        if (retryable) {
-            this.kafkaMetrics.recordRetry({ topic: KafkaTopic.REALM, error });
-        } else {
-            this.kafkaMetrics.recordDead({ topic: KafkaTopic.REALM, error });
-        }
+        this.kafkaMetrics.recordDead({ topic: KafkaTopic.REALM, error });
     }
 }

@@ -78,9 +78,6 @@
       "PROFILE_FETCH_FAILED": "Не удалось получить профиль GitHub OAuth."
     }
   },
-  "kafka-retry": {
-    "HANDLER_NOT_REGISTERED": "Для топика {topic} не зарегистрирован обработчик повторов."
-  },
   "kafka-incoming": {
     "EVENT_MISSING": "Отсутствует Kafka key, необходимый для идемпотентной обработки сообщения."
   },
