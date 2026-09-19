@@ -32,7 +32,6 @@ declare namespace Commands {
                 realm: string;
                 input: {
                     description?: string;
-                    application: string;
                     allowedAddresses?: string[];
                     code: string;
                     name: string;

@@ -43,7 +43,6 @@ export class ServiceClientCommands implements Commands.ServiceClient.Contract {
                     input: {
                         allowedAddresses: input.allowedAddresses,
                         description: input.description,
-                        application: input.application,
                         code: input.code,
                         name: input.name,
                     },

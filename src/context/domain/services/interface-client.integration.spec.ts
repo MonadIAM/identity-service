@@ -12,10 +12,10 @@ const helpers = new InterfaceClientIntegrationHelpers();
 
 async function loadClients(
     suite: Integration.Domain.InterfaceClient.Suite,
-    application: Entities.Application,
+    realm: string,
 ): Promise<Entities.InterfaceClient[]> {
     return await suite.transaction((transaction) =>
-        transaction.find(InterfaceClient, { application: application.id }, { orderBy: { name: "asc" } }),
+        transaction.find(InterfaceClient, { realm }, { orderBy: { name: "asc" } }),
     );
 }
 
@@ -26,14 +26,11 @@ describe("InterfaceClientService integration", () => {
     });
 
     it("creates interface clients with fixed grant types and repository-backed limits", async () => {
-        const application = await suite.fixtures().createApplication({ realm: REALM_ID, name: "Interface App" });
-
         const created = await suite.transaction((transaction) =>
             suite.repository().interfaceClientService.create({
                 input: {
                     redirectUris: ["https://client.example.test/callback"],
                     authAddress: "https://client.example.test/auth",
-                    application: application.id,
                     name: "Browser Client",
                 },
                 realm: REALM_ID,
@@ -41,7 +38,7 @@ describe("InterfaceClientService integration", () => {
             }),
         );
         await suite.fixtures().createInterfaceClient({
-            application,
+            realm: REALM_ID,
             name: "Existing Browser",
         });
 
@@ -51,22 +48,20 @@ describe("InterfaceClientService integration", () => {
                     input: {
                         redirectUris: ["https://blocked.example.test/callback"],
                         authAddress: "https://blocked.example.test/auth",
-                        application: application.id,
                         name: "Blocked Browser",
                     },
                     realm: REALM_ID,
                     transaction,
                 }),
             ),
-        ).rejects.toThrow("services.interface-client.APPLICATION_LIMIT_EXCEEDED");
+        ).rejects.toThrow("services.interface-client.REALM_LIMIT_EXCEEDED");
 
-        await expect(loadClients(suite, application)).resolves.toHaveLength(2);
+        await expect(loadClients(suite, REALM_ID)).resolves.toHaveLength(2);
         expect(created.grantTypes).toEqual([TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN]);
     });
 
     it("updates, revokes, restores and purges only clients scoped to the requested realm", async () => {
-        const application = await suite.fixtures().createApplication({ realm: REALM_ID, name: "Interface App" });
-        const client = await suite.fixtures().createInterfaceClient({ application, name: "Browser" });
+        const client = await suite.fixtures().createInterfaceClient({ realm: REALM_ID, name: "Browser" });
 
         await suite.transaction((transaction) =>
             suite.repository().interfaceClientService.update({
@@ -81,7 +76,7 @@ describe("InterfaceClientService integration", () => {
             }),
         );
 
-        let clients = await loadClients(suite, application);
+        let clients = await loadClients(suite, REALM_ID);
 
         expect(clients[0]).toMatchObject({
             redirectUris: ["https://client.example.test/callback", "https://client.example.test/logout"],
@@ -97,7 +92,7 @@ describe("InterfaceClientService integration", () => {
             }),
         );
 
-        clients = await loadClients(suite, application);
+        clients = await loadClients(suite, REALM_ID);
 
         expect(clients[0]?.isRevoked).toBe(true);
 
@@ -109,7 +104,7 @@ describe("InterfaceClientService integration", () => {
             }),
         );
 
-        clients = await loadClients(suite, application);
+        clients = await loadClients(suite, REALM_ID);
 
         expect(clients[0]?.isRevoked).toBe(false);
 
@@ -128,19 +123,16 @@ describe("InterfaceClientService integration", () => {
             }),
         );
 
-        await expect(loadClients(suite, application)).resolves.toHaveLength(0);
+        await expect(loadClients(suite, REALM_ID)).resolves.toHaveLength(0);
     });
 
     it("validates redirect and auth addresses before persisting rows", async () => {
-        const application = await suite.fixtures().createApplication({ realm: REALM_ID, name: "Validation App" });
-
         await expect(
             suite.transaction((transaction) =>
                 suite.repository().interfaceClientService.create({
                     input: {
                         redirectUris: ["https://client.example.test/callback#fragment"],
                         authAddress: "https://client.example.test/auth",
-                        application: application.id,
                         name: "Invalid Browser",
                     },
                     realm: REALM_ID,
@@ -155,7 +147,6 @@ describe("InterfaceClientService integration", () => {
                     input: {
                         redirectUris: ["https://client.example.test/callback"],
                         authAddress: "not a url",
-                        application: application.id,
                         name: "Invalid Auth",
                     },
                     realm: REALM_ID,
@@ -164,6 +155,105 @@ describe("InterfaceClientService integration", () => {
             ),
         ).rejects.toThrow("services.interface-client.INVALID_AUTH_ADDRESS");
 
-        await expect(loadClients(suite, application)).resolves.toHaveLength(0);
+        await expect(loadClients(suite, REALM_ID)).resolves.toHaveLength(0);
+    });
+    it("applies only newer realm events and preserves manual revocation", async () => {
+        const client = await suite.fixtures().createInterfaceClient({ realm: REALM_ID, isRevoked: true });
+        const other = await suite.fixtures().createInterfaceClient({
+            realm: "00000000-0000-4000-8000-000000000099",
+        });
+        const system = await suite.fixtures().createInterfaceClient({ realm: REALM_ID, isSystemManaged: true });
+
+        const revoked = await suite.transaction((transaction) =>
+            suite.repository().interfaceClientService.applyRealmRevocation({ transaction, realm: REALM_ID, version: 2 }),
+        );
+
+        expect(revoked.map((entity) => entity.id)).toEqual([client.id]);
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(InterfaceClient, client.id)),
+        ).resolves.toMatchObject({
+            realmVersion: 2,
+            isRealmRevoked: true,
+            isRevoked: true,
+        });
+
+        const stale = await suite.transaction((transaction) =>
+            suite.repository().interfaceClientService.applyRealmRestore({ transaction, realm: REALM_ID, version: 1 }),
+        );
+        const duplicate = await suite.transaction((transaction) =>
+            suite.repository().interfaceClientService.applyRealmRevocation({ transaction, realm: REALM_ID, version: 2 }),
+        );
+
+        expect(stale).toEqual([]);
+        expect(duplicate).toEqual([]);
+
+        await suite.transaction((transaction) =>
+            suite.repository().interfaceClientService.applyRealmRestore({ transaction, realm: REALM_ID, version: 3 }),
+        );
+
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(InterfaceClient, client.id)),
+        ).resolves.toMatchObject({
+            realmVersion: 3,
+            isRealmRevoked: false,
+            isRevoked: true,
+        });
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(InterfaceClient, other.id)),
+        ).resolves.toMatchObject({
+            realmVersion: 0,
+            isRealmRevoked: false,
+        });
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(InterfaceClient, system.id)),
+        ).resolves.toMatchObject({
+            realmVersion: 0,
+            isRealmRevoked: false,
+        });
+    });
+
+    it("purges only non-system clients with an older realm version", async () => {
+        const client = await suite.fixtures().createInterfaceClient({ realm: REALM_ID });
+        const current = await suite.fixtures().createInterfaceClient({ realm: REALM_ID, realmVersion: 3 });
+        const system = await suite.fixtures().createInterfaceClient({ realm: REALM_ID, isSystemManaged: true });
+        const other = await suite.fixtures().createInterfaceClient({
+            realm: "00000000-0000-4000-8000-000000000099",
+        });
+
+        const purged = await suite.transaction((transaction) =>
+            suite.repository().interfaceClientService.purgeRealm({ transaction, realm: REALM_ID, version: 3 }),
+        );
+
+        expect(purged.map((entity) => entity.id)).toEqual([client.id]);
+        await expect(
+            suite.transaction((transaction) => transaction.count(InterfaceClient, { id: client.id })),
+        ).resolves.toBe(0);
+        await expect(
+            suite.transaction((transaction) =>
+                transaction.count(InterfaceClient, { id: { $in: [current.id, system.id, other.id] } }),
+            ),
+        ).resolves.toBe(3);
+    });
+
+    it("rejects mutations targeting a client in another realm", async () => {
+        const client = await suite.fixtures().createInterfaceClient({
+            realm: "00000000-0000-4000-8000-000000000099",
+        });
+
+        await expect(
+            suite.transaction((transaction) =>
+                suite.repository().interfaceClientService.revoke({
+                    identifiers: [client.id],
+                    realm: REALM_ID,
+                    transaction,
+                }),
+            ),
+        ).rejects.toThrow("services.interface-client.CLIENTS_NOT_FOUND");
+
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(InterfaceClient, client.id)),
+        ).resolves.toMatchObject({
+            isRevoked: false,
+        });
     });
 });

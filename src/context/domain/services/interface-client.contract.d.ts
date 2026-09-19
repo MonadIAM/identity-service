@@ -39,6 +39,9 @@ declare namespace Services {
         }
 
         interface CommandContract {
+            applyRealmRevocation: ApplyRealmRevocation.Signature;
+            applyRealmRestore: ApplyRealmRestore.Signature;
+            purgeRealm: PurgeRealm.Signature;
             restore: Restore.Signature;
             create: Create.Signature;
             update: Update.Signature;
@@ -64,7 +67,6 @@ declare namespace Services {
                 realm: string;
                 input: {
                     description?: string;
-                    application: string;
                     redirectUris: string[];
                     authAddress: string;
                     name: string;
@@ -110,6 +112,41 @@ declare namespace Services {
             type Props = {
                 transaction: ORM.EntityManager;
                 identifiers: string[];
+                realm: string;
+            };
+
+            type Result = Promise<Entities.InterfaceClient[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+        namespace ApplyRealmRevocation {
+            type Props = {
+                transaction: ORM.EntityManager;
+                version: number;
+                realm: string;
+            };
+
+            type Result = Promise<Entities.InterfaceClient[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ApplyRealmRestore {
+            type Props = {
+                transaction: ORM.EntityManager;
+                version: number;
+                realm: string;
+            };
+
+            type Result = Promise<Entities.InterfaceClient[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace PurgeRealm {
+            type Props = {
+                transaction: ORM.EntityManager;
+                version: number;
                 realm: string;
             };
 

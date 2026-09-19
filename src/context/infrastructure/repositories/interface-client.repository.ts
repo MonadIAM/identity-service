@@ -16,7 +16,7 @@ export class InterfaceClientRepository
     })
     implements Repositories.InterfaceClient.Contract
 {
-    private readonly applicationLimit: number;
+    private readonly realmLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
@@ -24,17 +24,17 @@ export class InterfaceClientRepository
         configService: ConfigService,
     ) {
         super();
-        this.applicationLimit = configService.getOrThrow<number>("INTERFACE_CLIENT_PER_APPLICATION_LIMIT");
+        this.realmLimit = configService.getOrThrow<number>("INTERFACE_CLIENT_PER_REALM_LIMIT");
     }
 
-    public async wouldExceedApplicationLimit(
-        props: Repositories.InterfaceClient.WouldExceedApplicationLimit.Props,
-    ): Repositories.InterfaceClient.WouldExceedApplicationLimit.Result {
+    public async wouldExceedRealmLimit(
+        props: Repositories.InterfaceClient.WouldExceedRealmLimit.Props,
+    ): Repositories.InterfaceClient.WouldExceedRealmLimit.Result {
         try {
-            const { transaction, application } = props;
-            const total = await transaction.count(InterfaceClient, { application });
+            const { transaction, realm } = props;
+            const total = await transaction.count(InterfaceClient, { realm });
 
-            return total + 1 > this.applicationLimit;
+            return total + 1 > this.realmLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.resource);
         }

@@ -6,8 +6,8 @@ declare namespace Fixtures {
 
         namespace LimitScenario {
             type Result = Promise<{
-                fullApplication: Entities.Application;
-                availableApplication: Entities.Application;
+                fullRealm: string;
+                availableRealm: string;
             }>;
 
             type Signature = () => Result;

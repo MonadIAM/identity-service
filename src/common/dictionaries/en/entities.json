@@ -6,15 +6,6 @@
     "ALREADY_SUSPENDED": "The account is already suspended.",
     "NOT_SUSPENDED": "The account is not suspended."
   },
-  "application": {
-    "CANNOT_UPDATE_REVOKED": "A revoked Application cannot be updated.",
-    "NO_CHANGES_DETECTED": "The Application already matches the provided changes.",
-    "EMPTY_UPDATE_PATCH": "The Application update payload is empty.",
-    "ALREADY_REVOKED": "The Application is already revoked.",
-    "ALREADY_ACTIVE": "The Application is already active.",
-    "CANNOT_PURGE_ACTIVE": "An active Application cannot be permanently deleted.",
-    "SYSTEM_MANAGED_IMMUTABLE": "A system-managed Application cannot be modified through this operation."
-  },
   "identifier": {
     "PUBLIC_CONTACT_NOT_APPLICABLE": "Public contact visibility is not applicable to this identifier.",
     "PUBLIC_CONTACT_REQUIRES_VERIFICATION": "Public contact visibility requires a verified identifier.",

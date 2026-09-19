@@ -6,7 +6,7 @@ import { FederatedAuthnCommands } from "./federated-authn.commands";
 import { ServiceClientCommands } from "./service-client.commands";
 import { RecoveryCodeCommands } from "./recovery-code.commands";
 import { SecondFactorCommands } from "./second-factor.commands";
-import { ApplicationCommands } from "./application.commands";
+import { RealmCommands } from "./realm.commands";
 import { IdentifierCommands } from "./identifier.commands";
 import { PasswordCommands } from "./password.commands";
 import { AccountCommands } from "./account.commands";
@@ -21,7 +21,7 @@ import {
     SERVICE_CLIENT_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
-    APPLICATION_COMMANDS,
+    REALM_COMMANDS,
     IDENTIFIER_COMMANDS,
     PASSWORD_COMMANDS,
     ACCOUNT_COMMANDS,
@@ -57,8 +57,8 @@ export const COMMANDS: ClassProvider[] = [
         useClass: SecondFactorCommands,
     },
     {
-        provide: APPLICATION_COMMANDS,
-        useClass: ApplicationCommands,
+        provide: REALM_COMMANDS,
+        useClass: RealmCommands,
     },
     {
         provide: IDENTIFIER_COMMANDS,
@@ -97,7 +97,7 @@ export {
     SERVICE_CLIENT_COMMANDS,
     RECOVERY_CODE_COMMANDS,
     SECOND_FACTOR_COMMANDS,
-    APPLICATION_COMMANDS,
+    REALM_COMMANDS,
     IDENTIFIER_COMMANDS,
     PASSWORD_COMMANDS,
     ACCOUNT_COMMANDS,

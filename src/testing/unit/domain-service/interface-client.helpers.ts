@@ -18,7 +18,6 @@ export class InterfaceClientUnitHelpers
         return {
             service: new InterfaceClientService(
                 this.contract<Repositories.InterfaceClient.PublicContract>(repositories.interfaceClients),
-                this.contract<Repositories.Application.PublicContract>(repositories.applications),
                 config,
             ),
             repositories,

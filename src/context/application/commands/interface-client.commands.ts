@@ -44,7 +44,6 @@ export class InterfaceClientCommands implements Commands.InterfaceClient.Contrac
                         redirectUris: input.redirectUris,
                         description: input.description,
                         authAddress: input.authAddress,
-                        application: input.application,
                         name: input.name,
                     },
                 });

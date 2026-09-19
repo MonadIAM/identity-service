@@ -1,6 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { ServiceClient, Application } from "~context/domain/entities";
+import { ServiceClient } from "~context/domain/entities";
 
 export const ServiceClientSchema = new EntitySchema<ServiceClient>({
     class: ServiceClient,
@@ -9,40 +9,36 @@ export const ServiceClientSchema = new EntitySchema<ServiceClient>({
 
     uniques: [
         {
-            name: "service_client_application_name_unique",
-            properties: ["application", "name"],
+            name: "service_client_realm_name_unique",
+            properties: ["realm", "name"],
         },
         {
-            name: "service_client_application_code_unique",
-            properties: ["application", "code"],
+            name: "service_client_realm_code_unique",
+            properties: ["realm", "code"],
         },
     ],
 
     indexes: [
         {
-            name: "service_client_application_idx",
-            properties: ["application"],
+            name: "service_client_realm_idx",
+            properties: ["realm"],
         },
     ],
 
     properties: {
         id: { primary: true, type: "uuid" },
 
-        application: {
-            kind: "m:1",
-            entity: () => Application,
-            deleteRule: "cascade",
-        },
+        realm: { type: "uuid" },
 
-        code: { type: "text" },
-        name: { type: "text" },
         description: { type: "text", nullable: true },
         allowedAddresses: { type: "array" },
+        code: { type: "text" },
+        name: { type: "text" },
 
-        applicationVersion: { type: "int" },
         isSystemManaged: { type: "boolean" },
-        isApplicationRevoked: { type: "boolean" },
+        isRealmRevoked: { type: "boolean" },
         isRevoked: { type: "boolean" },
+        realmVersion: { type: "int" },
 
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },

@@ -10,10 +10,10 @@ const helpers = new ServiceClientIntegrationHelpers();
 
 async function loadClients(
     suite: Integration.Domain.ServiceClient.Suite,
-    application: Entities.Application,
+    realm: string,
 ): Promise<Entities.ServiceClient[]> {
     return await suite.transaction((transaction) =>
-        transaction.find(ServiceClient, { application: application.id }, { orderBy: { name: "asc" } }),
+        transaction.find(ServiceClient, { realm }, { orderBy: { name: "asc" } }),
     );
 }
 
@@ -24,13 +24,10 @@ describe("ServiceClientService integration", () => {
     });
 
     it("creates service clients while enforcing repository-backed limits", async () => {
-        const application = await suite.fixtures().createApplication({ realm: REALM_ID, name: "Service App" });
-
         await suite.transaction((transaction) =>
             suite.repository().serviceClientService.create({
                 input: {
                     allowedAddresses: ["10.0.0.1"],
-                    application: application.id,
                     code: "worker",
                     name: "Worker",
                 },
@@ -39,7 +36,7 @@ describe("ServiceClientService integration", () => {
             }),
         );
         await suite.fixtures().createServiceClient({
-            application,
+            realm: REALM_ID,
             name: "Existing Worker",
             code: "existing-worker",
         });
@@ -48,7 +45,6 @@ describe("ServiceClientService integration", () => {
             suite.transaction((transaction) =>
                 suite.repository().serviceClientService.create({
                     input: {
-                        application: application.id,
                         code: "blocked-worker",
                         name: "Blocked Worker",
                     },
@@ -56,15 +52,14 @@ describe("ServiceClientService integration", () => {
                     transaction,
                 }),
             ),
-        ).rejects.toThrow("services.service-client.APPLICATION_LIMIT_EXCEEDED");
+        ).rejects.toThrow("services.service-client.REALM_LIMIT_EXCEEDED");
 
-        await expect(loadClients(suite, application)).resolves.toHaveLength(2);
+        await expect(loadClients(suite, REALM_ID)).resolves.toHaveLength(2);
     });
 
     it("updates, revokes, restores and purges only clients scoped to the requested realm", async () => {
-        const application = await suite.fixtures().createApplication({ realm: REALM_ID, name: "Service App" });
         const client = await suite.fixtures().createServiceClient({
-            application,
+            realm: REALM_ID,
             name: "Worker",
             code: "worker",
         });
@@ -81,7 +76,7 @@ describe("ServiceClientService integration", () => {
             }),
         );
 
-        let clients = await loadClients(suite, application);
+        let clients = await loadClients(suite, REALM_ID);
 
         expect(clients[0]).toMatchObject({
             allowedAddresses: ["10.0.0.2"],
@@ -96,7 +91,7 @@ describe("ServiceClientService integration", () => {
             }),
         );
 
-        clients = await loadClients(suite, application);
+        clients = await loadClients(suite, REALM_ID);
 
         expect(clients[0]?.isRevoked).toBe(true);
 
@@ -108,7 +103,7 @@ describe("ServiceClientService integration", () => {
             }),
         );
 
-        clients = await loadClients(suite, application);
+        clients = await loadClients(suite, REALM_ID);
 
         expect(clients[0]?.isRevoked).toBe(false);
 
@@ -127,6 +122,105 @@ describe("ServiceClientService integration", () => {
             }),
         );
 
-        await expect(loadClients(suite, application)).resolves.toHaveLength(0);
+        await expect(loadClients(suite, REALM_ID)).resolves.toHaveLength(0);
+    });
+    it("applies only newer realm events and preserves manual revocation", async () => {
+        const client = await suite.fixtures().createServiceClient({ realm: REALM_ID, isRevoked: true });
+        const other = await suite.fixtures().createServiceClient({
+            realm: "00000000-0000-4000-8000-000000000099",
+        });
+        const system = await suite.fixtures().createServiceClient({ realm: REALM_ID, isSystemManaged: true });
+
+        const revoked = await suite.transaction((transaction) =>
+            suite.repository().serviceClientService.applyRealmRevocation({ transaction, realm: REALM_ID, version: 2 }),
+        );
+
+        expect(revoked.map((entity) => entity.id)).toEqual([client.id]);
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, client.id)),
+        ).resolves.toMatchObject({
+            realmVersion: 2,
+            isRealmRevoked: true,
+            isRevoked: true,
+        });
+
+        const stale = await suite.transaction((transaction) =>
+            suite.repository().serviceClientService.applyRealmRestore({ transaction, realm: REALM_ID, version: 1 }),
+        );
+        const duplicate = await suite.transaction((transaction) =>
+            suite.repository().serviceClientService.applyRealmRevocation({ transaction, realm: REALM_ID, version: 2 }),
+        );
+
+        expect(stale).toEqual([]);
+        expect(duplicate).toEqual([]);
+
+        await suite.transaction((transaction) =>
+            suite.repository().serviceClientService.applyRealmRestore({ transaction, realm: REALM_ID, version: 3 }),
+        );
+
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, client.id)),
+        ).resolves.toMatchObject({
+            realmVersion: 3,
+            isRealmRevoked: false,
+            isRevoked: true,
+        });
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, other.id)),
+        ).resolves.toMatchObject({
+            realmVersion: 0,
+            isRealmRevoked: false,
+        });
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, system.id)),
+        ).resolves.toMatchObject({
+            realmVersion: 0,
+            isRealmRevoked: false,
+        });
+    });
+
+    it("purges only non-system clients with an older realm version", async () => {
+        const client = await suite.fixtures().createServiceClient({ realm: REALM_ID });
+        const current = await suite.fixtures().createServiceClient({ realm: REALM_ID, realmVersion: 3 });
+        const system = await suite.fixtures().createServiceClient({ realm: REALM_ID, isSystemManaged: true });
+        const other = await suite.fixtures().createServiceClient({
+            realm: "00000000-0000-4000-8000-000000000099",
+        });
+
+        const purged = await suite.transaction((transaction) =>
+            suite.repository().serviceClientService.purgeRealm({ transaction, realm: REALM_ID, version: 3 }),
+        );
+
+        expect(purged.map((entity) => entity.id)).toEqual([client.id]);
+        await expect(suite.transaction((transaction) => transaction.count(ServiceClient, { id: client.id }))).resolves.toBe(
+            0,
+        );
+        await expect(
+            suite.transaction((transaction) =>
+                transaction.count(ServiceClient, { id: { $in: [current.id, system.id, other.id] } }),
+            ),
+        ).resolves.toBe(3);
+    });
+
+    it("rejects mutations targeting a client in another realm", async () => {
+        const client = await suite.fixtures().createServiceClient({
+            realm: "00000000-0000-4000-8000-000000000099",
+        });
+
+        await expect(
+            suite.transaction((transaction) =>
+                suite.repository().serviceClientService.revoke({
+                    identifiers: [client.id],
+                    realm: REALM_ID,
+                    transaction,
+                }),
+            ),
+        ).rejects.toThrow("services.service-client.CLIENTS_NOT_FOUND");
+
+        await expect(
+            suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, client.id)),
+        ).resolves.toMatchObject({
+            isRevoked: false,
+        });
     });
 });

@@ -1,6 +1,5 @@
 import { InterfaceClientManageController } from "./manage-interface-client.controller";
 import { ServiceClientManageController } from "./manage-service-client.controller";
-import { ApplicationManageController } from "./manage-application.controller";
 import { IdentifierManageController } from "./manage-identifier.controller";
 import { ChangeLogManageController } from "./manage-change-log.controller";
 import { InterfaceClientController } from "./interface-client.controller";
@@ -10,7 +9,6 @@ import { ServiceClientController } from "./service-client.controller";
 import { AccountManageController } from "./manage-account.controller";
 import { SecondFactorController } from "./second-factor.controller";
 import { RecoveryCodeController } from "./recovery-code.controller";
-import { ApplicationController } from "./application.controller";
 import { IdentifierController } from "./identifier.controller";
 import { DiscoveryController } from "./discovery.controller";
 import { PasswordController } from "./password.controller";
@@ -22,7 +20,6 @@ import { OAuthController } from "./oauth.controller";
 export const HTTP_CONTROLLERS = [
     InterfaceClientManageController,
     ServiceClientManageController,
-    ApplicationManageController,
     IdentifierManageController,
     InterfaceClientController,
     ChangeLogManageController,
@@ -32,7 +29,6 @@ export const HTTP_CONTROLLERS = [
     AccountManageController,
     SecondFactorController,
     RecoveryCodeController,
-    ApplicationController,
     IdentifierController,
     DiscoveryController,
     PasswordController,
@@ -45,7 +41,6 @@ export const HTTP_CONTROLLERS = [
 export {
     InterfaceClientManageController,
     ServiceClientManageController,
-    ApplicationManageController,
     IdentifierManageController,
     InterfaceClientController,
     ChangeLogManageController,
@@ -55,7 +50,6 @@ export {
     AccountManageController,
     SecondFactorController,
     RecoveryCodeController,
-    ApplicationController,
     IdentifierController,
     DiscoveryController,
     PasswordController,

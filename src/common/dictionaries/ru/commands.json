@@ -46,22 +46,12 @@
     "INVALID_REQUEST": "В запросе отсутствует обязательный параметр или запрос сформирован некорректно.",
     "INVALID_AUTHORIZATION_REQUEST": "Запрос авторизации недействителен или просрочен.",
     "CLIENT_REVOKED": "OAuth-клиент отозван.",
-    "CLIENT_APPLICATION_REVOKED": "Приложение, к которому привязан OAuth-клиент, отозвано.",
+    "CLIENT_REALM_REVOKED": "Realm, к которому привязан OAuth-клиент, отозван.",
     "CLIENT_NOT_FOUND": "OAuth-клиент не найден.",
     "INVALID_GRANT": "Код авторизации недействителен, просрочен или не соответствует запросу.",
     "INVALID_REDIRECT_URI": "Redirect URI не зарегистрирован для этого OAuth-клиента.",
     "UNSUPPORTED_TOKEN_TYPE": "Запрошенный тип токена не поддерживается этим revocation endpoint.",
     "INSUFFICIENT_SCOPE": "Этот access-токен выдан без scope openid."
-  },
-  "application": {
-    "CREATED": "Приложение успешно создано.",
-    "UPDATED": "Приложение успешно обновлено.",
-    "REVOKED": "Приложение успешно отозвано.",
-    "BULK_REVOKED_COUNT": "{count} приложений успешно отозвано.",
-    "RESTORED": "Приложение успешно восстановлено.",
-    "BULK_RESTORED_COUNT": "{count} приложений успешно восстановлено.",
-    "PURGED": "Приложение успешно удалено.",
-    "BULK_PURGED_COUNT": "{count} приложений успешно удалено."
   },
   "interface-client": {
     "CREATED": "Interface-клиент успешно создан.",

@@ -15,7 +15,7 @@ export class InterfaceClientQueries implements Queries.InterfaceClient.Contract 
         const where: ORM.FilterQuery<InterfaceClient> = { id: props.client };
 
         if (props.mode === QueryMode.DEFAULT) {
-            where.application = { id: props.application, realm: props.realm };
+            where.realm = props.realm;
         }
 
         return this.interfaceClientRepository.findUniqueOrThrow({ where });
@@ -25,7 +25,7 @@ export class InterfaceClientQueries implements Queries.InterfaceClient.Contract 
         const prefilter: ORM.ObjectQuery<InterfaceClient> = {};
 
         if (props.mode === QueryMode.DEFAULT) {
-            prefilter.application = { id: props.application, realm: props.realm };
+            prefilter.realm = props.realm;
         }
 
         return this.interfaceClientRepository.findMany({

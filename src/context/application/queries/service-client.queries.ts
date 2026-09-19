@@ -15,7 +15,7 @@ export class ServiceClientQueries implements Queries.ServiceClient.Contract {
         const where: ORM.FilterQuery<ServiceClient> = { id: props.client };
 
         if (props.mode === QueryMode.DEFAULT) {
-            where.application = { id: props.application, realm: props.realm };
+            where.realm = props.realm;
         }
 
         return this.serviceClientRepository.findUniqueOrThrow({ where });
@@ -25,7 +25,7 @@ export class ServiceClientQueries implements Queries.ServiceClient.Contract {
         const prefilter: ORM.ObjectQuery<ServiceClient> = {};
 
         if (props.mode === QueryMode.DEFAULT) {
-            prefilter.application = { id: props.application, realm: props.realm };
+            prefilter.realm = props.realm;
         }
 
         return this.serviceClientRepository.findMany({

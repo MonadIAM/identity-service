@@ -32,7 +32,6 @@ declare namespace Commands {
                 realm: string;
                 input: {
                     authAddress: string;
-                    application: string;
                     description?: string;
                     redirectUris: string[];
                     name: string;

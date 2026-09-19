@@ -3,7 +3,6 @@ export const INTERFACE_CLIENT_REPOSITORY = Symbol("Repositories.InterfaceClient.
 export const SERVICE_CLIENT_REPOSITORY = Symbol("Repositories.ServiceClient.Contract");
 export const SECOND_FACTOR_REPOSITORY = Symbol("Repositories.SecondFactor.Contract");
 export const RECOVERY_CODE_REPOSITORY = Symbol("Repositories.RecoveryCode.Contract");
-export const APPLICATION_REPOSITORY = Symbol("Repositories.Application.Contract");
 export const MASTER_CODE_REPOSITORY = Symbol("Repositories.MasterCode.Contract");
 export const IDENTIFIER_REPOSITORY = Symbol("Repositories.Identifier.Contract");
 export const CHANGE_LOG_REPOSITORY = Symbol("Repositories.ChangeLog.Contract");

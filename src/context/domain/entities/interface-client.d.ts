@@ -11,44 +11,48 @@ declare global {
                 updatedAt?: Date;
                 version: number;
 
+                realm: string;
                 name: string;
-                application: Entities.Application;
-                redirectUris: string[];
-                authAddress: string;
-                grantTypes: TokenGrantType[];
                 description?: string;
 
-                applicationVersion: number;
+                authAddress: string;
+                redirectUris: string[];
+                grantTypes: TokenGrantType[];
+
+                realmVersion: number;
                 isSystemManaged: boolean;
-                isApplicationRevoked: boolean;
+                isRealmRevoked: boolean;
                 isRevoked: boolean;
 
-                applyApplicationRevocation(version: number): void;
-                applyApplicationRestore(version: number): void;
                 update(patch: ChangeDataProps): void;
-                canPurge(): void;
-                restore(): void;
                 revoke(): void;
+                restore(): void;
+                canPurge(): void;
+                applyRealmRevocation(version: number): void;
+                applyRealmRestore(version: number): void;
             }
 
             type ConstructorProps = {
+                realm: string;
                 name: string;
-                redirectUris: string[];
-                authAddress: string;
-                grantTypes: TokenGrantType[];
-                application: Entities.Application;
                 description?: string;
-                isRevoked?: boolean;
+
+                authAddress: string;
+                redirectUris: string[];
+                grantTypes: TokenGrantType[];
+
+                realmVersion?: number;
                 isSystemManaged?: boolean;
-                applicationVersion?: number;
-                isApplicationRevoked?: boolean;
+                isRealmRevoked?: boolean;
+                isRevoked?: boolean;
             };
 
             type ChangeDataProps = {
-                redirectUris?: string[];
-                authAddress?: string;
-                description?: string;
                 name?: string;
+                description?: string;
+
+                authAddress?: string;
+                redirectUris?: string[];
             };
         }
     }

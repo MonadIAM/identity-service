@@ -7,7 +7,6 @@ declare namespace Unit {
 
             namespace Repositories {
                 type Props = {
-                    readonly application?: Entities.Application;
                     readonly account?: Entities.Account;
                 };
 
@@ -33,21 +32,17 @@ declare namespace Unit {
                 getLookupList: Mock;
             };
 
-            type Application = Base & {
-                wouldExceedRealmLimit: Mock;
-            };
-
             type Identifier = Base & {
                 isLastVerifiedIdentifier: Mock;
                 getLookupList: Mock;
             };
 
             type InterfaceClient = Base & {
-                wouldExceedApplicationLimit: Mock;
+                wouldExceedRealmLimit: Mock;
             };
 
             type ServiceClient = Base & {
-                wouldExceedApplicationLimit: Mock;
+                wouldExceedRealmLimit: Mock;
             };
 
             type Session = Base & {
@@ -57,7 +52,6 @@ declare namespace Unit {
             interface Contract {
                 readonly interfaceClients: InterfaceClient;
                 readonly serviceClients: ServiceClient;
-                readonly applications: Application;
                 readonly passwordHistories: Base;
                 readonly identifiers: Identifier;
                 readonly secondFactors: Base;

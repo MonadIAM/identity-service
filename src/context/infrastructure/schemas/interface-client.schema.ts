@@ -1,6 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { InterfaceClient, Application } from "~context/domain/entities";
+import { InterfaceClient } from "~context/domain/entities";
 import { TokenGrantType } from "~context/enums";
 
 export const InterfaceClientSchema = new EntitySchema<InterfaceClient>({
@@ -10,37 +10,33 @@ export const InterfaceClientSchema = new EntitySchema<InterfaceClient>({
 
     uniques: [
         {
-            name: "interface_client_application_name_unique",
-            properties: ["application", "name"],
+            name: "interface_client_realm_name_unique",
+            properties: ["realm", "name"],
         },
     ],
 
     indexes: [
         {
-            name: "interface_client_application_idx",
-            properties: ["application"],
+            name: "interface_client_realm_idx",
+            properties: ["realm"],
         },
     ],
 
     properties: {
         id: { primary: true, type: "uuid" },
 
-        application: {
-            kind: "m:1",
-            entity: () => Application,
-            deleteRule: "cascade",
-        },
+        realm: { type: "uuid" },
 
-        name: { type: "text" },
-        authAddress: { type: "text" },
-        description: { type: "text", nullable: true },
         grantTypes: { type: "array", enum: true, items: () => TokenGrantType, array: true },
+        description: { type: "text", nullable: true },
         redirectUris: { type: "array" },
+        authAddress: { type: "text" },
+        name: { type: "text" },
 
-        applicationVersion: { type: "int" },
         isSystemManaged: { type: "boolean" },
-        isApplicationRevoked: { type: "boolean" },
+        isRealmRevoked: { type: "boolean" },
         isRevoked: { type: "boolean" },
+        realmVersion: { type: "int" },
 
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },

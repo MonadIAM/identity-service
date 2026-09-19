@@ -10,7 +10,6 @@ export class ServiceClientUnitHelpers extends DomainServiceCoreUnitHelpers imple
         return {
             service: new ServiceClientService(
                 this.contract<Repositories.ServiceClient.PublicContract>(repositories.serviceClients),
-                this.contract<Repositories.Application.PublicContract>(repositories.applications),
             ),
             repositories,
             transaction,

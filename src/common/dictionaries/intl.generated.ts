@@ -53,22 +53,12 @@ export type I18nTranslations = {
             "INVALID_REQUEST": string;
             "INVALID_AUTHORIZATION_REQUEST": string;
             "CLIENT_REVOKED": string;
-            "CLIENT_APPLICATION_REVOKED": string;
+            "CLIENT_REALM_REVOKED": string;
             "CLIENT_NOT_FOUND": string;
             "INVALID_GRANT": string;
             "INVALID_REDIRECT_URI": string;
             "UNSUPPORTED_TOKEN_TYPE": string;
             "INSUFFICIENT_SCOPE": string;
-        };
-        "application": {
-            "CREATED": string;
-            "UPDATED": string;
-            "REVOKED": string;
-            "BULK_REVOKED_COUNT": string;
-            "RESTORED": string;
-            "BULK_RESTORED_COUNT": string;
-            "PURGED": string;
-            "BULK_PURGED_COUNT": string;
         };
         "interface-client": {
             "CREATED": string;
@@ -133,15 +123,6 @@ export type I18nTranslations = {
             "RESTORE_NOT_ALLOWED": string;
             "ALREADY_SUSPENDED": string;
             "NOT_SUSPENDED": string;
-        };
-        "application": {
-            "CANNOT_UPDATE_REVOKED": string;
-            "NO_CHANGES_DETECTED": string;
-            "EMPTY_UPDATE_PATCH": string;
-            "ALREADY_REVOKED": string;
-            "ALREADY_ACTIVE": string;
-            "CANNOT_PURGE_ACTIVE": string;
-            "SYSTEM_MANAGED_IMMUTABLE": string;
         };
         "identifier": {
             "PUBLIC_CONTACT_NOT_APPLICABLE": string;
@@ -216,12 +197,8 @@ export type I18nTranslations = {
             "INVALID_SCRIPT_HASH": string;
             "SCRIPT_NOT_LOADED": string;
         };
-        "application": {
-            "REALM_LIMIT_EXCEEDED": string;
-            "APPLICATIONS_NOT_FOUND": string;
-        };
         "interface-client": {
-            "APPLICATION_LIMIT_EXCEEDED": string;
+            "REALM_LIMIT_EXCEEDED": string;
             "REDIRECT_URI_REQUIRED": string;
             "REDIRECT_URI_LIMIT_EXCEEDED": string;
             "REDIRECT_URI_DUPLICATED": string;
@@ -232,7 +209,7 @@ export type I18nTranslations = {
             "CLIENTS_NOT_FOUND": string;
         };
         "service-client": {
-            "APPLICATION_LIMIT_EXCEEDED": string;
+            "REALM_LIMIT_EXCEEDED": string;
             "CLIENTS_NOT_FOUND": string;
         };
         "second-factor": {

@@ -13,7 +13,7 @@ export class ServiceClientDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    declare public application: string;
+    declare public realm: string;
 
     @Expose()
     @Validator.IsString()
@@ -45,7 +45,7 @@ export class ServiceClientDTO {
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    declare public isApplicationRevoked: boolean;
+    declare public isRealmRevoked: boolean;
 
     @Expose()
     @Validator.IsBoolean()
@@ -55,7 +55,7 @@ export class ServiceClientDTO {
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    declare public applicationVersion: number;
+    declare public realmVersion: number;
 
     @Expose()
     @Validator.IsDate()

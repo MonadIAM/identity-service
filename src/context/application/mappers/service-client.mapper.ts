@@ -5,16 +5,16 @@ export class ServiceClientMapper implements Commands.Mappers.ServiceClient.Contr
         const { actor } = props;
 
         if (Array.isArray(props.serviceClients)) {
-            return props.serviceClients.map(({ id, application, code }) => ({
-                input: { application: application.id, code, id },
-                realm: application.realm,
+            return props.serviceClients.map(({ id, realm, code }) => ({
+                input: { code, id },
+                realm,
                 actor,
             }));
         } else {
-            const { id, application, code } = props.serviceClients;
+            const { id, realm, code } = props.serviceClients;
             return {
-                input: { application: application.id, code, id },
-                realm: application.realm,
+                input: { code, id },
+                realm,
                 actor,
             };
         }

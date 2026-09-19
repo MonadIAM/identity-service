@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { SERVICE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
+import { SERVICE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
 
 import { ServiceClient } from "../entities";
@@ -12,27 +12,20 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
     public constructor(
         @Inject(SERVICE_CLIENT_REPOSITORY)
         private readonly serviceClientRepository: Repositories.ServiceClient.PublicContract,
-        @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.PublicContract,
     ) {}
 
     public async create(props: Services.ServiceClient.Create.Props): Services.ServiceClient.Create.Result {
         const { transaction, realm, input } = props;
 
-        const application = await this.applicationRepository.findUniqueOrThrow({
-            where: { id: input.application, realm },
-            transaction,
-        });
-
-        const limitExceeded = await this.serviceClientRepository.wouldExceedApplicationLimit({
-            application: application.id,
+        const limitExceeded = await this.serviceClientRepository.wouldExceedRealmLimit({
+            realm,
             transaction,
         });
 
         if (limitExceeded) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.APPLICATION_LIMIT_EXCEEDED` });
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REALM_LIMIT_EXCEEDED` });
         } else {
-            const entity = new ServiceClient({ ...input, application });
+            const entity = new ServiceClient({ ...input, realm });
             transaction.persist(entity);
             return entity;
         }
@@ -41,7 +34,7 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
     public async update(props: Services.ServiceClient.Update.Props): Services.ServiceClient.Update.Result {
         const { transaction, realm, patch, id } = props;
         const entity = await this.serviceClientRepository.findUniqueOrThrow({
-            where: { id, application: { realm } },
+            where: { id, realm },
             transaction,
         });
 
@@ -50,10 +43,9 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
 
     public async revoke(props: Services.ServiceClient.Revoke.Props): Services.ServiceClient.Revoke.Result {
         const { transaction, identifiers, realm } = props;
-        const unique = [...new Set(identifiers)];
+        const unique = Array.from(new Set(identifiers));
         const entities = await this.serviceClientRepository.find({
-            where: { id: { $in: unique }, application: { realm } },
-            options: { populate: ["application"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
@@ -70,10 +62,9 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
 
     public async restore(props: Services.ServiceClient.Restore.Props): Services.ServiceClient.Restore.Result {
         const { transaction, identifiers, realm } = props;
-        const unique = [...new Set(identifiers)];
+        const unique = Array.from(new Set(identifiers));
         const entities = await this.serviceClientRepository.find({
-            where: { id: { $in: unique }, application: { realm } },
-            options: { populate: ["application"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
@@ -90,10 +81,9 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
 
     public async purge(props: Services.ServiceClient.Purge.Props): Services.ServiceClient.Purge.Result {
         const { transaction, identifiers, realm } = props;
-        const unique = [...new Set(identifiers)];
+        const unique = Array.from(new Set(identifiers));
         const entities = await this.serviceClientRepository.find({
-            where: { id: { $in: unique }, application: { realm } },
-            options: { populate: ["application"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
@@ -107,5 +97,51 @@ export class ServiceClientService implements Services.ServiceClient.Contract {
 
             return entities;
         }
+    }
+
+    public async applyRealmRevocation(
+        props: Services.ServiceClient.ApplyRealmRevocation.Props,
+    ): Services.ServiceClient.ApplyRealmRevocation.Result {
+        const { transaction, version, realm } = props;
+        const entities = await this.serviceClientRepository.find({
+            where: { realm, realmVersion: { $lt: version }, isSystemManaged: false },
+            transaction,
+        });
+
+        for (const entity of entities) {
+            entity.applyRealmRevocation(version);
+        }
+
+        return entities;
+    }
+
+    public async applyRealmRestore(
+        props: Services.ServiceClient.ApplyRealmRestore.Props,
+    ): Services.ServiceClient.ApplyRealmRestore.Result {
+        const { transaction, version, realm } = props;
+        const entities = await this.serviceClientRepository.find({
+            where: { realm, realmVersion: { $lt: version }, isSystemManaged: false },
+            transaction,
+        });
+
+        for (const entity of entities) {
+            entity.applyRealmRestore(version);
+        }
+
+        return entities;
+    }
+
+    public async purgeRealm(props: Services.ServiceClient.PurgeRealm.Props): Services.ServiceClient.PurgeRealm.Result {
+        const { transaction, version, realm } = props;
+        const entities = await this.serviceClientRepository.find({
+            where: { realm, realmVersion: { $lt: version }, isSystemManaged: false },
+            transaction,
+        });
+
+        for (const entity of entities) {
+            transaction.remove(entity);
+        }
+
+        return entities;
     }
 }

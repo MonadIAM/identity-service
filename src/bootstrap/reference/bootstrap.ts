@@ -20,7 +20,6 @@ const REFERENCE_TAGS: Record<string, string> = {
     /* eslint-disable prettier/prettier */
     Discovery: "OAuth 2.0/OpenID Connect server metadata (RFC 8414, OIDC Discovery 1.0) and the JWKS (RFC 7517) used to verify issued tokens.",
     OAuth: "OAuth 2.0 Authorization Framework (RFC 6749) endpoints for authorization, token issuance, and revocation, designed per current security best practices (RFC 9700).",
-    Application: "Lifecycle management of applications: the realm-scoped container grouping interface and service clients.",
     InterfaceClient: "Lifecycle management of interactive OAuth clients used in the authorization code flow: creation, updates, revocation, restoration, and permanent deletion.",
     ServiceClient: "Lifecycle management of machine-to-machine OAuth clients used in the client credentials flow, including secret regeneration.",
     Authn: "Authentication, step-up reauthentication, and session lifecycle: password, OTP, and TOTP verification, plus session listing and sign-out.",

@@ -4,12 +4,15 @@ import { RealmTopicAction } from "@monadiam/shared";
 declare global {
     namespace Consumers {
         namespace Realm {
-            type Message = Topics.Realm.Message;
+            type Message = Extract<
+                Topics.Realm.Message,
+                { actionType: RealmTopicAction.RESTORE | RealmTopicAction.REVOKE | RealmTopicAction.PURGE }
+            >;
 
             type Handlers = {
-                [K in RealmTopicAction]: (props: {
+                [K in Message["actionType"]]: (props: {
                     incoming: TransactionManager.Service.IncomingMessage;
-                    payload: Topics.Realm.Message["payload"];
+                    payload: Message["payload"];
                 }) => Promise<void>;
             };
 

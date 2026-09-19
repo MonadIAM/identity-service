@@ -2,13 +2,12 @@ import { describe, it, expect } from "@jest/globals";
 import { isUUID } from "class-validator";
 
 import { ServiceClient } from "./service-client.entity";
-import { Application } from "./application.entity";
 
 function createServiceClient(overrides?: Partial<Entities.ServiceClient.ConstructorProps>): ServiceClient {
     return new ServiceClient({
         code: "billing-worker",
         name: "Billing Worker",
-        application: {} as Application,
+        realm: "00000000-0000-4000-8000-000000000001",
         ...overrides,
     });
 }
@@ -16,294 +15,305 @@ function createServiceClient(overrides?: Partial<Entities.ServiceClient.Construc
 describe("ServiceClient Entity", () => {
     describe("constructor", () => {
         it("should assign required fields", () => {
-            const application = {} as Application;
+            const realm = "00000000-0000-4000-8000-000000000001";
 
-            const serviceClient = createServiceClient({
+            const client = createServiceClient({
+                code: "reporting-worker",
                 name: "Reporting Worker",
-                application,
+                realm,
             });
 
-            expect(serviceClient.name).toBe("Reporting Worker");
-            expect(serviceClient.application).toBe(application);
+            expect(client.code).toBe("reporting-worker");
+            expect(client.name).toBe("Reporting Worker");
+            expect(client.realm).toBe(realm);
         });
 
         it("should default booleans to false", () => {
-            const serviceClient = createServiceClient();
+            const client = createServiceClient();
 
-            expect(serviceClient.isSystemManaged).toBe(false);
-            expect(serviceClient.isApplicationRevoked).toBe(false);
-            expect(serviceClient.isRevoked).toBe(false);
+            expect(client.isSystemManaged).toBe(false);
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.isRevoked).toBe(false);
         });
 
         it("should respect explicit boolean overrides", () => {
-            const serviceClient = createServiceClient({
+            const client = createServiceClient({
                 isSystemManaged: true,
-                isApplicationRevoked: true,
+                isRealmRevoked: true,
                 isRevoked: true,
             });
 
-            expect(serviceClient.isSystemManaged).toBe(true);
-            expect(serviceClient.isApplicationRevoked).toBe(true);
-            expect(serviceClient.isRevoked).toBe(true);
+            expect(client.isSystemManaged).toBe(true);
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.isRevoked).toBe(true);
         });
 
-        it("should default applicationVersion to 0", () => {
-            const serviceClient = createServiceClient();
+        it("should default realmVersion to 0", () => {
+            const client = createServiceClient();
 
-            expect(serviceClient.applicationVersion).toBe(0);
+            expect(client.realmVersion).toBe(0);
         });
 
-        it("should default allowedAddresses to an empty array", () => {
-            const serviceClient = createServiceClient();
+        it("should respect explicit realmVersion", () => {
+            const client = createServiceClient({ realmVersion: 5 });
 
-            expect(serviceClient.allowedAddresses).toEqual([]);
-        });
-
-        it("should respect explicit allowedAddresses", () => {
-            const serviceClient = createServiceClient({ allowedAddresses: ["10.0.0.1", "10.0.0.2"] });
-
-            expect(serviceClient.allowedAddresses).toEqual(["10.0.0.1", "10.0.0.2"]);
+            expect(client.realmVersion).toBe(5);
         });
 
         it("should auto-generate id, createdAt, version", () => {
-            const serviceClient = createServiceClient();
+            const client = createServiceClient();
 
-            expect(isUUID(serviceClient.id, "4")).toBe(true);
-            expect(serviceClient.createdAt).toBeInstanceOf(Date);
-            expect(serviceClient.version).toBe(1);
-            expect(serviceClient.updatedAt).toBeUndefined();
+            expect(isUUID(client.id, "4")).toBe(true);
+            expect(client.createdAt).toBeInstanceOf(Date);
+            expect(client.version).toBe(1);
+            expect(client.updatedAt).toBeUndefined();
         });
 
         it("should assign description when provided", () => {
-            const serviceClient = createServiceClient({ description: "Internal worker" });
-            expect(serviceClient.description).toBe("Internal worker");
+            const client = createServiceClient({ description: "Internal worker" });
+
+            expect(client.description).toBe("Internal worker");
         });
 
         it("should leave description undefined when omitted", () => {
-            const serviceClient = createServiceClient();
-            expect(serviceClient.description).toBeUndefined();
+            const client = createServiceClient();
+
+            expect(client.description).toBeUndefined();
+        });
+
+        it("should default allowedAddresses to an empty array", () => {
+            const client = createServiceClient();
+
+            expect(client.allowedAddresses).toEqual([]);
+        });
+
+        it("should respect explicit allowedAddresses", () => {
+            const client = createServiceClient({ allowedAddresses: ["10.0.0.1", "10.0.0.2"] });
+
+            expect(client.allowedAddresses).toEqual(["10.0.0.1", "10.0.0.2"]);
         });
     });
 
     describe("update", () => {
         it("should update a single field", () => {
-            const serviceClient = createServiceClient({ name: "Old" });
+            const client = createServiceClient({ name: "Old" });
 
-            serviceClient.update({ name: "New" });
+            client.update({ name: "New" });
 
-            expect(serviceClient.name).toBe("New");
-            expect(serviceClient.updatedAt).toBeInstanceOf(Date);
+            expect(client.name).toBe("New");
+            expect(client.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should update multiple fields at once", () => {
-            const serviceClient = createServiceClient({ name: "Old", description: "Old desc" });
+            const client = createServiceClient({ name: "Old", description: "Old desc" });
 
-            serviceClient.update({ name: "New", description: "New desc" });
+            client.update({ name: "New", description: "New desc" });
 
-            expect(serviceClient.name).toBe("New");
-            expect(serviceClient.description).toBe("New desc");
+            expect(client.name).toBe("New");
+            expect(client.description).toBe("New desc");
         });
 
         it("should skip unchanged fields", () => {
-            const serviceClient = createServiceClient({ name: "Same", description: "Old" });
+            const client = createServiceClient({ name: "Same", description: "Old" });
 
-            serviceClient.update({ name: "Same", description: "New" });
+            client.update({ name: "Same", description: "New" });
 
-            expect(serviceClient.name).toBe("Same");
-            expect(serviceClient.description).toBe("New");
+            expect(client.name).toBe("Same");
+            expect(client.description).toBe("New");
         });
 
         it("should ignore undefined values in patch", () => {
-            const serviceClient = createServiceClient({ name: "Original" });
+            const client = createServiceClient({ name: "Original" });
 
-            serviceClient.update({ name: "Updated", description: undefined });
+            client.update({ name: "Updated", description: undefined });
 
-            expect(serviceClient.name).toBe("Updated");
-            expect(serviceClient.description).toBeUndefined();
+            expect(client.name).toBe("Updated");
+            expect(client.description).toBeUndefined();
         });
 
         it("should throw when patch is empty object", () => {
-            const serviceClient = createServiceClient();
+            const client = createServiceClient();
 
-            expect(() => serviceClient.update({})).toThrow("EMPTY_UPDATE_PATCH");
+            expect(() => client.update({})).toThrow("EMPTY_UPDATE_PATCH");
         });
 
         it("should throw when no values actually changed", () => {
-            const serviceClient = createServiceClient({ name: "Same" });
+            const client = createServiceClient({ name: "Same" });
 
-            expect(() => serviceClient.update({ name: "Same" })).toThrow("NO_CHANGES_DETECTED");
+            expect(() => client.update({ name: "Same" })).toThrow("NO_CHANGES_DETECTED");
         });
 
         it("should throw when system-managed", () => {
-            const serviceClient = createServiceClient({ isSystemManaged: true });
+            const client = createServiceClient({ isSystemManaged: true });
 
-            expect(() => serviceClient.update({ name: "New" })).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+            expect(() => client.update({ name: "New" })).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
 
         it("should throw when revoked", () => {
-            const serviceClient = createServiceClient();
-            serviceClient.revoke();
+            const client = createServiceClient({ isRevoked: true });
 
-            expect(() => serviceClient.update({ name: "New" })).toThrow("CANNOT_UPDATE_REVOKED");
+            expect(() => client.update({ name: "New" })).toThrow("CANNOT_UPDATE_REVOKED");
         });
 
         describe("allowedAddresses change detection", () => {
             it("should detect a change when array length differs", () => {
-                const serviceClient = createServiceClient({ allowedAddresses: ["10.0.0.1"] });
+                const client = createServiceClient({ allowedAddresses: ["10.0.0.1"] });
 
-                serviceClient.update({ allowedAddresses: ["10.0.0.1", "10.0.0.2"] });
+                client.update({ allowedAddresses: ["10.0.0.1", "10.0.0.2"] });
 
-                expect(serviceClient.allowedAddresses).toEqual(["10.0.0.1", "10.0.0.2"]);
-                expect(serviceClient.updatedAt).toBeInstanceOf(Date);
+                expect(client.allowedAddresses).toEqual(["10.0.0.1", "10.0.0.2"]);
+                expect(client.updatedAt).toBeInstanceOf(Date);
             });
 
             it("should detect a change when elements differ at the same length", () => {
-                const serviceClient = createServiceClient({ allowedAddresses: ["10.0.0.1"] });
+                const client = createServiceClient({ allowedAddresses: ["10.0.0.1"] });
 
-                serviceClient.update({ allowedAddresses: ["10.0.0.2"] });
+                client.update({ allowedAddresses: ["10.0.0.2"] });
 
-                expect(serviceClient.allowedAddresses).toEqual(["10.0.0.2"]);
+                expect(client.allowedAddresses).toEqual(["10.0.0.2"]);
+                expect(client.updatedAt).toBeInstanceOf(Date);
             });
 
             it("should treat an identical array as unchanged", () => {
-                const serviceClient = createServiceClient({ allowedAddresses: ["10.0.0.1", "10.0.0.2"] });
+                const client = createServiceClient({ allowedAddresses: ["10.0.0.1", "10.0.0.2"] });
 
-                expect(() => serviceClient.update({ allowedAddresses: ["10.0.0.1", "10.0.0.2"] })).toThrow(
-                    "NO_CHANGES_DETECTED",
-                );
+                expect(() => client.update({ allowedAddresses: ["10.0.0.1", "10.0.0.2"] })).toThrow("NO_CHANGES_DETECTED");
+                expect(client.updatedAt).toBeUndefined();
             });
         });
     });
 
     describe("revoke", () => {
-        it("should revoke an active service client", () => {
-            const serviceClient = createServiceClient();
-            serviceClient.revoke();
+        it("should revoke an active client", () => {
+            const client = createServiceClient();
 
-            expect(serviceClient.isRevoked).toBe(true);
-            expect(serviceClient.updatedAt).toBeInstanceOf(Date);
+            client.revoke();
+
+            expect(client.isRevoked).toBe(true);
+            expect(client.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should throw when already revoked", () => {
-            const serviceClient = createServiceClient();
-            serviceClient.revoke();
+            const client = createServiceClient({ isRevoked: true });
 
-            expect(() => serviceClient.revoke()).toThrow("ALREADY_REVOKED");
+            expect(() => client.revoke()).toThrow("ALREADY_REVOKED");
         });
 
         it("should throw when system-managed", () => {
-            const serviceClient = createServiceClient({ isSystemManaged: true });
+            const client = createServiceClient({ isSystemManaged: true });
 
-            expect(() => serviceClient.revoke()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+            expect(() => client.revoke()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
     });
 
     describe("restore", () => {
-        it("should restore a revoked service client", () => {
-            const serviceClient = createServiceClient();
-            serviceClient.revoke();
-            serviceClient.restore();
+        it("should restore a revoked client", () => {
+            const client = createServiceClient({ isRevoked: true });
 
-            expect(serviceClient.isRevoked).toBe(false);
-            expect(serviceClient.updatedAt).toBeInstanceOf(Date);
+            client.restore();
+
+            expect(client.isRevoked).toBe(false);
+            expect(client.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should throw when already active", () => {
-            const serviceClient = createServiceClient();
+            const client = createServiceClient();
 
-            expect(() => serviceClient.restore()).toThrow("ALREADY_ACTIVE");
+            expect(() => client.restore()).toThrow("ALREADY_ACTIVE");
         });
 
         it("should throw when system-managed", () => {
-            const serviceClient = createServiceClient({ isSystemManaged: true });
+            const client = createServiceClient({ isSystemManaged: true });
 
-            expect(() => serviceClient.restore()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+            expect(() => client.restore()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
     });
 
     describe("canPurge", () => {
-        it("should throw for active service client", () => {
-            const serviceClient = createServiceClient();
+        it("should throw for active client", () => {
+            const client = createServiceClient();
 
-            expect(() => serviceClient.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            expect(() => client.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should throw for system-managed service client regardless of revoked state", () => {
-            const serviceClient = createServiceClient({ isSystemManaged: true, isRevoked: true });
+        it("should throw for system-managed client regardless of revoked state", () => {
+            const client = createServiceClient({ isSystemManaged: true, isRevoked: true });
 
-            expect(() => serviceClient.canPurge()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+            expect(() => client.canPurge()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
 
-        it("should pass for revoked non-system service client", () => {
-            const serviceClient = createServiceClient();
-            serviceClient.revoke();
+        it("should pass for revoked non-system client", () => {
+            const client = createServiceClient({ isRevoked: true });
 
-            expect(() => serviceClient.canPurge()).not.toThrow();
-        });
-    });
-
-    describe("applyApplicationRevocation", () => {
-        it("should mark as application-revoked and bump applicationVersion", () => {
-            const serviceClient = createServiceClient({ applicationVersion: 1 });
-
-            serviceClient.applyApplicationRevocation(2);
-
-            expect(serviceClient.isApplicationRevoked).toBe(true);
-            expect(serviceClient.applicationVersion).toBe(2);
-            expect(serviceClient.updatedAt).toBeInstanceOf(Date);
-        });
-
-        it("should be a no-op when version is not greater than current", () => {
-            const serviceClient = createServiceClient({ applicationVersion: 2 });
-
-            serviceClient.applyApplicationRevocation(2);
-
-            expect(serviceClient.isApplicationRevoked).toBe(false);
-            expect(serviceClient.applicationVersion).toBe(2);
-            expect(serviceClient.updatedAt).toBeUndefined();
-        });
-
-        it("should be a no-op for system-managed service clients", () => {
-            const serviceClient = createServiceClient({ isSystemManaged: true, applicationVersion: 1 });
-
-            serviceClient.applyApplicationRevocation(2);
-
-            expect(serviceClient.isApplicationRevoked).toBe(false);
-            expect(serviceClient.applicationVersion).toBe(1);
+            expect(() => client.canPurge()).not.toThrow();
         });
     });
 
-    describe("applyApplicationRestore", () => {
-        it("should clear application-revoked flag and bump applicationVersion", () => {
-            const serviceClient = createServiceClient({ applicationVersion: 1 });
-            serviceClient.applyApplicationRevocation(2);
+    describe("applyRealmRevocation", () => {
+        it("should mark as realm-revoked and bump realmVersion", () => {
+            const client = createServiceClient({ realmVersion: 1 });
 
-            serviceClient.applyApplicationRestore(3);
+            client.applyRealmRevocation(2);
 
-            expect(serviceClient.isApplicationRevoked).toBe(false);
-            expect(serviceClient.applicationVersion).toBe(3);
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.realmVersion).toBe(2);
+            expect(client.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should be a no-op when version is not greater than current", () => {
-            const serviceClient = createServiceClient({ applicationVersion: 2, isApplicationRevoked: true });
+            const client = createServiceClient({ realmVersion: 2 });
 
-            serviceClient.applyApplicationRestore(2);
+            client.applyRealmRevocation(2);
 
-            expect(serviceClient.isApplicationRevoked).toBe(true);
-            expect(serviceClient.applicationVersion).toBe(2);
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.realmVersion).toBe(2);
+            expect(client.updatedAt).toBeUndefined();
         });
 
-        it("should be a no-op for system-managed service clients", () => {
-            const serviceClient = createServiceClient({
+        it("should be a no-op for system-managed clients", () => {
+            const client = createServiceClient({ isSystemManaged: true, realmVersion: 1 });
+
+            client.applyRealmRevocation(2);
+
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.realmVersion).toBe(1);
+            expect(client.updatedAt).toBeUndefined();
+        });
+    });
+
+    describe("applyRealmRestore", () => {
+        it("should clear realm-revoked flag and bump realmVersion", () => {
+            const client = createServiceClient({ realmVersion: 2, isRealmRevoked: true });
+
+            client.applyRealmRestore(3);
+
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.realmVersion).toBe(3);
+            expect(client.updatedAt).toBeInstanceOf(Date);
+        });
+
+        it("should be a no-op when version is not greater than current", () => {
+            const client = createServiceClient({ realmVersion: 2, isRealmRevoked: true });
+
+            client.applyRealmRestore(2);
+
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.realmVersion).toBe(2);
+            expect(client.updatedAt).toBeUndefined();
+        });
+
+        it("should be a no-op for system-managed clients", () => {
+            const client = createServiceClient({
                 isSystemManaged: true,
-                isApplicationRevoked: true,
-                applicationVersion: 1,
+                isRealmRevoked: true,
+                realmVersion: 1,
             });
 
-            serviceClient.applyApplicationRestore(2);
+            client.applyRealmRestore(2);
 
-            expect(serviceClient.isApplicationRevoked).toBe(true);
-            expect(serviceClient.applicationVersion).toBe(1);
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.realmVersion).toBe(1);
+            expect(client.updatedAt).toBeUndefined();
         });
     });
 });

@@ -1,6 +1,5 @@
 import { TokenGrantType } from "~context/enums";
-
-import { DOCS_APPLICATION_ID, WEB_APPLICATION_ID } from "./application.dataset";
+import { SYSTEM_REALM_ID } from "~context/constants";
 
 const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
 
@@ -20,15 +19,15 @@ export const DOCS_INTERFACE_CLIENT_ID = "00000003-0000-4000-8000-130000000002";
 const dataset = [
     {
         id: WEB_INTERFACE_CLIENT_ID,
-        application_id: WEB_APPLICATION_ID,
+        realm: SYSTEM_REALM_ID,
         name: "MonadIAM Web App",
         description: "Local development web client.",
         auth_address: WEB_AUTH_ADDRESS,
         redirect_uris: "{http://localhost:3000/main}",
         grant_types: GRANT_TYPES,
-        application_version: 0,
+        realm_version: 0,
         is_system_managed: true,
-        is_application_revoked: false,
+        is_realm_revoked: false,
         is_revoked: false,
         created_at: CREATED_AT,
         updated_at: null,
@@ -36,15 +35,15 @@ const dataset = [
     },
     {
         id: DOCS_INTERFACE_CLIENT_ID,
-        application_id: DOCS_APPLICATION_ID,
+        realm: SYSTEM_REALM_ID,
         name: "MonadIAM API Docs",
         description: "API reference client shared by the per-service Scalar pages.",
         auth_address: DOCS_AUTH_ADDRESS,
         redirect_uris: DOCS_REDIRECT_URIS,
         grant_types: GRANT_TYPES,
-        application_version: 0,
+        realm_version: 0,
         is_system_managed: true,
-        is_application_revoked: false,
+        is_realm_revoked: false,
         is_revoked: false,
         created_at: CREATED_AT,
         updated_at: null,

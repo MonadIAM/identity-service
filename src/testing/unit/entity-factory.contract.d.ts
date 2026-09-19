@@ -10,7 +10,6 @@ declare global {
                     readonly createServiceClient: CreateServiceClient.Signature;
                     readonly createSecondFactor: CreateSecondFactor.Signature;
                     readonly createRecoveryCode: CreateRecoveryCode.Signature;
-                    readonly createApplication: CreateApplication.Signature;
                     readonly createMasterCode: CreateMasterCode.Signature;
                     readonly createIdentifier: CreateIdentifier.Signature;
                     readonly createChangeLog: CreateChangeLog.Signature;
@@ -90,14 +89,6 @@ declare global {
                     type Props = Partial<Entities.Session.Contract>;
 
                     type Result = Entities.Session;
-
-                    type Signature = (props?: Props) => Result;
-                }
-
-                namespace CreateApplication {
-                    type Props = Partial<Entities.Application.Contract>;
-
-                    type Result = Entities.Application;
 
                     type Signature = (props?: Props) => Result;
                 }

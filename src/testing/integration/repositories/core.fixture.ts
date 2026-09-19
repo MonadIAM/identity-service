@@ -9,7 +9,6 @@ import {
     RecoveryCode,
     ServiceClient,
     SecondFactor,
-    Application,
     Identifier,
     MasterCode,
     Password,
@@ -85,22 +84,6 @@ export class CoreFixture implements Fixtures.Core.Contract {
         return await this.persist(identifier);
     }
 
-    public async createApplication(
-        props: Fixtures.Core.CreateApplication.Props = {},
-    ): Fixtures.Core.CreateApplication.Result {
-        const application = new Application({
-            name: props.name ?? this.nextName("Application"),
-            isSystemManaged: props.isSystemManaged,
-            isRealmRevoked: props.isRealmRevoked,
-            realm: props.realm ?? randomUUID(),
-            realmVersion: props.realmVersion,
-            description: props.description,
-            isRevoked: props.isRevoked,
-        });
-
-        return await this.persist(application);
-    }
-
     public async createInterfaceClient(
         props: Fixtures.Core.CreateInterfaceClient.Props,
     ): Fixtures.Core.CreateInterfaceClient.Result {
@@ -109,10 +92,10 @@ export class CoreFixture implements Fixtures.Core.Contract {
             grantTypes: props.grantTypes ?? [TokenGrantType.AUTHORIZATION_CODE],
             authAddress: props.authAddress ?? "https://client.test/auth",
             name: props.name ?? this.nextName("Interface Client"),
-            isApplicationRevoked: props.isApplicationRevoked,
-            applicationVersion: props.applicationVersion,
+            isRealmRevoked: props.isRealmRevoked,
+            realmVersion: props.realmVersion,
             isSystemManaged: props.isSystemManaged,
-            application: props.application,
+            realm: props.realm,
             description: props.description,
             isRevoked: props.isRevoked,
         });
@@ -125,12 +108,12 @@ export class CoreFixture implements Fixtures.Core.Contract {
     ): Fixtures.Core.CreateServiceClient.Result {
         const client = new ServiceClient({
             name: props.name ?? this.nextName("Service Client"),
-            isApplicationRevoked: props.isApplicationRevoked,
-            applicationVersion: props.applicationVersion,
+            isRealmRevoked: props.isRealmRevoked,
+            realmVersion: props.realmVersion,
             code: props.code ?? this.nextCode("service"),
             allowedAddresses: props.allowedAddresses,
             isSystemManaged: props.isSystemManaged,
-            application: props.application,
+            realm: props.realm,
             description: props.description,
             isRevoked: props.isRevoked,
         });

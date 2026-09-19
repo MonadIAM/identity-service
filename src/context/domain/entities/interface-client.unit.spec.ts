@@ -4,7 +4,6 @@ import { isUUID } from "class-validator";
 import { TokenGrantType } from "~context/enums";
 
 import { InterfaceClient } from "./interface-client.entity";
-import { Application } from "./application.entity";
 
 function createInterfaceClient(overrides?: Partial<Entities.InterfaceClient.ConstructorProps>): InterfaceClient {
     return new InterfaceClient({
@@ -12,7 +11,7 @@ function createInterfaceClient(overrides?: Partial<Entities.InterfaceClient.Cons
         redirectUris: ["https://example.com/callback"],
         authAddress: "https://example.com",
         grantTypes: [TokenGrantType.AUTHORIZATION_CODE],
-        application: {} as Application,
+        realm: "00000000-0000-4000-8000-000000000001",
         ...overrides,
     });
 }
@@ -20,289 +19,316 @@ function createInterfaceClient(overrides?: Partial<Entities.InterfaceClient.Cons
 describe("InterfaceClient Entity", () => {
     describe("constructor", () => {
         it("should assign required fields", () => {
-            const application = {} as Application;
+            const realm = "00000000-0000-4000-8000-000000000001";
 
-            const interfaceClient = createInterfaceClient({
+            const client = createInterfaceClient({
                 name: "SPA",
                 redirectUris: ["https://spa.example.com/callback"],
                 authAddress: "https://spa.example.com",
                 grantTypes: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],
-                application,
+                realm,
             });
 
-            expect(interfaceClient.name).toBe("SPA");
-            expect(interfaceClient.redirectUris).toEqual(["https://spa.example.com/callback"]);
-            expect(interfaceClient.authAddress).toBe("https://spa.example.com");
-            expect(interfaceClient.grantTypes).toEqual([TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN]);
-            expect(interfaceClient.application).toBe(application);
+            expect(client.name).toBe("SPA");
+            expect(client.redirectUris).toEqual(["https://spa.example.com/callback"]);
+            expect(client.authAddress).toBe("https://spa.example.com");
+            expect(client.grantTypes).toEqual([TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN]);
+            expect(client.realm).toBe(realm);
         });
 
         it("should default booleans to false", () => {
-            const interfaceClient = createInterfaceClient();
+            const client = createInterfaceClient();
 
-            expect(interfaceClient.isSystemManaged).toBe(false);
-            expect(interfaceClient.isApplicationRevoked).toBe(false);
-            expect(interfaceClient.isRevoked).toBe(false);
+            expect(client.isSystemManaged).toBe(false);
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.isRevoked).toBe(false);
         });
 
         it("should respect explicit boolean overrides", () => {
-            const interfaceClient = createInterfaceClient({
+            const client = createInterfaceClient({
                 isSystemManaged: true,
-                isApplicationRevoked: true,
+                isRealmRevoked: true,
                 isRevoked: true,
             });
 
-            expect(interfaceClient.isSystemManaged).toBe(true);
-            expect(interfaceClient.isApplicationRevoked).toBe(true);
-            expect(interfaceClient.isRevoked).toBe(true);
+            expect(client.isSystemManaged).toBe(true);
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.isRevoked).toBe(true);
         });
 
-        it("should default applicationVersion to 0", () => {
-            const interfaceClient = createInterfaceClient();
+        it("should default realmVersion to 0", () => {
+            const client = createInterfaceClient();
 
-            expect(interfaceClient.applicationVersion).toBe(0);
+            expect(client.realmVersion).toBe(0);
         });
 
-        it("should respect explicit applicationVersion", () => {
-            const interfaceClient = createInterfaceClient({ applicationVersion: 5 });
+        it("should respect explicit realmVersion", () => {
+            const client = createInterfaceClient({ realmVersion: 5 });
 
-            expect(interfaceClient.applicationVersion).toBe(5);
+            expect(client.realmVersion).toBe(5);
         });
 
         it("should auto-generate id, createdAt, version", () => {
-            const interfaceClient = createInterfaceClient();
+            const client = createInterfaceClient();
 
-            expect(isUUID(interfaceClient.id, "4")).toBe(true);
-            expect(interfaceClient.createdAt).toBeInstanceOf(Date);
-            expect(interfaceClient.version).toBe(1);
-            expect(interfaceClient.updatedAt).toBeUndefined();
+            expect(isUUID(client.id, "4")).toBe(true);
+            expect(client.createdAt).toBeInstanceOf(Date);
+            expect(client.version).toBe(1);
+            expect(client.updatedAt).toBeUndefined();
         });
 
         it("should assign description when provided", () => {
-            const interfaceClient = createInterfaceClient({ description: "First-party SPA" });
-            expect(interfaceClient.description).toBe("First-party SPA");
+            const client = createInterfaceClient({ description: "First-party SPA" });
+
+            expect(client.description).toBe("First-party SPA");
         });
 
         it("should leave description undefined when omitted", () => {
-            const interfaceClient = createInterfaceClient();
-            expect(interfaceClient.description).toBeUndefined();
+            const client = createInterfaceClient();
+
+            expect(client.description).toBeUndefined();
         });
     });
 
     describe("update", () => {
         it("should update a single field", () => {
-            const interfaceClient = createInterfaceClient({ name: "Old" });
+            const client = createInterfaceClient({ name: "Old" });
 
-            interfaceClient.update({ name: "New" });
+            client.update({ name: "New" });
 
-            expect(interfaceClient.name).toBe("New");
-            expect(interfaceClient.updatedAt).toBeInstanceOf(Date);
+            expect(client.name).toBe("New");
+            expect(client.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should update multiple fields at once", () => {
-            const interfaceClient = createInterfaceClient({
+            const client = createInterfaceClient({ name: "Old", description: "Old desc" });
+
+            client.update({ name: "New", description: "New desc" });
+
+            expect(client.name).toBe("New");
+            expect(client.description).toBe("New desc");
+        });
+
+        it("should skip unchanged fields", () => {
+            const client = createInterfaceClient({ name: "Same", description: "Old" });
+
+            client.update({ name: "Same", description: "New" });
+
+            expect(client.name).toBe("Same");
+            expect(client.description).toBe("New");
+        });
+
+        it("should ignore undefined values in patch", () => {
+            const client = createInterfaceClient({ name: "Original" });
+
+            client.update({ name: "Updated", description: undefined });
+
+            expect(client.name).toBe("Updated");
+            expect(client.description).toBeUndefined();
+        });
+
+        it("should throw when patch is empty object", () => {
+            const client = createInterfaceClient();
+
+            expect(() => client.update({})).toThrow("EMPTY_UPDATE_PATCH");
+        });
+
+        it("should throw when no values actually changed", () => {
+            const client = createInterfaceClient({ name: "Same" });
+
+            expect(() => client.update({ name: "Same" })).toThrow("NO_CHANGES_DETECTED");
+        });
+
+        it("should throw when system-managed", () => {
+            const client = createInterfaceClient({ isSystemManaged: true });
+
+            expect(() => client.update({ name: "New" })).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+        });
+
+        it("should throw when revoked", () => {
+            const client = createInterfaceClient({ isRevoked: true });
+
+            expect(() => client.update({ name: "New" })).toThrow("CANNOT_UPDATE_REVOKED");
+        });
+
+        it("should update auth address and redirect URIs", () => {
+            const client = createInterfaceClient({
                 redirectUris: ["https://old.example.com/callback"],
                 authAddress: "https://old.example.com",
             });
 
-            interfaceClient.update({
+            client.update({
                 redirectUris: ["https://new.example.com/callback", "https://new.example.com/silent"],
                 authAddress: "https://new.example.com",
             });
 
-            expect(interfaceClient.redirectUris).toEqual([
-                "https://new.example.com/callback",
-                "https://new.example.com/silent",
-            ]);
-            expect(interfaceClient.authAddress).toBe("https://new.example.com");
+            expect(client.redirectUris).toEqual(["https://new.example.com/callback", "https://new.example.com/silent"]);
+            expect(client.authAddress).toBe("https://new.example.com");
         });
 
-        it("should not treat an identical redirect URI list as a change", () => {
-            const interfaceClient = createInterfaceClient({
-                redirectUris: ["https://example.com/callback", "https://example.com/silent"],
+        describe("redirectUris change detection", () => {
+            it("should detect a change when array length differs", () => {
+                const client = createInterfaceClient({ redirectUris: ["https://example.com/callback"] });
+
+                client.update({ redirectUris: ["https://example.com/callback", "https://example.com/silent"] });
+
+                expect(client.redirectUris).toEqual(["https://example.com/callback", "https://example.com/silent"]);
+                expect(client.updatedAt).toBeInstanceOf(Date);
             });
 
-            expect(() =>
-                interfaceClient.update({
+            it("should detect a change when elements differ at the same length", () => {
+                const client = createInterfaceClient({ redirectUris: ["https://example.com/callback"] });
+
+                client.update({ redirectUris: ["https://example.com/silent"] });
+
+                expect(client.redirectUris).toEqual(["https://example.com/silent"]);
+                expect(client.updatedAt).toBeInstanceOf(Date);
+            });
+
+            it("should treat an identical array as unchanged", () => {
+                const client = createInterfaceClient({
                     redirectUris: ["https://example.com/callback", "https://example.com/silent"],
-                }),
-            ).toThrow();
-            expect(interfaceClient.updatedAt).toBeUndefined();
-        });
+                });
 
-        it("should skip unchanged fields", () => {
-            const interfaceClient = createInterfaceClient({ name: "Same", description: "Old" });
-
-            interfaceClient.update({ name: "Same", description: "New" });
-
-            expect(interfaceClient.name).toBe("Same");
-            expect(interfaceClient.description).toBe("New");
-        });
-
-        it("should ignore undefined values in patch", () => {
-            const interfaceClient = createInterfaceClient({ name: "Original" });
-
-            interfaceClient.update({ name: "Updated", description: undefined });
-
-            expect(interfaceClient.name).toBe("Updated");
-            expect(interfaceClient.description).toBeUndefined();
-        });
-
-        it("should throw when patch is empty object", () => {
-            const interfaceClient = createInterfaceClient();
-
-            expect(() => interfaceClient.update({})).toThrow("EMPTY_UPDATE_PATCH");
-        });
-
-        it("should throw when no values actually changed", () => {
-            const interfaceClient = createInterfaceClient({ name: "Same" });
-
-            expect(() => interfaceClient.update({ name: "Same" })).toThrow("NO_CHANGES_DETECTED");
-        });
-
-        it("should throw when system-managed", () => {
-            const interfaceClient = createInterfaceClient({ isSystemManaged: true });
-
-            expect(() => interfaceClient.update({ name: "New" })).toThrow("SYSTEM_MANAGED_IMMUTABLE");
-        });
-
-        it("should throw when revoked", () => {
-            const interfaceClient = createInterfaceClient();
-            interfaceClient.revoke();
-
-            expect(() => interfaceClient.update({ name: "New" })).toThrow("CANNOT_UPDATE_REVOKED");
+                expect(() =>
+                    client.update({ redirectUris: ["https://example.com/callback", "https://example.com/silent"] }),
+                ).toThrow("NO_CHANGES_DETECTED");
+                expect(client.updatedAt).toBeUndefined();
+            });
         });
     });
 
     describe("revoke", () => {
-        it("should revoke an active interface client", () => {
-            const interfaceClient = createInterfaceClient();
-            interfaceClient.revoke();
+        it("should revoke an active client", () => {
+            const client = createInterfaceClient();
 
-            expect(interfaceClient.isRevoked).toBe(true);
-            expect(interfaceClient.updatedAt).toBeInstanceOf(Date);
+            client.revoke();
+
+            expect(client.isRevoked).toBe(true);
+            expect(client.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should throw when already revoked", () => {
-            const interfaceClient = createInterfaceClient();
-            interfaceClient.revoke();
+            const client = createInterfaceClient({ isRevoked: true });
 
-            expect(() => interfaceClient.revoke()).toThrow("ALREADY_REVOKED");
+            expect(() => client.revoke()).toThrow("ALREADY_REVOKED");
         });
 
         it("should throw when system-managed", () => {
-            const interfaceClient = createInterfaceClient({ isSystemManaged: true });
+            const client = createInterfaceClient({ isSystemManaged: true });
 
-            expect(() => interfaceClient.revoke()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+            expect(() => client.revoke()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
     });
 
     describe("restore", () => {
-        it("should restore a revoked interface client", () => {
-            const interfaceClient = createInterfaceClient();
-            interfaceClient.revoke();
-            interfaceClient.restore();
+        it("should restore a revoked client", () => {
+            const client = createInterfaceClient({ isRevoked: true });
 
-            expect(interfaceClient.isRevoked).toBe(false);
-            expect(interfaceClient.updatedAt).toBeInstanceOf(Date);
+            client.restore();
+
+            expect(client.isRevoked).toBe(false);
+            expect(client.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should throw when already active", () => {
-            const interfaceClient = createInterfaceClient();
+            const client = createInterfaceClient();
 
-            expect(() => interfaceClient.restore()).toThrow("ALREADY_ACTIVE");
+            expect(() => client.restore()).toThrow("ALREADY_ACTIVE");
         });
 
         it("should throw when system-managed", () => {
-            const interfaceClient = createInterfaceClient({ isSystemManaged: true });
+            const client = createInterfaceClient({ isSystemManaged: true });
 
-            expect(() => interfaceClient.restore()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+            expect(() => client.restore()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
     });
 
     describe("canPurge", () => {
-        it("should throw for active interface client", () => {
-            const interfaceClient = createInterfaceClient();
+        it("should throw for active client", () => {
+            const client = createInterfaceClient();
 
-            expect(() => interfaceClient.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            expect(() => client.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should throw for system-managed interface client regardless of revoked state", () => {
-            const interfaceClient = createInterfaceClient({ isSystemManaged: true, isRevoked: true });
+        it("should throw for system-managed client regardless of revoked state", () => {
+            const client = createInterfaceClient({ isSystemManaged: true, isRevoked: true });
 
-            expect(() => interfaceClient.canPurge()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
+            expect(() => client.canPurge()).toThrow("SYSTEM_MANAGED_IMMUTABLE");
         });
 
-        it("should pass for revoked non-system interface client", () => {
-            const interfaceClient = createInterfaceClient();
-            interfaceClient.revoke();
+        it("should pass for revoked non-system client", () => {
+            const client = createInterfaceClient({ isRevoked: true });
 
-            expect(() => interfaceClient.canPurge()).not.toThrow();
-        });
-    });
-
-    describe("applyApplicationRevocation", () => {
-        it("should mark as application-revoked and bump applicationVersion", () => {
-            const interfaceClient = createInterfaceClient({ applicationVersion: 1 });
-
-            interfaceClient.applyApplicationRevocation(2);
-
-            expect(interfaceClient.isApplicationRevoked).toBe(true);
-            expect(interfaceClient.applicationVersion).toBe(2);
-            expect(interfaceClient.updatedAt).toBeInstanceOf(Date);
-        });
-
-        it("should be a no-op when version is not greater than current", () => {
-            const interfaceClient = createInterfaceClient({ applicationVersion: 2 });
-
-            interfaceClient.applyApplicationRevocation(2);
-
-            expect(interfaceClient.isApplicationRevoked).toBe(false);
-            expect(interfaceClient.applicationVersion).toBe(2);
-            expect(interfaceClient.updatedAt).toBeUndefined();
-        });
-
-        it("should be a no-op for system-managed interface clients", () => {
-            const interfaceClient = createInterfaceClient({ isSystemManaged: true, applicationVersion: 1 });
-
-            interfaceClient.applyApplicationRevocation(2);
-
-            expect(interfaceClient.isApplicationRevoked).toBe(false);
-            expect(interfaceClient.applicationVersion).toBe(1);
+            expect(() => client.canPurge()).not.toThrow();
         });
     });
 
-    describe("applyApplicationRestore", () => {
-        it("should clear application-revoked flag and bump applicationVersion", () => {
-            const interfaceClient = createInterfaceClient({ applicationVersion: 1 });
-            interfaceClient.applyApplicationRevocation(2);
+    describe("applyRealmRevocation", () => {
+        it("should mark as realm-revoked and bump realmVersion", () => {
+            const client = createInterfaceClient({ realmVersion: 1 });
 
-            interfaceClient.applyApplicationRestore(3);
+            client.applyRealmRevocation(2);
 
-            expect(interfaceClient.isApplicationRevoked).toBe(false);
-            expect(interfaceClient.applicationVersion).toBe(3);
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.realmVersion).toBe(2);
+            expect(client.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should be a no-op when version is not greater than current", () => {
-            const interfaceClient = createInterfaceClient({ applicationVersion: 2, isApplicationRevoked: true });
+            const client = createInterfaceClient({ realmVersion: 2 });
 
-            interfaceClient.applyApplicationRestore(2);
+            client.applyRealmRevocation(2);
 
-            expect(interfaceClient.isApplicationRevoked).toBe(true);
-            expect(interfaceClient.applicationVersion).toBe(2);
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.realmVersion).toBe(2);
+            expect(client.updatedAt).toBeUndefined();
         });
 
-        it("should be a no-op for system-managed interface clients", () => {
-            const interfaceClient = createInterfaceClient({
+        it("should be a no-op for system-managed clients", () => {
+            const client = createInterfaceClient({ isSystemManaged: true, realmVersion: 1 });
+
+            client.applyRealmRevocation(2);
+
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.realmVersion).toBe(1);
+            expect(client.updatedAt).toBeUndefined();
+        });
+    });
+
+    describe("applyRealmRestore", () => {
+        it("should clear realm-revoked flag and bump realmVersion", () => {
+            const client = createInterfaceClient({ realmVersion: 2, isRealmRevoked: true });
+
+            client.applyRealmRestore(3);
+
+            expect(client.isRealmRevoked).toBe(false);
+            expect(client.realmVersion).toBe(3);
+            expect(client.updatedAt).toBeInstanceOf(Date);
+        });
+
+        it("should be a no-op when version is not greater than current", () => {
+            const client = createInterfaceClient({ realmVersion: 2, isRealmRevoked: true });
+
+            client.applyRealmRestore(2);
+
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.realmVersion).toBe(2);
+            expect(client.updatedAt).toBeUndefined();
+        });
+
+        it("should be a no-op for system-managed clients", () => {
+            const client = createInterfaceClient({
                 isSystemManaged: true,
-                isApplicationRevoked: true,
-                applicationVersion: 1,
+                isRealmRevoked: true,
+                realmVersion: 1,
             });
 
-            interfaceClient.applyApplicationRestore(2);
+            client.applyRealmRestore(2);
 
-            expect(interfaceClient.isApplicationRevoked).toBe(true);
-            expect(interfaceClient.applicationVersion).toBe(1);
+            expect(client.isRealmRevoked).toBe(true);
+            expect(client.realmVersion).toBe(1);
+            expect(client.updatedAt).toBeUndefined();
         });
     });
 });

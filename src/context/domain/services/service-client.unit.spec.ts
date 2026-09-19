@@ -4,25 +4,21 @@ import { ServiceClientUnitHelpers } from "~testing/unit/domain-service/service-c
 
 /* eslint-disable prettier/prettier */
 const REALM_ID         = "00000000-0000-4000-8000-700000000001";
-const APPLICATION_ID   = "00000000-0000-4000-8000-700000000002";
 const CLIENT_ID        = "00000000-0000-4000-8000-700000000003";
 const SECOND_CLIENT_ID = "00000000-0000-4000-8000-700000000004";
 /* eslint-enable prettier/prettier */
 
 const helpers = new ServiceClientUnitHelpers();
 
-function createContext(
-    props: { client?: Entities.ServiceClient } = {},
-): Unit.Domain.ServiceClient.Service.Result & { readonly application: Entities.Application } {
-    const application = helpers.createApplication({ id: APPLICATION_ID, realm: REALM_ID });
-    const context = helpers.service({ application });
+function createContext(props: { client?: Entities.ServiceClient } = {}): Unit.Domain.ServiceClient.Service.Result {
+    const context = helpers.service();
 
     if (props.client) {
         context.repositories.serviceClients.findUniqueOrThrow.mockImplementation(() => Promise.resolve(props.client));
         context.repositories.serviceClients.find.mockImplementation(() => Promise.resolve([props.client]));
     }
 
-    return { ...context, application };
+    return context;
 }
 
 describe("ServiceClientService", () => {
@@ -31,43 +27,39 @@ describe("ServiceClientService", () => {
     });
 
     describe("create", () => {
-        it("throws when the application service client limit would be exceeded", async () => {
-            const { service, repositories, transaction, application } = createContext();
-            repositories.serviceClients.wouldExceedApplicationLimit.mockImplementation(() => Promise.resolve(true));
+        it("throws when the realm service client limit would be exceeded", async () => {
+            const { service, repositories, transaction } = createContext();
+            repositories.serviceClients.wouldExceedRealmLimit.mockImplementation(() => Promise.resolve(true));
 
             await expect(
                 service.create({
-                    input: { application: APPLICATION_ID, code: "billing.worker", name: "Billing Worker" },
+                    input: { code: "billing.worker", name: "Billing Worker" },
                     transaction: transaction.entityManager,
                     realm: REALM_ID,
                 }),
-            ).rejects.toThrow("services.service-client.APPLICATION_LIMIT_EXCEEDED");
+            ).rejects.toThrow("services.service-client.REALM_LIMIT_EXCEEDED");
 
-            expect(repositories.serviceClients.wouldExceedApplicationLimit).toHaveBeenCalledWith({
+            expect(repositories.serviceClients.wouldExceedRealmLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
-                application: application.id,
+                realm: REALM_ID,
             });
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates a service client bound to the realm application and persists it", async () => {
-            const { service, repositories, transaction, application } = createContext();
+        it("creates a service client bound to the realm and persists it", async () => {
+            const { service, transaction } = createContext();
 
             const result = await service.create({
-                input: { application: APPLICATION_ID, code: "billing.worker", name: "Billing Worker" },
+                input: { code: "billing.worker", name: "Billing Worker" },
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
-            expect(repositories.applications.findUniqueOrThrow).toHaveBeenCalledWith({
-                where: { id: APPLICATION_ID, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
             expect(result).toEqual(
                 expect.objectContaining({
                     name: "Billing Worker",
                     code: "billing.worker",
-                    application,
+                    realm: REALM_ID,
                 }),
             );
             expect(transaction.persist).toHaveBeenCalledWith(result);
@@ -75,7 +67,7 @@ describe("ServiceClientService", () => {
     });
 
     describe("update", () => {
-        it("scopes the lookup to the realm through the application and applies the patch", async () => {
+        it("scopes the lookup to the realm directly and applies the patch", async () => {
             const client = helpers.createServiceClient({ id: CLIENT_ID });
             const { service, repositories, transaction } = createContext({ client });
             const updateSpy = jest.spyOn(client, "update");
@@ -88,7 +80,7 @@ describe("ServiceClientService", () => {
             });
 
             expect(repositories.serviceClients.findUniqueOrThrow).toHaveBeenCalledWith({
-                where: { id: CLIENT_ID, application: { realm: REALM_ID } },
+                where: { id: CLIENT_ID, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
             expect(updateSpy).toHaveBeenCalledWith({ name: "Updated Worker" });
@@ -108,8 +100,7 @@ describe("ServiceClientService", () => {
             });
 
             expect(repositories.serviceClients.find).toHaveBeenCalledWith({
-                where: { id: { $in: [CLIENT_ID] }, application: { realm: REALM_ID } },
-                options: { populate: ["application"] },
+                where: { id: { $in: [CLIENT_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
             expect(revokeSpy).toHaveBeenCalledTimes(1);
@@ -128,8 +119,7 @@ describe("ServiceClientService", () => {
             });
 
             expect(repositories.serviceClients.find).toHaveBeenCalledWith({
-                where: { id: { $in: [CLIENT_ID] }, application: { realm: REALM_ID } },
-                options: { populate: ["application"] },
+                where: { id: { $in: [CLIENT_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
             expect(revokeSpy).toHaveBeenCalledTimes(1);
@@ -213,6 +203,77 @@ describe("ServiceClientService", () => {
             });
 
             expect(canPurgeSpy).toHaveBeenCalledTimes(1);
+            expect(transaction.remove).toHaveBeenCalledWith(client);
+            expect(result).toEqual([client]);
+        });
+    });
+    describe("applyRealmRevocation", () => {
+        it("applies the realm version without changing a manual client revocation", async () => {
+            const client = helpers.createServiceClient({
+                realmVersion: 2,
+                isRealmRevoked: false,
+                isRevoked: true,
+                realm: REALM_ID,
+            });
+            const { service, repositories, transaction } = createContext({ client });
+
+            const result = await service.applyRealmRevocation({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                version: 3,
+            });
+
+            expect(repositories.serviceClients.find).toHaveBeenCalledWith({
+                where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
+                transaction: transaction.entityManager,
+            });
+            expect(client).toMatchObject({ realmVersion: 3, isRealmRevoked: true, isRevoked: true });
+            expect(result).toEqual([client]);
+        });
+    });
+
+    describe("applyRealmRestore", () => {
+        it("applies the realm version without changing a manual client revocation", async () => {
+            const client = helpers.createServiceClient({
+                realmVersion: 2,
+                isRealmRevoked: true,
+                isRevoked: true,
+                realm: REALM_ID,
+            });
+            const { service, repositories, transaction } = createContext({ client });
+
+            const result = await service.applyRealmRestore({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                version: 3,
+            });
+
+            expect(repositories.serviceClients.find).toHaveBeenCalledWith({
+                where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
+                transaction: transaction.entityManager,
+            });
+            expect(client).toMatchObject({ realmVersion: 3, isRealmRevoked: false, isRevoked: true });
+            expect(result).toEqual([client]);
+        });
+    });
+
+    describe("purgeRealm", () => {
+        it("removes affected clients without requiring an individual revocation", async () => {
+            const client = helpers.createServiceClient({ realm: REALM_ID, realmVersion: 2 });
+            const { service, repositories, transaction } = createContext({ client });
+            const canPurge = jest.spyOn(client, "canPurge");
+
+            const result = await service.purgeRealm({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                version: 3,
+            });
+
+            expect(repositories.serviceClients.find).toHaveBeenCalledWith({
+                where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
+                transaction: transaction.entityManager,
+            });
+            expect(canPurge).not.toHaveBeenCalled();
             expect(transaction.remove).toHaveBeenCalledWith(client);
             expect(result).toEqual([client]);
         });

@@ -4,7 +4,7 @@ import { RealmTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
 import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
-import { APPLICATION_COMMANDS } from "~context/application/commands";
+import { REALM_COMMANDS } from "~context/application/commands";
 import { CONSUMER_META } from "~context/constants";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
@@ -23,8 +23,8 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
     private readonly consumerKey = "identity.realm.v1";
 
     public constructor(
-        @Inject(APPLICATION_COMMANDS)
-        private readonly applicationCommands: Commands.Application.ConsumerContract,
+        @Inject(REALM_COMMANDS)
+        private readonly realmCommands: Commands.Realm.ConsumerContract,
         @Inject(KafkaMetricsRecorder)
         private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
@@ -46,21 +46,21 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
 
     private readonly handlers: Consumers.Realm.Handlers = {
         [RealmTopicAction.RESTORE]: async ({ incoming, payload }) => {
-            await this.applicationCommands.restoreRealm({
+            await this.realmCommands.restoreRealm({
                 context: CONSUMER_META,
                 incoming,
                 ...payload,
             });
         },
         [RealmTopicAction.REVOKE]: async ({ incoming, payload }) => {
-            await this.applicationCommands.revokeRealm({
+            await this.realmCommands.revokeRealm({
                 context: CONSUMER_META,
                 incoming,
                 ...payload,
             });
         },
         [RealmTopicAction.PURGE]: async ({ incoming, payload }) => {
-            await this.applicationCommands.purgeRealm({
+            await this.realmCommands.purgeRealm({
                 context: CONSUMER_META,
                 incoming,
                 ...payload,

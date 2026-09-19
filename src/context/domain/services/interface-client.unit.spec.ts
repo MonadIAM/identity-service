@@ -5,7 +5,6 @@ import { TokenGrantType } from "~context/enums";
 
 /* eslint-disable prettier/prettier */
 const REALM_ID       = "00000000-0000-4000-8000-800000000001";
-const APPLICATION_ID = "00000000-0000-4000-8000-800000000002";
 const CLIENT_ID      = "00000000-0000-4000-8000-800000000003";
 /* eslint-enable prettier/prettier */
 
@@ -16,16 +15,15 @@ const helpers = new InterfaceClientUnitHelpers();
 
 function createContext(
     props: { redirectUriLimit?: number; client?: Entities.InterfaceClient } = {},
-): Unit.Domain.InterfaceClient.Service.Result & { readonly application: Entities.Application } {
-    const application = helpers.createApplication({ id: APPLICATION_ID, realm: REALM_ID });
-    const context = helpers.service({ application, redirectUriLimit: props.redirectUriLimit });
+): Unit.Domain.InterfaceClient.Service.Result {
+    const context = helpers.service({ redirectUriLimit: props.redirectUriLimit });
 
     if (props.client) {
         context.repositories.interfaceClients.findUniqueOrThrow.mockImplementation(() => Promise.resolve(props.client));
         context.repositories.interfaceClients.find.mockImplementation(() => Promise.resolve([props.client]));
     }
 
-    return { ...context, application };
+    return context;
 }
 
 function createInput(
@@ -33,7 +31,6 @@ function createInput(
 ): Services.InterfaceClient.Create.Props["input"] {
     return {
         redirectUris: [REDIRECT_URI],
-        application: APPLICATION_ID,
         authAddress: AUTH_ADDRESS,
         name: "Web Console",
         ...overrides,
@@ -46,9 +43,9 @@ describe("InterfaceClientService", () => {
     });
 
     describe("create", () => {
-        it("throws when the application interface client limit would be exceeded", async () => {
-            const { service, repositories, transaction, application } = createContext();
-            repositories.interfaceClients.wouldExceedApplicationLimit.mockImplementation(() => Promise.resolve(true));
+        it("throws when the realm interface client limit would be exceeded", async () => {
+            const { service, repositories, transaction } = createContext();
+            repositories.interfaceClients.wouldExceedRealmLimit.mockImplementation(() => Promise.resolve(true));
 
             await expect(
                 service.create({
@@ -56,17 +53,17 @@ describe("InterfaceClientService", () => {
                     input: createInput(),
                     realm: REALM_ID,
                 }),
-            ).rejects.toThrow("services.interface-client.APPLICATION_LIMIT_EXCEEDED");
+            ).rejects.toThrow("services.interface-client.REALM_LIMIT_EXCEEDED");
 
-            expect(repositories.interfaceClients.wouldExceedApplicationLimit).toHaveBeenCalledWith({
+            expect(repositories.interfaceClients.wouldExceedRealmLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
-                application: application.id,
+                realm: REALM_ID,
             });
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
         it("creates a public client with the authorization code and refresh token grants", async () => {
-            const { service, transaction, application } = createContext();
+            const { service, transaction } = createContext();
 
             const result = await service.create({
                 transaction: transaction.entityManager,
@@ -80,7 +77,7 @@ describe("InterfaceClientService", () => {
                     redirectUris: [REDIRECT_URI],
                     authAddress: AUTH_ADDRESS,
                     name: "Web Console",
-                    application,
+                    realm: REALM_ID,
                 }),
             );
             expect(transaction.persist).toHaveBeenCalledWith(result);
@@ -122,7 +119,7 @@ describe("InterfaceClientService", () => {
             });
 
             expect(repositories.interfaceClients.findUniqueOrThrow).toHaveBeenCalledWith({
-                where: { id: CLIENT_ID, application: { realm: REALM_ID } },
+                where: { id: CLIENT_ID, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
             expect(urisSpy).not.toHaveBeenCalled();
@@ -144,8 +141,7 @@ describe("InterfaceClientService", () => {
             });
 
             expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
-                where: { id: { $in: [CLIENT_ID] }, application: { realm: REALM_ID } },
-                options: { populate: ["application"] },
+                where: { id: { $in: [CLIENT_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
             expect(revokeSpy).toHaveBeenCalledTimes(1);
@@ -164,8 +160,7 @@ describe("InterfaceClientService", () => {
             });
 
             expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
-                where: { id: { $in: [CLIENT_ID] }, application: { realm: REALM_ID } },
-                options: { populate: ["application"] },
+                where: { id: { $in: [CLIENT_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
             expect(revokeSpy).toHaveBeenCalledTimes(1);
@@ -318,6 +313,77 @@ describe("InterfaceClientService", () => {
             expect(() => service.validateAuthAddress({ authAddress: "not-a-url" })).toThrow(
                 "services.interface-client.INVALID_AUTH_ADDRESS",
             );
+        });
+    });
+    describe("applyRealmRevocation", () => {
+        it("applies the realm version without changing a manual client revocation", async () => {
+            const client = helpers.createInterfaceClient({
+                realmVersion: 2,
+                isRealmRevoked: false,
+                isRevoked: true,
+                realm: REALM_ID,
+            });
+            const { service, repositories, transaction } = createContext({ client });
+
+            const result = await service.applyRealmRevocation({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                version: 3,
+            });
+
+            expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
+                where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
+                transaction: transaction.entityManager,
+            });
+            expect(client).toMatchObject({ realmVersion: 3, isRealmRevoked: true, isRevoked: true });
+            expect(result).toEqual([client]);
+        });
+    });
+
+    describe("applyRealmRestore", () => {
+        it("applies the realm version without changing a manual client revocation", async () => {
+            const client = helpers.createInterfaceClient({
+                realmVersion: 2,
+                isRealmRevoked: true,
+                isRevoked: true,
+                realm: REALM_ID,
+            });
+            const { service, repositories, transaction } = createContext({ client });
+
+            const result = await service.applyRealmRestore({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                version: 3,
+            });
+
+            expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
+                where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
+                transaction: transaction.entityManager,
+            });
+            expect(client).toMatchObject({ realmVersion: 3, isRealmRevoked: false, isRevoked: true });
+            expect(result).toEqual([client]);
+        });
+    });
+
+    describe("purgeRealm", () => {
+        it("removes affected clients without requiring an individual revocation", async () => {
+            const client = helpers.createInterfaceClient({ realm: REALM_ID, realmVersion: 2 });
+            const { service, repositories, transaction } = createContext({ client });
+            const canPurge = jest.spyOn(client, "canPurge");
+
+            const result = await service.purgeRealm({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                version: 3,
+            });
+
+            expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
+                where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
+                transaction: transaction.entityManager,
+            });
+            expect(canPurge).not.toHaveBeenCalled();
+            expect(transaction.remove).toHaveBeenCalledWith(client);
+            expect(result).toEqual([client]);
         });
     });
 });

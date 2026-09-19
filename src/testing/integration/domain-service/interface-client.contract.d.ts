@@ -1,7 +1,6 @@
 import type { ConfigService } from "@nestjs/config";
 
 import type { InterfaceClientRepository } from "~context/infrastructure/repositories/interface-client.repository";
-import type { ApplicationRepository } from "~context/infrastructure/repositories/application.repository";
 import type { InterfaceClientService } from "~context/domain/services/interface-client.service";
 
 declare global {
@@ -28,7 +27,6 @@ declare global {
                 namespace Repositories {
                     type Context = {
                         readonly interfaceClients: InterfaceClientRepository;
-                        readonly applications: ApplicationRepository;
                     };
 
                     type Signature = (context: Postgres.Suite.FactoryContext) => Context;

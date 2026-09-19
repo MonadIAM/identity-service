@@ -5,7 +5,6 @@ import { InterfaceClientRepository } from "./interface-client.repository";
 import { ServiceClientRepository } from "./service-client.repository";
 import { RecoveryCodeRepository } from "./recovery-code.repository";
 import { SecondFactorRepository } from "./second-factor.repository";
-import { ApplicationRepository } from "./application.repository";
 import { MasterCodeRepository } from "./master-code.repository";
 import { IdentifierRepository } from "./identifier.repository";
 import { ChangeLogRepository } from "./change-log.repository";
@@ -20,7 +19,6 @@ import {
     SERVICE_CLIENT_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
     RECOVERY_CODE_REPOSITORY,
-    APPLICATION_REPOSITORY,
     MASTER_CODE_REPOSITORY,
     IDENTIFIER_REPOSITORY,
     CHANGE_LOG_REPOSITORY,
@@ -51,10 +49,6 @@ export const REPOSITORIES: ClassProvider[] = [
     {
         provide: SECOND_FACTOR_REPOSITORY,
         useClass: SecondFactorRepository,
-    },
-    {
-        provide: APPLICATION_REPOSITORY,
-        useClass: ApplicationRepository,
     },
     {
         provide: MASTER_CODE_REPOSITORY,
@@ -96,7 +90,6 @@ export {
     SERVICE_CLIENT_REPOSITORY,
     SECOND_FACTOR_REPOSITORY,
     RECOVERY_CODE_REPOSITORY,
-    APPLICATION_REPOSITORY,
     MASTER_CODE_REPOSITORY,
     IDENTIFIER_REPOSITORY,
     CHANGE_LOG_REPOSITORY,

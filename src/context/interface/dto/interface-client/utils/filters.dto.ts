@@ -30,7 +30,7 @@ export class DefaultFiltersDTO implements Repositories.Mappers.InterfaceClient.D
     @Validator.IsBoolean()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: Boolean })
-    public isApplicationRevoked?: boolean;
+    public isRealmRevoked?: boolean;
 
     @Expose()
     @Validator.IsBoolean()
@@ -60,5 +60,5 @@ export class ManageFiltersDTO extends DefaultFiltersDTO implements Repositories.
     @Validator.ValidateNested()
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
-    public application?: LinkFilterDTO;
+    public realm?: LinkFilterDTO;
 }

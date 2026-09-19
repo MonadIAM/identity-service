@@ -10,36 +10,40 @@ export class ServiceClient implements Entities.ServiceClient.Contract {
     public updatedAt?: Date;
     public version: number = 1;
 
-    public code: string;
+    public realm: string;
     public name: string;
-    public application: Entities.Application;
     public description?: string;
+
+    public code: string;
     public allowedAddresses: string[];
 
-    public applicationVersion: number;
+    public realmVersion: number;
     public isSystemManaged: boolean;
-    public isApplicationRevoked: boolean;
+    public isRealmRevoked: boolean;
     public isRevoked: boolean;
 
     public constructor(props: Entities.ServiceClient.ConstructorProps) {
         this.createdAt = new Date();
         this.id = randomUUID();
 
-        this.applicationVersion = props.applicationVersion ?? 0;
+        this.realmVersion = props.realmVersion ?? 0;
         this.isSystemManaged = props.isSystemManaged ?? false;
-        this.isApplicationRevoked = props.isApplicationRevoked ?? false;
+        this.isRealmRevoked = props.isRealmRevoked ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
-        this.allowedAddresses = props.allowedAddresses ?? [];
-        this.application = props.application;
-        this.description = props.description;
-        this.code = props.code;
+        this.realm = props.realm;
         this.name = props.name;
+        this.description = props.description;
+
+        this.code = props.code;
+        this.allowedAddresses = props.allowedAddresses ?? [];
     }
 
     public update(patch: Entities.ServiceClient.ChangeDataProps): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${ServiceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${ServiceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE`,
+            });
         }
 
         if (this.isRevoked) {
@@ -65,7 +69,9 @@ export class ServiceClient implements Entities.ServiceClient.Contract {
 
     public revoke(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${ServiceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${ServiceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE`,
+            });
         }
 
         if (this.isRevoked) {
@@ -78,7 +84,9 @@ export class ServiceClient implements Entities.ServiceClient.Contract {
 
     public restore(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${ServiceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${ServiceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE`,
+            });
         }
 
         if (this.isRevoked) {
@@ -91,7 +99,9 @@ export class ServiceClient implements Entities.ServiceClient.Contract {
 
     public canPurge(): void {
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${ServiceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${ServiceClient.dictionaryPath}.SYSTEM_MANAGED_IMMUTABLE`,
+            });
         }
 
         if (!this.isRevoked) {
@@ -99,18 +109,18 @@ export class ServiceClient implements Entities.ServiceClient.Contract {
         }
     }
 
-    public applyApplicationRevocation(version: number): void {
-        if (!this.isSystemManaged && version > this.applicationVersion) {
-            this.isApplicationRevoked = true;
-            this.applicationVersion = version;
+    public applyRealmRevocation(version: number): void {
+        if (!this.isSystemManaged && version > this.realmVersion) {
+            this.isRealmRevoked = true;
+            this.realmVersion = version;
             this.updatedAt = new Date();
         }
     }
 
-    public applyApplicationRestore(version: number): void {
-        if (!this.isSystemManaged && version > this.applicationVersion) {
-            this.isApplicationRevoked = false;
-            this.applicationVersion = version;
+    public applyRealmRestore(version: number): void {
+        if (!this.isSystemManaged && version > this.realmVersion) {
+            this.isRealmRevoked = false;
+            this.realmVersion = version;
             this.updatedAt = new Date();
         }
     }

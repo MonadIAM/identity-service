@@ -14,7 +14,6 @@ declare global {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
                     view: ResponseViewType;
-                    application: string;
                     client: string;
                     realm: string;
                 };
@@ -39,7 +38,6 @@ declare global {
                     mode: QueryMode.DEFAULT;
                     pagination: Pagination;
                     view: ResponseViewType;
-                    application: string;
                     realm: string;
                 };
 

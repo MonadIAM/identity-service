@@ -11,13 +11,8 @@
     "INVALID_SCRIPT_HASH": "Redis returned an invalid Lua script hash.",
     "SCRIPT_NOT_LOADED": "Lua script is not loaded: {script}."
   },
-  "application": {
-    "REALM_LIMIT_EXCEEDED": "The application limit for this realm has been reached.",
-
-    "APPLICATIONS_NOT_FOUND": "Some of the specified applications were not found."
-  },
   "interface-client": {
-    "APPLICATION_LIMIT_EXCEEDED": "The interface client limit for this application has been reached.",
+    "REALM_LIMIT_EXCEEDED": "The interface client limit for this realm has been reached.",
     "REDIRECT_URI_REQUIRED": "At least one redirect URI is required.",
     "REDIRECT_URI_LIMIT_EXCEEDED": "The redirect URI limit for this client has been reached.",
     "REDIRECT_URI_DUPLICATED": "The redirect URI list must not contain duplicates.",
@@ -29,7 +24,7 @@
     "CLIENTS_NOT_FOUND": "Some of the specified clients were not found."
   },
   "service-client": {
-    "APPLICATION_LIMIT_EXCEEDED": "The service client limit for this application has been reached.",
+    "REALM_LIMIT_EXCEEDED": "The service client limit for this realm has been reached.",
 
     "CLIENTS_NOT_FOUND": "Some of the specified clients were not found."
   },

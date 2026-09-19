@@ -175,236 +175,6 @@
       "comment": null
     },
     {
-      "name": "application",
-      "schema": "identity",
-      "columns": {
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": 3,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "text"
-        },
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": true,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "uuid"
-        },
-        "is_realm_revoked": {
-          "name": "is_realm_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "boolean"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "boolean"
-        },
-        "is_system_managed": {
-          "name": "is_system_managed",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "boolean"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "text"
-        },
-        "realm": {
-          "name": "realm",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": true,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "uuid"
-        },
-        "realm_version": {
-          "name": "realm_version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "unique": false,
-          "length": 3,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": "1",
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        }
-      },
-      "indexes": [
-        {
-          "columnNames": [
-            "id"
-          ],
-          "composite": false,
-          "constraint": true,
-          "keyName": "application_pkey",
-          "primary": true,
-          "unique": true
-        },
-        {
-          "columnNames": [
-            "realm"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "application_realm_idx",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "realm",
-            "name"
-          ],
-          "composite": true,
-          "constraint": true,
-          "keyName": "application_realm_name_unique",
-          "primary": false,
-          "unique": true
-        }
-      ],
-      "checks": [],
-      "triggers": [],
-      "foreignKeys": {},
-      "comment": null
-    },
-    {
       "name": "identifier",
       "schema": "identity",
       "columns": {
@@ -676,40 +446,6 @@
       "name": "interface_client",
       "schema": "identity",
       "columns": {
-        "application_id": {
-          "name": "application_id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": true,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "uuid"
-        },
-        "application_version": {
-          "name": "application_version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
         "auth_address": {
           "name": "auth_address",
           "type": "text",
@@ -798,8 +534,8 @@
           "enumItems": [],
           "mappedType": "uuid"
         },
-        "is_application_revoked": {
-          "name": "is_application_revoked",
+        "is_realm_revoked": {
+          "name": "is_realm_revoked",
           "type": "boolean",
           "unsigned": false,
           "autoincrement": false,
@@ -866,6 +602,40 @@
           "enumItems": [],
           "mappedType": "text"
         },
+        "realm": {
+          "name": "realm",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "realm_version": {
+          "name": "realm_version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "redirect_uris": {
           "name": "redirect_uris",
           "type": "text[]",
@@ -921,33 +691,33 @@
       "indexes": [
         {
           "columnNames": [
-            "application_id"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "interface_client_application_idx",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "application_id",
-            "name"
-          ],
-          "composite": true,
-          "constraint": true,
-          "keyName": "interface_client_application_name_unique",
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
             "id"
           ],
           "composite": false,
           "constraint": true,
           "keyName": "interface_client_pkey",
           "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "realm"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "interface_client_realm_idx",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "realm",
+            "name"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "interface_client_realm_name_unique",
+          "primary": false,
           "unique": true
         }
       ],
@@ -960,20 +730,7 @@
         }
       ],
       "triggers": [],
-      "foreignKeys": {
-        "interface_client_application_id_foreign": {
-          "columnNames": [
-            "application_id"
-          ],
-          "constraintName": "interface_client_application_id_foreign",
-          "localTableName": "identity.interface_client",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "identity.application",
-          "deleteRule": "cascade"
-        }
-      },
+      "foreignKeys": {},
       "comment": null
     },
     {
@@ -1782,40 +1539,6 @@
           "enumItems": [],
           "mappedType": "array"
         },
-        "application_id": {
-          "name": "application_id",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": true,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "uuid"
-        },
-        "application_version": {
-          "name": "application_version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "integer"
-        },
         "code": {
           "name": "code",
           "type": "text",
@@ -1884,8 +1607,8 @@
           "enumItems": [],
           "mappedType": "uuid"
         },
-        "is_application_revoked": {
-          "name": "is_application_revoked",
+        "is_realm_revoked": {
+          "name": "is_realm_revoked",
           "type": "boolean",
           "unsigned": false,
           "autoincrement": false,
@@ -1952,6 +1675,40 @@
           "enumItems": [],
           "mappedType": "text"
         },
+        "realm": {
+          "name": "realm",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "realm_version": {
+          "name": "realm_version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamptz(3)",
@@ -1990,38 +1747,6 @@
       "indexes": [
         {
           "columnNames": [
-            "application_id",
-            "code"
-          ],
-          "composite": true,
-          "constraint": true,
-          "keyName": "service_client_application_code_unique",
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
-            "application_id"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "service_client_application_idx",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "application_id",
-            "name"
-          ],
-          "composite": true,
-          "constraint": true,
-          "keyName": "service_client_application_name_unique",
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
             "id"
           ],
           "composite": false,
@@ -2029,24 +1754,43 @@
           "keyName": "service_client_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "realm",
+            "code"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "service_client_realm_code_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "realm"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "service_client_realm_idx",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "realm",
+            "name"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "service_client_realm_name_unique",
+          "primary": false,
+          "unique": true
         }
       ],
       "checks": [],
       "triggers": [],
-      "foreignKeys": {
-        "service_client_application_id_foreign": {
-          "columnNames": [
-            "application_id"
-          ],
-          "constraintName": "service_client_application_id_foreign",
-          "localTableName": "identity.service_client",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "identity.application",
-          "deleteRule": "cascade"
-        }
-      },
+      "foreignKeys": {},
       "comment": null
     },
     {

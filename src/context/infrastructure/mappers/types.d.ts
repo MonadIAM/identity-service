@@ -26,11 +26,11 @@ declare global {
                     createdAt?: OrdinalFilterDTO<Date>;
                     subject?: StringFilterDTO;
                     status?: StringFilterDTO;
+                    is2FAEnforced?: boolean;
                     email?: StringFilterDTO;
                     phone?: StringFilterDTO;
                     name?: StringFilterDTO;
                     id?: StringFilterDTO;
-                    is2FAEnforced?: boolean;
                 };
 
                 type Sort = {
@@ -92,10 +92,10 @@ declare global {
                     lastUsedAt?: OrdinalFilterDTO<Date>;
                     createdAt?: OrdinalFilterDTO<Date>;
                     provider?: StringFilterDTO;
+                    isPublicContact?: boolean;
                     email?: StringFilterDTO;
                     phone?: StringFilterDTO;
                     id?: StringFilterDTO;
-                    isPublicContact?: boolean;
                     isVerified?: boolean;
                 };
 
@@ -213,15 +213,15 @@ declare global {
                 }
             }
 
-            namespace Application {
+            namespace InterfaceClient {
                 type DefaultFilters = {
                     updatedAt?: OrdinalFilterDTO<Date>;
                     createdAt?: OrdinalFilterDTO<Date>;
+                    isSystemManaged?: boolean;
+                    isRealmRevoked?: boolean;
                     name?: StringFilterDTO;
                     id?: StringFilterDTO;
-                    isRealmRevoked?: boolean;
                     isRevoked?: boolean;
-                    isSystemManaged?: boolean;
                 };
 
                 type ManageFilters = DefaultFilters & {
@@ -242,49 +242,20 @@ declare global {
                 }
             }
 
-            namespace InterfaceClient {
-                type DefaultFilters = {
-                    updatedAt?: OrdinalFilterDTO<Date>;
-                    createdAt?: OrdinalFilterDTO<Date>;
-                    name?: StringFilterDTO;
-                    id?: StringFilterDTO;
-                    isApplicationRevoked?: boolean;
-                    isRevoked?: boolean;
-                    isSystemManaged?: boolean;
-                };
-
-                type ManageFilters = DefaultFilters & {
-                    application?: LinkFilterDTO;
-                };
-
-                type Filters = DefaultFilters & ManageFilters;
-
-                type Sort = {
-                    updatedAt?: QueryOrder;
-                    createdAt?: QueryOrder;
-                    name?: QueryOrder;
-                };
-
-                interface Types {
-                    Filters: Filters;
-                    Sort: Sort;
-                }
-            }
-
             namespace ServiceClient {
                 type DefaultFilters = {
                     updatedAt?: OrdinalFilterDTO<Date>;
                     createdAt?: OrdinalFilterDTO<Date>;
+                    isSystemManaged?: boolean;
+                    isRealmRevoked?: boolean;
                     code?: StringFilterDTO;
                     name?: StringFilterDTO;
                     id?: StringFilterDTO;
-                    isApplicationRevoked?: boolean;
                     isRevoked?: boolean;
-                    isSystemManaged?: boolean;
                 };
 
                 type ManageFilters = DefaultFilters & {
-                    application?: LinkFilterDTO;
+                    realm?: LinkFilterDTO;
                 };
 
                 type Filters = DefaultFilters & ManageFilters;

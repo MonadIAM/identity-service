@@ -10,7 +10,6 @@ declare global {
 
                 namespace Service {
                     type Props = {
-                        readonly application?: Entities.Application;
                         readonly maxActiveSessions?: number;
                         readonly sessionExpiryDays?: string;
                         readonly account?: Entities.Account;

@@ -41,11 +41,6 @@ export class GetListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    declare public application: string;
-
-    @Expose()
-    @Validator.IsUUID()
-    @ApiProperty({ required: true, type: String, format: "uuid" })
     declare public realm: string;
 
     public get mode(): QueryMode.DEFAULT {

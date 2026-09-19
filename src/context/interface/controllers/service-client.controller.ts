@@ -8,6 +8,7 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
+    ServiceClientDTO,
     GetByIdQueryDTO,
     GetListQueryDTO,
     RestoreQueryDTO,
@@ -21,7 +22,6 @@ import {
     RevokeBodyDTO,
     PurgeQueryDTO,
     PurgeBodyDTO,
-    ServiceClientDTO,
     ListDTO,
 } from "../dto/service-client";
 
@@ -75,10 +75,8 @@ export class ServiceClientController {
         NOT_FOUND,
         FORBIDDEN,
     )
-    public findUnique(
-        @Query() { client, application, realm, view, mode }: GetByIdQueryDTO,
-    ): Queries.ServiceClient.FindUnique.Result {
-        return this.serviceClientQueries.findUnique({ client, application, realm, view, mode });
+    public findUnique(@Query() { client, realm, view, mode }: GetByIdQueryDTO): Queries.ServiceClient.FindUnique.Result {
+        return this.serviceClientQueries.findUnique({ client, realm, view, mode });
     }
 
     @Post("list")
@@ -87,7 +85,7 @@ export class ServiceClientController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(SERVICE_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Get paginated list of service clients in an application",
+        summary: "Get paginated list of service clients in a realm",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -100,9 +98,9 @@ export class ServiceClientController {
     )
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { application, realm, view, mode }: GetListQueryDTO,
+        @Query() { realm, view, mode }: GetListQueryDTO,
     ): Queries.ServiceClient.FindMany.Result {
-        return this.serviceClientQueries.findMany({ pagination, filters, application, realm, sort, view, mode });
+        return this.serviceClientQueries.findMany({ pagination, filters, realm, sort, view, mode });
     }
 
     @Post("create")

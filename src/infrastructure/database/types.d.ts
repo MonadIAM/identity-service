@@ -121,7 +121,6 @@ declare global {
         type Database = {
             "system.inbox": Columns<SystemEntities.Inbox>;
             "identity.account": AccountColumns;
-            "identity.application": Columns<Entities.Application>;
             "identity.identifier": Columns<Entities.Identifier>;
             "identity.interface_client": Columns<Entities.InterfaceClient>;
             "identity.master_code": Columns<Entities.MasterCode>;

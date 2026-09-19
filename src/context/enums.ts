@@ -107,13 +107,13 @@ export enum EntityType {
     RECOVERY_CODE    = "RECOVERY_CODE",
     SECOND_FACTOR    = "SECOND_FACTOR",
     OAUTH_CLIENT     = "OAUTH_CLIENT",
-    APPLICATION      = "APPLICATION",
     MASTER_CODE      = "MASTER_CODE",
     IDENTIFIER       = "IDENTIFIER",
     PASSWORD         = "PASSWORD",
     PROFILE          = "PROFILE",
     SESSION          = "SESSION",
     ACCOUNT          = "ACCOUNT",
+    REALM            = "REALM",
     /* eslint-enable prettier/prettier */
 }
 

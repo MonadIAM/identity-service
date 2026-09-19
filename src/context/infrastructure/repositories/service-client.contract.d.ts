@@ -6,15 +6,15 @@ declare namespace Repositories {
             Entities.ServiceClient,
             Repositories.Mappers.ServiceClient.Types
         > {
-            wouldExceedApplicationLimit: WouldExceedApplicationLimit.Signature;
+            wouldExceedRealmLimit: WouldExceedRealmLimit.Signature;
         }
 
         interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
 
-        namespace WouldExceedApplicationLimit {
+        namespace WouldExceedRealmLimit {
             type Props = {
                 transaction: ORM.EntityManager;
-                application: string;
+                realm: string;
             };
 
             type Result = Promise<boolean>;

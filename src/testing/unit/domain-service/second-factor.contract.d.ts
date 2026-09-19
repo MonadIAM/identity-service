@@ -10,7 +10,6 @@ declare global {
 
                 namespace Service {
                     type Props = {
-                        readonly application?: Entities.Application;
                         readonly account?: Entities.Account;
                     };
 

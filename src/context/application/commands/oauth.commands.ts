@@ -45,9 +45,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             });
         }
 
-        if (client.isApplicationRevoked) {
+        if (client.isRealmRevoked) {
             throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
+                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
                 code: ErrorCode.INVALID_CLIENT,
             });
         }
@@ -106,9 +106,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
                 });
             }
 
-            if (client.isApplicationRevoked) {
+            if (client.isRealmRevoked) {
                 throw Exception.badRequest({
-                    messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
+                    messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
                     code: ErrorCode.INVALID_CLIENT,
                 });
             }
@@ -132,7 +132,6 @@ export class OAuthCommands implements Commands.OAuth.Contract {
 
     public async authorizationCode(props: Commands.OAuth.AuthorizationCode.Props): Commands.OAuth.AuthorizationCode.Result {
         const client = await this.interfaceClientRepository.findUnique({
-            options: { populate: ["application"] },
             where: { id: props.input.client },
         });
 
@@ -150,9 +149,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             });
         }
 
-        if (client.isApplicationRevoked) {
+        if (client.isRealmRevoked) {
             throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
+                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
                 code: ErrorCode.INVALID_CLIENT,
             });
         }
@@ -185,7 +184,7 @@ export class OAuthCommands implements Commands.OAuth.Contract {
         return this.sessionCommands.create({
             context: props.context,
             input: {
-                realms: Array.from(new Set([SYSTEM_REALM_ID, client.application.realm])),
+                realms: Array.from(new Set([SYSTEM_REALM_ID, client.realm])),
                 account: authorization.account,
                 client: authorization.client,
                 scope: authorization.scope,
@@ -217,9 +216,9 @@ export class OAuthCommands implements Commands.OAuth.Contract {
             });
         }
 
-        if (clientEntity.isApplicationRevoked) {
+        if (clientEntity.isRealmRevoked) {
             throw Exception.badRequest({
-                messageKey: `${this.dictionaryPath}.CLIENT_APPLICATION_REVOKED`,
+                messageKey: `${this.dictionaryPath}.CLIENT_REALM_REVOKED`,
                 code: ErrorCode.INVALID_CLIENT,
             });
         }

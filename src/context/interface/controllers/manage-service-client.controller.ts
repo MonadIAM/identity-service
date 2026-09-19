@@ -39,7 +39,7 @@ export class ServiceClientManageController {
     @ApiResponse({ status: OK, type: ServiceClientDTO })
     @RequireGlobalPermission(SERVICE_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Get service client by ID (any application)",
+        summary: "Get service client by ID (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -61,7 +61,7 @@ export class ServiceClientManageController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequireGlobalPermission(SERVICE_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Get paginated list of service clients (any application)",
+        summary: "Get paginated list of service clients (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

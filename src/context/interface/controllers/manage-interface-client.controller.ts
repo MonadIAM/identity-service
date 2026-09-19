@@ -13,6 +13,7 @@ import {
     ListDTO,
 } from "../dto/interface-client";
 
+const { INTERFACE_CLIENT_READ_ABSOLUTE } = PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
@@ -23,7 +24,6 @@ const {
     NOT_FOUND,
     OK,
 } = HttpStatus;
-const { INTERFACE_CLIENT_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("InterfaceClient")
 @Controller("/interface-client/manage")
@@ -39,7 +39,7 @@ export class InterfaceClientManageController {
     @ApiResponse({ status: OK, type: InterfaceClientDTO })
     @RequireGlobalPermission(INTERFACE_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Get interface client by ID (any application)",
+        summary: "Get interface client by ID (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -61,7 +61,7 @@ export class InterfaceClientManageController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequireGlobalPermission(INTERFACE_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Get paginated list of interface clients (any application)",
+        summary: "Get paginated list of interface clients (any realm)",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

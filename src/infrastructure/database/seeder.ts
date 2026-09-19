@@ -12,7 +12,6 @@ export class System extends Seeder {
             TRUNCATE TABLE
                 identity.interface_client,
                 identity.service_client,
-                identity.application,
                 identity.account,
                 identity.identifier,
                 identity.master_code,
@@ -30,7 +29,6 @@ export class System extends Seeder {
             datasets.Profiles,
             datasets.Passwords,
             datasets.Identifiers,
-            datasets.Applications,
             datasets.InterfaceClients,
             datasets.RecoveryCodes,
         ];

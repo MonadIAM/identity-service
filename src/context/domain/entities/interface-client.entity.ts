@@ -11,33 +11,35 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
     public updatedAt?: Date;
     public version: number = 1;
 
+    public realm: string;
     public name: string;
-    public application: Entities.Application;
-    public authAddress: string;
     public description?: string;
+
+    public authAddress: string;
     public redirectUris: string[];
     public grantTypes: TokenGrantType[];
 
-    public applicationVersion: number;
+    public realmVersion: number;
     public isSystemManaged: boolean;
-    public isApplicationRevoked: boolean;
+    public isRealmRevoked: boolean;
     public isRevoked: boolean;
 
     public constructor(props: Entities.InterfaceClient.ConstructorProps) {
         this.createdAt = new Date();
         this.id = randomUUID();
 
-        this.applicationVersion = props.applicationVersion ?? 0;
+        this.realmVersion = props.realmVersion ?? 0;
         this.isSystemManaged = props.isSystemManaged ?? false;
-        this.isApplicationRevoked = props.isApplicationRevoked ?? false;
+        this.isRealmRevoked = props.isRealmRevoked ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
-        this.redirectUris = props.redirectUris;
-        this.application = props.application;
-        this.description = props.description;
-        this.authAddress = props.authAddress;
-        this.grantTypes = props.grantTypes;
+        this.realm = props.realm;
         this.name = props.name;
+        this.description = props.description;
+
+        this.authAddress = props.authAddress;
+        this.redirectUris = props.redirectUris;
+        this.grantTypes = props.grantTypes;
     }
 
     public update(patch: Entities.InterfaceClient.ChangeDataProps): void {
@@ -53,17 +55,9 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
 
         let affected = 0;
         for (const [key, value] of Object.typedEntries(patch)) {
-            if (typeof value !== "undefined") {
-                const current = this[key];
-                const isChanged =
-                    Array.isArray(current) && Array.isArray(value)
-                        ? current.length !== value.length || current.some((item, index) => item !== value[index])
-                        : current !== value;
-
-                if (isChanged) {
-                    (this[key] as unknown) = value;
-                    ++affected;
-                }
+            if (typeof value !== "undefined" && this.hasChanged(this[key], value)) {
+                (this[key] as unknown) = value;
+                ++affected;
             }
         }
 
@@ -118,19 +112,27 @@ export class InterfaceClient implements Entities.InterfaceClient.Contract {
         }
     }
 
-    public applyApplicationRevocation(version: number): void {
-        if (!this.isSystemManaged && version > this.applicationVersion) {
-            this.isApplicationRevoked = true;
-            this.applicationVersion = version;
+    public applyRealmRevocation(version: number): void {
+        if (!this.isSystemManaged && version > this.realmVersion) {
+            this.isRealmRevoked = true;
+            this.realmVersion = version;
             this.updatedAt = new Date();
         }
     }
 
-    public applyApplicationRestore(version: number): void {
-        if (!this.isSystemManaged && version > this.applicationVersion) {
-            this.isApplicationRevoked = false;
-            this.applicationVersion = version;
+    public applyRealmRestore(version: number): void {
+        if (!this.isSystemManaged && version > this.realmVersion) {
+            this.isRealmRevoked = false;
+            this.realmVersion = version;
             this.updatedAt = new Date();
+        }
+    }
+
+    private hasChanged(current: unknown, next: unknown): boolean {
+        if (Array.isArray(current) && Array.isArray(next)) {
+            return current.length !== next.length || current.some((value, index) => value !== next[index]);
+        } else {
+            return current !== next;
         }
     }
 }

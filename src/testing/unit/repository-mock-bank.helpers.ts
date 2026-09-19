@@ -6,11 +6,9 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
     public repositories(
         props: Unit.Domain.RepositoryMockBank.Repositories.Props = {},
     ): Unit.Domain.RepositoryMocks.Contract {
-        const application = props.application ?? this.createApplication();
         const account = props.account ?? this.createAccount();
 
         return {
-            applications: this.applicationRepository(application),
             passwordHistories: this.passwordHistoryRepository(),
             interfaceClients: this.interfaceClientRepository(),
             serviceClients: this.serviceClientRepository(),
@@ -33,7 +31,7 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
     private interfaceClientRepository(): Unit.Domain.RepositoryMocks.InterfaceClient {
         return {
             ...this.baseRepository("InterfaceClient"),
-            wouldExceedApplicationLimit: jest.fn(() => Promise.resolve(false)),
+            wouldExceedRealmLimit: jest.fn(() => Promise.resolve(false)),
             find: jest.fn(() => Promise.resolve([])),
         };
     }
@@ -41,7 +39,7 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
     private serviceClientRepository(): Unit.Domain.RepositoryMocks.ServiceClient {
         return {
             ...this.baseRepository("ServiceClient"),
-            wouldExceedApplicationLimit: jest.fn(() => Promise.resolve(false)),
+            wouldExceedRealmLimit: jest.fn(() => Promise.resolve(false)),
             find: jest.fn(() => Promise.resolve([])),
         };
     }
@@ -51,15 +49,6 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
             ...this.baseRepository("SecondFactor"),
             findUnique: jest.fn(() => Promise.resolve(null)),
             find: jest.fn(() => Promise.resolve([])),
-        };
-    }
-
-    private applicationRepository(application: Entities.Application): Unit.Domain.RepositoryMocks.Application {
-        return {
-            ...this.baseRepository("Application"),
-            findUniqueOrThrow: jest.fn(() => Promise.resolve(application)),
-            wouldExceedRealmLimit: jest.fn(() => Promise.resolve(false)),
-            find: jest.fn(() => Promise.resolve([application])),
         };
     }
 

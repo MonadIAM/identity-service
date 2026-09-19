@@ -75,10 +75,8 @@ export class InterfaceClientController {
         NOT_FOUND,
         FORBIDDEN,
     )
-    public findUnique(
-        @Query() { client, application, realm, view, mode }: GetByIdQueryDTO,
-    ): Queries.InterfaceClient.FindUnique.Result {
-        return this.interfaceClientQueries.findUnique({ client, application, realm, view, mode });
+    public findUnique(@Query() { client, realm, view, mode }: GetByIdQueryDTO): Queries.InterfaceClient.FindUnique.Result {
+        return this.interfaceClientQueries.findUnique({ client, realm, view, mode });
     }
 
     @Post("list")
@@ -87,7 +85,7 @@ export class InterfaceClientController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(INTERFACE_CLIENT_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Get paginated list of interface clients in an application",
+        summary: "Get paginated list of interface clients in a realm",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -100,9 +98,9 @@ export class InterfaceClientController {
     )
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { application, realm, view, mode }: GetListQueryDTO,
+        @Query() { realm, view, mode }: GetListQueryDTO,
     ): Queries.InterfaceClient.FindMany.Result {
-        return this.interfaceClientQueries.findMany({ pagination, filters, application, realm, sort, view, mode });
+        return this.interfaceClientQueries.findMany({ pagination, filters, realm, sort, view, mode });
     }
 
     @Post("create")

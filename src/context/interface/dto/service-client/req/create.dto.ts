@@ -14,11 +14,6 @@ export class CreateQueryDTO {
 @ApiSchema({ name: "ServiceClientCreateBody" })
 export class CreateBodyDTO {
     @Expose()
-    @Validator.IsUUID()
-    @ApiProperty({ required: true, type: String, format: "uuid" })
-    declare public application: string;
-
-    @Expose()
     @Validator.IsString()
     @Validator.MaxLength(128)
     @ApiProperty({ required: true, type: String })

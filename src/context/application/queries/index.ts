@@ -4,7 +4,6 @@ import { InterfaceClientQueries } from "./interface-client.queries";
 import { ServiceClientQueries } from "./service-client.queries";
 import { RecoveryCodeQueries } from "./recovery-code.queries";
 import { SecondFactorQueries } from "./second-factor.queries";
-import { ApplicationQueries } from "./application.queries";
 import { IdentifierQueries } from "./identifier.queries";
 import { ChangeLogQueries } from "./change-log.queries";
 import { AuditLogQueries } from "./audit-log.queries";
@@ -16,7 +15,6 @@ import {
     SERVICE_CLIENT_QUERIES,
     RECOVERY_CODE_QUERIES,
     SECOND_FACTOR_QUERIES,
-    APPLICATION_QUERIES,
     IDENTIFIER_QUERIES,
     CHANGE_LOG_QUERIES,
     AUDIT_LOG_QUERIES,
@@ -41,10 +39,6 @@ export const QUERIES: ClassProvider[] = [
     {
         provide: SECOND_FACTOR_QUERIES,
         useClass: SecondFactorQueries,
-    },
-    {
-        provide: APPLICATION_QUERIES,
-        useClass: ApplicationQueries,
     },
     {
         provide: IDENTIFIER_QUERIES,
@@ -77,7 +71,6 @@ export {
     SERVICE_CLIENT_QUERIES,
     RECOVERY_CODE_QUERIES,
     SECOND_FACTOR_QUERIES,
-    APPLICATION_QUERIES,
     IDENTIFIER_QUERIES,
     CHANGE_LOG_QUERIES,
     AUDIT_LOG_QUERIES,

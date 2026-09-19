@@ -18,14 +18,14 @@ export class InterfaceClientMapper implements Repositories.Mappers.Contract<
         if (filters.name) {
             where.name = ORMAdapter.applyStringFilter(filters.name);
         }
-        if (filters.application) {
-            where.application = ORMAdapter.applyStringFilter(filters.application);
+        if (filters.realm) {
+            where.realm = ORMAdapter.applyStringFilter(filters.realm);
         }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = filters.isRevoked;
         }
-        if (filters.isApplicationRevoked !== undefined) {
-            where.isApplicationRevoked = filters.isApplicationRevoked;
+        if (filters.isRealmRevoked !== undefined) {
+            where.isRealmRevoked = filters.isRealmRevoked;
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = filters.isSystemManaged;

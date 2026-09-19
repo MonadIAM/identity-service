@@ -8,7 +8,7 @@ import { ServiceClientRepository } from "./service-client.repository";
 
 function createRepositoryConfig(): ConfigService {
     return new ConfigService({
-        SERVICE_CLIENT_PER_APPLICATION_LIMIT: 2,
+        SERVICE_CLIENT_PER_REALM_LIMIT: 2,
     });
 }
 
@@ -19,17 +19,17 @@ describe("ServiceClientRepository", () => {
     });
 
     it("maps the persisted service client through the schema", async () => {
-        const application = await suite.fixtures().createApplication();
+        const realm = "00000000-0000-4000-8000-000000000001";
         const client = await suite.fixtures().createServiceClient({
             description: "Mapping service client description",
             allowedAddresses: ["10.0.0.1", "10.0.0.2"],
             name: "Mapping Service Client",
             code: "mapping.service-client",
-            isApplicationRevoked: true,
-            applicationVersion: 3,
+            isRealmRevoked: true,
+            realmVersion: 3,
             isSystemManaged: true,
             isRevoked: true,
-            application,
+            realm,
         });
 
         const loaded = await suite.repository().findUniqueOrThrow({ where: { id: client.id } });
@@ -40,30 +40,30 @@ describe("ServiceClientRepository", () => {
             name: "Mapping Service Client",
             code: "mapping.service-client",
             createdAt: client.createdAt,
-            isApplicationRevoked: true,
+            isRealmRevoked: true,
             version: client.version,
-            applicationVersion: 3,
+            realmVersion: 3,
             isSystemManaged: true,
             isRevoked: true,
             id: client.id,
         });
-        expect(loaded.application.id).toBe(application.id);
+        expect(loaded.realm).toBe(realm);
     });
 
-    it("checks service client limit per application", async () => {
-        const { fullApplication, availableApplication } = await suite.fixtures().limitScenario();
+    it("checks service client limit per realm", async () => {
+        const { fullRealm, availableRealm } = await suite.fixtures().limitScenario();
 
         await suite.transaction(async (transaction) => {
             await expect(
-                suite.repository().wouldExceedApplicationLimit({
+                suite.repository().wouldExceedRealmLimit({
                     transaction,
-                    application: fullApplication.id,
+                    realm: fullRealm,
                 }),
             ).resolves.toBe(true);
             await expect(
-                suite.repository().wouldExceedApplicationLimit({
+                suite.repository().wouldExceedRealmLimit({
                     transaction,
-                    application: availableApplication.id,
+                    realm: availableRealm,
                 }),
             ).resolves.toBe(false);
         });

@@ -9,7 +9,6 @@ declare global {
                 createServiceClient: CreateServiceClient.Signature;
                 createRecoveryCode: CreateRecoveryCode.Signature;
                 createSecondFactor: CreateSecondFactor.Signature;
-                createApplication: CreateApplication.Signature;
                 createIdentifier: CreateIdentifier.Signature;
                 createMasterCode: CreateMasterCode.Signature;
                 createChangeLog: CreateChangeLog.Signature;
@@ -59,20 +58,12 @@ declare global {
                 type Signature = (props: Props) => Result;
             }
 
-            namespace CreateApplication {
-                type Props = Partial<Entities.Application.ConstructorProps>;
-
-                type Result = Promise<Entities.Application>;
-
-                type Signature = (props?: Props) => Result;
-            }
-
             namespace CreateInterfaceClient {
                 type Props = Omit<
                     Partial<Entities.InterfaceClient.ConstructorProps>,
-                    "application" | "authAddress" | "grantTypes" | "name" | "redirectUris"
+                    "realm" | "authAddress" | "grantTypes" | "name" | "redirectUris"
                 > & {
-                    application: Entities.Application;
+                    realm: string;
                     grantTypes?: TokenGrantType[];
                     redirectUris?: string[];
                     authAddress?: string;
@@ -85,8 +76,8 @@ declare global {
             }
 
             namespace CreateServiceClient {
-                type Props = Omit<Partial<Entities.ServiceClient.ConstructorProps>, "application" | "code" | "name"> & {
-                    application: Entities.Application;
+                type Props = Omit<Partial<Entities.ServiceClient.ConstructorProps>, "realm" | "code" | "name"> & {
+                    realm: string;
                     code?: string;
                     name?: string;
                 };

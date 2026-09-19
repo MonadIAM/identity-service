@@ -11,13 +11,8 @@
     "INVALID_SCRIPT_HASH": "Redis вернул недействительный hash Lua-скрипта.",
     "SCRIPT_NOT_LOADED": "Lua-скрипт не загружен: {script}."
   },
-  "application": {
-    "REALM_LIMIT_EXCEEDED": "Достигнут лимит приложений для этого realm.",
-
-    "APPLICATIONS_NOT_FOUND": "Часть указанных приложений не найдена."
-  },
   "interface-client": {
-    "APPLICATION_LIMIT_EXCEEDED": "Достигнут лимит interface-клиентов для этого приложения.",
+    "REALM_LIMIT_EXCEEDED": "Достигнут лимит interface-клиентов для этого realm.",
     "REDIRECT_URI_REQUIRED": "Требуется хотя бы один redirect URI.",
     "REDIRECT_URI_LIMIT_EXCEEDED": "Достигнут лимит redirect URI для этого клиента.",
     "REDIRECT_URI_DUPLICATED": "Список redirect URI не должен содержать дубликаты.",
@@ -29,7 +24,7 @@
     "CLIENTS_NOT_FOUND": "Часть указанных клиентов не найдена."
   },
   "service-client": {
-    "APPLICATION_LIMIT_EXCEEDED": "Достигнут лимит service-клиентов для этого приложения.",
+    "REALM_LIMIT_EXCEEDED": "Достигнут лимит service-клиентов для этого realm.",
 
     "CLIENTS_NOT_FOUND": "Часть указанных клиентов не найдена."
   },

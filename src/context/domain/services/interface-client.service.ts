@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { INTERFACE_CLIENT_REPOSITORY, APPLICATION_REPOSITORY } from "~context/infrastructure/repositories";
+import { INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { TokenGrantType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
@@ -16,8 +16,6 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
     public constructor(
         @Inject(INTERFACE_CLIENT_REPOSITORY)
         private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
-        @Inject(APPLICATION_REPOSITORY)
-        private readonly applicationRepository: Repositories.Application.PublicContract,
         configService: ConfigService,
     ) {
         this.redirectUriLimit = configService.getOrThrow<number>("INTERFACE_CLIENT_REDIRECT_URI_LIMIT");
@@ -29,20 +27,15 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
         this.validateRedirectUris({ redirectUris: input.redirectUris });
         this.validateAuthAddress({ authAddress: input.authAddress });
 
-        const application = await this.applicationRepository.findUniqueOrThrow({
-            where: { id: input.application, realm },
-            transaction,
-        });
-
-        const limitExceeded = await this.interfaceClientRepository.wouldExceedApplicationLimit({
-            application: application.id,
+        const limitExceeded = await this.interfaceClientRepository.wouldExceedRealmLimit({
+            realm,
             transaction,
         });
 
         if (limitExceeded) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.APPLICATION_LIMIT_EXCEEDED` });
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REALM_LIMIT_EXCEEDED` });
         } else {
-            const entity = new InterfaceClient({ ...input, grantTypes: [...this.grantTypes], application });
+            const entity = new InterfaceClient({ ...input, grantTypes: [...this.grantTypes], realm });
             transaction.persist(entity);
             return entity;
         }
@@ -51,7 +44,7 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
     public async update(props: Services.InterfaceClient.Update.Props): Services.InterfaceClient.Update.Result {
         const { transaction, realm, patch, id } = props;
         const entity = await this.interfaceClientRepository.findUniqueOrThrow({
-            where: { id, application: { realm } },
+            where: { id, realm },
             transaction,
         });
 
@@ -68,10 +61,9 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
 
     public async revoke(props: Services.InterfaceClient.Revoke.Props): Services.InterfaceClient.Revoke.Result {
         const { transaction, identifiers, realm } = props;
-        const unique = [...new Set(identifiers)];
+        const unique = Array.from(new Set(identifiers));
         const entities = await this.interfaceClientRepository.find({
-            where: { id: { $in: unique }, application: { realm } },
-            options: { populate: ["application"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
@@ -88,10 +80,9 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
 
     public async restore(props: Services.InterfaceClient.Restore.Props): Services.InterfaceClient.Restore.Result {
         const { transaction, identifiers, realm } = props;
-        const unique = [...new Set(identifiers)];
+        const unique = Array.from(new Set(identifiers));
         const entities = await this.interfaceClientRepository.find({
-            where: { id: { $in: unique }, application: { realm } },
-            options: { populate: ["application"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
@@ -108,10 +99,9 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
 
     public async purge(props: Services.InterfaceClient.Purge.Props): Services.InterfaceClient.Purge.Result {
         const { transaction, identifiers, realm } = props;
-        const unique = [...new Set(identifiers)];
+        const unique = Array.from(new Set(identifiers));
         const entities = await this.interfaceClientRepository.find({
-            where: { id: { $in: unique }, application: { realm } },
-            options: { populate: ["application"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
@@ -187,5 +177,51 @@ export class InterfaceClientService implements Services.InterfaceClient.Contract
         if (!URL.canParse(authAddress)) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.INVALID_AUTH_ADDRESS` });
         }
+    }
+
+    public async applyRealmRevocation(
+        props: Services.InterfaceClient.ApplyRealmRevocation.Props,
+    ): Services.InterfaceClient.ApplyRealmRevocation.Result {
+        const { transaction, version, realm } = props;
+        const entities = await this.interfaceClientRepository.find({
+            where: { realm, realmVersion: { $lt: version }, isSystemManaged: false },
+            transaction,
+        });
+
+        for (const entity of entities) {
+            entity.applyRealmRevocation(version);
+        }
+
+        return entities;
+    }
+
+    public async applyRealmRestore(
+        props: Services.InterfaceClient.ApplyRealmRestore.Props,
+    ): Services.InterfaceClient.ApplyRealmRestore.Result {
+        const { transaction, version, realm } = props;
+        const entities = await this.interfaceClientRepository.find({
+            where: { realm, realmVersion: { $lt: version }, isSystemManaged: false },
+            transaction,
+        });
+
+        for (const entity of entities) {
+            entity.applyRealmRestore(version);
+        }
+
+        return entities;
+    }
+
+    public async purgeRealm(props: Services.InterfaceClient.PurgeRealm.Props): Services.InterfaceClient.PurgeRealm.Result {
+        const { transaction, version, realm } = props;
+        const entities = await this.interfaceClientRepository.find({
+            where: { realm, realmVersion: { $lt: version }, isSystemManaged: false },
+            transaction,
+        });
+
+        for (const entity of entities) {
+            transaction.remove(entity);
+        }
+
+        return entities;
     }
 }

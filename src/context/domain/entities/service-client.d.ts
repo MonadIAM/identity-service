@@ -8,40 +8,44 @@ declare namespace Entities {
             updatedAt?: Date;
             version: number;
 
-            code: string;
+            realm: string;
             name: string;
-            application: Entities.Application;
             description?: string;
+
+            code: string;
             allowedAddresses: string[];
 
-            applicationVersion: number;
+            realmVersion: number;
             isSystemManaged: boolean;
-            isApplicationRevoked: boolean;
+            isRealmRevoked: boolean;
             isRevoked: boolean;
 
-            applyApplicationRevocation(version: number): void;
-            applyApplicationRestore(version: number): void;
             update(patch: ChangeDataProps): void;
-            canPurge(): void;
-            restore(): void;
             revoke(): void;
+            restore(): void;
+            canPurge(): void;
+            applyRealmRevocation(version: number): void;
+            applyRealmRestore(version: number): void;
         }
 
         type ConstructorProps = {
-            code: string;
+            realm: string;
             name: string;
-            application: Entities.Application;
-            isRevoked?: boolean;
             description?: string;
-            isSystemManaged?: boolean;
+
+            code: string;
             allowedAddresses?: string[];
-            applicationVersion?: number;
-            isApplicationRevoked?: boolean;
+
+            realmVersion?: number;
+            isSystemManaged?: boolean;
+            isRealmRevoked?: boolean;
+            isRevoked?: boolean;
         };
 
         type ChangeDataProps = {
-            description?: string;
             name?: string;
+            description?: string;
+
             allowedAddresses?: string[];
         };
     }

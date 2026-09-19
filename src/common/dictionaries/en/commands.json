@@ -46,22 +46,12 @@
     "INVALID_REQUEST": "The request is missing a required parameter or is otherwise malformed.",
     "INVALID_AUTHORIZATION_REQUEST": "The authorization request is invalid or expired.",
     "CLIENT_REVOKED": "The OAuth client is revoked.",
-    "CLIENT_APPLICATION_REVOKED": "The application linked to this OAuth client is revoked.",
+    "CLIENT_REALM_REVOKED": "The realm linked to this OAuth client is revoked.",
     "CLIENT_NOT_FOUND": "The OAuth client was not found.",
     "INVALID_GRANT": "The authorization code is invalid, expired, or does not match the request.",
     "INVALID_REDIRECT_URI": "The redirect URI is not registered for this OAuth client.",
     "UNSUPPORTED_TOKEN_TYPE": "The requested token type is not supported by this revocation endpoint.",
     "INSUFFICIENT_SCOPE": "This access token was not issued with the openid scope."
-  },
-  "application": {
-    "CREATED": "Application successfully created.",
-    "UPDATED": "Application successfully updated.",
-    "REVOKED": "Application successfully revoked.",
-    "BULK_REVOKED_COUNT": "{count} applications successfully revoked.",
-    "RESTORED": "Application successfully restored.",
-    "BULK_RESTORED_COUNT": "{count} applications successfully restored.",
-    "PURGED": "Application successfully deleted.",
-    "BULK_PURGED_COUNT": "{count} applications successfully deleted."
   },
   "interface-client": {
     "CREATED": "Interface client successfully created.",

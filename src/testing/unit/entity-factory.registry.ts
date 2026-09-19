@@ -7,7 +7,6 @@ import {
     ServiceClient,
     RecoveryCode,
     SecondFactor,
-    Application,
     MasterCode,
     Identifier,
     Password,
@@ -120,16 +119,6 @@ export class EntityFactoryRegistry implements Unit.Domain.EntityFactory.Contract
         );
     }
 
-    public createApplication(props: Unit.Domain.EntityFactory.CreateApplication.Props = {}): Entities.Application {
-        return this.entity(
-            new Application({
-                realm: "00000000-0000-4000-8000-0000000000ff",
-                name: "Unit Application",
-            }),
-            props,
-        );
-    }
-
     public createInterfaceClient(
         props: Unit.Domain.EntityFactory.CreateInterfaceClient.Props = {},
     ): Entities.InterfaceClient {
@@ -138,7 +127,7 @@ export class EntityFactoryRegistry implements Unit.Domain.EntityFactory.Contract
                 grantTypes: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],
                 redirectUris: ["https://unit.example.com/callback"],
                 authAddress: "https://unit.example.com",
-                application: this.createApplication(),
+                realm: "00000000-0000-4000-8000-000000000001",
                 name: "Unit Interface Client",
             }),
             props,
@@ -148,7 +137,7 @@ export class EntityFactoryRegistry implements Unit.Domain.EntityFactory.Contract
     public createServiceClient(props: Unit.Domain.EntityFactory.CreateServiceClient.Props = {}): Entities.ServiceClient {
         return this.entity(
             new ServiceClient({
-                application: this.createApplication(),
+                realm: "00000000-0000-4000-8000-000000000001",
                 name: "Unit Service Client",
                 code: "unit.service",
             }),

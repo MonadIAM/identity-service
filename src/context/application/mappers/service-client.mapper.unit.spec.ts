@@ -7,7 +7,6 @@ import { ServiceClientMapper } from "./service-client.mapper";
 /* eslint-disable prettier/prettier */
 const ACTOR_ID          = "00000000-0000-4000-8000-c00000000001";
 const REALM_ID          = "00000000-0000-4000-8000-c00000000002";
-const APPLICATION_ID    = "00000000-0000-4000-8000-c00000000003";
 const SERVICE_CLIENT_ID = "00000000-0000-4000-8000-c00000000004";
 const SECOND_SERVICE_ID = "00000000-0000-4000-8000-c00000000005";
 /* eslint-enable prettier/prettier */
@@ -16,8 +15,7 @@ const mapper = new ServiceClientMapper();
 const helpers = new EntityFactoryRegistry();
 
 function createClient(id: string, code: string): Entities.ServiceClient {
-    const application = helpers.createApplication({ id: APPLICATION_ID, realm: REALM_ID });
-    return helpers.createServiceClient({ id, code, application });
+    return helpers.createServiceClient({ id, code, realm: REALM_ID });
 }
 
 describe("ServiceClientMapper", () => {
@@ -28,7 +26,7 @@ describe("ServiceClientMapper", () => {
             expect(mapper.serviceClientPayload({ serviceClients: serviceClient, actor: ACTOR_ID })).toEqual({
                 actor: ACTOR_ID,
                 realm: REALM_ID,
-                input: { application: APPLICATION_ID, code: "billing", id: SERVICE_CLIENT_ID },
+                input: { code: "billing", id: SERVICE_CLIENT_ID },
             });
         });
 
@@ -40,12 +38,12 @@ describe("ServiceClientMapper", () => {
                 {
                     actor: ACTOR_ID,
                     realm: REALM_ID,
-                    input: { application: APPLICATION_ID, code: "billing", id: SERVICE_CLIENT_ID },
+                    input: { code: "billing", id: SERVICE_CLIENT_ID },
                 },
                 {
                     actor: ACTOR_ID,
                     realm: REALM_ID,
-                    input: { application: APPLICATION_ID, code: "analytics", id: SECOND_SERVICE_ID },
+                    input: { code: "analytics", id: SECOND_SERVICE_ID },
                 },
             ]);
         });

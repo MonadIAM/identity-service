@@ -2,32 +2,28 @@ import { CoreFixture } from "./core.fixture";
 
 export class ServiceClientFixture extends CoreFixture implements Fixtures.ServiceClient.Contract {
     /**
-     * Builds full and available applications to verify revoked service clients occupy the per-application limit.
+     * Builds full and available realms to verify revoked service clients occupy the per-realm limit.
      */
     public async limitScenario(): Fixtures.ServiceClient.LimitScenario.Result {
-        const fullApplication = await this.createApplication({
-            name: "Service Full",
-        });
-        const availableApplication = await this.createApplication({
-            name: "Service Available",
-        });
+        const fullRealm = "00000000-0000-4000-8000-000000000001";
+        const availableRealm = "00000000-0000-4000-8000-000000000002";
         await this.createServiceClient({
-            application: fullApplication,
+            realm: fullRealm,
             name: "Billing Client",
             code: "billing",
         });
         await this.createServiceClient({
-            application: fullApplication,
+            realm: fullRealm,
             name: "Revoked Client",
             code: "revoked",
             isRevoked: true,
         });
         await this.createServiceClient({
-            application: availableApplication,
+            realm: availableRealm,
             name: "Mailer Client",
             code: "mailer",
         });
 
-        return { fullApplication, availableApplication };
+        return { fullRealm, availableRealm };
     }
 }
