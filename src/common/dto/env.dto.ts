@@ -226,6 +226,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public KAFKA_RETRY_ATTEMPTS: number;
 
+    @Validator.IsPositiveInt()
+    declare public KAFKA_PARTITIONS_CONSUMED_CONCURRENTLY: number;
+
     @Validator.IsMsString()
     declare public KAFKA_RETRY_INITIAL_TIME: StringValue;
 

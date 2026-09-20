@@ -5,7 +5,7 @@ import { lastValueFrom } from "rxjs";
 
 import { KAFKA_RETRY_SERVICE, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE, KafkaIncomingMapper } from "~infrastructure/kafka";
 import { KAFKA_METRICS_RECORDER } from "~observability/metrics/tokens";
-import { REALM_COMMANDS } from "~context/application/commands";
+import { REALM_COMMANDS } from "~context/application/commands/tokens";
 import { CONSUMER_META } from "~context/constants";
 import { KafkaTopic } from "~context/enums";
 
@@ -84,11 +84,17 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
             value: props.message,
         });
         this.schemaRegistry.validate({ topic: KafkaTopic.REALM, value: message });
-        const handler = this.handlers[message.actionType];
-        if (handler) {
-            await handler({ incoming, payload: message.payload });
-        } else {
-            this.logger.warn(`Unknown realm action type: ${String(message.actionType)}`);
+        if (
+            message.actionType === RealmTopicAction.REVOKE ||
+            message.actionType === RealmTopicAction.RESTORE ||
+            message.actionType === RealmTopicAction.PURGE
+        ) {
+            const handler = this.handlers[message.actionType];
+            if (handler) {
+                await handler({ incoming, payload: message.payload });
+            } else {
+                this.logger.warn(`Unknown realm action type: ${String(message.actionType)}`);
+            }
         }
     }
 

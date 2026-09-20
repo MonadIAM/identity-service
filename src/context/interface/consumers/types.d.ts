@@ -1,18 +1,14 @@
 import { KafkaContext } from "@nestjs/microservices";
-import { RealmTopicAction } from "@monadiam/shared";
 
 declare global {
     namespace Consumers {
         namespace Realm {
-            type Message = Extract<
-                Topics.Realm.Message,
-                { actionType: RealmTopicAction.RESTORE | RealmTopicAction.REVOKE | RealmTopicAction.PURGE }
-            >;
+            type Message = Topics.Realm.Message;
 
             type Handlers = {
-                [K in Message["actionType"]]: (props: {
+                [K in Topics.Realm.LifecycleMessage["actionType"]]: (props: {
                     incoming: TransactionManager.Service.IncomingMessage;
-                    payload: Message["payload"];
+                    payload: Topics.Realm.LifecycleMessage["payload"];
                 }) => Promise<void>;
             };
 
