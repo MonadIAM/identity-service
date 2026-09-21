@@ -5,6 +5,11 @@ const config = {
 
     testMatch: ["**/*.unit.spec.ts"],
 
+    moduleNameMapper: {
+        "^~context/application/(commands|queries)/(.*)\\.js$": "<rootDir>/src/context/application/$1/$2.ts",
+        ...common.moduleNameMapper,
+    },
+
     collectCoverageFrom: [
         "<rootDir>/src/common/transaction-manager/entities/**/*.ts",
         "<rootDir>/src/context/domain/entities/**/*.ts",

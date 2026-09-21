@@ -1,0 +1,35 @@
+import { describe, expect, it } from "@jest/globals";
+
+import { ServiceClientQueriesUnitHelpers } from "~testing/unit/query-services/service-client.helpers";
+import { QueryMode, ResponseViewType } from "~context/enums";
+
+const PAGINATION: Pagination = { currentPage: 2, elementsPerPage: 10 };
+const helpers = new ServiceClientQueriesUnitHelpers();
+const REALM = "realm-a";
+const ID = "entity-a";
+
+describe("ServiceClientQueries", () => {
+    it.each([
+        { mode: QueryMode.DEFAULT, scope: { realm: REALM } },
+        { mode: QueryMode.MANAGE, scope: {} },
+    ])("%s enforces the appropriate ownership scope on single and paged reads", async ({ mode, scope }) => {
+        const { queries, serviceClientRepository: repository } = helpers.queries();
+        repository.findUniqueOrThrow.mockResolvedValue(helpers.createServiceClient());
+        repository.findMany.mockResolvedValue([[], 0]);
+
+        await queries.findUnique({ view: ResponseViewType.COMPACT, mode, realm: REALM, client: ID });
+        await queries.findMany({
+            view: ResponseViewType.COMPACT,
+            mode,
+            realm: REALM,
+            pagination: PAGINATION,
+            filters: {},
+            sort: {},
+        });
+
+        expect(repository.findUniqueOrThrow.mock.calls).toEqual([
+            [expect.objectContaining({ where: { id: ID, ...scope } })],
+        ]);
+        expect(repository.findMany.mock.calls).toEqual([[expect.objectContaining({ prefilter: scope })]]);
+    });
+});
