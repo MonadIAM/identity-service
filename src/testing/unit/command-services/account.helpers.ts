@@ -2,11 +2,8 @@ import { jest } from "@jest/globals";
 
 import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
-export class AccountCommandsUnitHelpers
-    extends ApplicationCommandUnitHelpers
-    implements Unit.Application.AccountCommands.Contract
-{
-    public async commands(): Unit.Application.AccountCommands.Commands.Result {
+export class AccountCommandsUnitHelpers extends ApplicationCommandUnitHelpers implements Unit.Commands.Account.Contract {
+    public async commands(): Unit.Commands.Account.Commands.Result {
         const { AccountCommands } = await import("~context/application/commands/account.commands.js");
         const execution = this.execution();
 

@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 
-import { EntityFactoryRegistry } from "./entity-factory.registry";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 
 export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Domain.RepositoryMockBank.Contract {
     public repositories(

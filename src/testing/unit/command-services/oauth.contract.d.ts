@@ -1,62 +1,43 @@
-import type { FastifyReply } from "fastify";
 import type { ConfigService } from "@nestjs/config";
-import type { jest } from "@jest/globals";
+import type { FastifyReply } from "fastify";
 
 declare global {
-    namespace Unit {
-        namespace Application {
-            namespace OAuthCommands {
-                interface Contract extends Domain.Core.Contract {
-                    readonly commands: Commands.Signature;
-                    readonly response: Response.Signature;
-                }
+    namespace Unit.Commands.OAuth {
+        interface Contract extends Domain.Core.Contract {
+            commands: Commands.Signature;
+            response: Response.Signature;
+        }
 
-                namespace Response {
-                    type Result = {
-                        readonly response: FastifyReply;
-                        readonly redirect: jest.Mock<FastifyReply["redirect"]>;
-                    };
+        namespace Response {
+            type Result = {
+                response: FastifyReply;
+                redirect: Jest.Mock<FastifyReply["redirect"]>;
+            };
 
-                    type Signature = () => Result;
-                }
+            type Signature = () => Result;
+        }
 
-                namespace Commands {
-                    type Result = {
-                        readonly commands: globalThis.Commands.OAuth.Contract;
-                        readonly configService: ConfigService;
-                        readonly sessionCommands: {
-                            readonly refresh: jest.Mock<globalThis.Commands.Session.CommandsContract["refresh"]>;
-                            readonly create: jest.Mock<globalThis.Commands.Session.CommandsContract["create"]>;
-                            readonly revoke: jest.Mock<globalThis.Commands.Session.CommandsContract["revoke"]>;
-                        };
-                        readonly authorizationCacheService: {
-                            readonly create: jest.Mock<InfrastructureServices.AuthorizationCache.PublicContract["create"]>;
-                            readonly issue: jest.Mock<InfrastructureServices.AuthorizationCache.PublicContract["issue"]>;
-                            readonly get: jest.Mock<InfrastructureServices.AuthorizationCache.PublicContract["get"]>;
-                            readonly consume: jest.Mock<
-                                InfrastructureServices.AuthorizationCache.PublicContract["consume"]
-                            >;
-                        };
-                        readonly interfaceClientRepository: {
-                            readonly findUnique: jest.Mock<Repositories.InterfaceClient.PublicContract["findUnique"]>;
-                            readonly findUniqueOrThrow: jest.Mock<
-                                Repositories.InterfaceClient.PublicContract["findUniqueOrThrow"]
-                            >;
-                        };
-                        readonly cryptoService: {
-                            readonly verifyCodeChallenge: jest.Mock<
-                                CommonServices.Crypto.PublicContract["verifyCodeChallenge"]
-                            >;
-                        };
-                        readonly jwtService: {
-                            readonly verifyRefresh: jest.Mock<CommonServices.JWT.PublicContract["verifyRefresh"]>;
-                            readonly verifyIdToken: jest.Mock<CommonServices.JWT.PublicContract["verifyIdToken"]>;
-                        };
-                    };
+        namespace Commands {
+            type Result = {
+                commands: globalThis.Commands.OAuth.Contract;
+                configService: ConfigService;
+                sessionCommands: {
+                    refresh: Jest.Mock<globalThis.Commands.Session.CommandsContract["refresh"]>;
+                    create: Jest.Mock<globalThis.Commands.Session.CommandsContract["create"]>;
+                    revoke: Jest.Mock<globalThis.Commands.Session.CommandsContract["revoke"]>;
+                };
+                authorizationCacheService: Jest.Mocked<
+                    Pick<InfrastructureServices.AuthorizationCache.PublicContract, "create" | "issue" | "get" | "consume">
+                >;
+                interfaceClientRepository: {
+                    findUnique: Jest.Mock<Repositories.InterfaceClient.PublicContract["findUnique"]>;
+                    findUniqueOrThrow: Jest.Mock<Repositories.InterfaceClient.PublicContract["findUniqueOrThrow"]>;
+                };
+                cryptoService: Jest.Mocked<Pick<CommonServices.Crypto.PublicContract, "verifyCodeChallenge">>;
+                jwtService: Jest.Mocked<Pick<CommonServices.JWT.PublicContract, "verifyRefresh" | "verifyIdToken">>;
+            };
 
-                    type Signature = () => Result;
-                }
-            }
+            type Signature = () => Result;
         }
     }
 }

@@ -6,9 +6,9 @@ import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
 export class ServiceClientQueriesUnitHelpers
     extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.ServiceClientQueries.Contract
+    implements Unit.Queries.ServiceClient.Contract
 {
-    public queries(): Unit.Application.ServiceClientQueries.Queries.Result {
+    public queries(): Unit.Queries.ServiceClient.Queries.Result {
         const serviceClientRepository = {
             findUniqueOrThrow: jest.fn<Repositories.ServiceClient.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.ServiceClient.QueryContract["findMany"]>(),

@@ -1,31 +1,22 @@
 import type { ConfigService } from "@nestjs/config";
-import type { jest } from "@jest/globals";
 
 declare global {
-    namespace Unit {
-        namespace Application {
-            namespace OAuthQueries {
-                interface Contract extends Domain.Core.Contract {
-                    readonly queries: Queries.Signature;
-                }
+    namespace Unit.Queries.OAuth {
+        interface Contract extends Domain.Core.Contract {
+            queries: Queries.Signature;
+        }
 
-                namespace Queries {
-                    type Result = {
-                        readonly accountRepository: {
-                            readonly findUniqueOrThrow: jest.Mock<Repositories.Account.QueryContract["findUniqueOrThrow"]>;
-                        };
-                        readonly jwtService: {
-                            readonly computePairwiseSubject: jest.Mock<
-                                CommonServices.JWT.PublicContract["computePairwiseSubject"]
-                            >;
-                        };
-                        readonly queries: globalThis.Queries.OAuth.Contract;
-                        readonly configService: ConfigService;
-                    };
+        namespace Queries {
+            type Result = {
+                accountRepository: {
+                    findUniqueOrThrow: Jest.Mock<Repositories.Account.QueryContract["findUniqueOrThrow"]>;
+                };
+                jwtService: Jest.Mocked<Pick<CommonServices.JWT.PublicContract, "computePairwiseSubject">>;
+                queries: globalThis.Queries.OAuth.Contract;
+                configService: ConfigService;
+            };
 
-                    type Signature = () => Result;
-                }
-            }
+            type Signature = () => Result;
         }
     }
 }

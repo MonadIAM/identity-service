@@ -4,9 +4,9 @@ import { ApplicationCommandUnitHelpers } from "../command-services/core.helpers"
 
 export class SecondFactorQueriesUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.SecondFactorQueries.Contract
+    implements Unit.Queries.SecondFactor.Contract
 {
-    public async queries(): Unit.Application.SecondFactorQueries.Queries.Result {
+    public async queries(): Unit.Queries.SecondFactor.Queries.Result {
         const { SecondFactorQueries } = await import("~context/application/queries/second-factor.queries.js");
         const execution = this.execution();
 

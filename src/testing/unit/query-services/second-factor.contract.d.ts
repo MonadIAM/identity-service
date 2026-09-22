@@ -1,35 +1,23 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Queries.SecondFactor {
+    interface Contract extends Unit.Commands.Core.Contract {
+        queries: Queries.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace SecondFactorQueries {
-                interface Contract extends CommandCore.Contract {
-                    readonly queries: Queries.Signature;
-                }
-
-                namespace Queries {
-                    type Result = Promise<
-                        CommandCore.Execution.Result & {
-                            readonly queries: globalThis.Queries.SecondFactor.Contract;
-                            readonly secondFactorRepository: {
-                                readonly findMany: jest.Mock<Repositories.SecondFactor.QueryContract["findMany"]>;
-                                readonly findUnique: jest.Mock<Repositories.SecondFactor.QueryContract["findUnique"]>;
-                            };
-                            readonly secondFactorSecretService: {
-                                readonly resolve: jest.Mock<
-                                    InfrastructureServices.SecondFactorSecret.PublicContract["resolve"]
-                                >;
-                            };
-                            readonly totpService: {
-                                readonly createURI: jest.Mock<CommonServices.TOTP.PublicContract["createURI"]>;
-                            };
-                        }
-                    >;
-
-                    type Signature = () => Result;
-                }
+    namespace Queries {
+        type Result = Promise<
+            Unit.Commands.Core.Execution.Result & {
+                totpService: Jest.Mocked<Pick<CommonServices.TOTP.PublicContract, "createURI">>;
+                queries: globalThis.Queries.SecondFactor.Contract;
+                secondFactorRepository: {
+                    findMany: Jest.Mock<Repositories.SecondFactor.QueryContract["findMany"]>;
+                    findUnique: Jest.Mock<Repositories.SecondFactor.QueryContract["findUnique"]>;
+                };
+                secondFactorSecretService: Jest.Mocked<
+                    Pick<InfrastructureServices.SecondFactorSecret.PublicContract, "resolve">
+                >;
             }
-        }
+        >;
+
+        type Signature = () => Result;
     }
 }

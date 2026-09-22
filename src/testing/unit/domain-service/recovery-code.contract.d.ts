@@ -1,23 +1,15 @@
-import type { RecoveryCodeService } from "~context/domain/services/recovery-code.service";
+declare namespace Unit.Domain.RecoveryCode {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace RecoveryCode {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Props = {
+            account?: Entities.Account;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly account?: Entities.Account;
-                    };
+        type Result = Core.Service.Context<Services.RecoveryCode.Contract>;
 
-                    type Result = Core.Service.Context<RecoveryCodeService>;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

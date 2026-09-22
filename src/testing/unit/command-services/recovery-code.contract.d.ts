@@ -1,32 +1,16 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Commands.RecoveryCode {
+    interface Contract extends Core.Contract {
+        commands: Commands.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace RecoveryCodeCommands {
-                interface Contract extends CommandCore.Contract {
-                    readonly commands: Commands.Signature;
-                }
+    namespace Commands {
+        type Result = Core.Execution.Result & {
+            commands: globalThis.Commands.RecoveryCode.Contract;
+            recoveryCodeService: Jest.Mocked<Pick<Services.RecoveryCode.CommandContract, "regenerate">>;
+            hashingService: Jest.Mocked<Pick<CommonServices.Hashing.PublicContract, "hash">>;
+            cryptoService: Jest.Mocked<Pick<CommonServices.Crypto.PublicContract, "generateRecoveryCodes">>;
+        };
 
-                namespace Commands {
-                    type Result = CommandCore.Execution.Result & {
-                        readonly commands: globalThis.Commands.RecoveryCode.Contract;
-                        readonly recoveryCodeService: {
-                            readonly regenerate: jest.Mock<Services.RecoveryCode.CommandContract["regenerate"]>;
-                        };
-                        readonly hashingService: {
-                            readonly hash: jest.Mock<CommonServices.Hashing.PublicContract["hash"]>;
-                        };
-                        readonly cryptoService: {
-                            readonly generateRecoveryCodes: jest.Mock<
-                                CommonServices.Crypto.PublicContract["generateRecoveryCodes"]
-                            >;
-                        };
-                    };
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

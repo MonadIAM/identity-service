@@ -6,7 +6,7 @@ import { ServiceMockBank } from "./service-mock-bank.helpers";
 export class DomainServiceCoreUnitHelpers extends ServiceMockBank implements Unit.Domain.Core.Contract {
     public transaction(): Unit.Domain.Core.Transaction {
         const flush = jest.fn(() => Promise.resolve());
-        const persist = jest.fn();
+        const persist = jest.fn<(entity: object) => void>();
         const remove = jest.fn();
         const clear = jest.fn();
         const merge = jest.fn();

@@ -69,7 +69,7 @@ describe("AccountService", () => {
             );
             expect(account.password).toEqual(expect.objectContaining({ hash: "argon2-hash", account }));
             expect(transaction.persist).toHaveBeenNthCalledWith(1, account);
-            expect(transaction.persist).toHaveBeenNthCalledWith(2, account.profile);
+            expect(transaction.persist.mock.calls[1]).toEqual([account.profile]);
             expect(transaction.persist).toHaveBeenNthCalledWith(
                 3,
                 expect.objectContaining({
@@ -78,7 +78,7 @@ describe("AccountService", () => {
                     account,
                 }),
             );
-            expect(transaction.persist).toHaveBeenNthCalledWith(4, account.password);
+            expect(transaction.persist.mock.calls[3]).toEqual([account.password]);
             expect(transaction.persist).toHaveBeenCalledTimes(4);
         });
 

@@ -259,7 +259,7 @@ describe("PasswordService", () => {
             const first = helpers.createRecoveryCode({ id: CODE_ID, account, hash: "first-hash" });
             const second = helpers.createRecoveryCode({ id: SECOND_CODE_ID, account, hash: "second-hash" });
             const { service, services } = helpers.service({ account });
-            services.hashing.verify.mockImplementation(({ storedHash }: { storedHash: string }) => {
+            services.hashing.verify.mockImplementation(({ storedHash }) => {
                 return Promise.resolve(storedHash === "second-hash");
             });
 

@@ -1,23 +1,16 @@
-import type { InterfaceClientService } from "~context/domain/services/interface-client.service";
+declare namespace Unit.Domain.InterfaceClient {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace InterfaceClient {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
-                namespace Service {
-                    type Props = {
-                        readonly account?: Entities.Account;
-                        readonly redirectUriLimit?: number;
-                    };
+    namespace Service {
+        type Props = {
+            account?: Entities.Account;
+            redirectUriLimit?: number;
+        };
 
-                    type Result = Core.Service.Context<InterfaceClientService>;
+        type Result = Core.Service.Context<Services.InterfaceClient.Contract>;
 
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

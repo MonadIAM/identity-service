@@ -1,66 +1,39 @@
 import { ChangeSetType } from "@mikro-orm/core";
 import { randomUUID } from "node:crypto";
 
-import { AuditLog, ChangeLog } from "~common/transaction-manager/entities";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 import { DeltaChanges } from "~common/transaction-manager/value-objects";
-import {
-    InterfaceClient,
-    PasswordHistory,
-    RecoveryCode,
-    ServiceClient,
-    SecondFactor,
-    Identifier,
-    MasterCode,
-    Password,
-    Profile,
-    Session,
-    Account,
-} from "~context/domain/entities";
 import {
     AuthenticationContextClass,
     SecondFactorType,
-    AccountSubject,
     TokenGrantType,
     IdentifierType,
-    AccountStatus,
     ActionType,
     EntityType,
 } from "~context/enums";
 
 export class CoreFixture implements Fixtures.Core.Contract {
+    private readonly entities = new EntityFactoryRegistry();
     private sequence = 0;
 
     public constructor(protected readonly entityManager: ORM.EntityManager) {}
 
     public async createAccount(props: Fixtures.Core.CreateAccount.Props = {}): Fixtures.Core.CreateAccount.Result {
-        const account = new Account({
-            subject: props.subject ?? AccountSubject.HUMAN,
-            status: props.status ?? AccountStatus.ACTIVE,
-        });
-
-        account.is2FAEnforced = props.is2FAEnforced ?? account.is2FAEnforced;
-        account.createdAt = props.createdAt ?? account.createdAt;
-        account.lastActiveAt = props.lastActiveAt;
-        account.updatedAt = props.updatedAt;
-
-        return await this.persist(account);
+        return await this.persist(this.entities.createAccount(props));
     }
 
     public async createProfile(props: Fixtures.Core.CreateProfile.Props): Fixtures.Core.CreateProfile.Result {
-        const profile = new Profile({
-            displayName: props.displayName ?? "Test Account",
-            pictureUrl: props.pictureUrl,
-            timeZone: props.timeZone,
-            account: props.account,
-            locale: props.locale,
-        });
-
-        return await this.persist(profile);
+        return await this.persist(
+            this.entities.createProfile({
+                ...props,
+                displayName: props.displayName ?? "Test Account",
+            }),
+        );
     }
 
     public async createIdentifier(props: Fixtures.Core.CreateIdentifier.Props): Fixtures.Core.CreateIdentifier.Result {
         const type = props.type ?? IdentifierType.EMAIL;
-        const identifier = new Identifier({
+        const identifier = this.entities.createIdentifier({
             identity: props.identity ?? this.nextIdentity(type),
             providerUserId: props.providerUserId,
             provider: props.provider,
@@ -87,42 +60,33 @@ export class CoreFixture implements Fixtures.Core.Contract {
     public async createInterfaceClient(
         props: Fixtures.Core.CreateInterfaceClient.Props,
     ): Fixtures.Core.CreateInterfaceClient.Result {
-        const client = new InterfaceClient({
-            redirectUris: props.redirectUris ?? ["https://client.test/callback"],
-            grantTypes: props.grantTypes ?? [TokenGrantType.AUTHORIZATION_CODE],
-            authAddress: props.authAddress ?? "https://client.test/auth",
-            name: props.name ?? this.nextName("Interface Client"),
-            isRealmRevoked: props.isRealmRevoked,
-            realmVersion: props.realmVersion,
-            isSystemManaged: props.isSystemManaged,
-            realm: props.realm,
-            description: props.description,
-            isRevoked: props.isRevoked,
-        });
-
-        return await this.persist(client);
+        return await this.persist(
+            this.entities.createInterfaceClient({
+                ...props,
+                redirectUris: props.redirectUris ?? ["https://client.test/callback"],
+                grantTypes: props.grantTypes ?? [TokenGrantType.AUTHORIZATION_CODE],
+                authAddress: props.authAddress ?? "https://client.test/auth",
+                name: props.name ?? this.nextName("Interface Client"),
+            }),
+        );
     }
 
     public async createServiceClient(
         props: Fixtures.Core.CreateServiceClient.Props,
     ): Fixtures.Core.CreateServiceClient.Result {
-        const client = new ServiceClient({
-            name: props.name ?? this.nextName("Service Client"),
-            isRealmRevoked: props.isRealmRevoked,
-            realmVersion: props.realmVersion,
-            code: props.code ?? this.nextCode("service"),
-            allowedAddresses: props.allowedAddresses,
-            isSystemManaged: props.isSystemManaged,
-            realm: props.realm,
-            description: props.description,
-            isRevoked: props.isRevoked,
-        });
-
-        return await this.persist(client);
+        return await this.persist(
+            this.entities.createServiceClient({
+                ...props,
+                name: props.name ?? this.nextName("Service Client"),
+                code: props.code ?? this.nextCode("service"),
+            }),
+        );
     }
 
     public async createSession(props: Fixtures.Core.CreateSession.Props): Fixtures.Core.CreateSession.Result {
-        const session = new Session({
+        const session = this.entities.createSession({
+            ...props,
+            refreshTokenHash: props.refreshTokenHash ?? this.nextCode("refresh-token-hash"),
             expiresAt: props.expiresAt ?? new Date("2099-01-01T00:00:00.000Z"),
             acr: props.acr ?? AuthenticationContextClass.PASSWORD,
             client: props.client ?? "identity-test-client",
@@ -133,17 +97,13 @@ export class CoreFixture implements Fixtures.Core.Contract {
             account: props.account,
         });
 
-        session.createdAt = props.createdAt ?? session.createdAt;
-        session.lastRefreshedAt = props.lastRefreshedAt ?? session.lastRefreshedAt;
-        session.refreshTokenHash = props.refreshTokenHash ?? this.nextCode("refresh-token-hash");
-
         return await this.persist(session);
     }
 
     public async createRecoveryCode(
         props: Fixtures.Core.CreateRecoveryCode.Props,
     ): Fixtures.Core.CreateRecoveryCode.Result {
-        const code = new RecoveryCode({
+        const code = this.entities.createRecoveryCode({
             hash: props.hash ?? this.nextCode("recovery"),
             account: props.account,
         });
@@ -156,39 +116,39 @@ export class CoreFixture implements Fixtures.Core.Contract {
     }
 
     public async createPassword(props: Fixtures.Core.CreatePassword.Props): Fixtures.Core.CreatePassword.Result {
-        const password = new Password({
-            hash: props.hash ?? this.nextCode("password-hash"),
-            account: props.account,
-        });
-
-        return await this.persist(password);
+        return await this.persist(
+            this.entities.createPassword({
+                hash: props.hash ?? this.nextCode("password-hash"),
+                account: props.account,
+            }),
+        );
     }
 
     public async createPasswordHistory(
         props: Fixtures.Core.CreatePasswordHistory.Props,
     ): Fixtures.Core.CreatePasswordHistory.Result {
-        const history = new PasswordHistory({
-            hash: props.hash ?? this.nextCode("previous-password-hash"),
-            version: props.version ?? 1,
-            account: props.account,
-        });
-
-        return await this.persist(history);
+        return await this.persist(
+            this.entities.createPasswordHistory({
+                hash: props.hash ?? this.nextCode("previous-password-hash"),
+                version: props.version ?? 1,
+                account: props.account,
+            }),
+        );
     }
 
     public async createMasterCode(props: Fixtures.Core.CreateMasterCode.Props): Fixtures.Core.CreateMasterCode.Result {
-        const masterCode = new MasterCode({
-            hash: props.hash ?? this.nextCode("master-code-hash"),
-            account: props.account,
-        });
-
-        return await this.persist(masterCode);
+        return await this.persist(
+            this.entities.createMasterCode({
+                hash: props.hash ?? this.nextCode("master-code-hash"),
+                account: props.account,
+            }),
+        );
     }
 
     public async createSecondFactor(
         props: Fixtures.Core.CreateSecondFactor.Props,
     ): Fixtures.Core.CreateSecondFactor.Result {
-        const secondFactor = new SecondFactor({
+        const secondFactor = this.entities.createSecondFactor({
             secret: props.secret ?? this.nextCode("secret"),
             type: props.type ?? SecondFactorType.TOTP,
             name: props.name ?? "Authenticator",
@@ -207,7 +167,7 @@ export class CoreFixture implements Fixtures.Core.Contract {
     }
 
     public async createAuditLog(props: Fixtures.Core.CreateAuditLog.Props = {}): Fixtures.Core.CreateAuditLog.Result {
-        const auditLog = new AuditLog({
+        const auditLog = this.entities.createAuditLog({
             entityType: props.entityType ?? EntityType.ACCOUNT,
             actionType: props.actionType ?? ActionType.CREATE,
             actor: props.actor ?? randomUUID(),
@@ -226,7 +186,7 @@ export class CoreFixture implements Fixtures.Core.Contract {
 
     public async createChangeLog(props: Fixtures.Core.CreateChangeLog.Props = {}): Fixtures.Core.CreateChangeLog.Result {
         const auditEntry = props.auditEntry ?? (await this.createAuditLog());
-        const changeLog = new ChangeLog({
+        const changeLog = this.entities.createChangeLog({
             delta: props.delta ?? new DeltaChanges({ name: { old: null, new: "Updated Name" } }),
             changeType: props.changeType ?? ChangeSetType.CREATE,
             entityType: props.entityType ?? EntityType.ACCOUNT,

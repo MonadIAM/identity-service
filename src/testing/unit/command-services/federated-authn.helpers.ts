@@ -4,9 +4,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class FederatedAuthnCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.FederatedAuthnCommands.Contract
+    implements Unit.Commands.FederatedAuthn.Contract
 {
-    public async commands(): Unit.Application.FederatedAuthnCommands.Commands.Result {
+    public async commands(): Unit.Commands.FederatedAuthn.Commands.Result {
         const { FederatedAuthnCommands } = await import("~context/application/commands/federated-authn.commands.js");
         const execution = this.execution();
 

@@ -1,34 +1,25 @@
-import type { AccountRepository } from "~context/infrastructure/repositories/account.repository";
-import type { RecoveryCodeService } from "~context/domain/services/recovery-code.service";
+declare namespace Integration.Domain.RecoveryCode {
+    type Suite = Postgres.Suite.Contract<Service.Context, Fixtures.Core.Contract>;
 
-declare global {
-    namespace Integration {
-        namespace Domain {
-            namespace RecoveryCode {
-                type Suite = Postgres.Suite.Contract<Service.Context, Fixtures.Core.Contract>;
+    interface Contract {
+        repositories: Repositories.Signature;
+        service: Service.Signature;
+    }
 
-                interface Contract {
-                    readonly repositories: Repositories.Signature;
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Context = {
+            recoveryCodeService: Services.RecoveryCode.Contract;
+            repositories: Repositories.Context;
+        };
 
-                namespace Service {
-                    type Context = {
-                        readonly recoveryCodeService: RecoveryCodeService;
-                        readonly repositories: Repositories.Context;
-                    };
+        type Signature = (context: Postgres.Suite.FactoryContext) => Context;
+    }
 
-                    type Signature = (context: Postgres.Suite.FactoryContext) => Context;
-                }
+    namespace Repositories {
+        type Context = {
+            accounts: globalThis.Repositories.Account.Contract;
+        };
 
-                namespace Repositories {
-                    type Context = {
-                        readonly accounts: AccountRepository;
-                    };
-
-                    type Signature = (context: Postgres.Suite.FactoryContext) => Context;
-                }
-            }
-        }
+        type Signature = (context: Postgres.Suite.FactoryContext) => Context;
     }
 }

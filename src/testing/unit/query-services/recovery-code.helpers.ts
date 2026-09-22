@@ -6,9 +6,9 @@ import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
 export class RecoveryCodeQueriesUnitHelpers
     extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.RecoveryCodeQueries.Contract
+    implements Unit.Queries.RecoveryCode.Contract
 {
-    public queries(): Unit.Application.RecoveryCodeQueries.Queries.Result {
+    public queries(): Unit.Queries.RecoveryCode.Queries.Result {
         const recoveryCodeRepository = {
             getStatus: jest.fn<Repositories.RecoveryCode.QueryContract["getStatus"]>(),
         };

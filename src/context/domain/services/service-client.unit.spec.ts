@@ -87,15 +87,20 @@ describe("ServiceClientService", () => {
         });
     });
 
-    describe("revoke", () => {
-        it("revokes found clients and returns them", async () => {
-            const client = helpers.createServiceClient({ id: CLIENT_ID });
+    describe("revoke / restore", () => {
+        it.each([
+            { method: "revoke", isRevoked: false, identifiers: [CLIENT_ID], scenario: "single identifier" },
+            { method: "restore", isRevoked: true, identifiers: [CLIENT_ID], scenario: "single identifier" },
+            { method: "revoke", isRevoked: false, identifiers: [CLIENT_ID, CLIENT_ID], scenario: "duplicate identifiers" },
+            { method: "restore", isRevoked: true, identifiers: [CLIENT_ID, CLIENT_ID], scenario: "duplicate identifiers" },
+        ] as const)("$method handles $scenario once", async ({ method, isRevoked, identifiers }) => {
+            const client = helpers.createServiceClient({ id: CLIENT_ID, isRevoked });
             const { service, repositories, transaction } = createContext({ client });
-            const revokeSpy = jest.spyOn(client, "revoke");
+            const operationSpy = jest.spyOn(client, method);
 
-            const result = await service.revoke({
+            const result = await service[method]({
                 transaction: transaction.entityManager,
-                identifiers: [CLIENT_ID],
+                identifiers: [...identifiers],
                 realm: REALM_ID,
             });
 
@@ -103,58 +108,7 @@ describe("ServiceClientService", () => {
                 where: { id: { $in: [CLIENT_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
-            expect(revokeSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([client]);
-        });
-
-        it("bulk identifiers: deduplicates before revoking found clients", async () => {
-            const client = helpers.createServiceClient({ id: CLIENT_ID });
-            const { service, repositories, transaction } = createContext({ client });
-            const revokeSpy = jest.spyOn(client, "revoke");
-
-            const result = await service.revoke({
-                transaction: transaction.entityManager,
-                identifiers: [CLIENT_ID, CLIENT_ID],
-                realm: REALM_ID,
-            });
-
-            expect(repositories.serviceClients.find).toHaveBeenCalledWith({
-                where: { id: { $in: [CLIENT_ID] }, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
-            expect(revokeSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([client]);
-        });
-    });
-
-    describe("restore", () => {
-        it("restores found clients and returns them", async () => {
-            const client = helpers.createServiceClient({ id: CLIENT_ID, isRevoked: true });
-            const { service, transaction } = createContext({ client });
-            const restoreSpy = jest.spyOn(client, "restore");
-
-            const result = await service.restore({
-                transaction: transaction.entityManager,
-                identifiers: [CLIENT_ID],
-                realm: REALM_ID,
-            });
-
-            expect(restoreSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([client]);
-        });
-
-        it("bulk identifiers: deduplicates before restoring found clients", async () => {
-            const client = helpers.createServiceClient({ id: CLIENT_ID, isRevoked: true });
-            const { service, transaction } = createContext({ client });
-            const restoreSpy = jest.spyOn(client, "restore");
-
-            const result = await service.restore({
-                transaction: transaction.entityManager,
-                identifiers: [CLIENT_ID, CLIENT_ID],
-                realm: REALM_ID,
-            });
-
-            expect(restoreSpy).toHaveBeenCalledTimes(1);
+            expect(operationSpy).toHaveBeenCalledTimes(1);
             expect(result).toEqual([client]);
         });
     });
@@ -175,30 +129,17 @@ describe("ServiceClientService", () => {
             expect(transaction.remove).not.toHaveBeenCalled();
         });
 
-        it("checks purge eligibility and removes found clients", async () => {
+        it.each([
+            { scenario: "single identifier", identifiers: [CLIENT_ID] },
+            { scenario: "duplicate identifiers", identifiers: [CLIENT_ID, CLIENT_ID] },
+        ])("checks eligibility and purges $scenario once", async ({ identifiers }) => {
             const client = helpers.createServiceClient({ id: CLIENT_ID, isRevoked: true });
             const { service, transaction } = createContext({ client });
             const canPurgeSpy = jest.spyOn(client, "canPurge");
 
             const result = await service.purge({
                 transaction: transaction.entityManager,
-                identifiers: [CLIENT_ID],
-                realm: REALM_ID,
-            });
-
-            expect(canPurgeSpy).toHaveBeenCalledTimes(1);
-            expect(transaction.remove).toHaveBeenCalledWith(client);
-            expect(result).toEqual([client]);
-        });
-
-        it("bulk identifiers: deduplicates before purging found clients", async () => {
-            const client = helpers.createServiceClient({ id: CLIENT_ID, isRevoked: true });
-            const { service, transaction } = createContext({ client });
-            const canPurgeSpy = jest.spyOn(client, "canPurge");
-
-            const result = await service.purge({
-                transaction: transaction.entityManager,
-                identifiers: [CLIENT_ID, CLIENT_ID],
+                identifiers: [...identifiers],
                 realm: REALM_ID,
             });
 
@@ -207,6 +148,7 @@ describe("ServiceClientService", () => {
             expect(result).toEqual([client]);
         });
     });
+
     describe("applyRealmRevocation", () => {
         it("applies the realm version without changing a manual client revocation", async () => {
             const client = helpers.createServiceClient({

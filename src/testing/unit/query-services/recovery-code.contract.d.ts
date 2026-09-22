@@ -1,24 +1,16 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Queries.RecoveryCode {
+    interface Contract extends Domain.Core.Contract {
+        queries: Queries.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace RecoveryCodeQueries {
-                interface Contract extends Domain.Core.Contract {
-                    readonly queries: Queries.Signature;
-                }
+    namespace Queries {
+        type Result = {
+            queries: globalThis.Queries.RecoveryCode.Contract;
+            recoveryCodeRepository: {
+                getStatus: Jest.Mock<Repositories.RecoveryCode.QueryContract["getStatus"]>;
+            };
+        };
 
-                namespace Queries {
-                    type Result = {
-                        readonly queries: globalThis.Queries.RecoveryCode.Contract;
-                        readonly recoveryCodeRepository: {
-                            readonly getStatus: jest.Mock<Repositories.RecoveryCode.QueryContract["getStatus"]>;
-                        };
-                    };
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

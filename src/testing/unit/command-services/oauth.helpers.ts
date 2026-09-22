@@ -5,11 +5,8 @@ import { OAuthCommands } from "~context/application/commands/oauth.commands";
 
 import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
-export class OAuthCommandsUnitHelpers
-    extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.OAuthCommands.Contract
-{
-    public commands(): Unit.Application.OAuthCommands.Commands.Result {
+export class OAuthCommandsUnitHelpers extends DomainServiceCoreUnitHelpers implements Unit.Commands.OAuth.Contract {
+    public commands(): Unit.Commands.OAuth.Commands.Result {
         const configService = this.config({
             values: {
                 JWT_ISSUER: "https://identity.example.test",
@@ -56,7 +53,7 @@ export class OAuthCommandsUnitHelpers
             ),
         };
     }
-    public response(): Unit.Application.OAuthCommands.Response.Result {
+    public response(): Unit.Commands.OAuth.Response.Result {
         const redirect = jest.fn<FastifyReply["redirect"]>();
 
         return { response: this.contract<FastifyReply>({ redirect }), redirect };

@@ -6,9 +6,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class InterfaceClientCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.InterfaceClientCommands.Contract
+    implements Unit.Commands.InterfaceClient.Contract
 {
-    public commands(): Unit.Application.InterfaceClientCommands.Commands.Result {
+    public commands(): Unit.Commands.InterfaceClient.Commands.Result {
         const execution = this.execution();
 
         const interfaceClientService = {

@@ -6,9 +6,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class ReauthenticationCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.ReauthenticationCommands.Contract
+    implements Unit.Commands.Reauthentication.Contract
 {
-    public commands(): Unit.Application.ReauthenticationCommands.Commands.Result {
+    public commands(): Unit.Commands.Reauthentication.Commands.Result {
         const execution = this.execution();
 
         const accountRepository = {

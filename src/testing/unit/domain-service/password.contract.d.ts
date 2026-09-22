@@ -1,24 +1,16 @@
-import type { PasswordService } from "~context/domain/services/password.service";
+declare namespace Unit.Domain.Password {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace Password {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Props = {
+            account?: Entities.Account;
+            historyCheckDays?: string;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly account?: Entities.Account;
-                        readonly historyCheckDays?: string;
-                    };
+        type Result = Core.Service.Context<Services.Password.Contract, { services: ServiceMocks.Contract }>;
 
-                    type Result = Core.Service.Context<PasswordService, { readonly services: ServiceMocks.Contract }>;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

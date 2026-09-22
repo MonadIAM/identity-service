@@ -4,11 +4,8 @@ import { OAuthQueries } from "~context/application/queries/oauth.queries";
 
 import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
-export class OAuthQueriesUnitHelpers
-    extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.OAuthQueries.Contract
-{
-    public queries(): Unit.Application.OAuthQueries.Queries.Result {
+export class OAuthQueriesUnitHelpers extends DomainServiceCoreUnitHelpers implements Unit.Queries.OAuth.Contract {
+    public queries(): Unit.Queries.OAuth.Queries.Result {
         const configService = this.config({
             values: {
                 JWT_ISSUER: "https://identity.example.test",

@@ -6,9 +6,9 @@ import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
 export class InterfaceClientQueriesUnitHelpers
     extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.InterfaceClientQueries.Contract
+    implements Unit.Queries.InterfaceClient.Contract
 {
-    public queries(): Unit.Application.InterfaceClientQueries.Queries.Result {
+    public queries(): Unit.Queries.InterfaceClient.Queries.Result {
         const interfaceClientRepository = {
             findUniqueOrThrow: jest.fn<Repositories.InterfaceClient.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.InterfaceClient.QueryContract["findMany"]>(),

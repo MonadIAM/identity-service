@@ -44,43 +44,35 @@ describe("AccountRepository", () => {
         });
     });
 
-    it("returns account lookup rows matched by identifier trigram", async () => {
-        const { matched } = await suite.fixtures().lookupScenario();
-
-        const [rows, total] = await suite.repository().getLookupList({
+    it.each([
+        {
+            match: "identifier",
+            fixture: "lookupScenario",
             term: "ada.lovelace@example.test",
-            pagination: { currentPage: 1, elementsPerPage: 10 },
-        });
-
-        expect(total).toBe(1);
-        expect(rows).toEqual([
-            {
-                identifier: "ada.lovelace@example.test",
-                displayName: "Ada Lovelace",
-                status: matched.status,
-                id: matched.id,
-            },
-        ]);
-    });
-
-    it("returns account lookup rows matched by display name trigram", async () => {
-        const { matched } = await suite.fixtures().displayNameLookupScenario();
-
-        const [rows, total] = await suite.repository().getLookupList({
+            identifier: "ada.lovelace@example.test",
+            displayName: "Ada Lovelace",
+        },
+        {
+            match: "display name",
+            fixture: "displayNameLookupScenario",
             term: "Katherine Johnson",
-            pagination: { currentPage: 1, elementsPerPage: 10 },
-        });
+            displayName: "Katherine Johnson",
+            identifier: null,
+        },
+    ] as const)(
+        "returns account lookup rows matched by $match trigram",
+        async ({ fixture, term, identifier, displayName }) => {
+            const { matched } = await suite.fixtures()[fixture]();
 
-        expect(total).toBe(1);
-        expect(rows).toEqual([
-            {
-                displayName: "Katherine Johnson",
-                status: matched.status,
-                identifier: null,
-                id: matched.id,
-            },
-        ]);
-    });
+            const [rows, total] = await suite.repository().getLookupList({
+                term,
+                pagination: { currentPage: 1, elementsPerPage: 10 },
+            });
+
+            expect(total).toBe(1);
+            expect(rows).toEqual([{ identifier, displayName, status: matched.status, id: matched.id }]);
+        },
+    );
 
     it("uses trigram lookup with stable display name tie-breakers", async () => {
         const scenario = await suite.fixtures().lookupSearchScenario();

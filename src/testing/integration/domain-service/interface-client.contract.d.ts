@@ -1,41 +1,34 @@
 import type { ConfigService } from "@nestjs/config";
 
-import type { InterfaceClientRepository } from "~context/infrastructure/repositories/interface-client.repository";
-import type { InterfaceClientService } from "~context/domain/services/interface-client.service";
-
 declare global {
-    namespace Integration {
-        namespace Domain {
-            namespace InterfaceClient {
-                type Suite = Postgres.Suite.Contract<Service.Context, Fixtures.Core.Contract>;
+    namespace Integration.Domain.InterfaceClient {
+        type Suite = Postgres.Suite.Contract<Service.Context, Fixtures.Core.Contract>;
 
-                interface Contract {
-                    readonly repositories: Repositories.Signature;
-                    readonly service: Service.Signature;
-                    readonly config: Config.Signature;
-                }
+        interface Contract {
+            repositories: Repositories.Signature;
+            service: Service.Signature;
+            config: Config.Signature;
+        }
 
-                namespace Service {
-                    type Context = {
-                        readonly interfaceClientService: InterfaceClientService;
-                        readonly repositories: Repositories.Context;
-                    };
+        namespace Service {
+            type Context = {
+                interfaceClientService: Services.InterfaceClient.Contract;
+                repositories: Repositories.Context;
+            };
 
-                    type Signature = (context: Postgres.Suite.FactoryContext) => Context;
-                }
+            type Signature = (context: Postgres.Suite.FactoryContext) => Context;
+        }
 
-                namespace Repositories {
-                    type Context = {
-                        readonly interfaceClients: InterfaceClientRepository;
-                    };
+        namespace Repositories {
+            type Context = {
+                interfaceClients: globalThis.Repositories.InterfaceClient.Contract;
+            };
 
-                    type Signature = (context: Postgres.Suite.FactoryContext) => Context;
-                }
+            type Signature = (context: Postgres.Suite.FactoryContext) => Context;
+        }
 
-                namespace Config {
-                    type Signature = () => ConfigService;
-                }
-            }
+        namespace Config {
+            type Signature = () => ConfigService;
         }
     }
 }

@@ -1,13 +1,13 @@
 declare namespace Integration {
     namespace ServiceMockBank {
         interface Contract {
-            readonly secondFactorSecret: SecondFactorSecret.Signature;
-            readonly logMasking: LogMasking.Signature;
-            readonly hashing: Hashing.Signature;
-            readonly outbox: Outbox.Signature;
-            readonly crypto: Crypto.Signature;
-            readonly totp: TOTP.Signature;
-            readonly jwt: JWT.Signature;
+            secondFactorSecret: SecondFactorSecret.Signature;
+            logMasking: LogMasking.Signature;
+            hashing: Hashing.Signature;
+            outbox: Outbox.Signature;
+            crypto: Crypto.Signature;
+            totp: TOTP.Signature;
+            jwt: JWT.Signature;
         }
 
         namespace LogMasking {
@@ -45,7 +45,7 @@ declare namespace Integration {
         interface Outbox extends TransactionManager.Outbox.Contract {}
 
         interface Hashing extends CommonServices.Hashing.PublicContract {
-            readonly hashedValues: string[];
+            hashedValues: string[];
         }
 
         interface Crypto extends CommonServices.Crypto.Contract {}
@@ -76,9 +76,9 @@ declare namespace Integration {
         }
 
         interface JWT extends CommonServices.JWT.Contract {
-            readonly refreshPayloads: CommonServices.JWT.SignRefreshToken.Props[];
-            readonly accessPayloads: CommonServices.JWT.SignAccessToken.Props[];
-            readonly idPayloads: CommonServices.JWT.SignIdToken.Props[];
+            refreshPayloads: CommonServices.JWT.SignRefreshToken.Props[];
+            accessPayloads: CommonServices.JWT.SignAccessToken.Props[];
+            idPayloads: CommonServices.JWT.SignIdToken.Props[];
 
             setFailure: JWT.SetFailure.Signature;
         }

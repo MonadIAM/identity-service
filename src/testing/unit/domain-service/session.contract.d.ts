@@ -1,26 +1,18 @@
-import type { SessionService } from "~context/domain/services/session.service";
+declare namespace Unit.Domain.Session {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace Session {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Props = {
+            maxActiveSessions?: number;
+            sessionExpiryDays?: string;
+            account?: Entities.Account;
+            accessTokenTTL?: string;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly maxActiveSessions?: number;
-                        readonly sessionExpiryDays?: string;
-                        readonly account?: Entities.Account;
-                        readonly accessTokenTTL?: string;
-                    };
+        type Result = Core.Service.Context<Services.Session.Contract, { services: ServiceMocks.Contract }>;
 
-                    type Result = Core.Service.Context<SessionService, { readonly services: ServiceMocks.Contract }>;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

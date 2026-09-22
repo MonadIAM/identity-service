@@ -1,23 +1,15 @@
-import type { ProfileService } from "~context/domain/services/profile.service";
+declare namespace Unit.Domain.Profile {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace Profile {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Props = {
+            account?: Entities.Account;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly account?: Entities.Account;
-                    };
+        type Result = Core.Service.Context<Services.Profile.Contract>;
 
-                    type Result = Core.Service.Context<ProfileService>;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

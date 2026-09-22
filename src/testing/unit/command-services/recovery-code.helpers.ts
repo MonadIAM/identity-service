@@ -6,9 +6,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class RecoveryCodeCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.RecoveryCodeCommands.Contract
+    implements Unit.Commands.RecoveryCode.Contract
 {
-    public commands(): Unit.Application.RecoveryCodeCommands.Commands.Result {
+    public commands(): Unit.Commands.RecoveryCode.Commands.Result {
         const execution = this.execution();
 
         const cryptoService = {

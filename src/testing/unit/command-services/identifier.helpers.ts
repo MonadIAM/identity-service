@@ -4,9 +4,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class IdentifierCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.IdentifierCommands.Contract
+    implements Unit.Commands.Identifier.Contract
 {
-    public async commands(): Unit.Application.IdentifierCommands.Commands.Result {
+    public async commands(): Unit.Commands.Identifier.Commands.Result {
         const { IdentifierCommands } = await import("~context/application/commands/identifier.commands.js");
         const execution = this.execution();
 

@@ -1,46 +1,24 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Commands.SecondFactor {
+    interface Contract extends Core.Contract {
+        commands: Commands.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace SecondFactorCommands {
-                interface Contract extends CommandCore.Contract {
-                    readonly commands: Commands.Signature;
-                }
-
-                namespace Commands {
-                    type Result = Promise<
-                        CommandCore.Execution.Result & {
-                            readonly commands: globalThis.Commands.SecondFactor.Contract;
-                            readonly secondFactorSecretService: {
-                                readonly encrypt: jest.Mock<
-                                    InfrastructureServices.SecondFactorSecret.PublicContract["encrypt"]
-                                >;
-                            };
-                            readonly secondFactorService: {
-                                readonly create: jest.Mock<Services.SecondFactor.CommandContract["create"]>;
-                                readonly verify: jest.Mock<Services.SecondFactor.CommandContract["verify"]>;
-                                readonly reset: jest.Mock<Services.SecondFactor.CommandContract["reset"]>;
-                                readonly purge: jest.Mock<Services.SecondFactor.CommandContract["purge"]>;
-                            };
-                            readonly hashingService: {
-                                readonly hash: jest.Mock<CommonServices.Hashing.PublicContract["hash"]>;
-                            };
-                            readonly cryptoService: {
-                                readonly generateRecoveryCode: jest.Mock<
-                                    CommonServices.Crypto.PublicContract["generateRecoveryCode"]
-                                >;
-                            };
-                            readonly totpService: {
-                                readonly createSecret: jest.Mock<CommonServices.TOTP.PublicContract["createSecret"]>;
-                                readonly createURI: jest.Mock<CommonServices.TOTP.PublicContract["createURI"]>;
-                            };
-                        }
-                    >;
-
-                    type Signature = () => Result;
-                }
+    namespace Commands {
+        type Result = Promise<
+            Core.Execution.Result & {
+                commands: globalThis.Commands.SecondFactor.Contract;
+                secondFactorSecretService: Jest.Mocked<
+                    Pick<InfrastructureServices.SecondFactorSecret.PublicContract, "encrypt">
+                >;
+                secondFactorService: Jest.Mocked<
+                    Pick<Services.SecondFactor.CommandContract, "create" | "verify" | "reset" | "purge">
+                >;
+                hashingService: Jest.Mocked<Pick<CommonServices.Hashing.PublicContract, "hash">>;
+                cryptoService: Jest.Mocked<Pick<CommonServices.Crypto.PublicContract, "generateRecoveryCode">>;
+                totpService: Jest.Mocked<Pick<CommonServices.TOTP.PublicContract, "createSecret" | "createURI">>;
             }
-        }
+        >;
+
+        type Signature = () => Result;
     }
 }

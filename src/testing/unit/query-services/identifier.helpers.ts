@@ -4,11 +4,8 @@ import { IdentifierQueries } from "~context/application/queries/identifier.queri
 
 import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
-export class IdentifierQueriesUnitHelpers
-    extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.IdentifierQueries.Contract
-{
-    public queries(): Unit.Application.IdentifierQueries.Queries.Result {
+export class IdentifierQueriesUnitHelpers extends DomainServiceCoreUnitHelpers implements Unit.Queries.Identifier.Contract {
+    public queries(): Unit.Queries.Identifier.Queries.Result {
         const identifierRepository = {
             findUniqueOrThrow: jest.fn<Repositories.Identifier.QueryContract["findUniqueOrThrow"]>(),
             getLookupList: jest.fn<Repositories.Identifier.QueryContract["getLookupList"]>(),

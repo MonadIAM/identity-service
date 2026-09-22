@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { NotificationContentKind, NotificationCategory, PlatformService, MessageTemplate } from "~context/enums";
-import { EntityFactoryRegistry } from "~testing/unit/entity-factory.registry";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 
 import { SessionMapper } from "./session.mapper";
 

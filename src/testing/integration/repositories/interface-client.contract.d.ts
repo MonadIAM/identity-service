@@ -1,16 +1,14 @@
-declare namespace Fixtures {
-    namespace InterfaceClient {
-        interface Contract extends Fixtures.Core.Contract {
-            limitScenario: LimitScenario.Signature;
-        }
+declare namespace Fixtures.InterfaceClient {
+    interface Contract extends Fixtures.Core.Contract {
+        limitScenario: LimitScenario.Signature;
+    }
 
-        namespace LimitScenario {
-            type Result = Promise<{
-                fullRealm: string;
-                availableRealm: string;
-            }>;
+    namespace LimitScenario {
+        type Result = Promise<{
+            fullRealm: string;
+            availableRealm: string;
+        }>;
 
-            type Signature = () => Result;
-        }
+        type Signature = () => Result;
     }
 }

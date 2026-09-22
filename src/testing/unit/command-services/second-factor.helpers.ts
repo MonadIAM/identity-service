@@ -4,9 +4,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class SecondFactorCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.SecondFactorCommands.Contract
+    implements Unit.Commands.SecondFactor.Contract
 {
-    public async commands(): Unit.Application.SecondFactorCommands.Commands.Result {
+    public async commands(): Unit.Commands.SecondFactor.Commands.Result {
         const { SecondFactorCommands } = await import("~context/application/commands/second-factor.commands.js");
         const execution = this.execution();
 
