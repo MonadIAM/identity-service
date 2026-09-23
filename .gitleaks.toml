@@ -3,6 +3,15 @@ title = "project gitleaks config"
 [extend]
 useDefault = true # Uses the standard built-in gitleaks config as a base.
 
+# Fixed TOTP test vector, not an application credential. Also applies to history.
+[[allowlists]]
+description = "Allow the fixed TOTP unit-test vector"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^src/common/services/totp\.service\.unit\.spec\.ts$''']
+regexTarget = "secret"
+regexes = ['''^GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ$''']
+
 
 
 [[rules]]

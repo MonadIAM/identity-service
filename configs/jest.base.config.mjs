@@ -19,8 +19,9 @@ const config = {
         "^.+\\.ts$": [
             "ts-jest",
             {
-                tsconfig: { module: "ES2022", moduleResolution: "Bundler" },
+                tsconfig: { module: "ES2022", moduleResolution: "Bundler", sourceMap: true, inlineSources: true },
                 useESM: true,
+                astTransformers: { before: ["<rootDir>/configs/jest.dirname.transformer.cjs"] },
             },
         ],
     },
@@ -30,20 +31,16 @@ const config = {
     collectCoverageFrom: [
         "src/**/*.ts",
         "!src/**/*.d.ts",
-        "!src/**/*.{spec,test}.ts",
-        "!src/**/{__tests__,__mocks__}/**",
-        "!src/testing/**",
-        "!src/**/index.ts",
-        "!src/**/*.{module,schema,dto,generated}.ts",
-        "!src/**/{constants,enums,tokens}.ts",
-        "!src/**/*.examples.ts",
+        "!src/**/{main,seeder,index,constants,enums,tokens}.ts",
+        "!src/**/*.{examples,module,schema,dto,generated,spec}.ts",
         "!src/infrastructure/database/migrations/**",
         "!src/infrastructure/datasets/**",
-        "!src/**/seeder.ts",
-        "!src/main.ts",
+        "!src/testing/**",
     ],
 
     moduleNameMapper: {
+        "^~(infrastructure|observability|bootstrap|context|common|testing)/(.*)\\.js$": "<rootDir>/src/$1/$2",
+        "^~root/(.*)\\.js$": "<rootDir>/$1",
         "^~infrastructure$": "<rootDir>/src/infrastructure",
         "^~infrastructure/(.*)$": "<rootDir>/src/infrastructure/$1",
         "^~observability$": "<rootDir>/src/observability",

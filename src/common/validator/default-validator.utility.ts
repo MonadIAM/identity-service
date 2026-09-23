@@ -39,7 +39,7 @@ import { IsOrdinal } from "./algorithms/is-ordinal.validator";
 export abstract class StandardValidationDecorators {
     private static readonly dictionaryPath = "validator";
 
-    private static wrap(
+    protected static wrap(
         key: Intl.ValidatorKey,
         args: Record<string, unknown>,
         options?: ValidationOptions,
@@ -176,8 +176,8 @@ export abstract class StandardValidationDecorators {
     public static IsBoolean(options?: ValidationOptions, label?: string): PropertyDecorator {
         return (target, key) => {
             Transform(({ value }) => {
-                if (typeof value === "string") {
-                    return /^true|false$/.test(value) && value === "true";
+                if (value === "true" || value === "false") {
+                    return value === "true";
                 } else {
                     return value;
                 }

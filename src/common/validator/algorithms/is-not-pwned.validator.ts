@@ -36,7 +36,10 @@ class IsNotPwnedConstraint implements ValidatorConstraintInterface {
 
             if (response.ok) {
                 const body = await response.text();
-                return !body.split("\r\n").some((line) => line.split(":")[0] === suffix);
+                return !body.split("\r\n").some((line) => {
+                    const [candidate, count] = line.split(":");
+                    return candidate === suffix && Number(count) > 0;
+                });
             } else {
                 this.logger.warn(`HIBP range lookup returned ${response.status} — failing open for this check.`);
                 return true;
