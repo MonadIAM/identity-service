@@ -2,8 +2,8 @@ import { describe, expect, it } from "@jest/globals";
 
 import { PasswordIntegrationHelpers } from "~testing/integration/domain-service/password.helpers";
 import { Password, PasswordHistory, RecoveryCode } from "~context/domain/entities";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { IdentifierType } from "~context/enums";
 
 const helpers = new PasswordIntegrationHelpers();

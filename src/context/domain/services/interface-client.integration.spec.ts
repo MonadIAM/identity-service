@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { InterfaceClientIntegrationHelpers } from "~testing/integration/domain-service/interface-client.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { InterfaceClient } from "~context/domain/entities";
 import { TokenGrantType } from "~context/enums";
 

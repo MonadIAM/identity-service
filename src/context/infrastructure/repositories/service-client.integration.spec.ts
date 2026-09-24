@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { ConfigService } from "@nestjs/config";
 
 import { ServiceClientFixture } from "~testing/integration/repositories/service-client.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 
 import { ServiceClientRepository } from "./service-client.repository";
 

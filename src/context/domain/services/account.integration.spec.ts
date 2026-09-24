@@ -3,8 +3,8 @@ import { describe, expect, it } from "@jest/globals";
 import { AccountIntegrationHelpers } from "~testing/integration/domain-service/account.helpers";
 import { Account, Identifier, Password, Profile, Session } from "~context/domain/entities";
 import { AccountStatus, AccountSubject, IdentifierType } from "~context/enums";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 
 const helpers = new AccountIntegrationHelpers();
 

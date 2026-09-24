@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 
 import { IdentifierIntegrationHelpers } from "~testing/integration/domain-service/identifier.helpers";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { Identifier } from "~context/domain/entities";
 import { IdentifierType } from "~context/enums";
 

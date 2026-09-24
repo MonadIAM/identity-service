@@ -1,9 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { SessionIntegrationHelpers } from "~testing/integration/domain-service/session.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { AccountStatus, AuthenticationContextClass } from "~context/enums";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { Account, Session } from "~context/domain/entities";
 
 const CLIENT_ID = "identity-test-client";

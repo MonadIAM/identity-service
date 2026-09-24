@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { SecondFactorIntegrationHelpers } from "~testing/integration/domain-service/second-factor.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { MasterCode, SecondFactor } from "~context/domain/entities";
 import { IdentifierType, SecondFactorType } from "~context/enums";
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { SessionFixture } from "~testing/integration/repositories/session.fixture";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 
 import { SessionRepository } from "./session.repository";
 

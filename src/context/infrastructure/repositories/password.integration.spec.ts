@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 
 import { PasswordRepository } from "./password.repository";
