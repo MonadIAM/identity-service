@@ -11,58 +11,67 @@ const ACTOR = "actor-account";
 const ID = "entity-a";
 
 describe("IdentifierQueries", () => {
-    it.each([QueryMode.DEFAULT, QueryMode.MANAGE])(
-        "applies account ownership in %s without changing caller filters",
-        async (mode) => {
-            const { queries, identifierRepository } = helpers.queries();
-            const identifier = helpers.createIdentifier();
-            const filters: Repositories.Mappers.Identifier.Filters = {
-                account: { operator: PublicLinkOperator.EQUAL, value: ACCOUNT },
-            };
-            identifierRepository.findUniqueOrThrow.mockResolvedValue(identifier);
-            identifierRepository.findMany.mockResolvedValue([[identifier], 12]);
+    describe("findUnique / findMany", () => {
+        it.each([QueryMode.DEFAULT, QueryMode.MANAGE])(
+            "applies account ownership in %s without changing caller filters",
+            async (mode) => {
+                const { queries, identifierRepository } = helpers.queries();
+                const identifier = helpers.createIdentifier();
+                const filters: Repositories.Mappers.Identifier.Filters = {
+                    account: { operator: PublicLinkOperator.EQUAL, value: ACCOUNT },
+                };
+                identifierRepository.findUniqueOrThrow.mockResolvedValue(identifier);
+                identifierRepository.findMany.mockResolvedValue([[identifier], 12]);
 
-            const found = await queries.findUnique({ view: ResponseViewType.COMPACT, mode, actor: ACTOR, identifier: ID });
-            const page = await queries.findMany({
-                view: ResponseViewType.COMPACT,
-                mode,
-                actor: ACTOR,
-                filters,
-                sort: {},
-                pagination: PAGINATION,
-            });
+                const found = await queries.findUnique({
+                    view: ResponseViewType.COMPACT,
+                    mode,
+                    actor: ACTOR,
+                    identifier: ID,
+                });
+                const page = await queries.findMany({
+                    view: ResponseViewType.COMPACT,
+                    mode,
+                    actor: ACTOR,
+                    filters,
+                    sort: {},
+                    pagination: PAGINATION,
+                });
 
-            expect(found).toBe(identifier);
-            expect(page).toEqual([[identifier], 12]);
-            expect(identifierRepository.findUniqueOrThrow.mock.calls).toEqual([
-                [{ where: mode === QueryMode.DEFAULT ? { id: ID, account: ACTOR } : { id: ID } }],
-            ]);
-            expect(identifierRepository.findMany.mock.calls).toEqual([
-                [
-                    {
-                        pagination: PAGINATION,
-                        sort: {},
-                        filters: {
-                            account: {
-                                operator: PublicLinkOperator.EQUAL,
-                                value: mode === QueryMode.DEFAULT ? ACTOR : ACCOUNT,
+                expect(found).toBe(identifier);
+                expect(page).toEqual([[identifier], 12]);
+                expect(identifierRepository.findUniqueOrThrow.mock.calls).toEqual([
+                    [{ where: mode === QueryMode.DEFAULT ? { id: ID, account: ACTOR } : { id: ID } }],
+                ]);
+                expect(identifierRepository.findMany.mock.calls).toEqual([
+                    [
+                        {
+                            pagination: PAGINATION,
+                            sort: {},
+                            filters: {
+                                account: {
+                                    operator: PublicLinkOperator.EQUAL,
+                                    value: mode === QueryMode.DEFAULT ? ACTOR : ACCOUNT,
+                                },
                             },
                         },
-                    },
-                ],
+                    ],
+                ]);
+                expect(filters.account?.value).toBe(ACCOUNT);
+            },
+        );
+    });
+
+    describe("getLookupList", () => {
+        it("restricts lookup to the requested account and retains the search term", async () => {
+            const { queries, identifierRepository } = helpers.queries();
+            identifierRepository.getLookupList.mockResolvedValue([[], 0]);
+
+            await queries.getLookupList({ account: ACTOR, term: "mail", pagination: PAGINATION });
+
+            expect(identifierRepository.getLookupList.mock.calls).toEqual([
+                [{ account: ACTOR, term: "mail", pagination: PAGINATION }],
             ]);
-            expect(filters.account?.value).toBe(ACCOUNT);
-        },
-    );
-
-    it("restricts lookup to the requested account and retains the search term", async () => {
-        const { queries, identifierRepository } = helpers.queries();
-        identifierRepository.getLookupList.mockResolvedValue([[], 0]);
-
-        await queries.getLookupList({ account: ACTOR, term: "mail", pagination: PAGINATION });
-
-        expect(identifierRepository.getLookupList.mock.calls).toEqual([
-            [{ account: ACTOR, term: "mail", pagination: PAGINATION }],
-        ]);
+        });
     });
 });

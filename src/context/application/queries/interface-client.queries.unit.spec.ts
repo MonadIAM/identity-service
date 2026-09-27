@@ -9,27 +9,29 @@ const REALM = "realm-a";
 const ID = "entity-a";
 
 describe("InterfaceClientQueries", () => {
-    it.each([
-        { mode: QueryMode.DEFAULT, scope: { realm: REALM } },
-        { mode: QueryMode.MANAGE, scope: {} },
-    ])("%s enforces the appropriate ownership scope on single and paged reads", async ({ mode, scope }) => {
-        const { queries, interfaceClientRepository: repository } = helpers.queries();
-        repository.findUniqueOrThrow.mockResolvedValue(helpers.createInterfaceClient());
-        repository.findMany.mockResolvedValue([[], 0]);
+    describe("findUnique / findMany", () => {
+        it.each([
+            { mode: QueryMode.DEFAULT, scope: { realm: REALM } },
+            { mode: QueryMode.MANAGE, scope: {} },
+        ])("%s enforces the appropriate ownership scope on single and paged reads", async ({ mode, scope }) => {
+            const { queries, interfaceClientRepository: repository } = helpers.queries();
+            repository.findUniqueOrThrow.mockResolvedValue(helpers.createInterfaceClient());
+            repository.findMany.mockResolvedValue([[], 0]);
 
-        await queries.findUnique({ view: ResponseViewType.COMPACT, mode, realm: REALM, client: ID });
-        await queries.findMany({
-            view: ResponseViewType.COMPACT,
-            pagination: PAGINATION,
-            realm: REALM,
-            filters: {},
-            sort: {},
-            mode,
+            await queries.findUnique({ view: ResponseViewType.COMPACT, mode, realm: REALM, client: ID });
+            await queries.findMany({
+                view: ResponseViewType.COMPACT,
+                pagination: PAGINATION,
+                realm: REALM,
+                filters: {},
+                sort: {},
+                mode,
+            });
+
+            expect(repository.findUniqueOrThrow.mock.calls).toEqual([
+                [expect.objectContaining({ where: { id: ID, ...scope } })],
+            ]);
+            expect(repository.findMany.mock.calls).toEqual([[expect.objectContaining({ prefilter: scope })]]);
         });
-
-        expect(repository.findUniqueOrThrow.mock.calls).toEqual([
-            [expect.objectContaining({ where: { id: ID, ...scope } })],
-        ]);
-        expect(repository.findMany.mock.calls).toEqual([[expect.objectContaining({ prefilter: scope })]]);
     });
 });

@@ -53,33 +53,39 @@ describe("Validator input contracts", () => {
         });
     });
 
-    it("accepts supported UUID versions when no version is specified", () => {
-        const decorator = Validator.IsListOrSingleUUID();
+    describe("IsListOrSingleUUID", () => {
+        it("accepts supported UUID versions when no version is specified", () => {
+            const decorator = Validator.IsListOrSingleUUID();
 
-        expect(validate(decorator, [uuid, "550e8400-e29b-11d4-a716-446655440000"]).errors).toEqual([]);
-        expect(validate(decorator, [uuid, "invalid"]).errors).not.toHaveLength(0);
+            expect(validate(decorator, [uuid, "550e8400-e29b-11d4-a716-446655440000"]).errors).toEqual([]);
+            expect(validate(decorator, [uuid, "invalid"]).errors).not.toHaveLength(0);
+        });
     });
 
-    it("converts numeric strings in scalar and array inputs", () => {
-        expect(validate(Validator.IsListOrSinglePositiveInt(), "2").input.value).toBe(2);
-        expect(validate(Validator.IsListOrSinglePositiveInt(), [1, "2"]).input.value).toEqual([1, 2]);
+    describe("IsListOrSinglePositiveInt", () => {
+        it("converts numeric strings in scalar and array inputs", () => {
+            expect(validate(Validator.IsListOrSinglePositiveInt(), "2").input.value).toBe(2);
+            expect(validate(Validator.IsListOrSinglePositiveInt(), [1, "2"]).input.value).toEqual([1, 2]);
+        });
     });
 
-    it("preserves the localized validation message and label", () => {
-        const { errors } = validate(Validator.IsListOrSingleString("Filter value"), 123);
+    describe("IsListOrSingleString", () => {
+        it("preserves the localized validation message and label", () => {
+            const { errors } = validate(Validator.IsListOrSingleString("Filter value"), 123);
 
-        expect(errors[0].constraints).toEqual({ isString: "validator.IS_STRING" });
-        expect(errors[0].contexts?.isString).toEqual({ property: "value", label: "Filter value" });
-    });
+            expect(errors[0].constraints).toEqual({ isString: "validator.IS_STRING" });
+            expect(errors[0].contexts?.isString).toEqual({ property: "value", label: "Filter value" });
+        });
 
-    it("honors an optional field without skipping validation of provided values", () => {
-        class Input {
-            @Validator.IsOptional()
-            @Validator.IsListOrSingleString()
-            declare public value: unknown;
-        }
-        expect(validateSync(plainToInstance(Input, {}))).toEqual([]);
-        expect(validateSync(plainToInstance(Input, { value: 123 }))).not.toHaveLength(0);
+        it("honors an optional field without skipping validation of provided values", () => {
+            class Input {
+                @Validator.IsOptional()
+                @Validator.IsListOrSingleString()
+                declare public value: unknown;
+            }
+            expect(validateSync(plainToInstance(Input, {}))).toEqual([]);
+            expect(validateSync(plainToInstance(Input, { value: 123 }))).not.toHaveLength(0);
+        });
     });
 
     describe("boolean conversion", () => {
@@ -125,40 +131,46 @@ describe("Identity validation extensions", () => {
         jest.restoreAllMocks();
     });
 
-    it.each(["local", "simple"] as const)("preserves the %s password policy", (mode) => {
-        jest.replaceProperty(process, "env", { ...process.env, PASSWORD_VALIDATION_MODE: mode });
-        const decorator = Validator.IsPassword();
+    describe("IsPassword", () => {
+        it.each(["local", "simple"] as const)("preserves the %s password policy", (mode) => {
+            jest.replaceProperty(process, "env", { ...process.env, PASSWORD_VALIDATION_MODE: mode });
+            const decorator = Validator.IsPassword();
 
-        const accepted = validate(decorator, "Unusual#Secret42");
-        const rejected = validate(decorator, "password");
+            const accepted = validate(decorator, "Unusual#Secret42");
+            const rejected = validate(decorator, "password");
 
-        expect(accepted.errors).toEqual([]);
-        expect(rejected.errors).not.toHaveLength(0);
+            expect(accepted.errors).toEqual([]);
+            expect(rejected.errors).not.toHaveLength(0);
+        });
     });
 
-    it("reads the first defined alias without losing false values", () => {
-        class Input {
-            @Validator.FromAlias("enabled", "is_enabled")
-            public enabled!: boolean;
-        }
+    describe("FromAlias", () => {
+        it("reads the first defined alias without losing false values", () => {
+            class Input {
+                @Validator.FromAlias("enabled", "is_enabled")
+                public enabled!: boolean;
+            }
 
-        const canonical = plainToInstance(Input, { enabled: false, is_enabled: true });
-        const alias = plainToInstance(Input, { enabled: undefined, is_enabled: true });
+            const canonical = plainToInstance(Input, { enabled: false, is_enabled: true });
+            const alias = plainToInstance(Input, { enabled: undefined, is_enabled: true });
 
-        expect(canonical.enabled).toBe(false);
-        expect(alias.enabled).toBe(true);
+            expect(canonical.enabled).toBe(false);
+            expect(alias.enabled).toBe(true);
+        });
     });
 
-    it("serializes the OAuth wire name while accepting the internal property", () => {
-        class Input {
-            @Validator.ExposeAs("access_token")
-            public accessToken!: string;
-        }
+    describe("ExposeAs", () => {
+        it("serializes the OAuth wire name while accepting the internal property", () => {
+            class Input {
+                @Validator.ExposeAs("access_token")
+                public accessToken!: string;
+            }
 
-        const instance = plainToInstance(Input, { accessToken: "token" }, { excludeExtraneousValues: true });
-        const wire = instanceToPlain(instance, { excludeExtraneousValues: true });
+            const instance = plainToInstance(Input, { accessToken: "token" }, { excludeExtraneousValues: true });
+            const wire = instanceToPlain(instance, { excludeExtraneousValues: true });
 
-        expect(instance.accessToken).toBe("token");
-        expect(wire).toEqual({ access_token: "token" });
+            expect(instance.accessToken).toBe("token");
+            expect(wire).toEqual({ access_token: "token" });
+        });
     });
 });

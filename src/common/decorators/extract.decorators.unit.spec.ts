@@ -48,52 +48,56 @@ describe("Extract decorators", () => {
         await app?.close();
     });
 
-    it("passes request metadata, authenticated session and permissions to controller parameters", async () => {
-        const response = await app.inject({
-            method: "GET",
-            url: "/extract",
-            remoteAddress: "192.0.2.10",
-            headers: { "user-agent": "decorator-contract-test", "x-test-authenticated": "true" },
+    describe("request parameters", () => {
+        it("passes request metadata, authenticated session and permissions to controller parameters", async () => {
+            const response = await app.inject({
+                method: "GET",
+                url: "/extract",
+                remoteAddress: "192.0.2.10",
+                headers: { "user-agent": "decorator-contract-test", "x-test-authenticated": "true" },
+            });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.json()).toEqual({
+                meta: { userAgent: "decorator-contract-test", ip: "192.0.2.10" },
+                session,
+            });
         });
 
-        expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({
-            meta: { userAgent: "decorator-contract-test", ip: "192.0.2.10" },
-            session,
+        it("uses unknown for a missing user agent and preserves an anonymous session", async () => {
+            const response = await app.inject({
+                headers: { "user-agent": undefined },
+                remoteAddress: "192.0.2.11",
+                url: "/extract",
+                method: "GET",
+            });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.json()).toEqual({
+                meta: { userAgent: "unknown", ip: "192.0.2.11" },
+                session: {},
+            });
+        });
+
+        it("preserves an explicitly empty user agent", async () => {
+            const response = await app.inject({ method: "GET", url: "/extract", headers: { "user-agent": "" } });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.json().meta.userAgent).toBe("");
         });
     });
 
-    it("uses unknown for a missing user agent and preserves an anonymous session", async () => {
-        const response = await app.inject({
-            headers: { "user-agent": undefined },
-            remoteAddress: "192.0.2.11",
-            url: "/extract",
-            method: "GET",
+    describe("request isolation", () => {
+        it("keeps authenticated context isolated from another request", async () => {
+            const [authenticated, anonymous] = await Promise.all([
+                app.inject({ method: "GET", url: "/extract", headers: { "x-test-authenticated": "true" } }),
+                app.inject({ method: "GET", url: "/extract" }),
+            ]);
+
+            expect(authenticated.statusCode).toBe(200);
+            expect(anonymous.statusCode).toBe(200);
+            expect(authenticated.json()).toMatchObject({ session });
+            expect(anonymous.json()).toMatchObject({ session: {} });
         });
-
-        expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({
-            meta: { userAgent: "unknown", ip: "192.0.2.11" },
-            session: {},
-        });
-    });
-
-    it("preserves an explicitly empty user agent", async () => {
-        const response = await app.inject({ method: "GET", url: "/extract", headers: { "user-agent": "" } });
-
-        expect(response.statusCode).toBe(200);
-        expect(response.json().meta.userAgent).toBe("");
-    });
-
-    it("keeps authenticated context isolated from another request", async () => {
-        const [authenticated, anonymous] = await Promise.all([
-            app.inject({ method: "GET", url: "/extract", headers: { "x-test-authenticated": "true" } }),
-            app.inject({ method: "GET", url: "/extract" }),
-        ]);
-
-        expect(authenticated.statusCode).toBe(200);
-        expect(anonymous.statusCode).toBe(200);
-        expect(authenticated.json()).toMatchObject({ session });
-        expect(anonymous.json()).toMatchObject({ session: {} });
     });
 });

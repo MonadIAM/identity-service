@@ -34,84 +34,89 @@ function setup(options: { skipClass?: boolean; skipHandler?: boolean } = {}): {
 }
 
 describe("PendingTokenInterceptor", () => {
-    it("moves the pending token into a protected cookie scoped to the configured 2FA route", async () => {
-        const { run, setCookie } = setup();
-        const data = Object.freeze({ pendingToken: "secret-token", requires2FA: true, methods: ["totp"] });
-
-        const result = await run(data);
-
-        expect(result).toEqual({ requires2FA: true, methods: ["totp"] });
-        expect(result).not.toHaveProperty("pendingToken");
-        expect(data.pendingToken).toBe("secret-token");
-        expect(setCookie).toHaveBeenCalledTimes(1);
-        expect(setCookie).toHaveBeenCalledWith("pending_token", "secret-token", {
-            maxAge: 300,
-            path: "/api/v3/authn/verify/2fa",
-            sameSite: "strict",
-            httpOnly: true,
-            secure: true,
-        });
-    });
-
-    it.each([undefined, null, {}, { pendingToken: undefined }, { pendingToken: null }, { pendingToken: 123 }])(
-        "preserves a response without a string token: %j",
-        async (data) => {
+    describe("intercept", () => {
+        it("moves the pending token into a protected cookie scoped to the configured 2FA route", async () => {
             const { run, setCookie } = setup();
+            const data = Object.freeze({ pendingToken: "secret-token", requires2FA: true, methods: ["totp"] });
 
             const result = await run(data);
 
-            expect(result).toBe(data);
-            expect(setCookie).not.toHaveBeenCalled();
-        },
-    );
-
-    it("handles an explicitly empty string according to the string-token contract", async () => {
-        const { run, setCookie } = setup();
-
-        const result = await run({ pendingToken: "" });
-
-        expect(result).toEqual({});
-        expect(setCookie).toHaveBeenCalledWith("pending_token", "", expect.any(Object));
-    });
-
-    it.each([{ skipClass: true }, { skipHandler: true }])("preserves the original stream when skipped: %j", (options) => {
-        const { interceptor, context, setCookie } = setup(options);
-        const stream = of({ pendingToken: "token" });
-        const handle = jest.fn(() => stream);
-
-        const result = interceptor.intercept(context, { handle });
-
-        expect(result).toBe(stream);
-        expect(handle).toHaveBeenCalledTimes(1);
-        expect(setCookie).not.toHaveBeenCalled();
-    });
-
-    it("allows method metadata to override a class-level skip", async () => {
-        const { run, setCookie } = setup({ skipClass: true, skipHandler: false });
-
-        const result = await run({ pendingToken: "token", message: "Continue" });
-
-        expect(result).toEqual({ message: "Continue" });
-        expect(setCookie).toHaveBeenCalledTimes(1);
-    });
-
-    it("propagates handler errors without setting a cookie", async () => {
-        const { interceptor, context, setCookie } = setup();
-        const error = new Error("handler failed");
-
-        await expect(lastValueFrom(interceptor.intercept(context, { handle: () => throwError(() => error) }))).rejects.toBe(
-            error,
-        );
-        expect(setCookie).not.toHaveBeenCalled();
-    });
-
-    it("propagates cookie-writing failures through the observable", async () => {
-        const { run, setCookie } = setup();
-        const error = new Error("reply already sent");
-        setCookie.mockImplementationOnce(() => {
-            throw error;
+            expect(result).toEqual({ requires2FA: true, methods: ["totp"] });
+            expect(result).not.toHaveProperty("pendingToken");
+            expect(data.pendingToken).toBe("secret-token");
+            expect(setCookie).toHaveBeenCalledTimes(1);
+            expect(setCookie).toHaveBeenCalledWith("pending_token", "secret-token", {
+                maxAge: 300,
+                path: "/api/v3/authn/verify/2fa",
+                sameSite: "strict",
+                httpOnly: true,
+                secure: true,
+            });
         });
 
-        await expect(run({ pendingToken: "token" })).rejects.toBe(error);
+        it.each([undefined, null, {}, { pendingToken: undefined }, { pendingToken: null }, { pendingToken: 123 }])(
+            "preserves a response without a string token: %j",
+            async (data) => {
+                const { run, setCookie } = setup();
+
+                const result = await run(data);
+
+                expect(result).toBe(data);
+                expect(setCookie).not.toHaveBeenCalled();
+            },
+        );
+
+        it("handles an explicitly empty string according to the string-token contract", async () => {
+            const { run, setCookie } = setup();
+
+            const result = await run({ pendingToken: "" });
+
+            expect(result).toEqual({});
+            expect(setCookie).toHaveBeenCalledWith("pending_token", "", expect.any(Object));
+        });
+
+        it.each([{ skipClass: true }, { skipHandler: true }])(
+            "preserves the original stream when skipped: %j",
+            (options) => {
+                const { interceptor, context, setCookie } = setup(options);
+                const stream = of({ pendingToken: "token" });
+                const handle = jest.fn(() => stream);
+
+                const result = interceptor.intercept(context, { handle });
+
+                expect(result).toBe(stream);
+                expect(handle).toHaveBeenCalledTimes(1);
+                expect(setCookie).not.toHaveBeenCalled();
+            },
+        );
+
+        it("allows method metadata to override a class-level skip", async () => {
+            const { run, setCookie } = setup({ skipClass: true, skipHandler: false });
+
+            const result = await run({ pendingToken: "token", message: "Continue" });
+
+            expect(result).toEqual({ message: "Continue" });
+            expect(setCookie).toHaveBeenCalledTimes(1);
+        });
+
+        it("propagates handler errors without setting a cookie", async () => {
+            const { interceptor, context, setCookie } = setup();
+            const error = new Error("handler failed");
+
+            await expect(
+                lastValueFrom(interceptor.intercept(context, { handle: () => throwError(() => error) })),
+            ).rejects.toBe(error);
+            expect(setCookie).not.toHaveBeenCalled();
+        });
+
+        it("propagates cookie-writing failures through the observable", async () => {
+            const { run, setCookie } = setup();
+            const error = new Error("reply already sent");
+            setCookie.mockImplementationOnce(() => {
+                throw error;
+            });
+
+            await expect(run({ pendingToken: "token" })).rejects.toBe(error);
+        });
     });
 });

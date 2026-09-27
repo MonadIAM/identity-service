@@ -33,23 +33,25 @@ describe("ChangeLogService integration", () => {
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    it("purges only expired change logs by batch size", async () => {
-        const expired = [await suite.fixtures().createChangeLog(), await suite.fixtures().createChangeLog()];
-        const fresh = await suite.fixtures().createChangeLog();
-        await ageChangeLogs(suite, expired, new Date("2025-01-01T00:00:00.000Z"));
+    describe("purgeExpired", () => {
+        it("purges only expired change logs by batch size", async () => {
+            const expired = [await suite.fixtures().createChangeLog(), await suite.fixtures().createChangeLog()];
+            const fresh = await suite.fixtures().createChangeLog();
+            await ageChangeLogs(suite, expired, new Date("2025-01-01T00:00:00.000Z"));
 
-        const purged = await suite.transaction((transaction) =>
-            suite.repository().changeLogService.purgeExpired({
-                expirationDate: new Date("2026-01-01T00:00:00.000Z"),
-                batchSize: 3,
-                transaction,
-            }),
-        );
+            const purged = await suite.transaction((transaction) =>
+                suite.repository().changeLogService.purgeExpired({
+                    expirationDate: new Date("2026-01-01T00:00:00.000Z"),
+                    batchSize: 3,
+                    transaction,
+                }),
+            );
 
-        expect(purged).toHaveLength(2);
-        await expect(countChangeLogs(suite)).resolves.toBe(1);
-        await expect(
-            suite.transaction((transaction) => transaction.findOneOrFail(ChangeLog, { id: fresh.id })),
-        ).resolves.toMatchObject({ id: fresh.id });
+            expect(purged).toHaveLength(2);
+            await expect(countChangeLogs(suite)).resolves.toBe(1);
+            await expect(
+                suite.transaction((transaction) => transaction.findOneOrFail(ChangeLog, { id: fresh.id })),
+            ).resolves.toMatchObject({ id: fresh.id });
+        });
     });
 });

@@ -21,36 +21,38 @@ describe("ProfileService integration", () => {
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    it("updates the persisted profile through the account repository populate path", async () => {
-        const account = await suite.fixtures().createAccount();
-        await suite.fixtures().createProfile({
-            displayName: "Before",
-            timeZone: "UTC",
-            locale: "en",
-            account,
-        });
+    describe("update", () => {
+        it("updates the persisted profile through the account repository populate path", async () => {
+            const account = await suite.fixtures().createAccount();
+            await suite.fixtures().createProfile({
+                displayName: "Before",
+                timeZone: "UTC",
+                locale: "en",
+                account,
+            });
 
-        await suite.transaction((transaction) =>
-            suite.repository().profileService.update({
-                input: {
-                    patch: {
-                        displayName: "After",
-                        timeZone: "Europe/Moscow",
-                        locale: "ru",
+            await suite.transaction((transaction) =>
+                suite.repository().profileService.update({
+                    input: {
+                        patch: {
+                            displayName: "After",
+                            timeZone: "Europe/Moscow",
+                            locale: "ru",
+                        },
+                        account: account.id,
                     },
-                    account: account.id,
-                },
-                transaction,
-            }),
-        );
+                    transaction,
+                }),
+            );
 
-        const profile = await loadProfile(suite, account);
+            const profile = await loadProfile(suite, account);
 
-        expect(profile).toMatchObject({
-            displayName: "After",
-            timeZone: "Europe/Moscow",
-            locale: "ru",
+            expect(profile).toMatchObject({
+                displayName: "After",
+                timeZone: "Europe/Moscow",
+                locale: "ru",
+            });
+            expect(profile.updatedAt).toBeInstanceOf(Date);
         });
-        expect(profile.updatedAt).toBeInstanceOf(Date);
     });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { NotificationContentKind, NotificationCategory, PlatformService, MessageTemplate } from "~context/enums";
+import { IdentifierType } from "~context/enums";
 import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 
 import { AccountMapper } from "./account.mapper";
@@ -11,18 +11,22 @@ const helpers = new EntityFactoryRegistry();
 const mapper = new AccountMapper();
 
 describe("AccountMapper", () => {
-    describe("notificationPayload", () => {
-        it("maps an account verification notification", () => {
-            expect(mapper.notificationPayload({ account: ACCOUNT_ID, otp: "123456" })).toEqual({
-                input: {
-                    template: MessageTemplate.ACCOUNT_VERIFICATION_OTP,
-                    sourceService: PlatformService.IDENTITY_SERVICE,
-                    category: NotificationCategory.SECURITY,
-                    kind: NotificationContentKind.TEMPLATE,
-                    params: { otp: "123456" },
-                    recipient: ACCOUNT_ID,
-                    language: "en",
-                },
+    describe("registrationPayload", () => {
+        it("maps the registration event with its contact and OTP", () => {
+            expect(
+                mapper.registrationPayload({
+                    account: ACCOUNT_ID,
+                    otp: "123456",
+                    identifier: helpers.createIdentifier({
+                        id: ACCOUNT_ID,
+                        identity: "user@example.test",
+                        type: IdentifierType.EMAIL,
+                    }),
+                }),
+            ).toEqual({
+                account: ACCOUNT_ID,
+                otp: "123456",
+                identifier: { id: ACCOUNT_ID, type: IdentifierType.EMAIL, value: "user@example.test" },
             });
         });
     });
@@ -32,6 +36,22 @@ describe("AccountMapper", () => {
             const account = helpers.createAccount({ id: ACCOUNT_ID });
 
             expect(mapper.accountPayload({ account })).toEqual({ account: ACCOUNT_ID });
+        });
+
+        it("includes the verified contact in the account confirmation event", () => {
+            const account = helpers.createAccount({ id: ACCOUNT_ID });
+            const identifier = helpers.createIdentifier({
+                account,
+                isVerified: true,
+                type: IdentifierType.PHONE,
+                identity: "+79990000000",
+            });
+            account.identifiers = helpers.collection({ owner: account, items: [identifier] });
+
+            expect(mapper.accountPayload({ account })).toEqual({
+                account: ACCOUNT_ID,
+                identifier: { id: identifier.id, type: IdentifierType.PHONE, value: identifier.identity },
+            });
         });
     });
 });

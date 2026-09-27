@@ -38,207 +38,80 @@ describe("TransactionalService integration", () => {
         consumerKey: "identity.account.v1",
     };
 
-    it("commits inbox and effects exactly once", async () => {
-        const executeDuplicate = jest.fn(() => Promise.reject(new Error("duplicate callback must not execute")));
+    describe("consume", () => {
+        it("commits inbox and effects exactly once", async () => {
+            const executeDuplicate = jest.fn(() => Promise.reject(new Error("duplicate callback must not execute")));
 
-        const first = await suite.repository().service.consume({
-            incoming: INCOMING_MESSAGE,
-            audit: AUDIT_PROPS,
-            execute: () => Promise.resolve(),
-        });
-        const duplicate = await suite.repository().service.consume({
-            incoming: INCOMING_MESSAGE,
-            audit: AUDIT_PROPS,
-            execute: executeDuplicate,
-        });
-
-        const readManager = suite.repository().readManager;
-        readManager.clear();
-
-        expect(first).toEqual({ status: "processed", value: undefined });
-        expect(duplicate).toEqual({ status: "duplicate" });
-        expect(executeDuplicate).not.toHaveBeenCalled();
-        await expect(readManager.count(Inbox, {})).resolves.toBe(1);
-        await expect(readManager.count(AuditLog, {})).resolves.toBe(1);
-        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE })).resolves.toBe(1);
-    });
-
-    it("rolls back a failed claim and allows redelivery", async () => {
-        const incoming = { ...INCOMING_MESSAGE, event: "00000000-0000-4000-8000-000000000002" };
-        const failure = new Error("domain failed");
-
-        await expect(
-            suite.repository().service.consume({
-                incoming,
-                execute: () => Promise.reject(failure),
-            }),
-        ).rejects.toBe(failure);
-
-        const readManager = suite.repository().readManager;
-        readManager.clear();
-        await expect(readManager.count(Inbox, {})).resolves.toBe(0);
-
-        await expect(suite.repository().service.consume({ incoming, execute: () => Promise.resolve() })).resolves.toEqual({
-            status: "processed",
-            value: undefined,
-        });
-
-        readManager.clear();
-        await expect(readManager.count(Inbox, {})).resolves.toBe(1);
-    });
-
-    it("allows only one concurrent transaction to process an event", async () => {
-        const incoming = { ...INCOMING_MESSAGE, event: "00000000-0000-4000-8000-000000000003" };
-        const execute = jest.fn(() => Promise.resolve());
-        const consume = (): TransactionManager.Service.Consume.Result<void> =>
-            suite.repository().service.consume({ incoming, execute });
-
-        const outcomes = await Promise.all([consume(), consume()]);
-        const readManager = suite.repository().readManager;
-        readManager.clear();
-
-        expect(outcomes.map(({ status }) => status).sort()).toEqual(["duplicate", "processed"]);
-        expect(execute).toHaveBeenCalledTimes(1);
-        await expect(readManager.count(Inbox, {})).resolves.toBe(1);
-    });
-
-    it("commits audit log, change log, archive outbox and domain outbox in one trace", async () => {
-        const result = await suite.repository().service.run({
-            audit: { ...AUDIT_PROPS, input: { password: "secret-value" } },
-            outbox: ACCOUNT_OUTBOX_CONFIG,
-            changeLog: true,
-            execute: (transaction) => {
-                const account = new Account({
-                    subject: AccountSubject.HUMAN,
-                    status: AccountStatus.ACTIVE,
-                });
-
-                transaction.persist(account);
-
-                return account;
-            },
-        });
-
-        const readManager = suite.repository().readManager;
-        readManager.clear();
-        const auditLogs = await readManager.find(AuditLog, {});
-        const changeLogs = await readManager.find(ChangeLog, {});
-
-        expect(result).toBeInstanceOf(Account);
-        expect(await readManager.count(Account, { id: result?.id })).toBe(1);
-        expect(auditLogs).toHaveLength(1);
-        expect(auditLogs[0]).toEqual(
-            expect.objectContaining({
-                signature: expect.stringContaining("signed:AuditLog:"),
-                input: { password: "masked:secret-value" },
-                keyVersion: 7,
-            }),
-        );
-        expect(changeLogs).toHaveLength(1);
-        expect(changeLogs[0]).toEqual(
-            expect.objectContaining({
-                changeType: ChangeSetType.CREATE,
-                auditEntry: auditLogs[0]?.id,
-                entity: result?.id,
-            }),
-        );
-        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE })).resolves.toBe(1);
-        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.CHANGE_LOG_ARCHIVE })).resolves.toBe(1);
-        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.ACCOUNT })).resolves.toBe(1);
-    });
-
-    it("commits domain outbox without audit context", async () => {
-        const account = await suite.repository().service.run({
-            outbox: ACCOUNT_OUTBOX_CONFIG,
-            execute: (transaction) => {
-                const entity = new Account({
-                    subject: AccountSubject.HUMAN,
-                    status: AccountStatus.ACTIVE,
-                });
-
-                transaction.persist(entity);
-
-                return entity;
-            },
-        });
-
-        const readManager = suite.repository().readManager;
-        readManager.clear();
-
-        await expect(readManager.count(Account, { id: account?.id })).resolves.toBe(1);
-        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.ACCOUNT })).resolves.toBe(1);
-        await expect(readManager.count(AuditLog, {})).resolves.toBe(0);
-        await expect(readManager.count(ChangeLog, {})).resolves.toBe(0);
-    });
-
-    it("emits audit log, audit archive and outbox without change log", async () => {
-        await suite.repository().service.emit({
-            audit: { ...AUDIT_PROPS, input: { password: "rejected-secret" } },
-            payload: { account: randomUUID() },
-            actionType: AccountTopicAction.CREATE,
-            destinationTopic: KafkaTopic.ACCOUNT,
-        });
-
-        const readManager = suite.repository().readManager;
-        readManager.clear();
-        const auditLogs = await readManager.find(AuditLog, {});
-
-        expect(auditLogs).toHaveLength(1);
-        expect(auditLogs[0]).toEqual(
-            expect.objectContaining({
-                signature: expect.stringContaining("signed:AuditLog:"),
-                input: { password: "masked:rejected-secret" },
-                keyVersion: 7,
-            }),
-        );
-        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE })).resolves.toBe(1);
-        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.ACCOUNT })).resolves.toBe(1);
-        await expect(readManager.count(ChangeLog, {})).resolves.toBe(0);
-    });
-
-    it("rolls back domain rows, audit log, change log and outbox after a flushed domain write fails", async () => {
-        const rollbackError = new Error("rollback after flush");
-
-        await expect(
-            suite.repository().service.run({
+            const first = await suite.repository().service.consume({
+                incoming: INCOMING_MESSAGE,
                 audit: AUDIT_PROPS,
-                changeLog: true,
-                outbox: ACCOUNT_OUTBOX_CONFIG,
-                execute: async (transaction) => {
-                    const account = new Account({
-                        subject: AccountSubject.HUMAN,
-                        status: AccountStatus.ACTIVE,
-                    });
+                execute: () => Promise.resolve(),
+            });
+            const duplicate = await suite.repository().service.consume({
+                incoming: INCOMING_MESSAGE,
+                audit: AUDIT_PROPS,
+                execute: executeDuplicate,
+            });
 
-                    transaction.persist(account);
-                    await transaction.flush();
+            const readManager = suite.repository().readManager;
+            readManager.clear();
 
-                    throw rollbackError;
-                },
-            }),
-        ).rejects.toBe(rollbackError);
+            expect(first).toEqual({ status: "processed", value: undefined });
+            expect(duplicate).toEqual({ status: "duplicate" });
+            expect(executeDuplicate).not.toHaveBeenCalled();
+            await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+            await expect(readManager.count(AuditLog, {})).resolves.toBe(1);
+            await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE })).resolves.toBe(1);
+        });
 
-        await helper.expectNoTransactionRows(suite.repository().readManager);
+        it("rolls back a failed claim and allows redelivery", async () => {
+            const incoming = { ...INCOMING_MESSAGE, event: "00000000-0000-4000-8000-000000000002" };
+            const failure = new Error("domain failed");
+
+            await expect(
+                suite.repository().service.consume({
+                    incoming,
+                    execute: () => Promise.reject(failure),
+                }),
+            ).rejects.toBe(failure);
+
+            const readManager = suite.repository().readManager;
+            readManager.clear();
+            await expect(readManager.count(Inbox, {})).resolves.toBe(0);
+
+            await expect(
+                suite.repository().service.consume({ incoming, execute: () => Promise.resolve() }),
+            ).resolves.toEqual({
+                status: "processed",
+                value: undefined,
+            });
+
+            readManager.clear();
+            await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+        });
+
+        it("allows only one concurrent transaction to process an event", async () => {
+            const incoming = { ...INCOMING_MESSAGE, event: "00000000-0000-4000-8000-000000000003" };
+            const execute = jest.fn(() => Promise.resolve());
+            const consume = (): TransactionManager.Service.Consume.Result<void> =>
+                suite.repository().service.consume({ incoming, execute });
+
+            const outcomes = await Promise.all([consume(), consume()]);
+            const readManager = suite.repository().readManager;
+            readManager.clear();
+
+            expect(outcomes.map(({ status }) => status).sort()).toEqual(["duplicate", "processed"]);
+            expect(execute).toHaveBeenCalledTimes(1);
+            await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+        });
     });
 
-    it("rolls back audit and domain rows when domain outbox building fails", async () => {
-        const externalError = new Error("schema registry unavailable");
-        const outboxService = helper.createOutboxService({
-            build: () => {
-                throw externalError;
-            },
-        });
-        const service = helper.createTransactionalServiceContext({
-            logMaskingService: helper.createLogMaskingService(),
-            orm: suite.repository().orm,
-            outboxService,
-        }).service;
-
-        await expect(
-            service.run({
-                audit: AUDIT_PROPS,
-                changeLog: true,
+    describe("run", () => {
+        it("commits audit log, change log, archive outbox and domain outbox in one trace", async () => {
+            const result = await suite.repository().service.run({
+                audit: { ...AUDIT_PROPS, input: { password: "secret-value" } },
                 outbox: ACCOUNT_OUTBOX_CONFIG,
+                changeLog: true,
                 execute: (transaction) => {
                     const account = new Account({
                         subject: AccountSubject.HUMAN,
@@ -249,94 +122,229 @@ describe("TransactionalService integration", () => {
 
                     return account;
                 },
-            }),
-        ).rejects.toBe(externalError);
+            });
 
-        await helper.expectNoTransactionRows(suite.repository().readManager);
-    });
+            const readManager = suite.repository().readManager;
+            readManager.clear();
+            const auditLogs = await readManager.find(AuditLog, {});
+            const changeLogs = await readManager.find(ChangeLog, {});
 
-    it("does not execute domain code when audit signing fails", async () => {
-        const externalError = new Error("vault signing unavailable");
-        const execute = jest.fn<(transaction: ORM.EntityManager) => void>();
-        const logMaskingService = helper.createLogMaskingService({
-            sign: () => Promise.reject(externalError),
-        });
-        const service = helper.createTransactionalServiceContext({
-            orm: suite.repository().orm,
-            logMaskingService,
-        }).service;
-
-        await expect(
-            service.run({
-                audit: AUDIT_PROPS,
-                changeLog: true,
-                execute,
-            }),
-        ).rejects.toBe(externalError);
-
-        expect(execute).not.toHaveBeenCalled();
-        await helper.expectNoTransactionRows(suite.repository().readManager);
-    });
-
-    it("persists several real subscriber change logs in one audit transaction", async () => {
-        const first = await suite.fixtures().createAccount();
-        const second = await suite.fixtures().createAccount();
-
-        await suite.repository().service.run({
-            audit: { ...AUDIT_PROPS, actionType: ActionType.UPDATE },
-            changeLog: true,
-            execute: async (transaction) => {
-                const firstAccount = await transaction.findOneOrFail(Account, { id: first.id });
-                const secondAccount = await transaction.findOneOrFail(Account, { id: second.id });
-
-                firstAccount.deactivate();
-                secondAccount.deactivate();
-            },
+            expect(result).toBeInstanceOf(Account);
+            expect(await readManager.count(Account, { id: result?.id })).toBe(1);
+            expect(auditLogs).toHaveLength(1);
+            expect(auditLogs[0]).toEqual(
+                expect.objectContaining({
+                    signature: expect.stringContaining("signed:AuditLog:"),
+                    input: { password: "masked:secret-value" },
+                    keyVersion: 7,
+                }),
+            );
+            expect(changeLogs).toHaveLength(1);
+            expect(changeLogs[0]).toEqual(
+                expect.objectContaining({
+                    changeType: ChangeSetType.CREATE,
+                    auditEntry: auditLogs[0]?.id,
+                    entity: result?.id,
+                }),
+            );
+            await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE })).resolves.toBe(1);
+            await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.CHANGE_LOG_ARCHIVE })).resolves.toBe(1);
+            await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.ACCOUNT })).resolves.toBe(1);
         });
 
-        const readManager = suite.repository().readManager;
-        readManager.clear();
-        const auditLogs = await readManager.find(AuditLog, {});
-        const changeLogs = await readManager.find(ChangeLog, {}, { orderBy: { entity: "ASC" } });
-
-        expect(auditLogs).toHaveLength(1);
-        expect(changeLogs).toHaveLength(2);
-        expect(changeLogs.map((change) => change.auditEntry)).toEqual([auditLogs[0]!.id, auditLogs[0]!.id]);
-        expect(changeLogs.map((change) => change.changeType)).toEqual([ChangeSetType.UPDATE, ChangeSetType.UPDATE]);
-        expect(changeLogs.map((change) => change.delta.status)).toEqual(
-            expect.arrayContaining([
-                { old: AccountStatus.ACTIVE, new: AccountStatus.DEACTIVATED },
-                { old: AccountStatus.ACTIVE, new: AccountStatus.DEACTIVATED },
-            ]),
-        );
-    });
-
-    it("rolls back and preserves external dependency errors raised during flush", async () => {
-        const externalError = new Error("vault unavailable");
-        const logMaskingService = helper.createLogMaskingService({
-            maskChangeLog: () => Promise.reject(externalError),
-        });
-        const service = helper.createTransactionalServiceContext({
-            orm: suite.repository().orm,
-            logMaskingService,
-        }).service;
-
-        await expect(
-            service.run({
-                audit: AUDIT_PROPS,
-                changeLog: true,
+        it("commits domain outbox without audit context", async () => {
+            const account = await suite.repository().service.run({
+                outbox: ACCOUNT_OUTBOX_CONFIG,
                 execute: (transaction) => {
-                    const account = new Account({
+                    const entity = new Account({
                         subject: AccountSubject.HUMAN,
                         status: AccountStatus.ACTIVE,
                     });
 
-                    transaction.persist(account);
-                },
-            }),
-        ).rejects.toBe(externalError);
+                    transaction.persist(entity);
 
-        await helper.expectNoTransactionRows(suite.repository().readManager);
+                    return entity;
+                },
+            });
+
+            const readManager = suite.repository().readManager;
+            readManager.clear();
+
+            await expect(readManager.count(Account, { id: account?.id })).resolves.toBe(1);
+            await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.ACCOUNT })).resolves.toBe(1);
+            await expect(readManager.count(AuditLog, {})).resolves.toBe(0);
+            await expect(readManager.count(ChangeLog, {})).resolves.toBe(0);
+        });
+
+        it("rolls back domain rows, audit log, change log and outbox after a flushed domain write fails", async () => {
+            const rollbackError = new Error("rollback after flush");
+
+            await expect(
+                suite.repository().service.run({
+                    audit: AUDIT_PROPS,
+                    changeLog: true,
+                    outbox: ACCOUNT_OUTBOX_CONFIG,
+                    execute: async (transaction) => {
+                        const account = new Account({
+                            subject: AccountSubject.HUMAN,
+                            status: AccountStatus.ACTIVE,
+                        });
+
+                        transaction.persist(account);
+                        await transaction.flush();
+
+                        throw rollbackError;
+                    },
+                }),
+            ).rejects.toBe(rollbackError);
+
+            await helper.expectNoTransactionRows(suite.repository().readManager);
+        });
+
+        it("rolls back audit and domain rows when domain outbox building fails", async () => {
+            const externalError = new Error("schema registry unavailable");
+            const outboxService = helper.createOutboxService({
+                build: () => {
+                    throw externalError;
+                },
+            });
+            const service = helper.createTransactionalServiceContext({
+                logMaskingService: helper.createLogMaskingService(),
+                orm: suite.repository().orm,
+                outboxService,
+            }).service;
+
+            await expect(
+                service.run({
+                    audit: AUDIT_PROPS,
+                    changeLog: true,
+                    outbox: ACCOUNT_OUTBOX_CONFIG,
+                    execute: (transaction) => {
+                        const account = new Account({
+                            subject: AccountSubject.HUMAN,
+                            status: AccountStatus.ACTIVE,
+                        });
+
+                        transaction.persist(account);
+
+                        return account;
+                    },
+                }),
+            ).rejects.toBe(externalError);
+
+            await helper.expectNoTransactionRows(suite.repository().readManager);
+        });
+
+        it("does not execute domain code when audit signing fails", async () => {
+            const externalError = new Error("vault signing unavailable");
+            const execute = jest.fn<(transaction: ORM.EntityManager) => void>();
+            const logMaskingService = helper.createLogMaskingService({
+                sign: () => Promise.reject(externalError),
+            });
+            const service = helper.createTransactionalServiceContext({
+                orm: suite.repository().orm,
+                logMaskingService,
+            }).service;
+
+            await expect(
+                service.run({
+                    audit: AUDIT_PROPS,
+                    changeLog: true,
+                    execute,
+                }),
+            ).rejects.toBe(externalError);
+
+            expect(execute).not.toHaveBeenCalled();
+            await helper.expectNoTransactionRows(suite.repository().readManager);
+        });
+
+        it("persists several real subscriber change logs in one audit transaction", async () => {
+            const first = await suite.fixtures().createAccount();
+            const second = await suite.fixtures().createAccount();
+
+            await suite.repository().service.run({
+                audit: { ...AUDIT_PROPS, actionType: ActionType.UPDATE },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const firstAccount = await transaction.findOneOrFail(Account, { id: first.id });
+                    const secondAccount = await transaction.findOneOrFail(Account, { id: second.id });
+
+                    firstAccount.deactivate();
+                    secondAccount.deactivate();
+                },
+            });
+
+            const readManager = suite.repository().readManager;
+            readManager.clear();
+            const auditLogs = await readManager.find(AuditLog, {});
+            const changeLogs = await readManager.find(ChangeLog, {}, { orderBy: { entity: "ASC" } });
+
+            expect(auditLogs).toHaveLength(1);
+            expect(changeLogs).toHaveLength(2);
+            expect(changeLogs.map((change) => change.auditEntry)).toEqual([auditLogs[0]!.id, auditLogs[0]!.id]);
+            expect(changeLogs.map((change) => change.changeType)).toEqual([ChangeSetType.UPDATE, ChangeSetType.UPDATE]);
+            expect(changeLogs.map((change) => change.delta.status)).toEqual(
+                expect.arrayContaining([
+                    { old: AccountStatus.ACTIVE, new: AccountStatus.DEACTIVATED },
+                    { old: AccountStatus.ACTIVE, new: AccountStatus.DEACTIVATED },
+                ]),
+            );
+        });
+
+        it("rolls back and preserves external dependency errors raised during flush", async () => {
+            const externalError = new Error("vault unavailable");
+            const logMaskingService = helper.createLogMaskingService({
+                maskChangeLog: () => Promise.reject(externalError),
+            });
+            const service = helper.createTransactionalServiceContext({
+                orm: suite.repository().orm,
+                logMaskingService,
+            }).service;
+
+            await expect(
+                service.run({
+                    audit: AUDIT_PROPS,
+                    changeLog: true,
+                    execute: (transaction) => {
+                        const account = new Account({
+                            subject: AccountSubject.HUMAN,
+                            status: AccountStatus.ACTIVE,
+                        });
+
+                        transaction.persist(account);
+                    },
+                }),
+            ).rejects.toBe(externalError);
+
+            await helper.expectNoTransactionRows(suite.repository().readManager);
+        });
+    });
+
+    describe("emit", () => {
+        it("emits audit log, audit archive and outbox without change log", async () => {
+            await suite.repository().service.emit({
+                audit: { ...AUDIT_PROPS, input: { password: "rejected-secret" } },
+                payload: { account: randomUUID() },
+                actionType: AccountTopicAction.CREATE,
+                destinationTopic: KafkaTopic.ACCOUNT,
+            });
+
+            const readManager = suite.repository().readManager;
+            readManager.clear();
+            const auditLogs = await readManager.find(AuditLog, {});
+
+            expect(auditLogs).toHaveLength(1);
+            expect(auditLogs[0]).toEqual(
+                expect.objectContaining({
+                    signature: expect.stringContaining("signed:AuditLog:"),
+                    input: { password: "masked:rejected-secret" },
+                    keyVersion: 7,
+                }),
+            );
+            await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE })).resolves.toBe(1);
+            await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.ACCOUNT })).resolves.toBe(1);
+            await expect(readManager.count(ChangeLog, {})).resolves.toBe(0);
+        });
     });
 
     describe("consume with payload", () => {

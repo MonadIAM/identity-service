@@ -150,13 +150,13 @@ describe("SecondFactorService", () => {
             repositories.secondFactors.findUnique.mockImplementation(() => Promise.resolve(factor));
 
             const result = await service.authenticate({
-                input: { factor: FACTOR_ID, account: ACCOUNT_ID, code: "123456" },
+                input: { account: ACCOUNT_ID, code: "123456" },
                 transaction: transaction.entityManager,
             });
 
             expect(repositories.secondFactors.findUnique).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    where: { confirmedAt: { $ne: null }, account: ACCOUNT_ID, id: FACTOR_ID },
+                    where: { confirmedAt: { $ne: null }, account: ACCOUNT_ID },
                 }),
             );
             expect(acceptSpy).toHaveBeenCalledTimes(1);
@@ -171,7 +171,7 @@ describe("SecondFactorService", () => {
             await expect(
                 service.authenticate({
                     transaction: transaction.entityManager,
-                    input: { factor: FACTOR_ID, account: ACCOUNT_ID, code: "123456" },
+                    input: { account: ACCOUNT_ID, code: "123456" },
                 }),
             ).rejects.toThrow("services.second-factor.NO_ACTIVE_2FA");
         });

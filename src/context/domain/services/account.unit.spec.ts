@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { LockMode } from "@mikro-orm/core";
 
 import { AccountUnitHelpers } from "~testing/unit/domain-service/account.helpers";
 import { AccountStatus, AccountSubject, IdentifierType } from "~context/enums";
@@ -118,9 +119,22 @@ describe("AccountService", () => {
             expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 where: { id: ACCOUNT_ID },
+                options: { populate: ["identifiers"], lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true },
             });
             expect(activateSpy).toHaveBeenCalledTimes(1);
             expect(result).toBe(account);
+        });
+
+        it("confirms the registration identifier when activating the account", async () => {
+            const account = helpers.createAccount({ status: AccountStatus.PENDING });
+            const identifier = helpers.createIdentifier({ account, isVerified: false, type: IdentifierType.EMAIL });
+            account.identifiers = helpers.collection({ owner: account, items: [identifier] });
+            const { service, transaction } = helpers.service({ account });
+
+            await service.verify({ input: { account: account.id }, transaction: transaction.entityManager });
+
+            expect(account.status).toBe(AccountStatus.ACTIVE);
+            expect(identifier.isVerified).toBe(true);
         });
     });
 

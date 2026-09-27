@@ -11,17 +11,19 @@ describe("PasswordRepository", () => {
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    it("maps the persisted password through the schema", async () => {
-        const account = await suite.fixtures().createAccount();
-        const password = await suite.fixtures().createPassword({ account, hash: "mapping-password-hash" });
+    describe("findUniqueOrThrow", () => {
+        it("maps the persisted password through the schema", async () => {
+            const account = await suite.fixtures().createAccount();
+            const password = await suite.fixtures().createPassword({ account, hash: "mapping-password-hash" });
 
-        const loaded = await suite.repository().findUniqueOrThrow({ where: { account } });
+            const loaded = await suite.repository().findUniqueOrThrow({ where: { account } });
 
-        expect(loaded).toMatchObject({
-            hash: "mapping-password-hash",
-            version: password.version,
-            setAt: password.setAt,
+            expect(loaded).toMatchObject({
+                hash: "mapping-password-hash",
+                version: password.version,
+                setAt: password.setAt,
+            });
+            expect(loaded.account.id).toBe(account.id);
         });
-        expect(loaded.account.id).toBe(account.id);
     });
 });
