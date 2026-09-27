@@ -1,6 +1,6 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
-import { raw } from "@mikro-orm/postgresql";
+import { LockMode, raw } from "@mikro-orm/postgresql";
 import { sql } from "kysely";
 
 import { kysely } from "~infrastructure/database/utils";
@@ -115,7 +115,7 @@ export class AccountRepository
             return await entityManager.find(
                 Account,
                 { status: AccountStatus.PENDING, createdAt: { $lt: expirationDate } },
-                { limit: batchSize },
+                { limit: batchSize, ...(transaction ? { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true } : {}) },
             );
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.resource);

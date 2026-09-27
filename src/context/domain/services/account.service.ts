@@ -1,6 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { LockMode } from "@mikro-orm/core";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { IdentifierType } from "~context/enums";
 
 import { Account, Identifier, Password, Profile } from "../entities";
 
@@ -68,11 +70,19 @@ export class AccountService implements Services.Account.Contract {
     public async verify(props: Services.Account.Verify.Props): Services.Account.Verify.Result {
         const { transaction, input } = props;
         const account = await this.accountRepository.findUniqueOrThrow({
+            options: { populate: ["identifiers"], lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true },
             where: { id: input.account },
             transaction,
         });
 
         account.activate();
+
+        const identifier = account.identifiers
+            .getItems()
+            .find((item) => item.type === IdentifierType.EMAIL || item.type === IdentifierType.PHONE);
+        if (identifier && !identifier.isVerified) {
+            identifier.verify();
+        }
 
         return account;
     }

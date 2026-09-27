@@ -3,8 +3,8 @@ import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { AccountTopicAction } from "@monadiam/shared";
 import { Job } from "bullmq";
 
-import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/domain/services";
 import { INBOX_SERVICE, TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/domain/services";
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { CleanupJob, KafkaTopic, AccountStatus } from "~context/enums";
 
@@ -52,8 +52,13 @@ export class CleanupProcessor extends WorkerHost {
         this.logger.log(`Cleaning up pending accounts older than ${expirationDate.toISOString()}`);
 
         try {
-            const purged = await this.transactionalService.run({
+            const purged = await this.transactionalService.run<Entities.Account[]>({
                 resource: this.resource,
+                outbox: {
+                    payloadMapper: (accounts) => accounts.map(({ id }) => ({ account: id })),
+                    destinationTopic: KafkaTopic.ACCOUNT,
+                    actionType: AccountTopicAction.PURGE,
+                },
                 execute: async (transaction) => {
                     const accounts = await this.accountRepository.findExpiredPending({
                         expirationDate,

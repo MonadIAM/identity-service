@@ -175,7 +175,7 @@ export class AuthnCommands implements Commands.Authn.Contract {
                     resource: this.resource,
                     execute: async (transaction) => {
                         return await this.secondFactorService.authenticate({
-                            input: { account: cached.account, factor: props.input.id, code: props.input.code },
+                            input: { account: cached.account, code: props.input.code },
                             transaction,
                         });
                     },

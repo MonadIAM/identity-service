@@ -70,7 +70,6 @@ declare global {
                     transaction: ORM.EntityManager;
                     input: {
                         account: string;
-                        factor: string;
                         code: string;
                     };
                 };

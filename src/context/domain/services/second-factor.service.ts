@@ -87,7 +87,6 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
             where: {
                 confirmedAt: { $ne: null },
                 account: input.account,
-                id: input.factor,
             },
             transaction,
         });

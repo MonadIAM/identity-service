@@ -27,7 +27,6 @@ declare namespace Commands {
                 token?: string;
                 input: {
                     code: string;
-                    id: string;
                 };
             };
 

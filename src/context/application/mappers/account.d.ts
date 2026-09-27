@@ -4,17 +4,18 @@ declare namespace Commands {
             interface Contract extends PublicContract {}
 
             interface PublicContract {
-                notificationPayload: NotificationPayload.Signature;
+                registrationPayload: RegistrationPayload.Signature;
                 accountPayload: AccountPayload.Signature;
             }
 
-            namespace NotificationPayload {
+            namespace RegistrationPayload {
                 type Props = {
                     account: string;
                     otp: string;
+                    identifier: Entities.Identifier;
                 };
 
-                type Result = Topics.Notification.CreateMessage["payload"];
+                type Result = Topics.Account.CreateMessage["payload"];
 
                 type Signature = (props: Props) => Result;
             }
@@ -24,7 +25,7 @@ declare namespace Commands {
                     account: Entities.Account;
                 };
 
-                type Result = Topics.Account.Message["payload"];
+                type Result = Topics.Account.VerifyMessage["payload"];
 
                 type Signature = (props: Props) => Result;
             }

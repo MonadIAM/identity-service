@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { NotificationTopicAction, BlacklistTopicAction, EntityType, KafkaTopic, ActionType } from "~context/enums";
+import { BlacklistTopicAction, EntityType, KafkaTopic, ActionType } from "~context/enums";
 import { SESSION_REFRESH_IDEMPOTENCY_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CRYPTO_SERVICE, JWT_SERVICE } from "~common/services";
@@ -44,11 +44,12 @@ export class SessionCommands implements Commands.Session.Contract {
                     destinationTopic: KafkaTopic.BLACKLIST,
                     actionType: BlacklistTopicAction.ADD,
                 },
-                {
-                    payloadMapper: this.mapper.notificationPayload,
-                    destinationTopic: KafkaTopic.NOTIFICATION,
-                    actionType: NotificationTopicAction.CREATE,
-                },
+                // Temporarily disabled to preserve the email quota during testing.
+                // {
+                //     payloadMapper: this.mapper.notificationPayload,
+                //     destinationTopic: KafkaTopic.NOTIFICATION,
+                //     actionType: NotificationTopicAction.CREATE,
+                // },
             ],
             audit: {
                 entityType: EntityType.ACCOUNT,

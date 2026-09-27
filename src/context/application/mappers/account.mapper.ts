@@ -1,18 +1,16 @@
-import { NotificationContentKind, NotificationCategory, PlatformService, MessageTemplate } from "~context/enums";
+import { IdentifierType } from "~context/enums";
 
 export class AccountMapper implements Commands.Mappers.Account.Contract {
-    public notificationPayload(
-        props: Commands.Mappers.Account.NotificationPayload.Props,
-    ): Commands.Mappers.Account.NotificationPayload.Result {
+    public registrationPayload(
+        props: Commands.Mappers.Account.RegistrationPayload.Props,
+    ): Commands.Mappers.Account.RegistrationPayload.Result {
         return {
-            input: {
-                template: MessageTemplate.ACCOUNT_VERIFICATION_OTP,
-                sourceService: PlatformService.IDENTITY_SERVICE,
-                category: NotificationCategory.SECURITY,
-                kind: NotificationContentKind.TEMPLATE,
-                params: { otp: props.otp },
-                recipient: props.account,
-                language: "en",
+            account: props.account,
+            otp: props.otp,
+            identifier: {
+                id: props.identifier.id,
+                type: props.identifier.type === IdentifierType.EMAIL ? IdentifierType.EMAIL : IdentifierType.PHONE,
+                value: props.identifier.identity,
             },
         };
     }
@@ -20,6 +18,21 @@ export class AccountMapper implements Commands.Mappers.Account.Contract {
     public accountPayload(
         props: Commands.Mappers.Account.AccountPayload.Props,
     ): Commands.Mappers.Account.AccountPayload.Result {
-        return { account: props.account.id };
+        const identifier = props.account.identifiers
+            .getItems()
+            .find((item) => item.isVerified && (item.type === IdentifierType.EMAIL || item.type === IdentifierType.PHONE));
+
+        return {
+            account: props.account.id,
+            ...(identifier
+                ? {
+                      identifier: {
+                          id: identifier.id,
+                          type: identifier.type === IdentifierType.EMAIL ? IdentifierType.EMAIL : IdentifierType.PHONE,
+                          value: identifier.identity,
+                      },
+                  }
+                : {}),
+        };
     }
 }

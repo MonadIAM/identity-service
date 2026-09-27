@@ -8,7 +8,6 @@ import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 import {
-    NotificationTopicAction,
     AccountTopicAction,
     AccountSubject,
     IdentifierType,
@@ -51,12 +50,12 @@ export class AccountCommands implements Commands.Account.Contract {
 
         const otp = this.cryptoService.generateOTP();
 
-        const { account } = await this.transactionalService.run({
+        await this.transactionalService.run({
             resource: this.resource,
             outbox: {
-                payloadMapper: this.mapper.notificationPayload,
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
+                payloadMapper: this.mapper.registrationPayload,
+                actionType: AccountTopicAction.CREATE,
+                destinationTopic: KafkaTopic.ACCOUNT,
             },
             audit: {
                 actionType: ActionType.SIGN_UP,
@@ -64,7 +63,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 ...props,
             },
             changeLog: true,
-            execute: (transaction) => {
+            execute: async (transaction) => {
                 const account = this.accountService.create({
                     transaction,
                     input: {
@@ -76,14 +75,19 @@ export class AccountCommands implements Commands.Account.Contract {
                     },
                 });
 
-                return { account: account.id, otp };
-            },
-        });
+                await transaction.flush();
+                const identifier = await this.identifierRepository.findUniqueOrThrow({
+                    where: { account: account.id, identity: props.input.identifier },
+                    transaction,
+                });
+                await this.otpCacheService.set({
+                    purpose: "verification",
+                    value: account.id,
+                    key: otp,
+                });
 
-        await this.otpCacheService.set({
-            purpose: "verification",
-            value: account,
-            key: otp,
+                return { account: account.id, identifier, otp };
+            },
         });
 
         return { message: `${this.dictionaryPath}.SIGNED_UP` };
@@ -106,9 +110,9 @@ export class AccountCommands implements Commands.Account.Contract {
             });
 
             await this.transactionalService.emit({
-                payload: this.mapper.notificationPayload({ account: identifier.account.id, otp }),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
+                payload: this.mapper.registrationPayload({ account: identifier.account.id, identifier, otp }),
+                actionType: AccountTopicAction.CREATE,
+                destinationTopic: KafkaTopic.ACCOUNT,
                 resource: this.resource,
                 audit: {
                     actionType: ActionType.REGENERATE,
@@ -135,7 +139,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 resource: this.resource,
                 outbox: {
                     payloadMapper: this.mapper.accountPayload,
-                    actionType: AccountTopicAction.CREATE,
+                    actionType: AccountTopicAction.VERIFY,
                     destinationTopic: KafkaTopic.ACCOUNT,
                 },
                 audit: {
