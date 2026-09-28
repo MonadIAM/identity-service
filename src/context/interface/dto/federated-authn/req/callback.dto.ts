@@ -19,4 +19,10 @@ export class FederatedCallbackQueryDTO {
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public code: string;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsString()
+    @ApiProperty({ required: false, type: String, description: "Authorization response issuer" })
+    declare public iss?: string;
 }

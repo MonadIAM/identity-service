@@ -13,10 +13,10 @@ declare namespace Commands {
             };
         };
 
-        type AuthnResult = MessageResult &
-            Services.Session.Create.Tokens & {
-                recoveryCodes?: string[];
-            };
+        type AuthnResult = MessageResult & {
+            account: string;
+            recoveryCodes?: string[];
+        };
 
         interface Contract extends InternalContract, ControllerContract {}
 
@@ -35,7 +35,7 @@ declare namespace Commands {
                 };
             };
 
-            type Result = Promise<AuthnResult>;
+            type Result = AuthnResult;
 
             type Signature = (props: Props) => Result;
         }
@@ -77,12 +77,20 @@ declare namespace Commands {
         interface ControllerContract {
             authorize: Authorize.Signature;
             callback: Callback.Signature;
+            redirect: Redirect.Signature;
+        }
+
+        namespace Redirect {
+            type Props = { input: { provider: string; state: string; code?: string; iss?: string; error?: string } };
+            type Result = Promise<{ url: string }>;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Authorize {
             type Props = {
                 input: {
                     provider: string;
+                    authorizationRequest: string;
                 };
             };
 
@@ -100,10 +108,11 @@ declare namespace Commands {
                     provider: string;
                     state: string;
                     code: string;
+                    iss?: string;
                 };
             };
 
-            type Result = Promise<AuthnResult>;
+            type Result = Promise<MessageResult & { authorizationUrl: string; recoveryCodes?: string[] }>;
 
             type Signature = (props: Props) => Result;
         }

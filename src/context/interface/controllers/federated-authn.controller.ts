@@ -1,10 +1,15 @@
-import { Controller, HttpStatus, HttpCode, Header, Inject, Query, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Header, Inject, Query, Get, Post, Body, Redirect } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
 import { Extract, FormatResponse, Public, Swagger } from "~common/decorators";
 import { FEDERATED_AUTHN_COMMANDS } from "~context/application/commands";
 
-import { FederatedAuthorizeQueryDTO, FederatedCallbackQueryDTO, FederatedCallbackResultDTO } from "../dto/federated-authn";
+import {
+    FederatedCallbackResultDTO,
+    FederatedAuthorizeQueryDTO,
+    FederatedRedirectQueryDTO,
+    FederatedCallbackQueryDTO,
+} from "../dto/federated-authn";
 
 const {
     INTERNAL_SERVER_ERROR,
@@ -41,8 +46,18 @@ export class FederatedAuthnController {
     }
 
     @Public()
-    @HttpCode(OK)
     @Get("callback")
+    @Redirect(undefined, HttpStatus.FOUND)
+    @Header("Pragma", "no-cache")
+    @Header("Cache-Control", "no-store")
+    @Header("Referrer-Policy", "no-referrer")
+    public redirect(@Query() input: FederatedRedirectQueryDTO): Commands.FederatedAuthn.Redirect.Result {
+        return this.federatedAuthnCommands.redirect({ input });
+    }
+
+    @Public()
+    @HttpCode(OK)
+    @Post("callback")
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
     @FormatResponse(FederatedCallbackResultDTO)
@@ -63,7 +78,7 @@ export class FederatedAuthnController {
         CONFLICT,
     )
     public callback(
-        @Query() input: FederatedCallbackQueryDTO,
+        @Body() input: FederatedCallbackQueryDTO,
         @Extract.Meta() context: Extract.Meta,
     ): Commands.FederatedAuthn.Callback.Result {
         return this.federatedAuthnCommands.callback({ context, input });

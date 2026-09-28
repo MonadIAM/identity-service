@@ -13,6 +13,7 @@ export class FederatedAuthnCommandsUnitHelpers
         const oauthStateCacheService = {
             set: jest.fn<InfrastructureServices.OAuthStateCache.PublicContract["set"]>(),
             consume: jest.fn<InfrastructureServices.OAuthStateCache.PublicContract["consume"]>(),
+            get: jest.fn<InfrastructureServices.OAuthStateCache.PublicContract["get"]>(),
         };
         const identifierRepository = {
             findUnique: jest.fn<Repositories.Identifier.PublicContract["findUnique"]>(),
@@ -23,8 +24,20 @@ export class FederatedAuthnCommandsUnitHelpers
         const identifierService = {
             create: jest.fn<Services.Identifier.CommandContract["create"]>(),
         };
-        const sessionService = {
-            create: jest.fn<Services.Session.CommandContract["create"]>(),
+        const authorizationCacheService = {
+            get: jest.fn<InfrastructureServices.AuthorizationCache.PublicContract["get"]>(),
+        };
+        const interfaceClientRepository = {
+            findUniqueOrThrow: jest.fn<Repositories.InterfaceClient.PublicContract["findUniqueOrThrow"]>(),
+        };
+        interfaceClientRepository.findUniqueOrThrow.mockResolvedValue(
+            this.contract<Awaited<ReturnType<Repositories.InterfaceClient.PublicContract["findUniqueOrThrow"]>>>({
+                authAddress: "https://app.example/auth/login",
+            }),
+        );
+        const oauthCommands = {
+            assertAuthorizationPending: jest.fn<globalThis.Commands.OAuth.CommandsContract["assertAuthorizationPending"]>(),
+            completeAuthorization: jest.fn<globalThis.Commands.OAuth.CommandsContract["completeAuthorization"]>(),
         };
         const accountService = {
             create: jest.fn<Services.Account.CommandContract["create"]>(),
@@ -55,7 +68,9 @@ export class FederatedAuthnCommandsUnitHelpers
             googleOAuthService,
             githubOAuthService,
             identifierService,
-            sessionService,
+            authorizationCacheService,
+            interfaceClientRepository,
+            oauthCommands,
             accountService,
             hashingService,
             cryptoService,
@@ -65,12 +80,14 @@ export class FederatedAuthnCommandsUnitHelpers
                 this.contract<Repositories.Identifier.PublicContract>(identifierRepository),
                 this.contract<Services.RecoveryCode.CommandContract>(recoveryCodeService),
                 this.contract<Services.Identifier.CommandContract>(identifierService),
-                this.contract<Services.Session.CommandContract>(sessionService),
                 this.contract<Services.Account.CommandContract>(accountService),
                 this.contract<CommonServices.GoogleOAuth.PublicContract>(googleOAuthService),
                 this.contract<CommonServices.GitHubOAuth.PublicContract>(githubOAuthService),
                 this.contract<CommonServices.Hashing.PublicContract>(hashingService),
                 this.contract<CommonServices.Crypto.PublicContract>(cryptoService),
+                this.contract<InfrastructureServices.AuthorizationCache.PublicContract>(authorizationCacheService),
+                this.contract<Repositories.InterfaceClient.PublicContract>(interfaceClientRepository),
+                this.contract<globalThis.Commands.OAuth.CommandsContract>(oauthCommands),
             ),
         };
     }

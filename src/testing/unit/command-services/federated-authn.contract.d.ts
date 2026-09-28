@@ -8,14 +8,22 @@ declare namespace Unit.Commands.FederatedAuthn {
             Core.Execution.Result & {
                 commands: globalThis.Commands.FederatedAuthn.Contract;
                 oauthStateCacheService: Jest.Mocked<
-                    Pick<InfrastructureServices.OAuthStateCache.PublicContract, "set" | "consume">
+                    Pick<InfrastructureServices.OAuthStateCache.PublicContract, "set" | "consume" | "get">
                 >;
                 identifierRepository: {
                     findUnique: Jest.Mock<Repositories.Identifier.PublicContract["findUnique"]>;
                 };
                 recoveryCodeService: Jest.Mocked<Pick<Services.RecoveryCode.CommandContract, "generate">>;
                 identifierService: Jest.Mocked<Pick<Services.Identifier.CommandContract, "create">>;
-                sessionService: Jest.Mocked<Pick<Services.Session.CommandContract, "create">>;
+                authorizationCacheService: Jest.Mocked<
+                    Pick<InfrastructureServices.AuthorizationCache.PublicContract, "get">
+                >;
+                interfaceClientRepository: {
+                    findUniqueOrThrow: Jest.Mock<Repositories.InterfaceClient.PublicContract["findUniqueOrThrow"]>;
+                };
+                oauthCommands: Jest.Mocked<
+                    Pick<globalThis.Commands.OAuth.CommandsContract, "assertAuthorizationPending" | "completeAuthorization">
+                >;
                 accountService: Jest.Mocked<Pick<Services.Account.CommandContract, "create">>;
                 googleOAuthService: Jest.Mocked<
                     Pick<CommonServices.GoogleOAuth.PublicContract, "exchangeCode" | "fetchProfile" | "getAuthorizationUrl">

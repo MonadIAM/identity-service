@@ -46,6 +46,8 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
                 client_id: this.clientId,
                 code,
             }),
+        }).catch((cause) => {
+            throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.CODE_EXCHANGE_FAILED`, cause });
         });
 
         if (response.ok) {
@@ -79,6 +81,8 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
                 Authorization: `Bearer ${accessToken}`,
                 Accept: "application/vnd.github+json",
             },
+        }).catch((cause) => {
+            throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.PROFILE_FETCH_FAILED`, cause });
         });
 
         if (response.ok) {
@@ -94,6 +98,8 @@ export class GitHubOAuthService implements CommonServices.GitHubOAuth.Contract {
                 Authorization: `Bearer ${accessToken}`,
                 Accept: "application/vnd.github+json",
             },
+        }).catch((cause) => {
+            throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.PROFILE_FETCH_FAILED`, cause });
         });
 
         if (response.ok) {

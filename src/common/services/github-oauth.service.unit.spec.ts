@@ -86,11 +86,15 @@ describe("GitHubOAuthService", () => {
             });
         });
 
-        it("propagates a token exchange network error", async () => {
+        it("maps a token exchange network error to an external service failure", async () => {
             const error = new Error("network unavailable");
             request.mockRejectedValueOnce(error);
 
-            await expect(service.exchangeCode("code")).rejects.toBe(error);
+            await expect(service.exchangeCode("code")).rejects.toMatchObject({
+                statusCode: 502,
+                messageKey: "services.oauth.github.CODE_EXCHANGE_FAILED",
+                cause: error,
+            });
         });
 
         it("rejects malformed JSON from the token endpoint", async () => {
@@ -161,16 +165,23 @@ describe("GitHubOAuthService", () => {
             });
         });
 
-        it.each(["user", "emails"])("propagates a network failure from the %s endpoint", async (endpoint) => {
-            const error = new Error("network unavailable");
-            request.mockImplementation((url) => {
-                if (String(url) === `https://api.github.com/user${endpoint === "emails" ? "/emails" : ""}`) {
-                    return Promise.reject(error);
-                }
-                return Promise.resolve(Response.json(endpoint === "emails" ? user : []));
-            });
+        it.each(["user", "emails"])(
+            "maps a network failure from the %s endpoint to an external service failure",
+            async (endpoint) => {
+                const error = new Error("network unavailable");
+                request.mockImplementation((url) => {
+                    if (String(url) === `https://api.github.com/user${endpoint === "emails" ? "/emails" : ""}`) {
+                        return Promise.reject(error);
+                    }
+                    return Promise.resolve(Response.json(endpoint === "emails" ? user : []));
+                });
 
-            await expect(service.fetchProfile("token")).rejects.toBe(error);
-        });
+                await expect(service.fetchProfile("token")).rejects.toMatchObject({
+                    statusCode: 502,
+                    messageKey: "services.oauth.github.PROFILE_FETCH_FAILED",
+                    cause: error,
+                });
+            },
+        );
     });
 });

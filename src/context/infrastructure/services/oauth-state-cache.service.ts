@@ -25,6 +25,13 @@ export class OAuthStateCacheService implements InfrastructureServices.OAuthState
         await this.redis.set(`${this.namespace}:${state}`, JSON.stringify(metadata), "EX", this.ttl);
     }
 
+    public async get(
+        props: InfrastructureServices.OAuthStateCache.Get.Props,
+    ): InfrastructureServices.OAuthStateCache.Get.Result {
+        const raw = await this.redis.get(`${this.namespace}:${props.state}`);
+        return raw ? JSON.parse(raw) : null;
+    }
+
     public async consume(
         props: InfrastructureServices.OAuthStateCache.Consume.Props,
     ): InfrastructureServices.OAuthStateCache.Consume.Result {

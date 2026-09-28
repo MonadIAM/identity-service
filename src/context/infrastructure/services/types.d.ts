@@ -212,6 +212,7 @@ declare global {
         namespace OAuthStateCache {
             type Metadata = {
                 redirectUri?: string;
+                authorizationRequest?: string;
                 provider: string;
             };
 
@@ -219,10 +220,21 @@ declare global {
 
             interface PublicContract {
                 consume: Consume.Signature;
+                get: Get.Signature;
                 set: Set.Signature;
             }
 
             namespace Consume {
+                type Props = {
+                    state: string;
+                };
+
+                type Result = Promise<Nullable<Metadata>>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Get {
                 type Props = {
                     state: string;
                 };

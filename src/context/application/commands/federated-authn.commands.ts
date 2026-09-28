@@ -1,29 +1,28 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE, SESSION_SERVICE } from "~context/domain/services";
 import { HASHING_SERVICE, CRYPTO_SERVICE, GITHUB_OAUTH_SERVICE, GOOGLE_OAUTH_SERVICE } from "~common/services";
-import { OAUTH_STATE_CACHE_SERVICE } from "~context/infrastructure/services";
-import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
-import { DEFAULT_OAUTH_SCOPE, SYSTEM_REALM_ID } from "~context/constants";
+import { OAUTH_STATE_CACHE_SERVICE, AUTHORIZATION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { IDENTIFIER_REPOSITORY, INTERFACE_CLIENT_REPOSITORY } from "~context/infrastructure/repositories";
+import { ACCOUNT_SERVICE, IDENTIFIER_SERVICE, RECOVERY_CODE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { Exception } from "~common/exceptions";
 import {
     AuthenticationContextClass,
-    BlacklistTopicAction,
+    AccountTopicAction,
     AccountSubject,
     IdentifierType,
     AccountStatus,
     EntityType,
-    KafkaTopic,
     ActionType,
-    Client,
+    KafkaTopic,
 } from "~context/enums";
 
-import { FederatedAuthnMapper } from "../mappers";
+import { OAUTH_COMMANDS } from "./tokens";
+import { AccountMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract {
-    private readonly mapper: Commands.Mappers.FederatedAuthn.Contract;
+    private readonly mapper: Commands.Mappers.Account.Contract;
     private readonly dictionaryPath = "commands.federated-authn";
     private readonly resource = "Account";
 
@@ -38,8 +37,6 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         private readonly recoveryCodeService: Services.RecoveryCode.CommandContract,
         @Inject(IDENTIFIER_SERVICE)
         private readonly identifierService: Services.Identifier.CommandContract,
-        @Inject(SESSION_SERVICE)
-        private readonly sessionService: Services.Session.CommandContract,
         @Inject(ACCOUNT_SERVICE)
         private readonly accountService: Services.Account.CommandContract,
         @Inject(GOOGLE_OAUTH_SERVICE)
@@ -50,27 +47,73 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
+        @Inject(AUTHORIZATION_CACHE_SERVICE)
+        private readonly authorizationCacheService: InfrastructureServices.AuthorizationCache.PublicContract,
+        @Inject(INTERFACE_CLIENT_REPOSITORY)
+        private readonly interfaceClientRepository: Repositories.InterfaceClient.PublicContract,
+        @Inject(OAUTH_COMMANDS)
+        private readonly oauthCommands: Commands.OAuth.CommandsContract,
     ) {
-        this.mapper = new FederatedAuthnMapper();
+        this.mapper = new AccountMapper();
     }
 
     public async authorize(props: Commands.FederatedAuthn.Authorize.Props): Commands.FederatedAuthn.Authorize.Result {
         const { input } = props;
         const oauthService = this.resolveProvider({ provider: input.provider });
-        const state = this.cryptoService.generateToken();
+        const request = await this.authorizationCacheService.get({ id: input.authorizationRequest });
+        if (request) {
+            const client = await this.interfaceClientRepository.findUniqueOrThrow({ where: { id: request.client } });
+            const redirectUri = new URL("/auth/federated/callback", client.authAddress).toString();
+            const state = this.cryptoService.generateToken();
 
-        await this.oauthStateCacheService.set({ state, metadata: { provider: input.provider } });
+            await this.oauthStateCacheService.set({
+                state,
+                metadata: { provider: input.provider, authorizationRequest: input.authorizationRequest, redirectUri },
+            });
 
-        return { url: oauthService.getAuthorizationUrl(state) };
+            return { url: oauthService.getAuthorizationUrl(state) };
+        } else {
+            throw Exception.badRequest({ messageKey: "commands.oauth.INVALID_AUTHORIZATION_REQUEST" });
+        }
+    }
+
+    public async redirect(props: Commands.FederatedAuthn.Redirect.Props): Commands.FederatedAuthn.Redirect.Result {
+        const cached = await this.oauthStateCacheService.get({ state: props.input.state });
+        if (!cached?.redirectUri || cached.provider !== props.input.provider) {
+            throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_STATE` });
+        } else {
+            const url = new URL(cached.redirectUri);
+            url.searchParams.set("provider", props.input.provider);
+            url.searchParams.set("state", props.input.state);
+
+            if (props.input.code) {
+                url.searchParams.set("code", props.input.code);
+            }
+            if (props.input.iss) {
+                url.searchParams.set("iss", props.input.iss);
+            }
+            if (props.input.error) {
+                url.searchParams.set("error", props.input.error);
+            }
+            return { url: url.toString() };
+        }
     }
 
     public async callback(props: Commands.FederatedAuthn.Callback.Props): Commands.FederatedAuthn.Callback.Result {
         const { context, input } = props;
         const cached = await this.oauthStateCacheService.consume({ state: input.state });
 
-        if (cached?.provider === input.provider) {
+        const expectedIssuer =
+            input.provider === "github" ? "https://github.com/login/oauth" : "https://accounts.google.com";
+
+        if (
+            !cached?.authorizationRequest ||
+            cached.provider !== input.provider ||
+            (input.iss !== undefined && input.iss !== expectedIssuer)
+        ) {
             throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_STATE` });
         } else {
+            await this.oauthCommands.assertAuthorizationPending({ authorizationRequest: cached.authorizationRequest });
             const oauthService = this.resolveProvider({ provider: input.provider });
             const { access_token } = await oauthService.exchangeCode(input.code);
             const profile = await oauthService.fetchProfile(access_token);
@@ -94,8 +137,9 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 },
             });
 
+            let result: Commands.FederatedAuthn.AuthnResult;
             if (oauthIdentifier) {
-                return this.authenticateExisting({
+                result = await this.authenticateExisting({
                     input: { account: oauthIdentifier.account },
                     context,
                 });
@@ -109,65 +153,38 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                         : null;
 
                 if (emailIdentifier) {
-                    return this.attachToExisting({
+                    result = await this.attachToExisting({
                         context,
                         input: { ...identity, account: emailIdentifier.account },
                     });
                 } else {
-                    return this.provision({ context, input: identity });
+                    result = await this.provision({ context, input: identity });
                 }
             }
+            const authorization = await this.oauthCommands.completeAuthorization({
+                authorizationRequest: cached.authorizationRequest,
+                account: result.account,
+                acr: AuthenticationContextClass.FEDERATED,
+            });
+            return { message: result.message, ...authorization, recoveryCodes: result.recoveryCodes };
         }
     }
 
-    public async authenticateExisting(
+    public authenticateExisting(
         props: Commands.FederatedAuthn.AuthenticateExisting.Props,
     ): Commands.FederatedAuthn.AuthenticateExisting.Result {
-        const session = await this.transactionalService.run({
-            resource: this.resource,
-            outbox: {
-                payloadMapper: this.mapper.blacklistPayload,
-                destinationTopic: KafkaTopic.BLACKLIST,
-                actionType: BlacklistTopicAction.ADD,
-            },
-            audit: {
-                entityType: EntityType.ACCOUNT,
-                actionType: ActionType.SIGN_IN,
-                ...props,
-            },
-            execute: (transaction) => {
-                return this.sessionService.create({
-                    transaction,
-                    input: {
-                        acr: AuthenticationContextClass.FEDERATED,
-                        userAgent: props.context.userAgent,
-                        account: props.input.account,
-                        scope: DEFAULT_OAUTH_SCOPE,
-                        realms: [SYSTEM_REALM_ID],
-                        client: Client.WEB_DEV,
-                        ip: props.context.ip,
-                    },
-                });
-            },
-        });
-
-        return {
-            message: `${this.dictionaryPath}.SIGNED_IN`,
-            refreshToken: session.refreshToken,
-            accessToken: session.accessToken,
-        };
+        if (props.input.account.status !== AccountStatus.ACTIVE) {
+            throw Exception.forbidden({ messageKey: "commands.authn.ACCOUNT_SUSPENDED" });
+        }
+        return { message: `${this.dictionaryPath}.SIGNED_IN`, account: props.input.account.id };
     }
 
     public async attachToExisting(
         props: Commands.FederatedAuthn.AttachToExisting.Props,
     ): Commands.FederatedAuthn.AttachToExisting.Result {
-        const session = await this.transactionalService.run({
+        await this.authenticateExisting({ context: props.context, input: { account: props.input.account } });
+        await this.transactionalService.run({
             resource: this.resource,
-            outbox: {
-                payloadMapper: this.mapper.blacklistPayload,
-                destinationTopic: KafkaTopic.BLACKLIST,
-                actionType: BlacklistTopicAction.ADD,
-            },
             audit: {
                 entityType: EntityType.IDENTIFIER,
                 actionType: ActionType.CREATE,
@@ -188,26 +205,12 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                         },
                     },
                 });
-
-                return await this.sessionService.create({
-                    transaction,
-                    input: {
-                        acr: AuthenticationContextClass.FEDERATED,
-                        userAgent: props.context.userAgent,
-                        account: props.input.account,
-                        scope: DEFAULT_OAUTH_SCOPE,
-                        realms: [SYSTEM_REALM_ID],
-                        client: Client.WEB_DEV,
-                        ip: props.context.ip,
-                    },
-                });
             },
         });
 
         return {
             message: `${this.dictionaryPath}.LINKED_AND_SIGNED_IN`,
-            refreshToken: session.refreshToken,
-            accessToken: session.accessToken,
+            account: props.input.account.id,
         };
     }
 
@@ -215,8 +218,13 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
         const codes = this.cryptoService.generateRecoveryCodes();
         const hashes = await Promise.all(codes.map((code) => this.hashingService.hash({ value: code })));
 
-        const session = await this.transactionalService.run({
+        const { account } = await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.accountPayload,
+                actionType: AccountTopicAction.VERIFY,
+                destinationTopic: KafkaTopic.ACCOUNT,
+            },
             audit: {
                 entityType: EntityType.ACCOUNT,
                 actionType: ActionType.SIGN_UP,
@@ -253,25 +261,13 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                     transaction,
                 });
 
-                return this.sessionService.create({
-                    transaction,
-                    input: {
-                        acr: AuthenticationContextClass.FEDERATED,
-                        userAgent: props.context.userAgent,
-                        scope: DEFAULT_OAUTH_SCOPE,
-                        realms: [SYSTEM_REALM_ID],
-                        client: Client.WEB_DEV,
-                        ip: props.context.ip,
-                        account,
-                    },
-                });
+                return { account };
             },
         });
 
         return {
             message: `${this.dictionaryPath}.SIGNED_UP`,
-            refreshToken: session.refreshToken,
-            accessToken: session.accessToken,
+            account: account.id,
             recoveryCodes: codes,
         };
     }

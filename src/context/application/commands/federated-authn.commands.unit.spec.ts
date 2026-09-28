@@ -1,7 +1,15 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { FederatedAuthnCommandsUnitHelpers } from "~testing/unit/command-services/federated-authn.helpers";
-import { IdentifierType, AccountSubject, AccountStatus, AuthenticationContextClass } from "~context/enums";
+import {
+    AuthenticationContextClass,
+    CodeChallengeMethod,
+    AccountTopicAction,
+    KafkaTopic,
+    IdentifierType,
+    AccountSubject,
+    AccountStatus,
+} from "~context/enums";
 
 const CONTEXT: Extract.Meta = { ip: "127.0.0.1", userAgent: "unit-test" };
 const helpers = new FederatedAuthnCommandsUnitHelpers();
@@ -9,15 +17,40 @@ const helpers = new FederatedAuthnCommandsUnitHelpers();
 describe("FederatedAuthnCommands", () => {
     describe("authorize", () => {
         it.each(["google", "github"])("starts %s authorization with provider-bound state", async (provider) => {
-            const { commands, cryptoService, oauthStateCacheService, googleOAuthService, githubOAuthService } =
-                await helpers.commands();
+            const {
+                commands,
+                cryptoService,
+                oauthStateCacheService,
+                googleOAuthService,
+                githubOAuthService,
+                authorizationCacheService,
+            } = await helpers.commands();
+            authorizationCacheService.get.mockResolvedValue({
+                client: "client",
+                redirectUri: "https://app.example/main",
+                state: "pkce-state",
+                codeChallenge: "challenge",
+                codeChallengeMethod: CodeChallengeMethod.S256,
+                scope: "openid",
+            });
             cryptoService.generateToken.mockReturnValue("state-token");
             const oauth = provider === "google" ? googleOAuthService : githubOAuthService;
             oauth.getAuthorizationUrl.mockReturnValue("https://provider.example.test/authorize");
 
-            const result = await commands.authorize({ input: { provider } });
+            const result = await commands.authorize({ input: { provider, authorizationRequest: "request" } });
 
-            expect(oauthStateCacheService.set.mock.calls).toEqual([[{ state: "state-token", metadata: { provider } }]]);
+            expect(oauthStateCacheService.set.mock.calls).toEqual([
+                [
+                    {
+                        state: "state-token",
+                        metadata: {
+                            provider,
+                            authorizationRequest: "request",
+                            redirectUri: "https://app.example/auth/federated/callback",
+                        },
+                    },
+                ],
+            ]);
             expect(oauth.getAuthorizationUrl.mock.calls).toEqual([["state-token"]]);
             expect(result.url).toBe("https://provider.example.test/authorize");
         });
@@ -25,14 +58,63 @@ describe("FederatedAuthnCommands", () => {
         it("rejects an unsupported provider before allocating state", async () => {
             const { commands, oauthStateCacheService } = await helpers.commands();
 
-            await expect(commands.authorize({ input: { provider: "unsupported" } })).rejects.toThrow();
+            await expect(
+                commands.authorize({ input: { provider: "unsupported", authorizationRequest: "request" } }),
+            ).rejects.toThrow();
 
             expect(oauthStateCacheService.set).not.toHaveBeenCalled();
         });
     });
 
+    describe("redirect", () => {
+        it("returns to the saved UI callback without exchanging the provider code", async () => {
+            const { commands, oauthStateCacheService, githubOAuthService } = await helpers.commands();
+            oauthStateCacheService.get.mockResolvedValue({
+                provider: "github",
+                authorizationRequest: "request",
+                redirectUri: "https://app.example/auth/federated/callback",
+            });
+            const result = await commands.redirect({
+                input: { provider: "github", state: "state", code: "code", iss: "https://github.com/login/oauth" },
+            });
+            const url = new URL(result.url);
+            expect(url.origin + url.pathname).toBe("https://app.example/auth/federated/callback");
+            expect(url.searchParams.get("code")).toBe("code");
+            expect(githubOAuthService.exchangeCode).not.toHaveBeenCalled();
+            expect(oauthStateCacheService.consume).not.toHaveBeenCalled();
+        });
+
+        it("rejects an unknown state instead of accepting a redirect URL from the browser", async () => {
+            const { commands, oauthStateCacheService } = await helpers.commands();
+            oauthStateCacheService.get.mockResolvedValue(null);
+            await expect(
+                commands.redirect({ input: { provider: "github", state: "missing", code: "code" } }),
+            ).rejects.toThrow();
+        });
+    });
+
     describe("callback", () => {
-        it.failing.each([null, { provider: "github" }])(
+        it.each([
+            ["github", "https://accounts.google.com"],
+            ["google", "https://github.com/login/oauth"],
+            ["github", "https://untrusted.example"],
+            ["github", ""],
+        ])("rejects an unexpected issuer for %s: %s", async (provider, iss) => {
+            const { commands, oauthStateCacheService, googleOAuthService, githubOAuthService, oauthCommands } =
+                await helpers.commands();
+            oauthStateCacheService.consume.mockResolvedValue({ provider, authorizationRequest: "request" });
+            await expect(
+                commands.callback({
+                    input: { provider, state: "state-token", code: "code", iss },
+                    context: CONTEXT,
+                }),
+            ).rejects.toThrow();
+            expect(googleOAuthService.exchangeCode).not.toHaveBeenCalled();
+            expect(githubOAuthService.exchangeCode).not.toHaveBeenCalled();
+            expect(oauthCommands.completeAuthorization).not.toHaveBeenCalled();
+        });
+
+        it.each([null, { provider: "github" }])(
             "rejects absent or mismatched callback state before code exchange: %j",
             async (cached) => {
                 const { commands, oauthStateCacheService, googleOAuthService } = await helpers.commands();
@@ -51,51 +133,67 @@ describe("FederatedAuthnCommands", () => {
             },
         );
 
-        it.failing("accepts matching callback state and signs in the account linked to the provider", async () => {
-            const { commands, oauthStateCacheService, googleOAuthService, identifierRepository, sessionService } =
-                await helpers.commands();
-            oauthStateCacheService.consume.mockResolvedValue({ provider: "google" });
-            googleOAuthService.exchangeCode.mockResolvedValue({
+        it.each([
+            ["google", undefined],
+            ["google", "https://accounts.google.com"],
+            ["github", "https://github.com/login/oauth"],
+        ])("accepts matching state and issuer for %s (%s)", async (provider, iss) => {
+            const {
+                commands,
+                oauthStateCacheService,
+                googleOAuthService,
+                githubOAuthService,
+                identifierRepository,
+                oauthCommands,
+            } = await helpers.commands();
+            oauthStateCacheService.consume.mockResolvedValue({ provider, authorizationRequest: "request" });
+            const oauth = provider === "google" ? googleOAuthService : githubOAuthService;
+            const tokens = {
                 access_token: "provider-token",
                 token_type: "Bearer",
                 expires_in: 3600,
                 scope: "openid",
-            });
-            googleOAuthService.fetchProfile.mockResolvedValue({
+            };
+            oauth.exchangeCode.mockResolvedValue(tokens);
+            oauth.fetchProfile.mockResolvedValue({
                 providerUserId: "provider-id",
                 displayName: "User",
                 emailVerified: false,
             });
             const account = helpers.createAccount();
             identifierRepository.findUnique.mockResolvedValue(helpers.createIdentifier({ account }));
-            sessionService.create.mockResolvedValue({
-                accessToken: "access",
-                refreshToken: "refresh",
-                revokedSessions: [],
+            oauthCommands.completeAuthorization.mockResolvedValue({
+                authorizationUrl: "https://app.example/main?code=code&state=pkce-state",
             });
 
             const result = await commands.callback({
-                input: { provider: "google", state: "state-token", code: "code" },
+                input: { provider, state: "state-token", code: "code", iss },
                 context: CONTEXT,
             });
 
             expect(oauthStateCacheService.consume.mock.calls).toEqual([[{ state: "state-token" }]]);
-            expect(googleOAuthService.exchangeCode.mock.calls).toEqual([["code"]]);
+            expect(oauth.exchangeCode.mock.calls).toEqual([["code"]]);
             expect(identifierRepository.findUnique.mock.calls).toEqual([
-                [{ options: { populate: ["account"] }, where: { provider: "google", providerUserId: "provider-id" } }],
+                [{ options: { populate: ["account"] }, where: { provider, providerUserId: "provider-id" } }],
             ]);
-            expect(result).toEqual(expect.objectContaining({ accessToken: "access", refreshToken: "refresh" }));
+            expect(result).toEqual(
+                expect.objectContaining({ authorizationUrl: "https://app.example/main?code=code&state=pkce-state" }),
+            );
+            expect(oauthCommands.completeAuthorization).toHaveBeenCalledWith({
+                authorizationRequest: "request",
+                account: account.id,
+                acr: AuthenticationContextClass.FEDERATED,
+            });
+            expect(result).not.toHaveProperty("accessToken");
         });
     });
 
     describe("attachToExisting", () => {
-        it("links a provider identifier and creates a federated session in the same transaction", async () => {
-            const { commands, identifierService, sessionService, transaction } = await helpers.commands();
+        it("links a provider identifier without issuing session tokens", async () => {
+            const { commands, identifierService, oauthCommands, transaction } = await helpers.commands();
             const account = helpers.createAccount();
-            sessionService.create.mockResolvedValue({
-                accessToken: "access",
-                refreshToken: "refresh",
-                revokedSessions: [],
+            oauthCommands.completeAuthorization.mockResolvedValue({
+                authorizationUrl: "https://app.example/main?code=code&state=pkce-state",
             });
 
             await commands.attachToExisting({
@@ -126,21 +224,11 @@ describe("FederatedAuthnCommands", () => {
                     },
                 ],
             ]);
-            expect(sessionService.create.mock.calls).toEqual([
-                [
-                    expect.objectContaining({
-                        input: expect.objectContaining({ account, acr: AuthenticationContextClass.FEDERATED, ...CONTEXT }),
-                        transaction: transaction.entityManager,
-                    }),
-                ],
-            ]);
-            expect(identifierService.create.mock.invocationCallOrder[0]).toBeLessThan(
-                sessionService.create.mock.invocationCallOrder[0]!,
-            );
+            expect(oauthCommands.completeAuthorization).not.toHaveBeenCalled();
         });
 
         it("propagates a linking failure without issuing a session", async () => {
-            const { commands, identifierService, sessionService } = await helpers.commands();
+            const { commands, identifierService, oauthCommands } = await helpers.commands();
             const failure = new Error("identifier already linked");
             identifierService.create.mockRejectedValue(failure);
 
@@ -157,7 +245,7 @@ describe("FederatedAuthnCommands", () => {
                 }),
             ).rejects.toBe(failure);
 
-            expect(sessionService.create).not.toHaveBeenCalled();
+            expect(oauthCommands.completeAuthorization).not.toHaveBeenCalled();
         });
     });
 
@@ -169,20 +257,16 @@ describe("FederatedAuthnCommands", () => {
                     commands,
                     accountService,
                     recoveryCodeService,
-                    sessionService,
+                    oauthCommands,
                     cryptoService,
                     hashingService,
                     transaction,
+                    run,
                 } = await helpers.commands();
                 const account = helpers.createAccount();
                 accountService.create.mockReturnValue(account);
                 cryptoService.generateRecoveryCodes.mockReturnValue(["code-one", "code-two"]);
                 hashingService.hash.mockImplementation(({ value }) => Promise.resolve(`hash:${value}`));
-                sessionService.create.mockResolvedValue({
-                    accessToken: "access",
-                    refreshToken: "refresh",
-                    revokedSessions: [],
-                });
 
                 const result = await commands.provision({
                     input: {
@@ -195,6 +279,15 @@ describe("FederatedAuthnCommands", () => {
                     context: CONTEXT,
                 });
 
+                expect(run).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        outbox: {
+                            payloadMapper: expect.any(Function),
+                            actionType: AccountTopicAction.VERIFY,
+                            destinationTopic: KafkaTopic.ACCOUNT,
+                        },
+                    }),
+                );
                 expect(accountService.create.mock.calls).toEqual([
                     [
                         {
@@ -225,14 +318,8 @@ describe("FederatedAuthnCommands", () => {
                         },
                     ],
                 ]);
-                expect(sessionService.create.mock.calls).toEqual([
-                    [
-                        expect.objectContaining({
-                            input: expect.objectContaining({ account, acr: AuthenticationContextClass.FEDERATED }),
-                            transaction: transaction.entityManager,
-                        }),
-                    ],
-                ]);
+                expect(oauthCommands.completeAuthorization).not.toHaveBeenCalled();
+                expect(result.account).toBe(account.id);
                 expect(result.recoveryCodes).toEqual(["code-one", "code-two"]);
             },
         );

@@ -9,4 +9,10 @@ export class FederatedAuthorizeQueryDTO {
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public provider: string;
+
+    @Expose()
+    @Validator.IsString()
+    @Validator.MinLength(1)
+    @ApiProperty({ required: true, type: String })
+    declare public authorizationRequest: string;
 }
