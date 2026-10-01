@@ -1,6 +1,5 @@
+import { dataset } from "@monadiam/shared/datasets/identity";
 import { Seeder } from "@mikro-orm/seeder";
-
-import datasets from "../datasets";
 
 export class System extends Seeder {
     private readonly schema: string = "identity";
@@ -25,19 +24,16 @@ export class System extends Seeder {
         `);
 
         const seedOrder = [
-            datasets.Accounts,
-            datasets.Profiles,
-            datasets.Passwords,
-            datasets.Identifiers,
-            datasets.InterfaceClients,
-            datasets.RecoveryCodes,
+            dataset.Accounts,
+            dataset.Profiles,
+            dataset.Passwords,
+            dataset.Identifiers,
+            dataset.InterfaceClients,
+            dataset.RecoveryCodes,
         ];
 
-        for await (const dataset of seedOrder) {
-            const query = platform
-                .createNativeQueryBuilder()
-                .into(`${this.schema}.${dataset.name}`)
-                .insert(dataset.postgresql);
+        for await (const entry of seedOrder) {
+            const query = platform.createNativeQueryBuilder().into(`${this.schema}.${entry.name}`).insert(entry.postgresql);
             await entityManager.execute(query, [], "run");
         }
     }

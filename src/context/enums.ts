@@ -7,23 +7,6 @@ export enum ResponseViewType {
     /* eslint-enable prettier/prettier */
 }
 
-export enum AccountSubject {
-    /* eslint-disable prettier/prettier */
-    SERVICE = "SERVICE",
-    SYSTEM  = "SYSTEM",
-    HUMAN   = "HUMAN",
-    /* eslint-enable prettier/prettier */
-}
-
-export enum AccountStatus {
-    /* eslint-disable prettier/prettier */
-    DEACTIVATED = "DEACTIVATED",
-    SUSPENDED   = "SUSPENDED",
-    PENDING     = "PENDING",
-    ACTIVE      = "ACTIVE",
-    /* eslint-enable prettier/prettier */
-}
-
 export enum QueryMode {
     /* eslint-disable prettier/prettier */
     DEFAULT = "DEFAULT",
@@ -31,19 +14,8 @@ export enum QueryMode {
     /* eslint-enable prettier/prettier */
 }
 
-export enum IdentifierType {
-    EMAIL = "email",
-    PHONE = "phone",
-    OAUTH = "oauth",
-}
-
 export enum SecondFactorType {
     TOTP = "totp",
-}
-
-export enum TokenGrantType {
-    AUTHORIZATION_CODE = "authorization_code",
-    REFRESH_TOKEN = "refresh_token",
 }
 
 export enum OAuthTokenTypeHint {
