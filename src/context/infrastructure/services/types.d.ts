@@ -1,3 +1,5 @@
+import type { PermissionCode, PrivilegeScope } from "@monadiam/shared";
+
 import { LuaScript } from "~context/infrastructure/scripts";
 import { CodeChallengeMethod } from "~context/enums";
 
@@ -375,13 +377,13 @@ declare global {
 
             namespace CheckPermissions {
                 type Props = {
-                    permissions: string[];
+                    permissions: PermissionCode[];
                     globalOnly?: boolean;
                     account: string;
                     realm: string;
                 };
 
-                type Result = Promise<string[]>;
+                type Result = Promise<Partial<Record<PermissionCode, PrivilegeScope>>>;
 
                 type Signature = (props: Props) => Result;
             }

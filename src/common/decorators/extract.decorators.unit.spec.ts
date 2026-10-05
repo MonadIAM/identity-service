@@ -2,6 +2,7 @@ import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { Controller, Get, Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { PermissionCode, PrivilegeScope } from "@monadiam/shared";
 
 import { Extract } from "./extract.decorators";
 
@@ -12,15 +13,18 @@ const session: Extract.Session.Auth = {
     realms: ["realm-a"],
     scope: "openid",
 };
+const permissions = [PermissionCode.ROLE_READ_PERSONAL, PermissionCode.ROLE_UPDATE];
 
 @Controller("extract")
 class ExtractController {
     @Get()
     public read(
-        @Extract.Meta() meta: Extract.Meta,
+        @Extract.Permissions(PrivilegeScope.GLOBAL) globalPermissions: string[],
         @Extract.Session() currentSession: Extract.Session.Public,
-    ): { meta: Extract.Meta; session: Extract.Session.Public } {
-        return { meta, session: currentSession };
+        @Extract.Permissions() currentPermissions: string[],
+        @Extract.Meta() meta: Extract.Meta,
+    ): { meta: Extract.Meta; session: Extract.Session.Public; permissions: string[]; globalPermissions: string[] } {
+        return { meta, session: currentSession, permissions: currentPermissions, globalPermissions };
     }
 }
 
@@ -36,6 +40,9 @@ describe("Extract decorators", () => {
             const authenticated = request.headers["x-test-authenticated"] === "true";
             Object.assign(request, {
                 session: authenticated ? { ...session, realms: [...session.realms] } : {},
+                metadata: authenticated
+                    ? { permissions: { [permissions[0]]: PrivilegeScope.REALM, [permissions[1]]: PrivilegeScope.GLOBAL } }
+                    : {},
             });
             done();
         });
@@ -61,10 +68,12 @@ describe("Extract decorators", () => {
             expect(response.json()).toEqual({
                 meta: { userAgent: "decorator-contract-test", ip: "192.0.2.10" },
                 session,
+                permissions,
+                globalPermissions: [permissions[1]],
             });
         });
 
-        it("uses unknown for a missing user agent and preserves an anonymous session", async () => {
+        it("uses unknown for a missing user agent and an empty array for absent permissions", async () => {
             const response = await app.inject({
                 headers: { "user-agent": undefined },
                 remoteAddress: "192.0.2.11",
@@ -76,6 +85,8 @@ describe("Extract decorators", () => {
             expect(response.json()).toEqual({
                 meta: { userAgent: "unknown", ip: "192.0.2.11" },
                 session: {},
+                permissions: [],
+                globalPermissions: [],
             });
         });
 
@@ -96,8 +107,8 @@ describe("Extract decorators", () => {
 
             expect(authenticated.statusCode).toBe(200);
             expect(anonymous.statusCode).toBe(200);
-            expect(authenticated.json()).toMatchObject({ session });
-            expect(anonymous.json()).toMatchObject({ session: {} });
+            expect(authenticated.json()).toMatchObject({ session, permissions });
+            expect(anonymous.json()).toMatchObject({ session: {}, permissions: [] });
         });
     });
 });
