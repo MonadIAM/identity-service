@@ -11,32 +11,43 @@ function createProfile(overrides?: Partial<Entities.Profile.ConstructorProps>): 
     });
 }
 
-describe("Profile Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - Profile", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
             const account = {} as Account;
 
+            // Act
             const profile = createProfile({ account, displayName: "Jane Doe" });
 
+            // Assert
             expect(profile.account).toBe(account);
             expect(profile.displayName).toBe("Jane Doe");
         });
 
-        it("should assign optional fields when provided", () => {
+        it("[case] - assigns optional fields when provided", () => {
+            // Arrange
+
+            // Act
             const profile = createProfile({
                 pictureUrl: "https://example.com/avatar.png",
                 timeZone: "Europe/Moscow",
                 locale: "ru",
             });
 
+            // Assert
             expect(profile.pictureUrl).toBe("https://example.com/avatar.png");
             expect(profile.timeZone).toBe("Europe/Moscow");
             expect(profile.locale).toBe("ru");
         });
 
-        it("should leave optional fields undefined when omitted", () => {
+        it("[case] - leaves optional fields undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const profile = createProfile();
 
+            // Assert
             expect(profile.pictureUrl).toBeUndefined();
             expect(profile.timeZone).toBeUndefined();
             expect(profile.locale).toBeUndefined();
@@ -44,53 +55,75 @@ describe("Profile Entity", () => {
         });
     });
 
-    describe("update", () => {
-        it("should update a single field", () => {
+    describe("[Method] - update", () => {
+        it("[case] - updates a single field", () => {
+            // Arrange
             const profile = createProfile({ displayName: "Old Name" });
 
+            // Act
             profile.update({ displayName: "New Name" });
 
+            // Assert
             expect(profile.displayName).toBe("New Name");
             expect(profile.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should update multiple fields at once", () => {
+        it("[case] - updates multiple fields at once", () => {
+            // Arrange
             const profile = createProfile({ displayName: "Old", locale: "en" });
 
+            // Act
             profile.update({ displayName: "New", locale: "ru" });
 
+            // Assert
             expect(profile.displayName).toBe("New");
             expect(profile.locale).toBe("ru");
         });
 
-        it("should skip unchanged fields", () => {
+        it("[case] - skips unchanged fields", () => {
+            // Arrange
             const profile = createProfile({ displayName: "Same", locale: "en" });
 
+            // Act
             profile.update({ displayName: "Same", locale: "ru" });
 
+            // Assert
             expect(profile.displayName).toBe("Same");
             expect(profile.locale).toBe("ru");
         });
 
-        it("should ignore undefined values in patch", () => {
+        it("[case] - ignores undefined values in patch", () => {
+            // Arrange
             const profile = createProfile({ displayName: "Original" });
 
+            // Act
             profile.update({ displayName: "Updated", pictureUrl: undefined });
 
+            // Assert
             expect(profile.displayName).toBe("Updated");
             expect(profile.pictureUrl).toBeUndefined();
         });
 
-        it("should throw when patch is empty object", () => {
+        it("[case] - throws when patch is empty object", () => {
+            // Arrange
             const profile = createProfile();
 
-            expect(() => profile.update({})).toThrow("EMPTY_UPDATE_PATCH");
+            // Act
+            const act = (): unknown => profile.update({});
+
+            // Assert
+            expect(act).toThrow("EMPTY_UPDATE_PATCH");
         });
 
-        it("should throw when no values actually changed", () => {
+        it("[case] - throws when no values actually changed", () => {
+            // Arrange
             const profile = createProfile({ displayName: "Same" });
 
-            expect(() => profile.update({ displayName: "Same" })).toThrow("NO_CHANGES_DETECTED");
+            // Act
+            const act = (): unknown => profile.update({ displayName: "Same" });
+
+            // Assert
+            expect(act).toThrow("NO_CHANGES_DETECTED");
         });
     });
 });

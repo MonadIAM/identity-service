@@ -12,7 +12,7 @@ const service = new GoogleOAuthService(
     }),
 );
 
-describe("GoogleOAuthService", () => {
+describe("[CommonService] - GoogleOAuth", () => {
     let request: jest.SpiedFunction<typeof fetch>;
 
     beforeEach(() => {
@@ -24,14 +24,18 @@ describe("GoogleOAuthService", () => {
         jest.restoreAllMocks();
     });
 
-    describe("getAuthorizationUrl", () => {
-        it("builds the authorization URL preserving state and redirect parameters", () => {
+    describe("[Method] - getAuthorizationUrl", () => {
+        it("[case] - builds the authorization URL preserving state and redirect parameters", () => {
+            // Arrange
             const state = "opaque +&= state";
 
+            // Act
             const url = new URL(service.getAuthorizationUrl(state));
+            const result = Object.fromEntries(url.searchParams);
 
+            // Assert
             expect(url.origin + url.pathname).toBe("https://accounts.google.com/o/oauth2/v2/auth");
-            expect(Object.fromEntries(url.searchParams)).toEqual({
+            expect(result).toEqual({
                 redirect_uri: redirectUri,
                 client_id: "client-id",
                 state,
@@ -43,8 +47,9 @@ describe("GoogleOAuthService", () => {
         });
     });
 
-    describe("exchangeCode", () => {
-        it("exchanges the code using form encoding and returns the provider tokens", async () => {
+    describe("[Method] - exchangeCode", () => {
+        it("[case] - exchanges the code using form encoding and returns the provider tokens", async () => {
+            // Arrange
             const tokens = {
                 access_token: "access",
                 refresh_token: "refresh",
@@ -55,9 +60,12 @@ describe("GoogleOAuthService", () => {
             };
             request.mockResolvedValueOnce(Response.json(tokens));
 
+            // Act
             const result = await service.exchangeCode("code+&=");
             const body = request.mock.calls[0][1]?.body as URLSearchParams;
+            const result1 = Object.fromEntries(body);
 
+            // Assert
             expect(result).toEqual(tokens);
             expect(request).toHaveBeenCalledTimes(1);
             expect(request).toHaveBeenCalledWith("https://oauth2.googleapis.com/token", {
@@ -65,7 +73,7 @@ describe("GoogleOAuthService", () => {
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: expect.any(URLSearchParams),
             });
-            expect(Object.fromEntries(body)).toEqual({
+            expect(result1).toEqual({
                 client_id: "client-id",
                 client_secret: "test-secret",
                 redirect_uri: redirectUri,
@@ -74,24 +82,33 @@ describe("GoogleOAuthService", () => {
             });
         });
 
-        it.each([400, 401, 503])("maps HTTP %s during code exchange to an authentication failure", async (status) => {
-            request.mockResolvedValueOnce(new Response("private upstream error", { status }));
+        it.each([400, 401, 503])(
+            "[case] - maps HTTP %s during code exchange to an authentication failure",
+            async (status) => {
+                // Arrange
+                request.mockResolvedValueOnce(new Response("private upstream error", { status }));
 
-            await expect(service.exchangeCode("code")).rejects.toMatchObject({
-                statusCode: 401,
-                messageKey: "services.oauth.google.CODE_EXCHANGE_FAILED",
-            });
-        });
+                // Act
+                const result = service.exchangeCode("code");
+
+                // Assert
+                await expect(result).rejects.toMatchObject({
+                    statusCode: 401,
+                    messageKey: "services.oauth.google.CODE_EXCHANGE_FAILED",
+                });
+            },
+        );
     });
 
-    describe("fetchProfile", () => {
+    describe("[Method] - fetchProfile", () => {
         it.each([
             { name: "Display Name", verified: true, expectedName: "Display Name" },
             { name: undefined, verified: false, expectedName: "user@example.test" },
             { name: null, verified: undefined, expectedName: "user@example.test" },
         ])(
-            "maps profile name and email verification: $expectedName / $verified",
+            "[case] - maps profile name and email verification: $expectedName / $verified",
             async ({ name, verified, expectedName }) => {
+                // Arrange
                 request.mockResolvedValueOnce(
                     Response.json({
                         sub: "google-id",
@@ -102,8 +119,10 @@ describe("GoogleOAuthService", () => {
                     }),
                 );
 
+                // Act
                 const result = await service.fetchProfile("access-token");
 
+                // Assert
                 expect(result).toEqual({
                     providerUserId: "google-id",
                     displayName: expectedName,
@@ -117,28 +136,46 @@ describe("GoogleOAuthService", () => {
             },
         );
 
-        it("maps a profile HTTP failure to an external service error", async () => {
+        it("[case] - maps a profile HTTP failure to an external service error", async () => {
+            // Arrange
             request.mockResolvedValueOnce(new Response("unavailable", { status: 503 }));
 
-            await expect(service.fetchProfile("token")).rejects.toMatchObject({
+            // Act
+            const result = service.fetchProfile("token");
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 statusCode: 502,
                 messageKey: "services.oauth.google.SERVICE_UNAVAILABLE",
             });
         });
     });
 
-    describe("exchangeCode / fetchProfile", () => {
-        it.each(["exchangeCode", "fetchProfile"] as const)("propagates transport failures from %s", async (method) => {
-            const error = new Error("network unavailable");
-            request.mockRejectedValueOnce(error);
+    describe("[Behavior] - provider failures", () => {
+        it.each(["exchangeCode", "fetchProfile"] as const)(
+            "[case] - propagates transport failures from %s",
+            async (method) => {
+                // Arrange
+                const error = new Error("network unavailable");
+                request.mockRejectedValueOnce(error);
 
-            await expect(service[method]("value")).rejects.toBe(error);
-        });
+                // Act
+                const result = service[method]("value");
 
-        it.each(["exchangeCode", "fetchProfile"] as const)("rejects invalid JSON from %s", async (method) => {
+                // Assert
+                await expect(result).rejects.toBe(error);
+            },
+        );
+
+        it.each(["exchangeCode", "fetchProfile"] as const)("[case] - rejects invalid JSON from %s", async (method) => {
+            // Arrange
             request.mockResolvedValueOnce(new Response("not JSON"));
 
-            await expect(service[method]("value")).rejects.toMatchObject({ name: "SyntaxError" });
+            // Act
+            const result = service[method]("value");
+
+            // Assert
+            await expect(result).rejects.toMatchObject({ name: "SyntaxError" });
         });
     });
 });

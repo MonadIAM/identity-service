@@ -9,21 +9,23 @@ const helpers = new RealmCommandsUnitHelpers();
 const ACTOR = "actor-account";
 const REALM = "realm-a";
 
-describe("RealmCommands", () => {
-    describe("revokeRealm / restoreRealm / purgeRealm", () => {
+describe("[Commands] - Realm", () => {
+    describe("[Behavior] - realm lifecycle", () => {
         it.each([
             { command: "revokeRealm", method: "applyRealmRevocation", isRevoked: true },
             { command: "restoreRealm", method: "applyRealmRestore", isRevoked: false },
             { command: "purgeRealm", method: "purgeRealm", isRevoked: true },
         ] as const)(
-            "$command applies the event version to both client types in the same transaction",
+            "[case] - $command applies the event version to both client types in the same transaction",
             async ({ command, method, isRevoked }) => {
+                // Arrange
                 const { commands, interfaceClientService, serviceClientService, consume, transaction } = helpers.commands();
                 const interfaceClients = [helpers.createInterfaceClient()];
                 const serviceClients = [helpers.createServiceClient()];
                 interfaceClientService[method].mockResolvedValue(interfaceClients);
                 serviceClientService[method].mockResolvedValue(serviceClients);
 
+                // Act
                 await commands[command]({
                     input: { version: 7 },
                     actor: ACTOR,
@@ -31,7 +33,9 @@ describe("RealmCommands", () => {
                     context: CONTEXT,
                     incoming: INCOMING,
                 });
+                const result = await consume.mock.results[0]?.value;
 
+                // Assert
                 expect(interfaceClientService[method].mock.calls).toEqual([
                     [{ version: 7, realm: REALM, transaction: transaction.entityManager }],
                 ]);
@@ -49,7 +53,7 @@ describe("RealmCommands", () => {
                         }),
                     ],
                 ]);
-                await expect(consume.mock.results[0]?.value).resolves.toEqual({
+                expect(result).toEqual({
                     status: "processed",
                     value: { interfaceClients, serviceClients, isRevoked, actor: ACTOR },
                 });

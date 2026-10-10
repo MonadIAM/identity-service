@@ -14,9 +14,10 @@ import {
 const CONTEXT: Extract.Meta = { ip: "127.0.0.1", userAgent: "unit-test" };
 const helpers = new FederatedAuthnCommandsUnitHelpers();
 
-describe("FederatedAuthnCommands", () => {
-    describe("authorize", () => {
-        it.each(["google", "github"])("starts %s authorization with provider-bound state", async (provider) => {
+describe("[Commands] - FederatedAuthn", () => {
+    describe("[Method] - authorize", () => {
+        it.each(["google", "github"])("[case] - starts %s authorization with provider-bound state", async (provider) => {
+            // Arrange
             const {
                 commands,
                 cryptoService,
@@ -37,8 +38,10 @@ describe("FederatedAuthnCommands", () => {
             const oauth = provider === "google" ? googleOAuthService : githubOAuthService;
             oauth.getAuthorizationUrl.mockReturnValue("https://provider.example.test/authorize");
 
+            // Act
             const result = await commands.authorize({ input: { provider, authorizationRequest: "request" } });
 
+            // Assert
             expect(oauthStateCacheService.set.mock.calls).toEqual([
                 [
                     {
@@ -55,89 +58,108 @@ describe("FederatedAuthnCommands", () => {
             expect(result.url).toBe("https://provider.example.test/authorize");
         });
 
-        it("rejects an unsupported provider before allocating state", async () => {
+        it("[case] - rejects an unsupported provider before allocating state", async () => {
+            // Arrange
             const { commands, oauthStateCacheService } = await helpers.commands();
 
-            await expect(
-                commands.authorize({ input: { provider: "unsupported", authorizationRequest: "request" } }),
-            ).rejects.toThrow();
+            // Act
+            const result = commands.authorize({ input: { provider: "unsupported", authorizationRequest: "request" } });
 
+            // Assert
+            await expect(result).rejects.toThrow();
             expect(oauthStateCacheService.set).not.toHaveBeenCalled();
         });
     });
 
-    describe("redirect", () => {
-        it("returns to the saved UI callback without exchanging the provider code", async () => {
+    describe("[Method] - redirect", () => {
+        it("[case] - returns to the saved UI callback without exchanging the provider code", async () => {
+            // Arrange
             const { commands, oauthStateCacheService, githubOAuthService } = await helpers.commands();
             oauthStateCacheService.get.mockResolvedValue({
                 provider: "github",
                 authorizationRequest: "request",
                 redirectUri: "https://app.example/auth/federated/callback",
             });
+
+            // Act
             const result = await commands.redirect({
                 input: { provider: "github", state: "state", code: "code", iss: "https://github.com/login/oauth" },
             });
             const url = new URL(result.url);
+            const result1 = url.searchParams.get("code");
+
+            // Assert
             expect(url.origin + url.pathname).toBe("https://app.example/auth/federated/callback");
-            expect(url.searchParams.get("code")).toBe("code");
+            expect(result1).toBe("code");
             expect(githubOAuthService.exchangeCode).not.toHaveBeenCalled();
             expect(oauthStateCacheService.consume).not.toHaveBeenCalled();
         });
 
-        it("rejects an unknown state instead of accepting a redirect URL from the browser", async () => {
+        it("[case] - rejects an unknown state instead of accepting a redirect URL from the browser", async () => {
+            // Arrange
             const { commands, oauthStateCacheService } = await helpers.commands();
             oauthStateCacheService.get.mockResolvedValue(null);
-            await expect(
-                commands.redirect({ input: { provider: "github", state: "missing", code: "code" } }),
-            ).rejects.toThrow();
+
+            // Act
+            const result = commands.redirect({ input: { provider: "github", state: "missing", code: "code" } });
+
+            // Assert
+            await expect(result).rejects.toThrow();
         });
     });
 
-    describe("callback", () => {
+    describe("[Method] - callback", () => {
         it.each([
             ["github", "https://accounts.google.com"],
             ["google", "https://github.com/login/oauth"],
             ["github", "https://untrusted.example"],
             ["github", ""],
-        ])("rejects an unexpected issuer for %s: %s", async (provider, iss) => {
+        ])("[case] - rejects an unexpected issuer for %s: %s", async (provider, iss) => {
+            // Arrange
             const { commands, oauthStateCacheService, googleOAuthService, githubOAuthService, oauthCommands } =
                 await helpers.commands();
             oauthStateCacheService.consume.mockResolvedValue({ provider, authorizationRequest: "request" });
-            await expect(
-                commands.callback({
-                    input: { provider, state: "state-token", code: "code", iss },
-                    context: CONTEXT,
-                }),
-            ).rejects.toThrow();
+
+            // Act
+            const result = commands.callback({
+                input: { provider, state: "state-token", code: "code", iss },
+                context: CONTEXT,
+            });
+
+            // Assert
+            await expect(result).rejects.toThrow();
             expect(googleOAuthService.exchangeCode).not.toHaveBeenCalled();
             expect(githubOAuthService.exchangeCode).not.toHaveBeenCalled();
             expect(oauthCommands.completeAuthorization).not.toHaveBeenCalled();
         });
 
-        it.each([null, { provider: "github" }])(
-            "rejects absent or mismatched callback state before code exchange: %j",
-            async (cached) => {
-                const { commands, oauthStateCacheService, googleOAuthService } = await helpers.commands();
-                oauthStateCacheService.consume.mockResolvedValue(cached);
-                const exchange = new Error("code exchange must not happen");
-                googleOAuthService.exchangeCode.mockRejectedValue(exchange);
+        it.each([
+            { label: "absent", cached: null },
+            { label: "wrong provider", cached: { provider: "github" } },
+        ])("[case] - rejects absent or mismatched callback state before code exchange: $label", async ({ cached }) => {
+            // Arrange
+            const { commands, oauthStateCacheService, googleOAuthService } = await helpers.commands();
+            oauthStateCacheService.consume.mockResolvedValue(cached);
+            const exchange = new Error("code exchange must not happen");
+            googleOAuthService.exchangeCode.mockRejectedValue(exchange);
 
-                await expect(
-                    commands.callback({
-                        input: { provider: "google", state: "state-token", code: "code" },
-                        context: CONTEXT,
-                    }),
-                ).rejects.toThrow();
+            // Act
+            const result = commands.callback({
+                input: { provider: "google", state: "state-token", code: "code" },
+                context: CONTEXT,
+            });
 
-                expect(googleOAuthService.exchangeCode).not.toHaveBeenCalled();
-            },
-        );
+            // Assert
+            await expect(result).rejects.toThrow();
+            expect(googleOAuthService.exchangeCode).not.toHaveBeenCalled();
+        });
 
         it.each([
             ["google", undefined],
             ["google", "https://accounts.google.com"],
             ["github", "https://github.com/login/oauth"],
-        ])("accepts matching state and issuer for %s (%s)", async (provider, iss) => {
+        ])("[case] - accepts matching state and issuer for %s (%s)", async (provider, iss) => {
+            // Arrange
             const {
                 commands,
                 oauthStateCacheService,
@@ -166,11 +188,13 @@ describe("FederatedAuthnCommands", () => {
                 authorizationUrl: "https://app.example/main?code=code&state=pkce-state",
             });
 
+            // Act
             const result = await commands.callback({
                 input: { provider, state: "state-token", code: "code", iss },
                 context: CONTEXT,
             });
 
+            // Assert
             expect(oauthStateCacheService.consume.mock.calls).toEqual([[{ state: "state-token" }]]);
             expect(oauth.exchangeCode.mock.calls).toEqual([["code"]]);
             expect(identifierRepository.findUnique.mock.calls).toEqual([
@@ -188,14 +212,16 @@ describe("FederatedAuthnCommands", () => {
         });
     });
 
-    describe("attachToExisting", () => {
-        it("links a provider identifier without issuing session tokens", async () => {
+    describe("[Method] - attachToExisting", () => {
+        it("[case] - links a provider identifier without issuing session tokens", async () => {
+            // Arrange
             const { commands, identifierService, oauthCommands, transaction } = await helpers.commands();
             const account = helpers.createAccount();
             oauthCommands.completeAuthorization.mockResolvedValue({
                 authorizationUrl: "https://app.example/main?code=code&state=pkce-state",
             });
 
+            // Act
             await commands.attachToExisting({
                 input: {
                     account,
@@ -207,6 +233,7 @@ describe("FederatedAuthnCommands", () => {
                 context: CONTEXT,
             });
 
+            // Assert
             expect(identifierService.create.mock.calls).toEqual([
                 [
                     {
@@ -227,32 +254,35 @@ describe("FederatedAuthnCommands", () => {
             expect(oauthCommands.completeAuthorization).not.toHaveBeenCalled();
         });
 
-        it("propagates a linking failure without issuing a session", async () => {
+        it("[case] - propagates a linking failure without issuing a session", async () => {
+            // Arrange
             const { commands, identifierService, oauthCommands } = await helpers.commands();
             const failure = new Error("identifier already linked");
             identifierService.create.mockRejectedValue(failure);
 
-            await expect(
-                commands.attachToExisting({
-                    input: {
-                        account: helpers.createAccount(),
-                        provider: "google",
-                        providerUserId: "provider-id",
-                        emailVerified: false,
-                        profile: { displayName: "User" },
-                    },
-                    context: CONTEXT,
-                }),
-            ).rejects.toBe(failure);
+            // Act
+            const result = commands.attachToExisting({
+                input: {
+                    account: helpers.createAccount(),
+                    provider: "google",
+                    providerUserId: "provider-id",
+                    emailVerified: false,
+                    profile: { displayName: "User" },
+                },
+                context: CONTEXT,
+            });
 
+            // Assert
+            await expect(result).rejects.toBe(failure);
             expect(oauthCommands.completeAuthorization).not.toHaveBeenCalled();
         });
     });
 
-    describe("provision", () => {
+    describe("[Method] - provision", () => {
         it.each([false, true])(
-            "adds an email identifier during provisioning only for a verified provider email: %s",
+            "[case] - adds an email identifier during provisioning only for a verified provider email: %s",
             async (emailVerified) => {
+                // Arrange
                 const {
                     commands,
                     accountService,
@@ -268,6 +298,7 @@ describe("FederatedAuthnCommands", () => {
                 cryptoService.generateRecoveryCodes.mockReturnValue(["code-one", "code-two"]);
                 hashingService.hash.mockImplementation(({ value }) => Promise.resolve(`hash:${value}`));
 
+                // Act
                 const result = await commands.provision({
                     input: {
                         provider: "google",
@@ -279,6 +310,7 @@ describe("FederatedAuthnCommands", () => {
                     context: CONTEXT,
                 });
 
+                // Assert
                 expect(run).toHaveBeenCalledWith(
                     expect.objectContaining({
                         outbox: {

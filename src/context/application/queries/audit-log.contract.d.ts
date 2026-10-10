@@ -1,32 +1,30 @@
-declare namespace Queries {
-    namespace AuditLog {
-        interface Contract extends ControllerContract {}
+declare namespace Queries.AuditLog {
+    interface Contract extends ControllerContract {}
 
-        interface ControllerContract {
-            findUnique: FindUnique.Signature;
-            findMany: FindMany.Signature;
-        }
+    interface ControllerContract {
+        findUnique: FindUnique.Signature;
+        findMany: FindMany.Signature;
+    }
 
-        namespace FindUnique {
-            type Props = {
-                log: string;
-            };
+    namespace FindUnique {
+        type Props = {
+            log: string;
+        };
 
-            type Result = Promise<SystemEntities.AuditLog>;
+        type Result = Promise<SystemEntities.AuditLog>;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
+    }
 
-        namespace FindMany {
-            type Props = {
-                filters: Repositories.Mappers.AuditLog.Filters;
-                sort: Repositories.Mappers.AuditLog.Sort;
-                pagination: Pagination;
-            };
+    namespace FindMany {
+        type Props = {
+            filters: Repositories.Mappers.AuditLog.Filters;
+            sort: Repositories.Mappers.AuditLog.Sort;
+            pagination: Pagination;
+        };
 
-            type Result = Promise<[SystemEntities.AuditLog[], number]>;
+        type Result = Promise<[SystemEntities.AuditLog[], number]>;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
     }
 }

@@ -63,14 +63,17 @@ async function countPasswords(suite: Integration.Domain.Account.Suite): Promise<
     return await suite.transaction((transaction) => transaction.count(Password, {}));
 }
 
-describe("AccountService integration", () => {
+describe("[DomainService] - Account", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates an account aggregate with profile, verified identifiers and password", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates an account aggregate with profile, verified identifiers and password", async () => {
+            // Arrange
+
+            // Act
             const account = await suite.transaction(async (transaction) => {
                 const created = await Promise.resolve(
                     suite.repository().accountService.create({
@@ -100,12 +103,14 @@ describe("AccountService integration", () => {
 
                 return created;
             });
-
             const persisted = await loadAccount(suite, account);
             const identifiers = await loadIdentifiers(suite, account);
             const profile = await loadProfile(suite, account);
             const password = await loadPassword(suite, account);
+            const result = identifiers.every(({ isVerified }) => isVerified);
+            const result1 = identifiers.every(({ verifiedAt }) => verifiedAt instanceof Date);
 
+            // Assert
             expect(persisted).toMatchObject({
                 status: AccountStatus.PENDING,
                 subject: AccountSubject.HUMAN,
@@ -117,11 +122,12 @@ describe("AccountService integration", () => {
             });
             expect(password?.hash).toBe("hash:password");
             expect(identifiers).toHaveLength(2);
-            expect(identifiers.every(({ isVerified }) => isVerified)).toBe(true);
-            expect(identifiers.every(({ verifiedAt }) => verifiedAt instanceof Date)).toBe(true);
+            expect(result).toBe(true);
+            expect(result1).toBe(true);
         });
 
-        it("rolls back account aggregate creation on duplicate identifier", async () => {
+        it("[case] - rolls back account aggregate creation on duplicate identifier", async () => {
+            // Arrange
             const existing = await suite.fixtures().createAccount();
             await suite.fixtures().createIdentifier({
                 identity: "duplicate@example.test",
@@ -129,114 +135,128 @@ describe("AccountService integration", () => {
                 account: existing,
             });
 
-            await expect(
-                suite.transaction(async (transaction) => {
-                    await Promise.resolve(
-                        suite.repository().accountService.create({
-                            input: {
-                                primaryIdentifier: {
-                                    identity: "duplicate@example.test",
-                                    type: IdentifierType.EMAIL,
-                                },
-                                profile: {
-                                    displayName: "Duplicate Account",
-                                    timeZone: "Europe/Moscow",
-                                    locale: "ru",
-                                },
-                                status: AccountStatus.PENDING,
-                                subject: AccountSubject.HUMAN,
-                                password: "hash:password",
+            // Act
+            const result = suite.transaction(async (transaction) => {
+                await Promise.resolve(
+                    suite.repository().accountService.create({
+                        input: {
+                            primaryIdentifier: {
+                                identity: "duplicate@example.test",
+                                type: IdentifierType.EMAIL,
                             },
-                            transaction,
-                        }),
-                    );
-                }),
-            ).rejects.toThrow("identifier_type_identity_unique");
+                            profile: {
+                                displayName: "Duplicate Account",
+                                timeZone: "Europe/Moscow",
+                                locale: "ru",
+                            },
+                            status: AccountStatus.PENDING,
+                            subject: AccountSubject.HUMAN,
+                            password: "hash:password",
+                        },
+                        transaction,
+                    }),
+                );
+            });
+            await Promise.allSettled([result]);
+            const result1 = await countAccounts(suite);
+            const result2 = await countProfiles(suite);
+            const result3 = await countPasswords(suite);
+            const result4 = await loadIdentifiers(suite, existing);
 
-            await expect(countAccounts(suite)).resolves.toBe(1);
-            await expect(countProfiles(suite)).resolves.toBe(0);
-            await expect(countPasswords(suite)).resolves.toBe(0);
-            await expect(loadIdentifiers(suite, existing)).resolves.toHaveLength(1);
+            // Assert
+            await expect(result).rejects.toThrow("identifier_type_identity_unique");
+            expect(result1).toBe(1);
+            expect(result2).toBe(0);
+            expect(result3).toBe(0);
+            expect(result4).toHaveLength(1);
         });
     });
 
-    describe("verify", () => {
-        it("activates a pending account", async () => {
+    describe("[Method] - verify", () => {
+        it("[case] - activates a pending account", async () => {
+            // Arrange
             const pending = await suite.fixtures().createAccount({ status: AccountStatus.PENDING });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().accountService.verify({
                     input: { account: pending.id },
                     transaction,
                 }),
             );
-
             const account = await loadAccount(suite, pending);
 
+            // Assert
             expect(account.status).toBe(AccountStatus.ACTIVE);
             expect(account.updatedAt).toBeInstanceOf(Date);
         });
     });
 
-    describe("suspend", () => {
-        it("suspends an account and removes its sessions", async () => {
+    describe("[Method] - suspend", () => {
+        it("[case] - suspends an account and removes its sessions", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount({ status: AccountStatus.ACTIVE });
-
             await suite.fixtures().createSession({ account });
             await suite.fixtures().createSession({ account });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().accountService.suspend({
                     input: { account: account.id },
                     transaction,
                 }),
             );
-
             const persisted = await loadAccount(suite, account);
+            const result = await loadSessions(suite, persisted);
 
+            // Assert
             expect(persisted.status).toBe(AccountStatus.SUSPENDED);
-            await expect(loadSessions(suite, persisted)).resolves.toHaveLength(0);
+            expect(result).toHaveLength(0);
         });
     });
 
-    describe("unsuspend", () => {
-        it("unsuspends an account without removing sessions", async () => {
+    describe("[Method] - unsuspend", () => {
+        it("[case] - unsuspends an account without removing sessions", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount({ status: AccountStatus.SUSPENDED });
-
             await suite.fixtures().createSession({ account });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().accountService.unsuspend({
                     input: { account: account.id },
                     transaction,
                 }),
             );
-
             const persisted = await loadAccount(suite, account);
+            const result = await loadSessions(suite, persisted);
 
+            // Assert
             expect(persisted.status).toBe(AccountStatus.ACTIVE);
-            await expect(loadSessions(suite, persisted)).resolves.toHaveLength(1);
+            expect(result).toHaveLength(1);
         });
     });
 
-    describe("deactivate", () => {
-        it("deactivates an account and removes its sessions", async () => {
+    describe("[Method] - deactivate", () => {
+        it("[case] - deactivates an account and removes its sessions", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount({ status: AccountStatus.ACTIVE });
-
             await suite.fixtures().createSession({ account });
             await suite.fixtures().createSession({ account });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().accountService.deactivate({
                     input: { account: account.id },
                     transaction,
                 }),
             );
-
             const persisted = await loadAccount(suite, account);
+            const result = await loadSessions(suite, persisted);
 
+            // Assert
             expect(persisted.status).toBe(AccountStatus.DEACTIVATED);
-            await expect(loadSessions(suite, persisted)).resolves.toHaveLength(0);
+            expect(result).toHaveLength(0);
         });
     });
 });

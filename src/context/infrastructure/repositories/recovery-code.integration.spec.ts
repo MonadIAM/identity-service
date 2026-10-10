@@ -6,19 +6,22 @@ import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 
 import { RecoveryCodeRepository } from "./recovery-code.repository";
 
-describe("RecoveryCodeRepository", () => {
+describe("[Repository] - RecoveryCode", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new RecoveryCodeRepository(readManager),
         fixture: (entityManager) => new RecoveryCodeFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted recovery code through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted recovery code through the schema", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const code = await suite.fixtures().createRecoveryCode({ account, hash: "mapping-hash", used: true });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: code.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 createdAt: code.createdAt,
                 hash: "mapping-hash",
@@ -29,19 +32,30 @@ describe("RecoveryCodeRepository", () => {
         });
     });
 
-    describe("getStatus", () => {
-        it("counts recovery code status per account", async () => {
+    describe("[Method] - getStatus", () => {
+        it("[case] - counts recovery code status per account", async () => {
+            // Arrange
             const { account } = await suite.fixtures().statusScenario();
 
-            await expect(suite.repository().getStatus({ account: account.id })).resolves.toEqual({
+            // Act
+            const result = await suite.repository().getStatus({ account: account.id });
+
+            // Assert
+            expect(result).toEqual({
                 remaining: 2,
                 total: 3,
                 used: 1,
             });
         });
 
-        it("returns zero status for account without recovery codes", async () => {
-            await expect(suite.repository().getStatus({ account: randomUUID() })).resolves.toEqual({
+        it("[case] - returns zero status for account without recovery codes", async () => {
+            // Arrange
+
+            // Act
+            const result = await suite.repository().getStatus({ account: randomUUID() });
+
+            // Assert
+            expect(result).toEqual({
                 remaining: 0,
                 total: 0,
                 used: 0,

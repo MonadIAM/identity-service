@@ -16,16 +16,18 @@ async function loadRecoveryCodes(
     );
 }
 
-describe("RecoveryCodeService integration", () => {
+describe("[DomainService] - RecoveryCode", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("generate", () => {
-        it("generates all recovery codes", async () => {
+    describe("[Method] - generate", () => {
+        it("[case] - generates all recovery codes", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
 
+            // Act
             await suite.transaction(async (transaction) => {
                 await Promise.resolve(
                     suite.repository().recoveryCodeService.generate({
@@ -37,43 +39,49 @@ describe("RecoveryCodeService integration", () => {
                     }),
                 );
             });
-
             const codes = await loadRecoveryCodes(suite, account);
+            const result = codes.map(({ hash }) => hash);
 
-            expect(codes.map(({ hash }) => hash)).toEqual(["hash:first", "hash:second"]);
+            // Assert
+            expect(result).toEqual(["hash:first", "hash:second"]);
         });
 
-        it("rolls back generated recovery codes on duplicate hashes", async () => {
+        it("[case] - rolls back generated recovery codes on duplicate hashes", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createRecoveryCode({ account, hash: "hash:first" });
             await suite.fixtures().createRecoveryCode({ account, hash: "hash:second" });
 
-            await expect(
-                suite.transaction(async (transaction) => {
-                    await Promise.resolve(
-                        suite.repository().recoveryCodeService.generate({
-                            input: {
-                                hashes: ["hash:third", "hash:third"],
-                                account,
-                            },
-                            transaction,
-                        }),
-                    );
-                }),
-            ).rejects.toThrow("recovery_code_account_hash_unique");
-
+            // Act
+            const result = suite.transaction(async (transaction) => {
+                await Promise.resolve(
+                    suite.repository().recoveryCodeService.generate({
+                        input: {
+                            hashes: ["hash:third", "hash:third"],
+                            account,
+                        },
+                        transaction,
+                    }),
+                );
+            });
+            await Promise.allSettled([result]);
             const codes = await loadRecoveryCodes(suite, account);
+            const result1 = codes.map(({ hash }) => hash);
 
-            expect(codes.map(({ hash }) => hash)).toEqual(["hash:first", "hash:second"]);
+            // Assert
+            await expect(result).rejects.toThrow("recovery_code_account_hash_unique");
+            expect(result1).toEqual(["hash:first", "hash:second"]);
         });
     });
 
-    describe("regenerate", () => {
-        it("regenerates recovery codes by replacing the old set", async () => {
+    describe("[Method] - regenerate", () => {
+        it("[case] - regenerates recovery codes by replacing the old set", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const first = await suite.fixtures().createRecoveryCode({ account, hash: "hash:first" });
             const second = await suite.fixtures().createRecoveryCode({ account, hash: "hash:second" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().recoveryCodeService.regenerate({
                     input: {
@@ -83,18 +91,22 @@ describe("RecoveryCodeService integration", () => {
                     transaction,
                 }),
             );
-
             const regenerated = await loadRecoveryCodes(suite, account);
+            const result = regenerated.map(({ hash }) => hash);
+            const result1 = regenerated.map(({ id }) => id);
 
-            expect(regenerated.map(({ hash }) => hash)).toEqual(["hash:fourth", "hash:third"]);
-            expect(regenerated.map(({ id }) => id)).not.toEqual(expect.arrayContaining([first.id, second.id]));
+            // Assert
+            expect(result).toEqual(["hash:fourth", "hash:third"]);
+            expect(result1).not.toEqual(expect.arrayContaining([first.id, second.id]));
         });
 
-        it("rolls back regenerated recovery codes on duplicate hashes", async () => {
+        it("[case] - rolls back regenerated recovery codes on duplicate hashes", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createRecoveryCode({ account, hash: "hash:first" });
             await suite.fixtures().createRecoveryCode({ account, hash: "hash:second" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().recoveryCodeService.regenerate({
                     input: {
@@ -105,22 +117,22 @@ describe("RecoveryCodeService integration", () => {
                 }),
             );
             const regenerated = await loadRecoveryCodes(suite, account);
-
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().recoveryCodeService.regenerate({
-                        input: {
-                            hashes: ["hash:fifth", "hash:fifth"],
-                            account: account.id,
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("recovery_code_account_hash_unique");
-
+            const result = suite.transaction((transaction) =>
+                suite.repository().recoveryCodeService.regenerate({
+                    input: {
+                        hashes: ["hash:fifth", "hash:fifth"],
+                        account: account.id,
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
             const afterRollback = await loadRecoveryCodes(suite, account);
+            const result1 = afterRollback.map(({ id }) => id).sort();
 
-            expect(afterRollback.map(({ id }) => id).sort()).toEqual(regenerated.map(({ id }) => id).sort());
+            // Assert
+            await expect(result).rejects.toThrow("recovery_code_account_hash_unique");
+            expect(result1).toEqual(regenerated.map(({ id }) => id).sort());
         });
     });
 });

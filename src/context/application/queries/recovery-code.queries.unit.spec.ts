@@ -5,13 +5,16 @@ import { RecoveryCodeQueriesUnitHelpers } from "~testing/unit/query-services/rec
 const helpers = new RecoveryCodeQueriesUnitHelpers();
 const ACTOR = "actor-account";
 
-describe("RecoveryCodeQueries", () => {
-    describe("getStatus", () => {
-        it("reads status for the requested account", async () => {
+describe("[Queries] - RecoveryCode", () => {
+    describe("[Method] - getStatus", () => {
+        it("[case] - reads status for the requested account", async () => {
+            // Arrange
             const { queries, recoveryCodeRepository } = helpers.queries();
 
+            // Act
             await queries.getStatus({ account: ACTOR });
 
+            // Assert
             expect(recoveryCodeRepository.getStatus.mock.calls).toEqual([[{ account: ACTOR }]]);
         });
     });

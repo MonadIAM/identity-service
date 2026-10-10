@@ -21,24 +21,26 @@ function createContext(props: { client?: Entities.ServiceClient } = {}): Unit.Do
     return context;
 }
 
-describe("ServiceClientService", () => {
+describe("[DomainService] - ServiceClient", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when the realm service client limit would be exceeded", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when the realm service client limit would be exceeded", async () => {
+            // Arrange
             const { service, repositories, transaction } = createContext();
             repositories.serviceClients.wouldExceedRealmLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    input: { code: "billing.worker", name: "Billing Worker" },
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.service-client.REALM_LIMIT_EXCEEDED");
+            // Act
+            const result = service.create({
+                input: { code: "billing.worker", name: "Billing Worker" },
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.service-client.REALM_LIMIT_EXCEEDED");
             expect(repositories.serviceClients.wouldExceedRealmLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -46,15 +48,18 @@ describe("ServiceClientService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates a service client bound to the realm and persists it", async () => {
+        it("[case] - creates a service client bound to the realm and persists it", async () => {
+            // Arrange
             const { service, transaction } = createContext();
 
+            // Act
             const result = await service.create({
                 input: { code: "billing.worker", name: "Billing Worker" },
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual(
                 expect.objectContaining({
                     name: "Billing Worker",
@@ -66,12 +71,14 @@ describe("ServiceClientService", () => {
         });
     });
 
-    describe("update", () => {
-        it("scopes the lookup to the realm directly and applies the patch", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - scopes the lookup to the realm directly and applies the patch", async () => {
+            // Arrange
             const client = helpers.createServiceClient({ id: CLIENT_ID });
             const { service, repositories, transaction } = createContext({ client });
             const updateSpy = jest.spyOn(client, "update");
 
+            // Act
             await service.update({
                 transaction: transaction.entityManager,
                 patch: { name: "Updated Worker" },
@@ -79,6 +86,7 @@ describe("ServiceClientService", () => {
                 id: CLIENT_ID,
             });
 
+            // Assert
             expect(repositories.serviceClients.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: CLIENT_ID, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -87,23 +95,26 @@ describe("ServiceClientService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false, identifiers: [CLIENT_ID], scenario: "single identifier" },
             { method: "restore", isRevoked: true, identifiers: [CLIENT_ID], scenario: "single identifier" },
             { method: "revoke", isRevoked: false, identifiers: [CLIENT_ID, CLIENT_ID], scenario: "duplicate identifiers" },
             { method: "restore", isRevoked: true, identifiers: [CLIENT_ID, CLIENT_ID], scenario: "duplicate identifiers" },
-        ] as const)("$method handles $scenario once", async ({ method, isRevoked, identifiers }) => {
+        ] as const)("[case] - $method handles $scenario once", async ({ method, isRevoked, identifiers }) => {
+            // Arrange
             const client = helpers.createServiceClient({ id: CLIENT_ID, isRevoked });
             const { service, repositories, transaction } = createContext({ client });
             const operationSpy = jest.spyOn(client, method);
 
+            // Act
             const result = await service[method]({
                 transaction: transaction.entityManager,
                 identifiers: [...identifiers],
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.serviceClients.find).toHaveBeenCalledWith({
                 where: { id: { $in: [CLIENT_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -113,44 +124,50 @@ describe("ServiceClientService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("throws when not all requested clients are found", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - throws when not all requested clients are found", async () => {
+            // Arrange
             const client = helpers.createServiceClient({ id: CLIENT_ID, isRevoked: true });
             const { service, transaction } = createContext({ client });
 
-            await expect(
-                service.purge({
-                    identifiers: [CLIENT_ID, SECOND_CLIENT_ID],
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.service-client.CLIENTS_NOT_FOUND");
+            // Act
+            const result = service.purge({
+                identifiers: [CLIENT_ID, SECOND_CLIENT_ID],
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.service-client.CLIENTS_NOT_FOUND");
             expect(transaction.remove).not.toHaveBeenCalled();
         });
 
         it.each([
             { scenario: "single identifier", identifiers: [CLIENT_ID] },
             { scenario: "duplicate identifiers", identifiers: [CLIENT_ID, CLIENT_ID] },
-        ])("checks eligibility and purges $scenario once", async ({ identifiers }) => {
+        ])("[case] - checks eligibility and purges $scenario once", async ({ identifiers }) => {
+            // Arrange
             const client = helpers.createServiceClient({ id: CLIENT_ID, isRevoked: true });
             const { service, transaction } = createContext({ client });
             const canPurgeSpy = jest.spyOn(client, "canPurge");
 
+            // Act
             const result = await service.purge({
                 transaction: transaction.entityManager,
                 identifiers: [...identifiers],
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(canPurgeSpy).toHaveBeenCalledTimes(1);
             expect(transaction.remove).toHaveBeenCalledWith(client);
             expect(result).toEqual([client]);
         });
     });
 
-    describe("applyRealmRevocation", () => {
-        it("applies the realm version without changing a manual client revocation", async () => {
+    describe("[Method] - applyRealmRevocation", () => {
+        it("[case] - applies the realm version without changing a manual client revocation", async () => {
+            // Arrange
             const client = helpers.createServiceClient({
                 realmVersion: 2,
                 isRealmRevoked: false,
@@ -159,12 +176,14 @@ describe("ServiceClientService", () => {
             });
             const { service, repositories, transaction } = createContext({ client });
 
+            // Act
             const result = await service.applyRealmRevocation({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 version: 3,
             });
 
+            // Assert
             expect(repositories.serviceClients.find).toHaveBeenCalledWith({
                 where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
                 transaction: transaction.entityManager,
@@ -174,8 +193,9 @@ describe("ServiceClientService", () => {
         });
     });
 
-    describe("applyRealmRestore", () => {
-        it("applies the realm version without changing a manual client revocation", async () => {
+    describe("[Method] - applyRealmRestore", () => {
+        it("[case] - applies the realm version without changing a manual client revocation", async () => {
+            // Arrange
             const client = helpers.createServiceClient({
                 realmVersion: 2,
                 isRealmRevoked: true,
@@ -184,12 +204,14 @@ describe("ServiceClientService", () => {
             });
             const { service, repositories, transaction } = createContext({ client });
 
+            // Act
             const result = await service.applyRealmRestore({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 version: 3,
             });
 
+            // Assert
             expect(repositories.serviceClients.find).toHaveBeenCalledWith({
                 where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
                 transaction: transaction.entityManager,
@@ -199,18 +221,21 @@ describe("ServiceClientService", () => {
         });
     });
 
-    describe("purgeRealm", () => {
-        it("removes affected clients without requiring an individual revocation", async () => {
+    describe("[Method] - purgeRealm", () => {
+        it("[case] - removes affected clients without requiring an individual revocation", async () => {
+            // Arrange
             const client = helpers.createServiceClient({ realm: REALM_ID, realmVersion: 2 });
             const { service, repositories, transaction } = createContext({ client });
             const canPurge = jest.spyOn(client, "canPurge");
 
+            // Act
             const result = await service.purgeRealm({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 version: 3,
             });
 
+            // Assert
             expect(repositories.serviceClients.find).toHaveBeenCalledWith({
                 where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
                 transaction: transaction.entityManager,

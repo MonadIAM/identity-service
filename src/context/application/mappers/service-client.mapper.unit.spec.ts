@@ -18,23 +18,33 @@ function createClient(id: string, code: string): Entities.ServiceClient {
     return helpers.createServiceClient({ id, code, realm: REALM_ID });
 }
 
-describe("ServiceClientMapper", () => {
-    describe("serviceClientPayload", () => {
-        it("maps a single service client to one payload", () => {
+describe("[DataMapper] - ServiceClient", () => {
+    describe("[Method] - serviceClientPayload", () => {
+        it("[case] - maps a single service client to one payload", () => {
+            // Arrange
             const serviceClient = createClient(SERVICE_CLIENT_ID, "billing");
 
-            expect(mapper.serviceClientPayload({ serviceClients: serviceClient, actor: ACTOR_ID })).toEqual({
+            // Act
+            const result = mapper.serviceClientPayload({ serviceClients: serviceClient, actor: ACTOR_ID });
+
+            // Assert
+            expect(result).toEqual({
                 actor: ACTOR_ID,
                 realm: REALM_ID,
                 input: { code: "billing", id: SERVICE_CLIENT_ID },
             });
         });
 
-        it("maps an array of service clients to an array of payloads", () => {
+        it("[case] - maps an array of service clients to an array of payloads", () => {
+            // Arrange
             const first = createClient(SERVICE_CLIENT_ID, "billing");
             const second = createClient(SECOND_SERVICE_ID, "analytics");
 
-            expect(mapper.serviceClientPayload({ serviceClients: [first, second], actor: ACTOR_ID })).toEqual([
+            // Act
+            const result = mapper.serviceClientPayload({ serviceClients: [first, second], actor: ACTOR_ID });
+
+            // Assert
+            expect(result).toEqual([
                 {
                     actor: ACTOR_ID,
                     realm: REALM_ID,

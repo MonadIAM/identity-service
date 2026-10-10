@@ -10,16 +10,18 @@ const IDENTIFIER_ID = "00000000-0000-4000-8000-200000000002";
 
 const helpers = new IdentifierUnitHelpers();
 
-describe("IdentifierService", () => {
+describe("[DomainService] - Identifier", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("loads the account from the repository when it is given as an id", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - loads the account from the repository when it is given as an id", async () => {
+            // Arrange
             const account = helpers.createAccount({ id: ACCOUNT_ID });
             const { service, repositories, transaction } = helpers.service({ account });
 
+            // Act
             const result = await service.create({
                 transaction: transaction.entityManager,
                 input: {
@@ -28,6 +30,7 @@ describe("IdentifierService", () => {
                 },
             });
 
+            // Assert
             expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: ACCOUNT_ID },
                 transaction: transaction.entityManager,
@@ -42,10 +45,12 @@ describe("IdentifierService", () => {
             expect(transaction.persist).toHaveBeenCalledWith(result);
         });
 
-        it("uses the given account entity without a repository lookup", async () => {
+        it("[case] - uses the given account entity without a repository lookup", async () => {
+            // Arrange
             const account = helpers.createAccount({ id: ACCOUNT_ID });
             const { service, repositories, transaction } = helpers.service({ account });
 
+            // Act
             const result = await service.create({
                 transaction: transaction.entityManager,
                 input: {
@@ -54,40 +59,46 @@ describe("IdentifierService", () => {
                 },
             });
 
+            // Assert
             expect(repositories.accounts.findUniqueOrThrow).not.toHaveBeenCalled();
             expect(result.account).toBe(account);
             expect(transaction.persist).toHaveBeenCalledWith(result);
         });
     });
 
-    describe("verify", () => {
-        it("throws when the identifier is already verified", async () => {
+    describe("[Method] - verify", () => {
+        it("[case] - throws when the identifier is already verified", async () => {
+            // Arrange
             const identifier = helpers.createIdentifier({ id: IDENTIFIER_ID, isVerified: true });
             const { service, repositories, transaction } = helpers.service();
             const verifySpy = jest.spyOn(identifier, "verify");
             repositories.identifiers.findUniqueOrThrow.mockImplementation(() => Promise.resolve(identifier));
 
-            await expect(
-                service.verify({
-                    transaction: transaction.entityManager,
-                    input: { identifier: IDENTIFIER_ID },
-                }),
-            ).rejects.toThrow("services.identifier.ALREADY_VERIFIED");
+            // Act
+            const result = service.verify({
+                transaction: transaction.entityManager,
+                input: { identifier: IDENTIFIER_ID },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.identifier.ALREADY_VERIFIED");
             expect(verifySpy).not.toHaveBeenCalled();
         });
 
-        it("verifies an unverified identifier", async () => {
+        it("[case] - verifies an unverified identifier", async () => {
+            // Arrange
             const identifier = helpers.createIdentifier({ id: IDENTIFIER_ID });
             const { service, repositories, transaction } = helpers.service();
             const verifySpy = jest.spyOn(identifier, "verify");
             repositories.identifiers.findUniqueOrThrow.mockImplementation(() => Promise.resolve(identifier));
 
+            // Act
             await service.verify({
                 transaction: transaction.entityManager,
                 input: { identifier: IDENTIFIER_ID },
             });
 
+            // Assert
             expect(repositories.identifiers.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 where: { id: IDENTIFIER_ID },
@@ -97,18 +108,21 @@ describe("IdentifierService", () => {
         });
     });
 
-    describe("togglePublicContact", () => {
-        it("scopes the lookup to the owning account and toggles the flag", async () => {
+    describe("[Method] - togglePublicContact", () => {
+        it("[case] - scopes the lookup to the owning account and toggles the flag", async () => {
+            // Arrange
             const identifier = helpers.createIdentifier({ id: IDENTIFIER_ID, isVerified: true });
             const { service, repositories, transaction } = helpers.service();
             const toggleSpy = jest.spyOn(identifier, "togglePublicContact");
             repositories.identifiers.findUniqueOrThrow.mockImplementation(() => Promise.resolve(identifier));
 
+            // Act
             await service.togglePublicContact({
                 input: { identifier: IDENTIFIER_ID, account: ACCOUNT_ID },
                 transaction: transaction.entityManager,
             });
 
+            // Assert
             expect(repositories.identifiers.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: IDENTIFIER_ID, account: ACCOUNT_ID },
                 transaction: transaction.entityManager,
@@ -117,20 +131,22 @@ describe("IdentifierService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("throws when the identifier is the last verified one of the account", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - throws when the identifier is the last verified one of the account", async () => {
+            // Arrange
             const identifier = helpers.createIdentifier({ id: IDENTIFIER_ID, isVerified: true });
             const { service, repositories, transaction } = helpers.service();
             repositories.identifiers.findUniqueOrThrow.mockImplementation(() => Promise.resolve(identifier));
             repositories.identifiers.isLastVerifiedIdentifier.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.purge({
-                    input: { identifier: IDENTIFIER_ID, account: ACCOUNT_ID },
-                    transaction: transaction.entityManager,
-                }),
-            ).rejects.toThrow("services.identifier.CANNOT_REMOVE_LAST_VERIFIED");
+            // Act
+            const result = service.purge({
+                input: { identifier: IDENTIFIER_ID, account: ACCOUNT_ID },
+                transaction: transaction.entityManager,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.identifier.CANNOT_REMOVE_LAST_VERIFIED");
             expect(repositories.identifiers.isLastVerifiedIdentifier).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 identifier: IDENTIFIER_ID,
@@ -139,16 +155,19 @@ describe("IdentifierService", () => {
             expect(transaction.remove).not.toHaveBeenCalled();
         });
 
-        it("removes the identifier when the account keeps another verified one", async () => {
+        it("[case] - removes the identifier when the account keeps another verified one", async () => {
+            // Arrange
             const identifier = helpers.createIdentifier({ id: IDENTIFIER_ID, isVerified: true });
             const { service, repositories, transaction } = helpers.service();
             repositories.identifiers.findUniqueOrThrow.mockImplementation(() => Promise.resolve(identifier));
 
+            // Act
             await service.purge({
                 input: { identifier: IDENTIFIER_ID, account: ACCOUNT_ID },
                 transaction: transaction.entityManager,
             });
 
+            // Assert
             expect(repositories.identifiers.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: IDENTIFIER_ID, account: ACCOUNT_ID },
                 options: { populate: ["account.password"] },

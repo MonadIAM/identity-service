@@ -14,13 +14,18 @@ const SECOND_CLIENT_ID = "00000000-0000-4000-8000-500000000005";
 const mapper = new InterfaceClientMapper();
 const helpers = new EntityFactoryRegistry();
 
-describe("InterfaceClientMapper", () => {
-    describe("interfaceClientPayload", () => {
-        it("maps every client with its realm", () => {
+describe("[DataMapper] - InterfaceClient", () => {
+    describe("[Method] - interfaceClientPayload", () => {
+        it("[case] - maps every client with its realm", () => {
+            // Arrange
             const first = helpers.createInterfaceClient({ id: FIRST_CLIENT_ID, realm: REALM_ID });
             const second = helpers.createInterfaceClient({ id: SECOND_CLIENT_ID, realm: REALM_ID });
 
-            expect(mapper.interfaceClientPayload({ entities: [first, second], isRevoked: true, actor: ACTOR_ID })).toEqual([
+            // Act
+            const result = mapper.interfaceClientPayload({ entities: [first, second], isRevoked: true, actor: ACTOR_ID });
+
+            // Assert
+            expect(result).toEqual([
                 {
                     actor: ACTOR_ID,
                     realm: REALM_ID,

@@ -16,7 +16,7 @@ function check(value: unknown): Promise<ValidationError[]> {
     return validate(Object.assign(new Input(), { password: value }));
 }
 
-describe("IsNotPwned", () => {
+describe("[Validator] - IsNotPwned", () => {
     let request: jest.SpiedFunction<typeof fetch>;
     let warn: jest.SpiedFunction<Logger["warn"]>;
 
@@ -36,116 +36,163 @@ describe("IsNotPwned", () => {
         jest.restoreAllMocks();
     });
 
-    it("sends only the uppercase five-character hash prefix and requests padding", async () => {
-        request.mockResolvedValueOnce(new Response("OTHER:42\r\n"));
+    describe("[Method] - validate", () => {
+        it("[case] - sends only the uppercase five-character hash prefix and requests padding", async () => {
+            // Arrange
+            request.mockResolvedValueOnce(new Response("OTHER:42\r\n"));
 
-        const errors = await check("password");
+            // Act
+            const errors = await check("password");
+            const result = jest.getTimerCount();
 
-        expect(errors).toEqual([]);
-        expect(request).toHaveBeenCalledTimes(1);
-        expect(request).toHaveBeenCalledWith(`${rangeUrl}5BAA6`, {
-            headers: { "Add-Padding": "true" },
-            signal: expect.any(AbortSignal),
+            // Assert
+            expect(errors).toEqual([]);
+            expect(request).toHaveBeenCalledTimes(1);
+            expect(request).toHaveBeenCalledWith(`${rangeUrl}5BAA6`, {
+                headers: { "Add-Padding": "true" },
+                signal: expect.any(AbortSignal),
+            });
+            expect(warn).not.toHaveBeenCalled();
+            expect(result).toBe(0);
         });
-        expect(warn).not.toHaveBeenCalled();
-        expect(jest.getTimerCount()).toBe(0);
-    });
 
-    it("rejects a breached password and supplies the default validation message", async () => {
-        request.mockResolvedValueOnce(new Response(`OTHER:4\r\n${suffix}:123\r\n`));
+        it("[case] - rejects a breached password and supplies the default validation message", async () => {
+            // Arrange
+            request.mockResolvedValueOnce(new Response(`OTHER:4\r\n${suffix}:123\r\n`));
 
-        const errors = await check("password");
+            // Act
+            const errors = await check("password");
+            const result = jest.getTimerCount();
 
-        expect(errors).toHaveLength(1);
-        expect(errors[0].constraints).toEqual({
-            IsNotPwned: 'Field "password" has appeared in a known password breach (Have I Been Pwned).',
+            // Assert
+            expect(errors).toHaveLength(1);
+            expect(errors[0].constraints).toEqual({
+                IsNotPwned: 'Field "password" has appeared in a known password breach (Have I Been Pwned).',
+            });
+            expect(result).toBe(0);
+            expect(warn).not.toHaveBeenCalled();
         });
-        expect(jest.getTimerCount()).toBe(0);
-        expect(warn).not.toHaveBeenCalled();
-    });
 
-    it("ignores a padding entry with a zero occurrence count", async () => {
-        request.mockResolvedValueOnce(new Response(`${suffix}:0\r\nOTHER:10`));
+        it("[case] - ignores a padding entry with a zero occurrence count", async () => {
+            // Arrange
+            request.mockResolvedValueOnce(new Response(`${suffix}:0\r\nOTHER:10`));
 
-        const errors = await check("password");
+            // Act
+            const errors = await check("password");
 
-        expect(errors).toEqual([]);
-    });
+            // Assert
+            expect(errors).toEqual([]);
+        });
 
-    it.each([null, undefined, 123, false, {}, []])("leaves non-string input %j to other validators", async (value) => {
-        const errors = await check(value);
+        it.each([
+            { label: "null", value: null },
+            { label: "undefined", value: undefined },
+            { label: "number", value: 123 },
+            { label: "boolean", value: false },
+            { label: "object", value: {} },
+            { label: "array", value: [] },
+        ])("[case] - leaves non-string input $label to other validators", async ({ value }) => {
+            // Arrange
 
-        expect(errors).toEqual([]);
-        expect(request).not.toHaveBeenCalled();
-        expect(jest.getTimerCount()).toBe(0);
-    });
+            // Act
+            const errors = await check(value);
+            const result = jest.getTimerCount();
 
-    it.each([429, 503])("fails open on HTTP %s and clears the timeout", async (status) => {
-        request.mockResolvedValueOnce(new Response("unavailable", { status }));
+            // Assert
+            expect(errors).toEqual([]);
+            expect(request).not.toHaveBeenCalled();
+            expect(result).toBe(0);
+        });
 
-        const errors = await check("password");
+        it.each([429, 503])("[case] - fails open on HTTP %s and clears the timeout", async (status) => {
+            // Arrange
+            request.mockResolvedValueOnce(new Response("unavailable", { status }));
 
-        expect(errors).toEqual([]);
-        expect(warn).toHaveBeenCalledWith(`HIBP range lookup returned ${status} — failing open for this check.`);
-        expect(jest.getTimerCount()).toBe(0);
-    });
+            // Act
+            const errors = await check("password");
+            const result = jest.getTimerCount();
 
-    it.each([
-        { error: new Error("network unavailable"), message: "network unavailable" },
-        { error: "unexpected rejection", message: "unknown error" },
-    ])("fails open on transport rejection: $message", async ({ error, message }) => {
-        request.mockRejectedValueOnce(error);
+            // Assert
+            expect(errors).toEqual([]);
+            expect(warn).toHaveBeenCalledWith(`HIBP range lookup returned ${status} — failing open for this check.`);
+            expect(result).toBe(0);
+        });
 
-        const errors = await check("password");
+        it.each([
+            { error: new Error("network unavailable"), message: "network unavailable" },
+            { error: "unexpected rejection", message: "unknown error" },
+        ])("[case] - fails open on transport rejection: $message", async ({ error, message }) => {
+            // Arrange
+            request.mockRejectedValueOnce(error);
 
-        expect(errors).toEqual([]);
-        expect(warn).toHaveBeenCalledWith(expect.stringContaining(`lookup failed (${message})`));
-        expect(jest.getTimerCount()).toBe(0);
-    });
+            // Act
+            const errors = await check("password");
+            const result = jest.getTimerCount();
 
-    it("fails open if reading the response body fails", async () => {
-        const response = new Response();
-        jest.spyOn(response, "text").mockRejectedValueOnce(new Error("body interrupted"));
-        request.mockResolvedValueOnce(response);
+            // Assert
+            expect(errors).toEqual([]);
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining(`lookup failed (${message})`));
+            expect(result).toBe(0);
+        });
 
-        const errors = await check("password");
+        it("[case] - fails open if reading the response body fails", async () => {
+            // Arrange
+            const response = new Response();
+            jest.spyOn(response, "text").mockRejectedValueOnce(new Error("body interrupted"));
+            request.mockResolvedValueOnce(response);
 
-        expect(errors).toEqual([]);
-        expect(warn).toHaveBeenCalledWith(expect.stringContaining("body interrupted"));
-        expect(jest.getTimerCount()).toBe(0);
-    });
+            // Act
+            const errors = await check("password");
+            const result = jest.getTimerCount();
 
-    it("aborts at the configured timeout and completes validation without hanging", async () => {
-        request.mockImplementation(
-            (_url, options) =>
-                new Promise((_resolve, reject) => {
-                    options!.signal!.addEventListener("abort", () => reject(new Error("request aborted")), { once: true });
-                }),
-        );
+            // Assert
+            expect(errors).toEqual([]);
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining("body interrupted"));
+            expect(result).toBe(0);
+        });
 
-        const pending = check("password");
-        const signal = request.mock.calls[0][1]!.signal!;
-        await jest.advanceTimersByTimeAsync(1999);
-        expect(signal.aborted).toBe(false);
-        await jest.advanceTimersByTimeAsync(1);
-        const errors = await pending;
+        it("[case] - aborts at the configured timeout and completes validation without hanging", async () => {
+            // Arrange
+            request.mockImplementation(
+                (_url, options) =>
+                    new Promise((_resolve, reject) => {
+                        options!.signal!.addEventListener("abort", () => reject(new Error("request aborted")), {
+                            once: true,
+                        });
+                    }),
+            );
 
-        expect(signal.aborted).toBe(true);
-        expect(errors).toEqual([]);
-        expect(warn).toHaveBeenCalledWith(expect.stringContaining("request aborted"));
-        expect(jest.getTimerCount()).toBe(0);
-    });
+            // Act
+            const pending = check("password");
+            const signal = request.mock.calls[0][1]!.signal!;
+            await jest.advanceTimersByTimeAsync(1999);
+            const abortedBeforeTimeout = signal.aborted;
+            await jest.advanceTimersByTimeAsync(1);
+            const errors = await pending;
+            const timersAfterTimeout = jest.getTimerCount();
 
-    it("respects custom validation options", async () => {
-        class CustomInput {
-            @IsNotPwned({ message: "Choose another password", context: { fieldCode: "password" } })
-            public password = "password";
-        }
-        request.mockResolvedValueOnce(new Response(`${suffix}:1`));
+            // Assert
+            expect(abortedBeforeTimeout).toBe(false);
+            expect(signal.aborted).toBe(true);
+            expect(errors).toEqual([]);
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining("request aborted"));
+            expect(timersAfterTimeout).toBe(0);
+        });
 
-        const errors = await validate(new CustomInput());
+        it("[case] - respects custom validation options", async () => {
+            // Arrange
+            class CustomInput {
+                @IsNotPwned({ message: "Choose another password", context: { fieldCode: "password" } })
+                public password = "password";
+            }
+            request.mockResolvedValueOnce(new Response(`${suffix}:1`));
 
-        expect(errors[0].constraints).toEqual({ IsNotPwned: "Choose another password" });
-        expect(errors[0].contexts).toEqual({ IsNotPwned: { fieldCode: "password" } });
+            // Act
+            const errors = await validate(new CustomInput());
+
+            // Assert
+            expect(errors[0].constraints).toEqual({ IsNotPwned: "Choose another password" });
+            expect(errors[0].contexts).toEqual({ IsNotPwned: { fieldCode: "password" } });
+        });
     });
 });

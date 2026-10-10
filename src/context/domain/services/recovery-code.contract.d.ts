@@ -1,38 +1,36 @@
-declare namespace Services {
-    namespace RecoveryCode {
-        interface Contract extends CommandContract {}
+declare namespace Services.RecoveryCode {
+    interface Contract extends CommandContract {}
 
-        interface CommandContract {
-            regenerate: Regenerate.Signature;
-            generate: Generate.Signature;
-        }
+    interface CommandContract {
+        regenerate: Regenerate.Signature;
+        generate: Generate.Signature;
+    }
 
-        namespace Regenerate {
-            type Props = {
-                transaction: ORM.EntityManager;
-                input: {
-                    hashes: string[];
-                    account: string;
-                };
+    namespace Regenerate {
+        type Props = {
+            transaction: ORM.EntityManager;
+            input: {
+                hashes: string[];
+                account: string;
             };
+        };
 
-            type Result = Promise<void>;
+        type Result = Promise<void>;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
+    }
 
-        namespace Generate {
-            type Props = {
-                transaction: ORM.EntityManager;
-                input: {
-                    account: Entities.Account;
-                    hashes: string[];
-                };
+    namespace Generate {
+        type Props = {
+            transaction: ORM.EntityManager;
+            input: {
+                account: Entities.Account;
+                hashes: string[];
             };
+        };
 
-            type Result = void;
+        type Result = void;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
     }
 }

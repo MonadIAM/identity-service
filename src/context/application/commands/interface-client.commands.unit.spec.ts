@@ -9,9 +9,10 @@ const ACTOR = "actor-account";
 const REALM = "realm-a";
 const ID = "entity-a";
 
-describe("InterfaceClientCommands", () => {
-    describe("create", () => {
-        it("creates a client within the actor's realm and schedules propagation", async () => {
+describe("[Commands] - InterfaceClient", () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates a client within the actor's realm and schedules propagation", async () => {
+            // Arrange
             const { commands, interfaceClientService, transaction, run } = helpers.commands();
             const input = {
                 name: "Client",
@@ -22,8 +23,10 @@ describe("InterfaceClientCommands", () => {
             const client = helpers.createInterfaceClient();
             interfaceClientService.create.mockResolvedValue(client);
 
+            // Act
             await commands.create({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
 
+            // Assert
             expect(interfaceClientService.create.mock.calls).toEqual([
                 [{ input, realm: REALM, transaction: transaction.entityManager }],
             ]);
@@ -40,8 +43,9 @@ describe("InterfaceClientCommands", () => {
         });
     });
 
-    describe("update", () => {
-        it("updates a client without allowing the patch to change its realm", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - updates a client without allowing the patch to change its realm", async () => {
+            // Arrange
             const { commands, interfaceClientService, transaction } = helpers.commands();
             const input = {
                 name: "Client",
@@ -50,30 +54,36 @@ describe("InterfaceClientCommands", () => {
                 redirectUris: ["https://app.example.test/cb"],
             };
 
+            // Act
             await commands.update({ input: input, client: ID, actor: ACTOR, realm: REALM, context: CONTEXT });
 
+            // Assert
             expect(interfaceClientService.update.mock.calls).toEqual([
                 [{ id: ID, patch: input, realm: REALM, transaction: transaction.entityManager }],
             ]);
         });
     });
 
-    describe("revoke / restore / purge", () => {
+    describe("[Behavior] - client lifecycle", () => {
         it.each(["revoke", "restore", "purge"] as const)(
-            "propagates %s with its realm, actor and changed clients",
+            "[case] - propagates %s with its realm, actor and changed clients",
             async (method) => {
+                // Arrange
                 const { commands, interfaceClientService, transaction, run } = helpers.commands();
                 const entities = [helpers.createInterfaceClient(), helpers.createInterfaceClient()];
                 interfaceClientService[method].mockResolvedValue(entities);
                 const input = { clients: [ID, "another-id", "unchanged-id"], reason: "Requested change" };
 
+                // Act
                 const result = await commands[method]({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
+                const result1 = await run.mock.results[0]?.value;
 
+                // Assert
                 expect(interfaceClientService[method].mock.calls).toEqual([
                     [{ identifiers: input.clients, realm: REALM, transaction: transaction.entityManager }],
                 ]);
                 expect(result.params).toEqual({ count: 2 });
-                await expect(run.mock.results[0]?.value).resolves.toEqual({
+                expect(result1).toEqual({
                     entities,
                     isRevoked: method !== "restore",
                     actor: ACTOR,

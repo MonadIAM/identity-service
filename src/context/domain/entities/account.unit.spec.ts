@@ -16,28 +16,41 @@ function createAccount(overrides?: Partial<Entities.Account.ConstructorProps>): 
     });
 }
 
-describe("Account Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - Account", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
+
+            // Act
             const account = createAccount({
                 subject: AccountSubject.SERVICE,
                 status: AccountStatus.ACTIVE,
             });
 
+            // Assert
             expect(account.subject).toBe(AccountSubject.SERVICE);
             expect(account.status).toBe(AccountStatus.ACTIVE);
         });
 
-        it("should default is2FAEnforced to false", () => {
+        it("[case] - defaults is2FAEnforced to false", () => {
+            // Arrange
+
+            // Act
             const account = createAccount();
 
+            // Assert
             expect(account.is2FAEnforced).toBe(false);
         });
 
-        it("should auto-generate id, createdAt, version", () => {
-            const account = createAccount();
+        it("[case] - auto-generates id, createdAt, version", () => {
+            // Arrange
 
-            expect(isUUID(account.id, "4")).toBe(true);
+            // Act
+            const account = createAccount();
+            const result = isUUID(account.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(account.createdAt).toBeInstanceOf(Date);
             expect(account.version).toBe(1);
             expect(account.updatedAt).toBeUndefined();
@@ -45,115 +58,170 @@ describe("Account Entity", () => {
         });
     });
 
-    describe("touch", () => {
-        it("should set lastActiveAt", () => {
+    describe("[Method] - touch", () => {
+        it("[case] - sets lastActiveAt", () => {
+            // Arrange
             const account = createAccount();
+
+            // Act
             account.touch();
 
+            // Assert
             expect(account.lastActiveAt).toBeInstanceOf(Date);
         });
     });
 
-    describe("activate", () => {
-        it("should activate a pending account", () => {
+    describe("[Method] - activate", () => {
+        it("[case] - activates a pending account", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.PENDING });
+
+            // Act
             account.activate();
 
+            // Assert
             expect(account.status).toBe(AccountStatus.ACTIVE);
             expect(account.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when account is not pending", () => {
+        it("[case] - throws when account is not pending", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.ACTIVE });
 
-            expect(() => account.activate()).toThrow("ALREADY_ACTIVATED");
+            // Act
+            const act = (): unknown => account.activate();
+
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVATED");
         });
     });
 
-    describe("deactivate", () => {
-        it("should deactivate an active account", () => {
+    describe("[Method] - deactivate", () => {
+        it("[case] - deactivates an active account", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.ACTIVE });
+
+            // Act
             account.deactivate();
 
+            // Assert
             expect(account.status).toBe(AccountStatus.DEACTIVATED);
             expect(account.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when account is not active", () => {
+        it("[case] - throws when account is not active", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.PENDING });
 
-            expect(() => account.deactivate()).toThrow("DEACTIVATION_NOT_ALLOWED");
+            // Act
+            const act = (): unknown => account.deactivate();
+
+            // Assert
+            expect(act).toThrow("DEACTIVATION_NOT_ALLOWED");
         });
     });
 
-    describe("restore", () => {
-        it("should restore a deactivated account", () => {
+    describe("[Method] - restore", () => {
+        it("[case] - restores a deactivated account", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.DEACTIVATED });
+
+            // Act
             account.restore();
 
+            // Assert
             expect(account.status).toBe(AccountStatus.ACTIVE);
             expect(account.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when account is not deactivated", () => {
+        it("[case] - throws when account is not deactivated", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.ACTIVE });
 
-            expect(() => account.restore()).toThrow("RESTORE_NOT_ALLOWED");
+            // Act
+            const act = (): unknown => account.restore();
+
+            // Assert
+            expect(act).toThrow("RESTORE_NOT_ALLOWED");
         });
     });
 
-    describe("suspend", () => {
-        it("should suspend an active account", () => {
+    describe("[Method] - suspend", () => {
+        it("[case] - suspends an active account", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.ACTIVE });
+
+            // Act
             account.suspend();
 
+            // Assert
             expect(account.status).toBe(AccountStatus.SUSPENDED);
             expect(account.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when account is already suspended", () => {
+        it("[case] - throws when account is already suspended", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.SUSPENDED });
 
-            expect(() => account.suspend()).toThrow("ALREADY_SUSPENDED");
+            // Act
+            const act = (): unknown => account.suspend();
+
+            // Assert
+            expect(act).toThrow("ALREADY_SUSPENDED");
         });
     });
 
-    describe("unsuspend", () => {
-        it("should unsuspend a suspended account", () => {
+    describe("[Method] - unsuspend", () => {
+        it("[case] - unsuspends a suspended account", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.SUSPENDED });
+
+            // Act
             account.unsuspend();
 
+            // Assert
             expect(account.status).toBe(AccountStatus.ACTIVE);
             expect(account.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when account is not suspended", () => {
+        it("[case] - throws when account is not suspended", () => {
+            // Arrange
             const account = createAccount({ status: AccountStatus.ACTIVE });
 
-            expect(() => account.unsuspend()).toThrow("NOT_SUSPENDED");
+            // Act
+            const act = (): unknown => account.unsuspend();
+
+            // Assert
+            expect(act).toThrow("NOT_SUSPENDED");
         });
     });
 
-    describe("assignRelations", () => {
-        it("should assign password and profile", () => {
+    describe("[Method] - assignRelations", () => {
+        it("[case] - assigns password and profile", () => {
+            // Arrange
             const account = createAccount();
             const identifier = {} as Identifier;
             const password = {} as Password;
             const profile = {} as Profile;
 
+            // Act
             account.assignRelations({ identifier, password, profile });
 
+            // Assert
             expect(account.password).toBe(password);
             expect(account.profile).toBe(profile);
         });
 
-        it("should assign profile without password", () => {
+        it("[case] - assigns profile without password", () => {
+            // Arrange
             const account = createAccount();
             const identifier = {} as Identifier;
             const profile = {} as Profile;
 
+            // Act
             account.assignRelations({ identifier, profile });
 
+            // Assert
             expect(account.profile).toBe(profile);
             expect(account.password).toBeUndefined();
         });

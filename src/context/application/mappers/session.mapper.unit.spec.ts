@@ -21,17 +21,21 @@ function createSessions(): Entities.Session[] {
     ];
 }
 
-describe("SessionMapper", () => {
-    describe("notificationPayload", () => {
-        it("maps a login alert notification", () => {
-            expect(
-                mapper.notificationPayload({
-                    accessToken: "access-token",
-                    refreshToken: "refresh-token",
-                    revokedSessions: [],
-                    account: ACCOUNT_ID,
-                }),
-            ).toEqual({
+describe("[DataMapper] - Session", () => {
+    describe("[Method] - notificationPayload", () => {
+        it("[case] - maps a login alert notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.notificationPayload({
+                accessToken: "access-token",
+                refreshToken: "refresh-token",
+                revokedSessions: [],
+                account: ACCOUNT_ID,
+            });
+
+            // Assert
+            expect(result).toEqual({
                 input: {
                     sourceService: PlatformService.IDENTITY_SERVICE,
                     category: NotificationCategory.SECURITY,
@@ -44,10 +48,12 @@ describe("SessionMapper", () => {
         });
     });
 
-    describe("blacklistPayload", () => {
-        it("returns precomputed revoked sessions unchanged", () => {
+    describe("[Method] - blacklistPayload", () => {
+        it("[case] - returns precomputed revoked sessions unchanged", () => {
+            // Arrange
             const revokedSessions = [{ session: SESSION_ID, expiresAt: 1_789_000_000_000 }];
 
+            // Act
             const result = mapper.blacklistPayload({
                 accessToken: "access-token",
                 refreshToken: "refresh-token",
@@ -55,20 +61,33 @@ describe("SessionMapper", () => {
                 revokedSessions,
             });
 
+            // Assert
             expect(result).toBe(revokedSessions);
         });
 
-        it("calculates expiration for session entities", () => {
-            expect(mapper.blacklistPayload({ sessions: createSessions() })).toEqual([
+        it("[case] - calculates expiration for session entities", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.blacklistPayload({ sessions: createSessions() });
+
+            // Assert
+            expect(result).toEqual([
                 { session: SESSION_ID, expiresAt: new Date("2026-09-15T11:00:00.000Z").getTime() },
                 { session: SECOND_SESSION_ID, expiresAt: new Date("2026-09-15T12:00:00.000Z").getTime() },
             ]);
         });
     });
 
-    describe("refreshBlacklistPayload", () => {
-        it("calculates expiration after refresh token reuse", () => {
-            expect(mapper.refreshBlacklistPayload({ kind: "REUSE_DETECTED", sessions: createSessions() })).toEqual([
+    describe("[Method] - refreshBlacklistPayload", () => {
+        it("[case] - calculates expiration after refresh token reuse", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.refreshBlacklistPayload({ kind: "REUSE_DETECTED", sessions: createSessions() });
+
+            // Assert
+            expect(result).toEqual([
                 { session: SESSION_ID, expiresAt: new Date("2026-09-15T11:00:00.000Z").getTime() },
                 { session: SECOND_SESSION_ID, expiresAt: new Date("2026-09-15T12:00:00.000Z").getTime() },
             ]);
@@ -84,8 +103,14 @@ describe("SessionMapper", () => {
                     message: "commands.session.REFRESHED",
                 },
             } as const,
-        ])("returns no blacklist entries for $kind", (props) => {
-            expect(mapper.refreshBlacklistPayload(props)).toEqual([]);
+        ])("[case] - returns no blacklist entries for $kind", (props) => {
+            // Arrange
+
+            // Act
+            const result = mapper.refreshBlacklistPayload(props);
+
+            // Assert
+            expect(result).toEqual([]);
         });
     });
 });

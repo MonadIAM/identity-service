@@ -1,22 +1,20 @@
-declare namespace Repositories {
-    namespace Session {
-        interface Contract extends PublicContract {}
+declare namespace Repositories.Session {
+    interface Contract extends PublicContract {}
 
-        interface PublicContract extends Repositories.Base.Contract<Entities.Session, Repositories.Mappers.Session.Types> {
-            lockByAccount: LockByAccount.Signature;
-        }
+    interface PublicContract extends Repositories.Base.Contract<Entities.Session, Repositories.Mappers.Session.Types> {
+        lockByAccount: LockByAccount.Signature;
+    }
 
-        interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
+    interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
 
-        namespace LockByAccount {
-            type Props = {
-                transaction: ORM.EntityManager;
-                account: string;
-            };
+    namespace LockByAccount {
+        type Props = {
+            transaction: ORM.EntityManager;
+            account: string;
+        };
 
-            type Result = Promise<Entities.Session[]>;
+        type Result = Promise<Entities.Session[]>;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
     }
 }

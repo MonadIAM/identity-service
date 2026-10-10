@@ -6,12 +6,12 @@ import { FederatedAuthnCommands } from "./federated-authn.commands";
 import { ServiceClientCommands } from "./service-client.commands";
 import { RecoveryCodeCommands } from "./recovery-code.commands";
 import { SecondFactorCommands } from "./second-factor.commands";
-import { RealmCommands } from "./realm.commands";
 import { IdentifierCommands } from "./identifier.commands";
 import { PasswordCommands } from "./password.commands";
 import { AccountCommands } from "./account.commands";
 import { ProfileCommands } from "./profile.commands";
 import { SessionCommands } from "./session.commands";
+import { RealmCommands } from "./realm.commands";
 import { OAuthCommands } from "./oauth.commands";
 import { AuthnCommands } from "./authn.commands";
 import {
@@ -57,10 +57,6 @@ export const COMMANDS: ClassProvider[] = [
         useClass: SecondFactorCommands,
     },
     {
-        provide: REALM_COMMANDS,
-        useClass: RealmCommands,
-    },
-    {
         provide: IDENTIFIER_COMMANDS,
         useClass: IdentifierCommands,
     },
@@ -79,6 +75,10 @@ export const COMMANDS: ClassProvider[] = [
     {
         provide: SESSION_COMMANDS,
         useClass: SessionCommands,
+    },
+    {
+        provide: REALM_COMMANDS,
+        useClass: RealmCommands,
     },
     {
         provide: OAUTH_COMMANDS,

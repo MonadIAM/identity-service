@@ -5,14 +5,15 @@ import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 
 import { PasswordHistoryRepository } from "./password-history.repository";
 
-describe("PasswordHistoryRepository", () => {
+describe("[Repository] - PasswordHistory", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new PasswordHistoryRepository(readManager),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted password history entry through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted password history entry through the schema", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const history = await suite.fixtures().createPasswordHistory({
                 hash: "mapping-previous-hash",
@@ -20,8 +21,10 @@ describe("PasswordHistoryRepository", () => {
                 account,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: history.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 hash: "mapping-previous-hash",
                 setAt: history.setAt,

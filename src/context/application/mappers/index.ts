@@ -9,4 +9,4 @@ export { PasswordMapper } from "./password.mapper";
 export { SessionMapper } from "./session.mapper";
 export { AccountMapper } from "./account.mapper";
 export { AuthnMapper } from "./authn.mapper";
-export * from "./realm.mapper";
+export { RealmMapper } from "./realm.mapper";

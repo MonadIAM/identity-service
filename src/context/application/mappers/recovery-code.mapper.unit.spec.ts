@@ -8,10 +8,16 @@ const ACCOUNT_ID = "00000000-0000-4000-8000-a00000000001";
 
 const mapper = new RecoveryCodeMapper();
 
-describe("RecoveryCodeMapper", () => {
-    describe("notificationPayload", () => {
-        it("maps a recovery-code regeneration notification", () => {
-            expect(mapper.notificationPayload({ account: ACCOUNT_ID })).toEqual({
+describe("[DataMapper] - RecoveryCode", () => {
+    describe("[Method] - notificationPayload", () => {
+        it("[case] - maps a recovery-code regeneration notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.notificationPayload({ account: ACCOUNT_ID });
+
+            // Assert
+            expect(result).toEqual({
                 input: {
                     template: MessageTemplate.RECOVERY_CODES_REGENERATED,
                     sourceService: PlatformService.IDENTITY_SERVICE,

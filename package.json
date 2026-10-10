@@ -1,6 +1,6 @@
 {
   "name": "@monadiam/identity-service",
-  "description": "Identity Service implementing an OAuth 2.0 + OIDC authorization server (PKCE, refresh rotation, federated login), session and second-factor management, with Audit and Change Log support.",
+  "description": "IAM | Identity & AuthN: account lifecycle, OAuth 2.0/OIDC, federated login, sessions and token rotation, 2FA, account recovery and reauthentication.",
   "author": "Daniil Egorov (https://github.com/Lambdius)",
   "license": "SEE LICENSE IN LICENSE",
   "version": "0.0.1",
@@ -63,7 +63,7 @@
     "@mikro-orm/core": "7.1.13",
     "@mikro-orm/nestjs": "7.0.2",
     "@mikro-orm/postgresql": "7.1.13",
-    "@monadiam/shared": "github:MonadIAM/shared#v2.0.16",
+    "@monadiam/shared": "github:MonadIAM/shared#v2.0.17",
     "@nest-lab/throttler-storage-redis": "1.2.0",
     "@nestjs/bullmq": "11.0.5",
     "@nestjs/common": "11.2.1",

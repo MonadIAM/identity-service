@@ -16,41 +16,58 @@ function createSecondFactor(overrides?: Partial<Entities.SecondFactor.Constructo
     });
 }
 
-describe("SecondFactor Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - SecondFactor", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
             const account = {} as Account;
 
+            // Act
             const sf = createSecondFactor({ account, name: "Work Phone" });
 
+            // Assert
             expect(sf.account).toBe(account);
             expect(sf.type).toBe(SecondFactorType.TOTP);
             expect(sf.secret).toBe("BASE32SECRET");
             expect(sf.name).toBe("Work Phone");
         });
 
-        it("should auto-generate id and createdAt", () => {
-            const sf = createSecondFactor();
+        it("[case] - auto-generates id and createdAt", () => {
+            // Arrange
 
-            expect(isUUID(sf.id, "4")).toBe(true);
+            // Act
+            const sf = createSecondFactor();
+            const result = isUUID(sf.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(sf.createdAt).toBeInstanceOf(Date);
             expect(sf.confirmedAt).toBeUndefined();
         });
     });
 
-    describe("confirm", () => {
-        it("should set confirmedAt", () => {
+    describe("[Method] - confirm", () => {
+        it("[case] - sets confirmedAt", () => {
+            // Arrange
             const sf = createSecondFactor();
+
+            // Act
             sf.confirm();
 
+            // Assert
             expect(sf.confirmedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already confirmed", () => {
+        it("[case] - throws when already confirmed", () => {
+            // Arrange
             const sf = createSecondFactor();
-            sf.confirm();
 
-            expect(() => sf.confirm()).toThrow("CONFIRM_NOT_ALLOWED");
+            // Act
+            sf.confirm();
+            const act = (): unknown => sf.confirm();
+
+            // Assert
+            expect(act).toThrow("CONFIRM_NOT_ALLOWED");
         });
     });
 });

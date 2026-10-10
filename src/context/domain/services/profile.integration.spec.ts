@@ -15,14 +15,15 @@ async function loadProfile(suite: Integration.Domain.Profile.Suite, account: Ent
     );
 }
 
-describe("ProfileService integration", () => {
+describe("[DomainService] - Profile", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("update", () => {
-        it("updates the persisted profile through the account repository populate path", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - updates the persisted profile through the account repository populate path", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createProfile({
                 displayName: "Before",
@@ -31,6 +32,7 @@ describe("ProfileService integration", () => {
                 account,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().profileService.update({
                     input: {
@@ -44,9 +46,9 @@ describe("ProfileService integration", () => {
                     transaction,
                 }),
             );
-
             const profile = await loadProfile(suite, account);
 
+            // Assert
             expect(profile).toMatchObject({
                 displayName: "After",
                 timeZone: "Europe/Moscow",

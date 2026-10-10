@@ -17,16 +17,18 @@ async function loadIdentifiers(
     );
 }
 
-describe("IdentifierService integration", () => {
+describe("[DomainService] - Identifier", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates an identifier for an account", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates an identifier for an account", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().identifierService.create({
                     input: {
@@ -39,9 +41,9 @@ describe("IdentifierService integration", () => {
                     transaction,
                 }),
             );
-
             const identifiers = await loadIdentifiers(suite, account);
 
+            // Assert
             expect(identifiers).toHaveLength(1);
             expect(identifiers[0]).toMatchObject({
                 identity: "+15550000002",
@@ -51,8 +53,9 @@ describe("IdentifierService integration", () => {
         });
     });
 
-    describe("verify", () => {
-        it("verifies an identifier", async () => {
+    describe("[Method] - verify", () => {
+        it("[case] - verifies an identifier", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const identifier = await suite.fixtures().createIdentifier({
                 identity: "+15550000002",
@@ -60,6 +63,7 @@ describe("IdentifierService integration", () => {
                 account,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().identifierService.verify({
                     input: {
@@ -68,9 +72,9 @@ describe("IdentifierService integration", () => {
                     transaction,
                 }),
             );
-
             const identifiers = await loadIdentifiers(suite, account);
 
+            // Assert
             expect(identifiers[0]).toMatchObject({
                 identity: "+15550000002",
                 isVerified: true,
@@ -79,8 +83,9 @@ describe("IdentifierService integration", () => {
         });
     });
 
-    describe("togglePublicContact", () => {
-        it("toggles public contact for an account-scoped identifier", async () => {
+    describe("[Method] - togglePublicContact", () => {
+        it("[case] - toggles public contact for an account-scoped identifier", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const identifier = await suite.fixtures().createIdentifier({
                 identity: "+15550000002",
@@ -89,6 +94,7 @@ describe("IdentifierService integration", () => {
                 account,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().identifierService.togglePublicContact({
                     input: {
@@ -98,9 +104,9 @@ describe("IdentifierService integration", () => {
                     transaction,
                 }),
             );
-
             const identifiers = await loadIdentifiers(suite, account);
 
+            // Assert
             expect(identifiers[0]).toMatchObject({
                 identity: "+15550000002",
                 isPublicContact: true,
@@ -108,8 +114,9 @@ describe("IdentifierService integration", () => {
         });
     });
 
-    describe("purge", () => {
-        it("purges an account-scoped identifier", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - purges an account-scoped identifier", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const primary = await suite.fixtures().createIdentifier({
                 identity: "owner@example.test",
@@ -123,6 +130,7 @@ describe("IdentifierService integration", () => {
                 account,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().identifierService.purge({
                     input: {
@@ -132,9 +140,9 @@ describe("IdentifierService integration", () => {
                     transaction,
                 }),
             );
-
             const identifiers = await loadIdentifiers(suite, account);
 
+            // Assert
             expect(identifiers).toHaveLength(1);
             expect(identifiers[0]).toMatchObject({
                 identity: "+15550000002",
@@ -143,7 +151,8 @@ describe("IdentifierService integration", () => {
             expect(identifiers[0]?.id).toBe(secondary.id);
         });
 
-        it("keeps the last verified identifier when purge is rejected", async () => {
+        it("[case] - keeps the last verified identifier when purge is rejected", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const identifier = await suite.fixtures().createIdentifier({
                 identity: "last@example.test",
@@ -151,19 +160,22 @@ describe("IdentifierService integration", () => {
                 account,
             });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().identifierService.purge({
-                        input: {
-                            identifier: identifier.id,
-                            account: account.id,
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.identifier.CANNOT_REMOVE_LAST_VERIFIED");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().identifierService.purge({
+                    input: {
+                        identifier: identifier.id,
+                        account: account.id,
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result1 = await loadIdentifiers(suite, account);
 
-            await expect(loadIdentifiers(suite, account)).resolves.toHaveLength(1);
+            // Assert
+            await expect(result).rejects.toThrow("services.identifier.CANNOT_REMOVE_LAST_VERIFIED");
+            expect(result1).toHaveLength(1);
         });
     });
 });

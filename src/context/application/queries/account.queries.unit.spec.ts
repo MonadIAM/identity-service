@@ -8,11 +8,12 @@ const helpers = new AccountQueriesUnitHelpers();
 const ACCOUNT = "target-account";
 const ACTOR = "actor-account";
 
-describe("AccountQueries", () => {
-    describe("findMe / findUnique / findMany", () => {
+describe("[Queries] - Account", () => {
+    describe("[Behavior] - account lookup", () => {
         it.each([ResponseViewType.COMPACT, ResponseViewType.DETAILED])(
-            "loads the relations requested by %s",
+            "[case] - loads the relations requested by %s",
             async (view) => {
+                // Arrange
                 const { queries, accountRepository } = helpers.queries();
                 const account = helpers.createAccount();
                 accountRepository.findUniqueOrThrow.mockResolvedValue(account);
@@ -20,6 +21,7 @@ describe("AccountQueries", () => {
                 const populate: ("profile" | "identifiers")[] =
                     view === ResponseViewType.COMPACT ? ["profile"] : ["profile", "identifiers"];
 
+                // Act
                 const own = await queries.findMe({ account: ACTOR, view });
                 const found = await queries.findUnique({ mode: QueryMode.MANAGE, account: ACCOUNT, view });
                 const page = await queries.findMany({
@@ -30,6 +32,7 @@ describe("AccountQueries", () => {
                     view,
                 });
 
+                // Assert
                 expect(own).toBe(account);
                 expect(found).toBe(account);
                 expect(page).toEqual([[account], 12]);

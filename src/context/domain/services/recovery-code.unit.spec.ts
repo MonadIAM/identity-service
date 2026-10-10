@@ -10,29 +10,33 @@ const SECOND_CODE_ID = "00000000-0000-4000-8000-500000000003";
 
 const helpers = new RecoveryCodeUnitHelpers();
 
-describe("RecoveryCodeService", () => {
+describe("[DomainService] - RecoveryCode", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("generate", () => {
-        it("persists one recovery code per given hash", () => {
+    describe("[Method] - generate", () => {
+        it("[case] - persists one recovery code per given hash", () => {
+            // Arrange
             const account = helpers.createAccount({ id: ACCOUNT_ID });
             const { service, transaction } = helpers.service({ account });
 
+            // Act
             service.generate({
                 input: { account, hashes: ["hash-one", "hash-two"] },
                 transaction: transaction.entityManager,
             });
 
+            // Assert
             expect(transaction.persist).toHaveBeenCalledTimes(2);
             expect(transaction.persist).toHaveBeenNthCalledWith(1, expect.objectContaining({ hash: "hash-one", account }));
             expect(transaction.persist).toHaveBeenNthCalledWith(2, expect.objectContaining({ hash: "hash-two", account }));
         });
     });
 
-    describe("regenerate", () => {
-        it("removes every existing recovery code before generating the new set", async () => {
+    describe("[Method] - regenerate", () => {
+        it("[case] - removes every existing recovery code before generating the new set", async () => {
+            // Arrange
             const account = helpers.createAccount({ id: ACCOUNT_ID });
             const existing = [
                 helpers.createRecoveryCode({ id: CODE_ID, account }),
@@ -41,11 +45,13 @@ describe("RecoveryCodeService", () => {
             account.recoveryCodes = helpers.collection({ owner: account, items: existing });
             const { service, repositories, transaction } = helpers.service({ account });
 
+            // Act
             await service.regenerate({
                 input: { account: ACCOUNT_ID, hashes: ["fresh-one"] },
                 transaction: transaction.entityManager,
             });
 
+            // Assert
             expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
                 options: { populate: ["recoveryCodes"] },
                 transaction: transaction.entityManager,

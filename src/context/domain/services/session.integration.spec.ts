@@ -49,27 +49,29 @@ async function loadAccount(suite: Integration.Domain.Session.Suite, account: Ent
     );
 }
 
-describe("SessionService integration", () => {
+describe("[DomainService] - Session", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates a persisted session with token hashes and an OIDC id token", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates a persisted session with token hashes and an OIDC id token", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
 
+            // Act
             const result = await suite.transaction((transaction) =>
                 suite.repository().sessionService.create({
                     input: createInput(account.id, { nonce: "session-nonce" }),
                     transaction,
                 }),
             );
-
             const sessions = await loadSessions(suite, account);
             const refreshed = await loadAccount(suite, account);
             const created = sessions[0];
 
+            // Assert
             expect(sessions).toHaveLength(1);
             expect(created).toBeDefined();
             expect(created?.refreshTokenHash).toBe(`hash:${result.refreshToken}`);
@@ -79,7 +81,8 @@ describe("SessionService integration", () => {
             expect(refreshed.lastActiveAt).toBeInstanceOf(Date);
         });
 
-        it("removes the oldest persisted session on a single overflow", async () => {
+        it("[case] - removes the oldest persisted session on a single overflow", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const oldest = await suite.fixtures().createSession({
                 account,
@@ -97,16 +100,17 @@ describe("SessionService integration", () => {
                 lastRefreshedAt: new Date("2026-01-03T00:00:00.000Z"),
             });
 
+            // Act
             const result = await suite.transaction((transaction) =>
                 suite.repository().sessionService.create({
                     input: createInput(account.id),
                     transaction,
                 }),
             );
-
             const sessions = await loadSessions(suite, account);
             const ids = sessions.map(({ id }) => id);
 
+            // Assert
             expect(sessions).toHaveLength(3);
             expect(ids).not.toContain(oldest.id);
             expect(ids).toEqual(expect.arrayContaining([newer.id, newest.id]));
@@ -118,7 +122,8 @@ describe("SessionService integration", () => {
             ]);
         });
 
-        it("keeps the session limit under two concurrent logins", async () => {
+        it("[case] - keeps the session limit under two concurrent logins", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const oldest = await suite.fixtures().createSession({
                 account,
@@ -131,6 +136,7 @@ describe("SessionService integration", () => {
                 lastRefreshedAt: new Date("2026-01-02T00:00:00.000Z"),
             });
 
+            // Act
             const [first, second] = await Promise.all([
                 suite.transaction((transaction) =>
                     suite.repository().sessionService.create({
@@ -149,23 +155,25 @@ describe("SessionService integration", () => {
                     }),
                 ),
             ]);
-
             const sessions = await loadSessions(suite, account);
             const ids = sessions.map(({ id }) => id);
             const revokedIds = [...first.revokedSessions, ...second.revokedSessions].map(({ session }) => session);
+            const result = new Set(revokedIds).size;
 
+            // Assert
             expect(sessions).toHaveLength(3);
             expect(ids).toContain(kept.id);
             expect(ids).not.toContain(oldest.id);
             expect(revokedIds).toEqual([oldest.id]);
-            expect(new Set(revokedIds).size).toBe(revokedIds.length);
+            expect(result).toBe(revokedIds.length);
             expect(first.refreshToken).toMatch(/^refresh:/);
             expect(first.accessToken).toMatch(/^access:/);
             expect(second.refreshToken).toMatch(/^refresh:/);
             expect(second.accessToken).toMatch(/^access:/);
         });
 
-        it("rolls back a new session and overflow removals when access token signing fails", async () => {
+        it("[case] - rolls back a new session and overflow removals when access token signing fails", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const first = await suite.fixtures().createSession({
                 account,
@@ -184,52 +192,59 @@ describe("SessionService integration", () => {
             });
             suite.repository().services.jwt.setFailure("access");
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().sessionService.create({
-                        input: createInput(account.id),
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("access token signing failed");
-
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().sessionService.create({
+                    input: createInput(account.id),
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
             const sessions = await loadSessions(suite, account);
             const ids = sessions.map(({ id }) => id);
 
+            // Assert
+            await expect(result).rejects.toThrow("access token signing failed");
             expect(ids).toEqual([first.id, second.id, third.id]);
         });
 
         it.each([AccountStatus.SUSPENDED, AccountStatus.PENDING])(
-            "does not create a session for a %s account",
+            "[case] - does not create a session for a %s account",
             async (status) => {
+                // Arrange
                 const account = await suite.fixtures().createAccount({ status });
 
-                await expect(
-                    suite.transaction((transaction) =>
-                        suite.repository().sessionService.create({
-                            input: createInput(account.id),
-                            transaction,
-                        }),
-                    ),
-                ).rejects.toThrow("services.session.ACCOUNT_NOT_AUTHENTICATABLE");
+                // Act
+                const result = suite.transaction((transaction) =>
+                    suite.repository().sessionService.create({
+                        input: createInput(account.id),
+                        transaction,
+                    }),
+                );
+                await Promise.allSettled([result]);
+                const result1 = await loadSessions(suite, account);
 
-                await expect(loadSessions(suite, account)).resolves.toHaveLength(0);
+                // Assert
+                await expect(result).rejects.toThrow("services.session.ACCOUNT_NOT_AUTHENTICATABLE");
+                expect(result1).toHaveLength(0);
             },
         );
 
-        it("restores a deactivated account when creating a session", async () => {
+        it("[case] - restores a deactivated account when creating a session", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount({ status: AccountStatus.DEACTIVATED });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().sessionService.create({
                     input: createInput(account.id),
                     transaction,
                 }),
             );
-
             const restored = await loadAccount(suite, account);
             const sessions = await loadSessions(suite, account);
 
+            // Assert
             expect(restored.status).toBe(AccountStatus.ACTIVE);
             expect(restored.lastActiveAt).toBeInstanceOf(Date);
             expect(restored.updatedAt).toBeInstanceOf(Date);
@@ -237,8 +252,9 @@ describe("SessionService integration", () => {
         });
     });
 
-    describe("refresh", () => {
-        it("rotates refresh tokens on a matching hash and detects token reuse on mismatch", async () => {
+    describe("[Method] - refresh", () => {
+        it("[case] - rotates refresh tokens on a matching hash and detects token reuse on mismatch", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const session = await suite.fixtures().createSession({
                 refreshTokenHash: "stored-refresh-hash",
@@ -246,6 +262,7 @@ describe("SessionService integration", () => {
                 client: CLIENT_ID,
             });
 
+            // Act
             const rotated = await suite.transaction((transaction) =>
                 suite.repository().sessionService.refresh({
                     input: {
@@ -268,11 +285,11 @@ describe("SessionService integration", () => {
                 }),
             );
             const afterReuse = await loadSessions(suite, account);
-
             if (rotated.kind !== "ROTATED") {
                 throw new Error("Expected refresh token rotation");
             }
 
+            // Assert
             expect(rotated).toMatchObject({
                 kind: "ROTATED",
                 accessToken: `access:${session.id}:1`,
@@ -284,8 +301,9 @@ describe("SessionService integration", () => {
         });
     });
 
-    describe("revoke", () => {
-        it("revokes a session by refresh token", async () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - revokes a session by refresh token", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const session = await suite.fixtures().createSession({
                 refreshTokenHash: "hash:token-to-revoke",
@@ -293,42 +311,51 @@ describe("SessionService integration", () => {
             });
             const kept = await suite.fixtures().createSession({ account });
 
+            // Act
             const removed = await suite.transaction((transaction) =>
                 suite.repository().sessionService.revoke({
                     input: { account: account.id, token: "token-to-revoke" },
                     transaction,
                 }),
             );
-
             const sessions = await loadSessions(suite, account);
+            const result = removed.map(({ id }) => id);
+            const result1 = sessions.map(({ id }) => id);
 
-            expect(removed.map(({ id }) => id)).toEqual([session.id]);
-            expect(sessions.map(({ id }) => id)).toEqual([kept.id]);
+            // Assert
+            expect(result).toEqual([session.id]);
+            expect(result1).toEqual([kept.id]);
         });
 
-        it("revokes the current session by id", async () => {
+        it("[case] - revokes the current session by id", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const current = await suite.fixtures().createSession({ account });
             const kept = await suite.fixtures().createSession({ account });
 
+            // Act
             const removed = await suite.transaction((transaction) =>
                 suite.repository().sessionService.revoke({
                     input: { account: account.id, current: current.id },
                     transaction,
                 }),
             );
-
             const sessions = await loadSessions(suite, account);
+            const result = removed.map(({ id }) => id);
+            const result1 = sessions.map(({ id }) => id);
 
-            expect(removed.map(({ id }) => id)).toEqual([current.id]);
-            expect(sessions.map(({ id }) => id)).toEqual([kept.id]);
+            // Assert
+            expect(result).toEqual([current.id]);
+            expect(result1).toEqual([kept.id]);
         });
 
-        it("revokes explicit sessions without removing the current session", async () => {
+        it("[case] - revokes explicit sessions without removing the current session", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const current = await suite.fixtures().createSession({ account });
             const explicit = await suite.fixtures().createSession({ account });
 
+            // Act
             const removed = await suite.transaction((transaction) =>
                 suite.repository().sessionService.revoke({
                     input: {
@@ -339,17 +366,21 @@ describe("SessionService integration", () => {
                     transaction,
                 }),
             );
-
             const sessions = await loadSessions(suite, account);
+            const result = removed.map(({ id }) => id);
+            const result1 = sessions.map(({ id }) => id);
 
-            expect(removed.map(({ id }) => id)).toEqual([explicit.id]);
-            expect(sessions.map(({ id }) => id)).toEqual([current.id]);
+            // Assert
+            expect(result).toEqual([explicit.id]);
+            expect(result1).toEqual([current.id]);
         });
 
-        it("revokes managed session entities", async () => {
+        it("[case] - revokes managed session entities", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const session = await suite.fixtures().createSession({ account });
 
+            // Act
             const removed = await suite.transaction(async (transaction) =>
                 suite.repository().sessionService.revoke({
                     input: {
@@ -362,35 +393,40 @@ describe("SessionService integration", () => {
                     transaction,
                 }),
             );
-
             const sessions = await loadSessions(suite, account);
+            const result = removed.map(({ id }) => id);
 
-            expect(removed.map(({ id }) => id)).toEqual([session.id]);
+            // Assert
+            expect(result).toEqual([session.id]);
             expect(sessions).toHaveLength(0);
         });
     });
 
-    describe("revokeAll", () => {
-        it("revokes all sessions for one account without touching another account", async () => {
+    describe("[Method] - revokeAll", () => {
+        it("[case] - revokes all sessions for one account without touching another account", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const other = await suite.fixtures().createAccount();
             const first = await suite.fixtures().createSession({ account });
             const second = await suite.fixtures().createSession({ account });
             const external = await suite.fixtures().createSession({ account: other });
 
+            // Act
             const removed = await suite.transaction((transaction) =>
                 suite.repository().sessionService.revokeAll({
                     input: { account: account.id },
                     transaction,
                 }),
             );
-
             const accountSessions = await loadSessions(suite, account);
             const otherSessions = await loadSessions(suite, other);
+            const result = removed.map(({ id }) => id).sort();
+            const result1 = otherSessions.map(({ id }) => id);
 
-            expect(removed.map(({ id }) => id).sort()).toEqual([first.id, second.id].sort());
+            // Assert
+            expect(result).toEqual([first.id, second.id].sort());
             expect(accountSessions).toHaveLength(0);
-            expect(otherSessions.map(({ id }) => id)).toEqual([external.id]);
+            expect(result1).toEqual([external.id]);
         });
     });
 });

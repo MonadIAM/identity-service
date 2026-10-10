@@ -19,73 +19,91 @@ class TestRepository extends BaseRepository<Entities.Account, Repositories.Mappe
     }
 }
 
-describe("BaseRepository", () => {
+describe("[Mixin] - BaseRepository", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new TestRepository(readManager),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("findUnique", () => {
-        it("finds one entity or null by ORM where query", async () => {
+    describe("[Method] - findUnique", () => {
+        it("[case] - finds one entity or null by ORM where query", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
 
-            await expect(suite.repository().findUnique({ where: { id: account.id } })).resolves.toMatchObject({
+            // Act
+            const result = await suite.repository().findUnique({ where: { id: account.id } });
+            const result1 = await suite.repository().findUnique({
+                where: { id: "00000000-0000-0000-0000-000000000000" },
+            });
+
+            // Assert
+            expect(result).toMatchObject({
                 id: account.id,
                 status: account.status,
             });
-            await expect(
-                suite.repository().findUnique({
-                    where: { id: "00000000-0000-0000-0000-000000000000" },
-                }),
-            ).resolves.toBeNull();
+            expect(result1).toBeNull();
         });
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("finds one required entity by ORM where query", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - finds one required entity by ORM where query", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
 
-            await expect(suite.repository().findUniqueOrThrow({ where: { id: account.id } })).resolves.toMatchObject({
+            // Act
+            const result = await suite.repository().findUniqueOrThrow({ where: { id: account.id } });
+
+            // Assert
+            expect(result).toMatchObject({
                 id: account.id,
                 subject: account.subject,
             });
         });
     });
 
-    describe("find", () => {
-        it("finds all entities matching an ORM where query", async () => {
+    describe("[Method] - find", () => {
+        it("[case] - finds all entities matching an ORM where query", async () => {
+            // Arrange
             await suite.fixtures().createAccount({ status: AccountStatus.PENDING });
             await suite.fixtures().createAccount({ status: AccountStatus.PENDING });
             await suite.fixtures().createAccount({ status: AccountStatus.ACTIVE });
 
+            // Act
             const accounts = await suite.repository().find({
                 where: { status: AccountStatus.PENDING },
             });
+            const result = accounts.every(({ status }) => status === AccountStatus.PENDING);
 
+            // Assert
             expect(accounts).toHaveLength(2);
-            expect(accounts.every(({ status }) => status === AccountStatus.PENDING)).toBe(true);
+            expect(result).toBe(true);
         });
     });
 
-    describe("findMany", () => {
-        it("finds and counts entities using explicit ORM where and options", async () => {
+    describe("[Method] - findMany", () => {
+        it("[case] - finds and counts entities using explicit ORM where and options", async () => {
+            // Arrange
             await suite.fixtures().createAccount({ status: AccountStatus.PENDING });
             await suite.fixtures().createAccount({ status: AccountStatus.PENDING });
 
+            // Act
             const [accounts, total] = await suite.repository().findMany({
                 options: { orderBy: { createdAt: QueryOrder.ASC } },
                 where: { status: AccountStatus.PENDING },
             });
 
+            // Assert
             expect(total).toBe(2);
             expect(accounts).toHaveLength(2);
         });
 
-        it("finds and counts entities using mapper filters, sort and pagination", async () => {
+        it("[case] - finds and counts entities using mapper filters, sort and pagination", async () => {
+            // Arrange
             await suite.fixtures().createAccount({ status: AccountStatus.PENDING });
             await suite.fixtures().createAccount({ status: AccountStatus.PENDING });
             await suite.fixtures().createAccount({ status: AccountStatus.PENDING });
 
+            // Act
             const [accounts, total] = await suite.repository().findMany({
                 pagination: { currentPage: 1, elementsPerPage: 2 },
                 sort: { createdAt: QueryOrder.ASC },
@@ -97,11 +115,13 @@ describe("BaseRepository", () => {
                 },
             });
 
+            // Assert
             expect(total).toBe(3);
             expect(accounts).toHaveLength(2);
         });
 
-        it("keeps mapper pagination stable when creation timestamps are equal", async () => {
+        it("[case] - keeps mapper pagination stable when creation timestamps are equal", async () => {
+            // Arrange
             const createdAt = new Date("2026-01-01T00:00:00.000Z");
             const first = await suite.fixtures().createAccount({ status: AccountStatus.PENDING, createdAt });
             const second = await suite.fixtures().createAccount({ status: AccountStatus.PENDING, createdAt });
@@ -110,6 +130,7 @@ describe("BaseRepository", () => {
                 .sort((left, right) => left.id.localeCompare(right.id))
                 .map(({ id }) => id);
 
+            // Act
             const [firstPage, total] = await suite.repository().findMany({
                 pagination: { currentPage: 1, elementsPerPage: 2 },
                 sort: { createdAt: QueryOrder.ASC },
@@ -130,12 +151,15 @@ describe("BaseRepository", () => {
                     },
                 },
             });
+            const result = [...firstPage, ...secondPage].map(({ id }) => id);
 
+            // Assert
             expect(total).toBe(expectedIDs.length);
-            expect([...firstPage, ...secondPage].map(({ id }) => id)).toEqual(expectedIDs);
+            expect(result).toEqual(expectedIDs);
         });
 
-        it("finds and counts entities using mapper filters combined with prefilter", async () => {
+        it("[case] - finds and counts entities using mapper filters combined with prefilter", async () => {
+            // Arrange
             await suite.fixtures().createAccount({
                 status: AccountStatus.PENDING,
                 subject: AccountSubject.HUMAN,
@@ -149,6 +173,7 @@ describe("BaseRepository", () => {
                 status: AccountStatus.ACTIVE,
             });
 
+            // Act
             const [accounts, total] = await suite.repository().findMany({
                 prefilter: { subject: AccountSubject.HUMAN },
                 filters: {
@@ -161,6 +186,7 @@ describe("BaseRepository", () => {
                 pagination: { currentPage: 1, elementsPerPage: 10 },
             });
 
+            // Assert
             expect(total).toBe(1);
             expect(accounts[0]?.status).toBe(AccountStatus.PENDING);
             expect(accounts[0]?.subject).toBe(AccountSubject.HUMAN);

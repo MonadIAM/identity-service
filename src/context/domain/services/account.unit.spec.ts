@@ -43,17 +43,20 @@ function createAccountWithSessions(): {
     return { account, sessions };
 }
 
-describe("AccountService", () => {
+describe("[DomainService] - Account", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("persists the account aggregate with profile, primary identifier and password", () => {
+    describe("[Method] - create", () => {
+        it("[case] - persists the account aggregate with profile, primary identifier and password", () => {
+            // Arrange
             const { service, transaction } = helpers.service();
 
+            // Act
             const account = service.create(createProps(transaction.entityManager, { password: "argon2-hash" }));
 
+            // Assert
             expect(account).toEqual(
                 expect.objectContaining({
                     status: AccountStatus.PENDING,
@@ -83,15 +86,18 @@ describe("AccountService", () => {
             expect(transaction.persist).toHaveBeenCalledTimes(4);
         });
 
-        it("persists a second identifier bound to the same account when an additional one is given", () => {
+        it("[case] - persists a second identifier bound to the same account when an additional one is given", () => {
+            // Arrange
             const { service, transaction } = helpers.service();
 
+            // Act
             const account = service.create(
                 createProps(transaction.entityManager, {
                     additionalIdentifier: { identity: "+70000000000", type: IdentifierType.PHONE },
                 }),
             );
 
+            // Assert
             expect(transaction.persist).toHaveBeenCalledTimes(4);
             expect(transaction.persist).toHaveBeenNthCalledWith(
                 4,
@@ -105,17 +111,20 @@ describe("AccountService", () => {
         });
     });
 
-    describe("verify", () => {
-        it("finds the account and activates it", async () => {
+    describe("[Method] - verify", () => {
+        it("[case] - finds the account and activates it", async () => {
+            // Arrange
             const account = helpers.createAccount({ id: ACCOUNT_ID, status: AccountStatus.PENDING });
             const { service, repositories, transaction } = helpers.service({ account });
             const activateSpy = jest.spyOn(account, "activate");
 
+            // Act
             const result = await service.verify({
                 transaction: transaction.entityManager,
                 input: { account: ACCOUNT_ID },
             });
 
+            // Assert
             expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 where: { id: ACCOUNT_ID },
@@ -125,30 +134,36 @@ describe("AccountService", () => {
             expect(result).toBe(account);
         });
 
-        it("confirms the registration identifier when activating the account", async () => {
+        it("[case] - confirms the registration identifier when activating the account", async () => {
+            // Arrange
             const account = helpers.createAccount({ status: AccountStatus.PENDING });
             const identifier = helpers.createIdentifier({ account, isVerified: false, type: IdentifierType.EMAIL });
             account.identifiers = helpers.collection({ owner: account, items: [identifier] });
             const { service, transaction } = helpers.service({ account });
 
+            // Act
             await service.verify({ input: { account: account.id }, transaction: transaction.entityManager });
 
+            // Assert
             expect(account.status).toBe(AccountStatus.ACTIVE);
             expect(identifier.isVerified).toBe(true);
         });
     });
 
-    describe("deactivate", () => {
-        it("removes every active session before deactivating the account", async () => {
+    describe("[Method] - deactivate", () => {
+        it("[case] - removes every active session before deactivating the account", async () => {
+            // Arrange
             const { account, sessions } = createAccountWithSessions();
             const { service, repositories, transaction } = helpers.service({ account });
             const deactivateSpy = jest.spyOn(account, "deactivate");
 
+            // Act
             await service.deactivate({
                 transaction: transaction.entityManager,
                 input: { account: ACCOUNT_ID },
             });
 
+            // Assert
             expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 options: { populate: ["sessions"] },
@@ -161,17 +176,20 @@ describe("AccountService", () => {
         });
     });
 
-    describe("suspend", () => {
-        it("removes every active session, suspends the account and returns it", async () => {
+    describe("[Method] - suspend", () => {
+        it("[case] - removes every active session, suspends the account and returns it", async () => {
+            // Arrange
             const { account, sessions } = createAccountWithSessions();
             const { service, transaction } = helpers.service({ account });
             const suspendSpy = jest.spyOn(account, "suspend");
 
+            // Act
             const result = await service.suspend({
                 transaction: transaction.entityManager,
                 input: { account: ACCOUNT_ID },
             });
 
+            // Assert
             expect(transaction.remove).toHaveBeenNthCalledWith(1, sessions[0]);
             expect(transaction.remove).toHaveBeenNthCalledWith(2, sessions[1]);
             expect(suspendSpy).toHaveBeenCalledTimes(1);
@@ -180,17 +198,20 @@ describe("AccountService", () => {
         });
     });
 
-    describe("unsuspend", () => {
-        it("finds the account and unsuspends it without touching sessions", async () => {
+    describe("[Method] - unsuspend", () => {
+        it("[case] - finds the account and unsuspends it without touching sessions", async () => {
+            // Arrange
             const account = helpers.createAccount({ id: ACCOUNT_ID, status: AccountStatus.SUSPENDED });
             const { service, repositories, transaction } = helpers.service({ account });
             const unsuspendSpy = jest.spyOn(account, "unsuspend");
 
+            // Act
             const result = await service.unsuspend({
                 transaction: transaction.entityManager,
                 input: { account: ACCOUNT_ID },
             });
 
+            // Assert
             expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 where: { id: ACCOUNT_ID },

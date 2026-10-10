@@ -19,21 +19,29 @@ const factories = [
     /* eslint-enable prettier/prettier */
 ];
 
-describe("Exception contracts", () => {
-    describe("factory methods", () => {
-        it.each(factories)("$name provides the status, kind and default code", ({ create, status, kind, code }) => {
-            const error = create({ messageKey: "test.message" });
+describe("[Exception] - Exception", () => {
+    describe("[Behavior] - factory methods", () => {
+        it.each(factories)(
+            "[case] - $name provides the status, kind and default code",
+            ({ create, status, kind, code }) => {
+                // Arrange
 
-            expect(error).toMatchObject({
-                messageKey: "test.message",
-                message: "test.message",
-                statusCode: status,
-                kind,
-                code,
-            });
-        });
+                // Act
+                const error = create({ messageKey: "test.message" });
 
-        it.each(factories)("$name preserves an explicit code and response context", ({ create, status, kind }) => {
+                // Assert
+                expect(error).toMatchObject({
+                    messageKey: "test.message",
+                    message: "test.message",
+                    statusCode: status,
+                    kind,
+                    code,
+                });
+            },
+        );
+
+        it.each(factories)("[case] - $name preserves an explicit code and response context", ({ create, status, kind }) => {
+            // Arrange
             const props = {
                 code: ErrorCode.CORS_ORIGIN_FORBIDDEN,
                 headers: { "WWW-Authenticate": "Bearer" },
@@ -41,18 +49,22 @@ describe("Exception contracts", () => {
                 messageKey: "test.message",
             };
 
+            // Act
             const error = create(props);
 
+            // Assert
             expect(error).toMatchObject({ ...props, statusCode: status, kind });
         });
     });
 
-    describe("constructor", () => {
-        it("preserves error identity, cause, details and an ISO timestamp", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - preserves error identity, cause, details and an ISO timestamp", () => {
+            // Arrange
             class CustomException extends Exception {}
             const cause = new Error("original failure");
             const details = [{ path: "name", message: "invalid", constraint: "isString" }];
 
+            // Act
             const error = new CustomException({
                 kind: ErrorKind.BAD_REQUEST,
                 code: ErrorCode.BAD_REQUEST,
@@ -62,6 +74,7 @@ describe("Exception contracts", () => {
                 cause,
             });
 
+            // Assert
             expect(error).toBeInstanceOf(Error);
             expect(error).toBeInstanceOf(Exception);
             expect(error.name).toBe("CustomException");
@@ -71,14 +84,17 @@ describe("Exception contracts", () => {
         });
     });
 
-    describe("validationFailed", () => {
-        it("builds a validation response without losing individual field details", () => {
+    describe("[Method] - validationFailed", () => {
+        it("[case] - builds a validation response without losing individual field details", () => {
+            // Arrange
             const details = [
                 { path: "items.0.name", constraint: "isString", message: "validator.IS_STRING", invalidValue: 123 },
             ];
 
+            // Act
             const error = Exception.validationFailed(details);
 
+            // Assert
             expect(error).toMatchObject({
                 statusCode: 422,
                 kind: ErrorKind.UNPROCESSABLE,
@@ -88,89 +104,118 @@ describe("Exception contracts", () => {
             });
         });
     });
-});
 
-describe("Exception.isRetryable", () => {
-    it.each([500, 502, 503, 504, 408])("retries application status %s", (statusCode) => {
-        const error = new Exception({
-            statusCode,
-            kind: ErrorKind.INTERNAL,
-            code: ErrorCode.INTERNAL,
-            messageKey: "test",
-        });
+    describe("[Method] - isRetryable", () => {
+        it.each([500, 502, 503, 504, 408])("[case] - retries application status %s", (statusCode) => {
+            // Arrange
+            const error = new Exception({
+                statusCode,
+                kind: ErrorKind.INTERNAL,
+                code: ErrorCode.INTERNAL,
+                messageKey: "test",
+            });
 
-        const result = Exception.isRetryable(error);
-
-        expect(result).toBe(true);
-    });
-    it.each([400, 401, 403, 404, 405, 409, 422, 429])("does not retry application status %s", (statusCode) => {
-        const error = new Exception({
-            statusCode,
-            kind: ErrorKind.CONFLICT,
-            code: ErrorCode.CONFLICT,
-            messageKey: "test",
-        });
-
-        const result = Exception.isRetryable(error);
-
-        expect(result).toBe(false);
-    });
-    it("retries a deadlock even though its HTTP status is 409", () => {
-        const error = new Exception({
-            statusCode: 409,
-            kind: ErrorKind.DEADLOCK,
-            code: ErrorCode.DEADLOCK,
-            messageKey: "test",
-        });
-
-        const result = Exception.isRetryable(error);
-
-        expect(result).toBe(true);
-    });
-    it.each(["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE", "EAI_AGAIN", "ENETUNREACH"])(
-        "retries network error %s",
-        (code) => {
-            const error = Object.assign(new Error("network failure"), { code });
-
+            // Act
             const result = Exception.isRetryable(error);
 
+            // Assert
             expect(result).toBe(true);
-        },
-    );
-    it.each(["LOADING", "TRYAGAIN", "CLUSTERDOWN", "MASTERDOWN", "READONLY", "BUSY"])(
-        "retries Redis %s replies",
-        (prefix) => {
-            const error = Object.assign(new Error(`${prefix} temporary failure`), { name: "ReplyError" });
+        });
+        it.each([400, 401, 403, 404, 405, 409, 422, 429])("[case] - does not retry application status %s", (statusCode) => {
+            // Arrange
+            const error = new Exception({
+                statusCode,
+                kind: ErrorKind.CONFLICT,
+                code: ErrorCode.CONFLICT,
+                messageKey: "test",
+            });
 
+            // Act
             const result = Exception.isRetryable(error);
 
+            // Assert
+            expect(result).toBe(false);
+        });
+        it("[case] - retries a deadlock even though its HTTP status is 409", () => {
+            // Arrange
+            const error = new Exception({
+                statusCode: 409,
+                kind: ErrorKind.DEADLOCK,
+                code: ErrorCode.DEADLOCK,
+                messageKey: "test",
+            });
+
+            // Act
+            const result = Exception.isRetryable(error);
+
+            // Assert
             expect(result).toBe(true);
-        },
-    );
-    it.each([
-        Object.assign(new Error("retry limit"), { name: "MaxRetriesPerRequestError" }),
-        new Error("Connection is closed."),
-        Object.assign(new Error("LOADING"), { name: "ReplyError" }),
-    ])("retries supported connection failures: %s", (error) => {
-        const result = Exception.isRetryable(error);
+        });
+        it.each(["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE", "EAI_AGAIN", "ENETUNREACH"])(
+            "[case] - retries network error %s",
+            (code) => {
+                // Arrange
+                const error = Object.assign(new Error("network failure"), { code });
 
-        expect(result).toBe(true);
-    });
-    it.each([
-        new Error("ordinary failure"),
-        Object.assign(new Error("network"), { code: "ENOENT" }),
-        Object.assign(new Error("network"), { code: 500 }),
-        new Error("LOADING temporary failure"),
-        Object.assign(new Error("LOADING_OTHER"), { name: "ReplyError" }),
-        Object.assign(new Error("ERR invalid command"), { name: "ReplyError" }),
-        new Error("Connection is closed. additional text"),
-        null,
-        undefined,
-        "ECONNRESET",
-        { code: "ECONNRESET" },
-    ])("does not retry unsupported values: %s", (error) => {
-        const result = Exception.isRetryable(error);
+                // Act
+                const result = Exception.isRetryable(error);
 
-        expect(result).toBe(false);
+                // Assert
+                expect(result).toBe(true);
+            },
+        );
+        it.each(["LOADING", "TRYAGAIN", "CLUSTERDOWN", "MASTERDOWN", "READONLY", "BUSY"])(
+            "[case] - retries Redis %s replies",
+            (prefix) => {
+                // Arrange
+                const error = Object.assign(new Error(`${prefix} temporary failure`), { name: "ReplyError" });
+
+                // Act
+                const result = Exception.isRetryable(error);
+
+                // Assert
+                expect(result).toBe(true);
+            },
+        );
+        it.each([
+            { label: "retry limit", error: Object.assign(new Error("retry limit"), { name: "MaxRetriesPerRequestError" }) },
+            { label: "closed connection", error: new Error("Connection is closed.") },
+            { label: "Redis loading", error: Object.assign(new Error("LOADING"), { name: "ReplyError" }) },
+        ])("[case] - retries supported connection failures: $label", ({ error }) => {
+            // Arrange
+
+            // Act
+            const result = Exception.isRetryable(error);
+
+            // Assert
+            expect(result).toBe(true);
+        });
+        it.each([
+            { label: "ordinary error", error: new Error("ordinary failure") },
+            { label: "unsupported network code", error: Object.assign(new Error("network"), { code: "ENOENT" }) },
+            { label: "numeric network code", error: Object.assign(new Error("network"), { code: 500 }) },
+            { label: "loading text", error: new Error("LOADING temporary failure") },
+            {
+                label: "unknown Redis loading reply",
+                error: Object.assign(new Error("LOADING_OTHER"), { name: "ReplyError" }),
+            },
+            {
+                label: "Redis command error",
+                error: Object.assign(new Error("ERR invalid command"), { name: "ReplyError" }),
+            },
+            { label: "extended closed-connection text", error: new Error("Connection is closed. additional text") },
+            { label: "null", error: null },
+            { label: "undefined", error: undefined },
+            { label: "string code", error: "ECONNRESET" },
+            { label: "plain object", error: { code: "ECONNRESET" } },
+        ])("[case] - does not retry unsupported values: $label", ({ error }) => {
+            // Arrange
+
+            // Act
+            const result = Exception.isRetryable(error);
+
+            // Assert
+            expect(result).toBe(false);
+        });
     });
 });

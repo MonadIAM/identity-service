@@ -21,20 +21,28 @@ function expected(template: MessageTemplate): Topics.Notification.CreateMessage[
     };
 }
 
-describe("SecondFactorMapper", () => {
-    describe("secondFactorEnabledPayload", () => {
-        it("maps a second-factor enabled notification", () => {
-            expect(mapper.secondFactorEnabledPayload({ account: ACCOUNT_ID })).toEqual(
-                expected(MessageTemplate.SECOND_FACTOR_ENABLED),
-            );
+describe("[DataMapper] - SecondFactor", () => {
+    describe("[Method] - secondFactorEnabledPayload", () => {
+        it("[case] - maps a second-factor enabled notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.secondFactorEnabledPayload({ account: ACCOUNT_ID });
+
+            // Assert
+            expect(result).toEqual(expected(MessageTemplate.SECOND_FACTOR_ENABLED));
         });
     });
 
-    describe("secondFactorResetPayload", () => {
-        it("maps a second-factor reset notification", () => {
-            expect(mapper.secondFactorResetPayload({ account: ACCOUNT_ID })).toEqual(
-                expected(MessageTemplate.SECOND_FACTOR_RESET),
-            );
+    describe("[Method] - secondFactorResetPayload", () => {
+        it("[case] - maps a second-factor reset notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.secondFactorResetPayload({ account: ACCOUNT_ID });
+
+            // Assert
+            expect(result).toEqual(expected(MessageTemplate.SECOND_FACTOR_RESET));
         });
     });
 });

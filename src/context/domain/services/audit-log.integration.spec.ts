@@ -27,18 +27,20 @@ async function ageAuditLogs(
     });
 }
 
-describe("AuditLogService integration", () => {
+describe("[DomainService] - AuditLog", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("purgeExpired", () => {
-        it("purges only expired audit logs by batch size", async () => {
+    describe("[Method] - purgeExpired", () => {
+        it("[case] - purges only expired audit logs by batch size", async () => {
+            // Arrange
             const expired = [await suite.fixtures().createAuditLog(), await suite.fixtures().createAuditLog()];
             const fresh = await suite.fixtures().createAuditLog();
             await ageAuditLogs(suite, expired, new Date("2025-01-01T00:00:00.000Z"));
 
+            // Act
             const purged = await suite.transaction((transaction) =>
                 suite.repository().auditLogService.purgeExpired({
                     expirationDate: new Date("2026-01-01T00:00:00.000Z"),
@@ -46,12 +48,13 @@ describe("AuditLogService integration", () => {
                     transaction,
                 }),
             );
+            const result = await countAuditLogs(suite);
+            const result1 = await suite.transaction((transaction) => transaction.findOneOrFail(AuditLog, { id: fresh.id }));
 
+            // Assert
             expect(purged).toHaveLength(2);
-            await expect(countAuditLogs(suite)).resolves.toBe(1);
-            await expect(
-                suite.transaction((transaction) => transaction.findOneOrFail(AuditLog, { id: fresh.id })),
-            ).resolves.toMatchObject({ id: fresh.id });
+            expect(result).toBe(1);
+            expect(result1).toMatchObject({ id: fresh.id });
         });
     });
 });

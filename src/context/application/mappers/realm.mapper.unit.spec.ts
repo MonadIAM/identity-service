@@ -10,12 +10,14 @@ const REALM = "00000000-0000-4000-8000-000000000002";
 const mapper = new RealmMapper();
 const helpers = new EntityFactoryRegistry();
 
-describe("RealmMapper", () => {
-    describe("interfaceClientPayload", () => {
-        it("keeps manually revoked interface clients blocked when the realm is restored", () => {
+describe("[DataMapper] - Realm", () => {
+    describe("[Method] - interfaceClientPayload", () => {
+        it("[case] - keeps manually revoked interface clients blocked when the realm is restored", () => {
+            // Arrange
             const manual = helpers.createInterfaceClient({ realm: REALM, isRevoked: true });
             const active = helpers.createInterfaceClient({ realm: REALM });
 
+            // Act
             const payloads = mapper.interfaceClientPayload({
                 interfaceClients: [manual, active],
                 serviceClients: [],
@@ -23,6 +25,7 @@ describe("RealmMapper", () => {
                 actor: ACTOR,
             });
 
+            // Assert
             expect(payloads).toEqual([
                 { realm: REALM, actor: ACTOR, input: { id: manual.id, isRevoked: true } },
                 { realm: REALM, actor: ACTOR, input: { id: active.id, isRevoked: false } },
@@ -30,11 +33,13 @@ describe("RealmMapper", () => {
         });
     });
 
-    describe("serviceClientPayload", () => {
-        it("does not publish service-client restoration for manually revoked clients", () => {
+    describe("[Method] - serviceClientPayload", () => {
+        it("[case] - does not publish service-client restoration for manually revoked clients", () => {
+            // Arrange
             const manual = helpers.createServiceClient({ realm: REALM, isRevoked: true });
             const active = helpers.createServiceClient({ realm: REALM });
 
+            // Act
             const payloads = mapper.serviceClientPayload({
                 interfaceClients: [],
                 serviceClients: [manual, active],
@@ -42,13 +47,16 @@ describe("RealmMapper", () => {
                 actor: ACTOR,
             });
 
+            // Assert
             expect(payloads).toEqual([{ realm: REALM, actor: ACTOR, input: { id: active.id, code: active.code } }]);
         });
 
-        it("includes both active and manually revoked service clients for revocation or purge", () => {
+        it("[case] - includes both active and manually revoked service clients for revocation or purge", () => {
+            // Arrange
             const manual = helpers.createServiceClient({ realm: REALM, isRevoked: true });
             const active = helpers.createServiceClient({ realm: REALM });
 
+            // Act
             const payloads = mapper.serviceClientPayload({
                 interfaceClients: [],
                 serviceClients: [manual, active],
@@ -56,6 +64,7 @@ describe("RealmMapper", () => {
                 actor: ACTOR,
             });
 
+            // Assert
             expect(payloads).toEqual([
                 { realm: REALM, actor: ACTOR, input: { id: manual.id, code: manual.code } },
                 { realm: REALM, actor: ACTOR, input: { id: active.id, code: active.code } },
@@ -63,13 +72,16 @@ describe("RealmMapper", () => {
         });
     });
 
-    describe("interfaceClientPayload / serviceClientPayload", () => {
-        it("emits no client events when no rows were affected", () => {
+    describe("[Behavior] - client payloads", () => {
+        it("[case] - emits no client events when no rows were affected", () => {
+            // Arrange
             const props = { interfaceClients: [], serviceClients: [], isRevoked: true, actor: ACTOR };
 
+            // Act
             const interfaces = mapper.interfaceClientPayload(props);
             const services = mapper.serviceClientPayload(props);
 
+            // Assert
             expect(interfaces).toEqual([]);
             expect(services).toEqual([]);
         });

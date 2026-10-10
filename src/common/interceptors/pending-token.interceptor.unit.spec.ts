@@ -33,14 +33,17 @@ function setup(options: { skipClass?: boolean; skipHandler?: boolean } = {}): {
     return { interceptor, context, setCookie, run };
 }
 
-describe("PendingTokenInterceptor", () => {
-    describe("intercept", () => {
-        it("moves the pending token into a protected cookie scoped to the configured 2FA route", async () => {
+describe("[Interceptor] - PendingToken", () => {
+    describe("[Method] - intercept", () => {
+        it("[case] - moves the pending token into a protected cookie scoped to the configured 2FA route", async () => {
+            // Arrange
             const { run, setCookie } = setup();
             const data = Object.freeze({ pendingToken: "secret-token", requires2FA: true, methods: ["totp"] });
 
+            // Act
             const result = await run(data);
 
+            // Assert
             expect(result).toEqual({ requires2FA: true, methods: ["totp"] });
             expect(result).not.toHaveProperty("pendingToken");
             expect(data.pendingToken).toBe("secret-token");
@@ -54,69 +57,93 @@ describe("PendingTokenInterceptor", () => {
             });
         });
 
-        it.each([undefined, null, {}, { pendingToken: undefined }, { pendingToken: null }, { pendingToken: 123 }])(
-            "preserves a response without a string token: %j",
-            async (data) => {
-                const { run, setCookie } = setup();
-
-                const result = await run(data);
-
-                expect(result).toBe(data);
-                expect(setCookie).not.toHaveBeenCalled();
-            },
-        );
-
-        it("handles an explicitly empty string according to the string-token contract", async () => {
+        it.each([
+            { label: "undefined", data: undefined },
+            { label: "null", data: null },
+            { label: "absent token", data: {} },
+            { label: "undefined token", data: { pendingToken: undefined } },
+            { label: "null token", data: { pendingToken: null } },
+            { label: "numeric token", data: { pendingToken: 123 } },
+        ])("[case] - preserves a response without a string token: $label", async ({ data }) => {
+            // Arrange
             const { run, setCookie } = setup();
 
+            // Act
+            const result = await run(data);
+
+            // Assert
+            expect(result).toBe(data);
+            expect(setCookie).not.toHaveBeenCalled();
+        });
+
+        it("[case] - handles an explicitly empty string according to the string-token contract", async () => {
+            // Arrange
+            const { run, setCookie } = setup();
+
+            // Act
             const result = await run({ pendingToken: "" });
 
+            // Assert
             expect(result).toEqual({});
             expect(setCookie).toHaveBeenCalledWith("pending_token", "", expect.any(Object));
         });
 
-        it.each([{ skipClass: true }, { skipHandler: true }])(
-            "preserves the original stream when skipped: %j",
-            (options) => {
-                const { interceptor, context, setCookie } = setup(options);
-                const stream = of({ pendingToken: "token" });
-                const handle = jest.fn(() => stream);
+        it.each([
+            { label: "controller", options: { skipClass: true } },
+            { label: "handler", options: { skipHandler: true } },
+        ])("[case] - preserves the original stream when skipped: $label", ({ options }) => {
+            // Arrange
+            const { interceptor, context, setCookie } = setup(options);
+            const stream = of({ pendingToken: "token" });
+            const handle = jest.fn(() => stream);
 
-                const result = interceptor.intercept(context, { handle });
+            // Act
+            const result = interceptor.intercept(context, { handle });
 
-                expect(result).toBe(stream);
-                expect(handle).toHaveBeenCalledTimes(1);
-                expect(setCookie).not.toHaveBeenCalled();
-            },
-        );
+            // Assert
+            expect(result).toBe(stream);
+            expect(handle).toHaveBeenCalledTimes(1);
+            expect(setCookie).not.toHaveBeenCalled();
+        });
 
-        it("allows method metadata to override a class-level skip", async () => {
+        it("[case] - allows method metadata to override a class-level skip", async () => {
+            // Arrange
             const { run, setCookie } = setup({ skipClass: true, skipHandler: false });
 
+            // Act
             const result = await run({ pendingToken: "token", message: "Continue" });
 
+            // Assert
             expect(result).toEqual({ message: "Continue" });
             expect(setCookie).toHaveBeenCalledTimes(1);
         });
 
-        it("propagates handler errors without setting a cookie", async () => {
+        it("[case] - propagates handler errors without setting a cookie", async () => {
+            // Arrange
             const { interceptor, context, setCookie } = setup();
             const error = new Error("handler failed");
 
-            await expect(
-                lastValueFrom(interceptor.intercept(context, { handle: () => throwError(() => error) })),
-            ).rejects.toBe(error);
+            // Act
+            const result = lastValueFrom(interceptor.intercept(context, { handle: () => throwError(() => error) }));
+
+            // Assert
+            await expect(result).rejects.toBe(error);
             expect(setCookie).not.toHaveBeenCalled();
         });
 
-        it("propagates cookie-writing failures through the observable", async () => {
+        it("[case] - propagates cookie-writing failures through the observable", async () => {
+            // Arrange
             const { run, setCookie } = setup();
             const error = new Error("reply already sent");
             setCookie.mockImplementationOnce(() => {
                 throw error;
             });
 
-            await expect(run({ pendingToken: "token" })).rejects.toBe(error);
+            // Act
+            const result = run({ pendingToken: "token" });
+
+            // Assert
+            await expect(result).rejects.toBe(error);
         });
     });
 });

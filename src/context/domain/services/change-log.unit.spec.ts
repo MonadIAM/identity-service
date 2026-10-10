@@ -6,24 +6,27 @@ const EXPIRATION_DATE = new Date("2026-01-01T00:00:00.000Z");
 
 const helpers = new ChangeLogUnitHelpers();
 
-describe("ChangeLogService", () => {
+describe("[DomainService] - ChangeLog", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("purgeExpired", () => {
-        it("finds entries older than the expiration date within the batch and removes them", async () => {
+    describe("[Method] - purgeExpired", () => {
+        it("[case] - finds entries older than the expiration date within the batch and removes them", async () => {
+            // Arrange
             const first = helpers.createChangeLog();
             const second = helpers.createChangeLog({ entityType: "SESSION" });
             const { service, repositories, transaction } = helpers.service();
             repositories.changeLogs.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service.purgeExpired({
                 transaction: transaction.entityManager,
                 expirationDate: EXPIRATION_DATE,
                 batchSize: 50,
             });
 
+            // Assert
             expect(repositories.changeLogs.find).toHaveBeenCalledWith({
                 where: { createdAt: { $lt: EXPIRATION_DATE } },
                 transaction: transaction.entityManager,

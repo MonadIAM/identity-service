@@ -17,8 +17,8 @@ import {
     KafkaTopic,
 } from "~context/enums";
 
-import { OAUTH_COMMANDS } from "./tokens";
 import { AccountMapper } from "../mappers";
+import { OAUTH_COMMANDS } from "./tokens";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract {

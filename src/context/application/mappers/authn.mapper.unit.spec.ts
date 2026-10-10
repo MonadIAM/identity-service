@@ -8,10 +8,16 @@ const ACCOUNT_ID = "00000000-0000-4000-8000-200000000001";
 
 const mapper = new AuthnMapper();
 
-describe("AuthnMapper", () => {
-    describe("notificationPayload", () => {
-        it("maps a login OTP notification", () => {
-            expect(mapper.notificationPayload({ account: ACCOUNT_ID, otp: "654321" })).toEqual({
+describe("[DataMapper] - Authn", () => {
+    describe("[Method] - notificationPayload", () => {
+        it("[case] - maps a login OTP notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.notificationPayload({ account: ACCOUNT_ID, otp: "654321" });
+
+            // Assert
+            expect(result).toEqual({
                 input: {
                     sourceService: PlatformService.IDENTITY_SERVICE,
                     category: NotificationCategory.SECURITY,

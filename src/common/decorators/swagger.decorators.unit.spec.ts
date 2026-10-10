@@ -42,7 +42,7 @@ class OAuthController {
 @Module({ controllers: [DocumentedController, PlainController, OAuthController] })
 class SwaggerTestModule {}
 
-describe("Swagger.Exceptions OpenAPI contract", () => {
+describe("[Decorator] - Swagger", () => {
     let app: NestFastifyApplication;
     let document: OpenAPIObject;
 
@@ -59,12 +59,16 @@ describe("Swagger.Exceptions OpenAPI contract", () => {
         await app?.close();
     });
 
-    describe("Exceptions", () => {
+    describe("[Function] - Exceptions", () => {
         it.each([HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN, HttpStatus.CONFLICT] as const)(
-            "documents status %s with a resolvable error schema and its example",
+            "[case] - documents status %s with a resolvable error schema and its example",
             (status) => {
+                // Arrange
+
+                // Act
                 const response = document.paths["/documented/specific"].get!.responses[status];
 
+                // Assert
                 expect(response).toMatchObject({
                     content: {
                         "application/json": {
@@ -79,35 +83,51 @@ describe("Swagger.Exceptions OpenAPI contract", () => {
             },
         );
 
-        it("does not leak handler responses to sibling routes or another controller", () => {
-            expect(Object.keys(document.paths["/documented/specific"].get!.responses).sort()).toEqual([
-                "200",
-                "401",
-                "403",
-                "409",
-            ]);
-            expect(Object.keys(document.paths["/documented/inherited"].get!.responses).sort()).toEqual(["200", "401"]);
-            expect(Object.keys(document.paths["/plain"].get!.responses)).toEqual(["200"]);
+        it("[case] - does not leak handler responses to sibling routes or another controller", () => {
+            // Arrange
+
+            // Act
+            const specific = Object.keys(document.paths["/documented/specific"].get!.responses).sort();
+            const inherited = Object.keys(document.paths["/documented/inherited"].get!.responses).sort();
+            const plain = Object.keys(document.paths["/plain"].get!.responses);
+
+            // Assert
+            expect(specific).toEqual(["200", "401", "403", "409"]);
+            expect(inherited).toEqual(["200", "401"]);
+            expect(plain).toEqual(["200"]);
         });
 
-        it("accepts an empty status list without introducing extra error responses", () => {
-            expect(Object.keys(document.paths["/documented/empty"].get!.responses).sort()).toEqual(["200", "401"]);
+        it("[case] - accepts an empty status list without introducing extra error responses", () => {
+            // Arrange
+
+            // Act
+            const responses = Object.keys(document.paths["/documented/empty"].get!.responses).sort();
+
+            // Assert
+            expect(responses).toEqual(["200", "401"]);
         });
     });
 
-    describe("OAuthExceptions", () => {
-        it.each([HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED] as const)("documents OAuth status %s", (status) => {
-            const response = document.paths["/oauth"].get!.responses[status];
+    describe("[Function] - OAuthExceptions", () => {
+        it.each([HttpStatus.BAD_REQUEST, HttpStatus.UNAUTHORIZED] as const)(
+            "[case] - documents OAuth status %s",
+            (status) => {
+                // Arrange
 
-            expect(response).toMatchObject({
-                content: {
-                    "application/json": {
-                        schema: { $ref: "#/components/schemas/OAuthErrorResponseBody" },
-                        example: OAUTH_EXCEPTION_EXAMPLES[status],
+                // Act
+                const response = document.paths["/oauth"].get!.responses[status];
+
+                // Assert
+                expect(response).toMatchObject({
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/OAuthErrorResponseBody" },
+                            example: OAUTH_EXCEPTION_EXAMPLES[status],
+                        },
                     },
-                },
-            });
-            expect(document.components?.schemas?.OAuthErrorResponseBody).toBeDefined();
-        });
+                });
+                expect(document.components?.schemas?.OAuthErrorResponseBody).toBeDefined();
+            },
+        );
     });
 });

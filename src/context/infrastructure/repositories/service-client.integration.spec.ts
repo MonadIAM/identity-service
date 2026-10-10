@@ -12,14 +12,15 @@ function createRepositoryConfig(): ConfigService {
     });
 }
 
-describe("ServiceClientRepository", () => {
+describe("[Repository] - ServiceClient", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new ServiceClientRepository(readManager, createRepositoryConfig()),
         fixture: (entityManager) => new ServiceClientFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted service client through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted service client through the schema", async () => {
+            // Arrange
             const realm = "00000000-0000-4000-8000-000000000001";
             const client = await suite.fixtures().createServiceClient({
                 description: "Mapping service client description",
@@ -33,8 +34,10 @@ describe("ServiceClientRepository", () => {
                 realm,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: client.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 description: "Mapping service client description",
                 allowedAddresses: ["10.0.0.1", "10.0.0.2"],
@@ -52,24 +55,21 @@ describe("ServiceClientRepository", () => {
         });
     });
 
-    describe("wouldExceedRealmLimit", () => {
-        it("checks service client limit per realm", async () => {
+    describe("[Method] - wouldExceedRealmLimit", () => {
+        it("[case] - checks service client limit per realm", async () => {
+            // Arrange
             const { fullRealm, availableRealm } = await suite.fixtures().limitScenario();
 
-            await suite.transaction(async (transaction) => {
-                await expect(
-                    suite.repository().wouldExceedRealmLimit({
-                        transaction,
-                        realm: fullRealm,
-                    }),
-                ).resolves.toBe(true);
-                await expect(
-                    suite.repository().wouldExceedRealmLimit({
-                        transaction,
-                        realm: availableRealm,
-                    }),
-                ).resolves.toBe(false);
+            // Act
+            const [full, available] = await suite.transaction(async (transaction) => {
+                const full = await suite.repository().wouldExceedRealmLimit({ transaction, realm: fullRealm });
+                const available = await suite.repository().wouldExceedRealmLimit({ transaction, realm: availableRealm });
+                return [full, available];
             });
+
+            // Assert
+            expect(full).toBe(true);
+            expect(available).toBe(false);
         });
     });
 });

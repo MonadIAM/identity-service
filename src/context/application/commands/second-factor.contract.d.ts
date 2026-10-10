@@ -1,76 +1,74 @@
-declare namespace Commands {
-    namespace SecondFactor {
-        interface Contract extends ControllerContract {}
+declare namespace Commands.SecondFactor {
+    interface Contract extends ControllerContract {}
 
-        interface ControllerContract {
-            create: Create.Signature;
-            verify: Verify.Signature;
-            reset: Reset.Signature;
-            purge: Purge.Signature;
-        }
+    interface ControllerContract {
+        create: Create.Signature;
+        verify: Verify.Signature;
+        reset: Reset.Signature;
+        purge: Purge.Signature;
+    }
 
-        namespace Create {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    name: string;
-                };
+    namespace Create {
+        type Props = {
+            context: Extract.Meta;
+            actor: string;
+            input: {
+                name: string;
             };
+        };
 
-            type Result = Promise<{
-                uri: string;
-                id: string;
-            }>;
+        type Result = Promise<{
+            uri: string;
+            id: string;
+        }>;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
+    }
 
-        namespace Verify {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    factor: string;
-                    code: string;
-                };
+    namespace Verify {
+        type Props = {
+            context: Extract.Meta;
+            actor: string;
+            input: {
+                factor: string;
+                code: string;
             };
+        };
 
-            type Result = Promise<
-                MessageResult & {
-                    code?: string;
-                }
-            >;
+        type Result = Promise<
+            MessageResult & {
+                code?: string;
+            }
+        >;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
+    }
 
-        namespace Reset {
-            type Props = {
-                context: Extract.Meta;
-                input: {
-                    identifier: string;
-                    code: string;
-                };
+    namespace Reset {
+        type Props = {
+            context: Extract.Meta;
+            input: {
+                identifier: string;
+                code: string;
             };
+        };
 
-            type Result = Promise<MessageResult>;
+        type Result = Promise<MessageResult>;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
+    }
 
-        namespace Purge {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-                input: {
-                    factor: string;
-                };
+    namespace Purge {
+        type Props = {
+            context: Extract.Meta;
+            actor: string;
+            input: {
+                factor: string;
             };
+        };
 
-            type Result = Promise<MessageResult>;
+        type Result = Promise<MessageResult>;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
     }
 }

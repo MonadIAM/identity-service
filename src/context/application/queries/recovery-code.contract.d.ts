@@ -1,17 +1,15 @@
-declare namespace Queries {
-    namespace RecoveryCode {
-        interface Contract extends ControllerContract {}
+declare namespace Queries.RecoveryCode {
+    interface Contract extends ControllerContract {}
 
-        interface ControllerContract {
-            getStatus: GetStatus.Signature;
-        }
+    interface ControllerContract {
+        getStatus: GetStatus.Signature;
+    }
 
-        namespace GetStatus {
-            type Result = Repositories.RecoveryCode.GetStatus.Result;
+    namespace GetStatus {
+        type Result = Repositories.RecoveryCode.GetStatus.Result;
 
-            type Props = Repositories.RecoveryCode.GetStatus.Props;
+        type Props = Repositories.RecoveryCode.GetStatus.Props;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
     }
 }

@@ -16,14 +16,15 @@ import {
 
 import { AccountRepository } from "./account.repository";
 
-describe("AccountRepository", () => {
+describe("[Repository] - Account", () => {
     const suite = postgresSuite({
         repository: ({ readManager, writeManager }) => new AccountRepository(readManager, writeManager),
         fixture: (entityManager) => new AccountFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted account through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted account through the schema", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount({
                 lastActiveAt: new Date("2026-02-01T00:00:00.000Z"),
                 updatedAt: new Date("2026-03-01T00:00:00.000Z"),
@@ -33,7 +34,11 @@ describe("AccountRepository", () => {
                 is2FAEnforced: true,
             });
 
-            await expect(suite.repository().findUniqueOrThrow({ where: { id: account.id } })).resolves.toMatchObject({
+            // Act
+            const result = await suite.repository().findUniqueOrThrow({ where: { id: account.id } });
+
+            // Assert
+            expect(result).toMatchObject({
                 lastActiveAt: new Date("2026-02-01T00:00:00.000Z"),
                 updatedAt: new Date("2026-03-01T00:00:00.000Z"),
                 createdAt: new Date("2026-01-01T00:00:00.000Z"),
@@ -46,7 +51,7 @@ describe("AccountRepository", () => {
         });
     });
 
-    describe("getLookupList", () => {
+    describe("[Method] - getLookupList", () => {
         it.each([
             {
                 match: "identifier",
@@ -63,47 +68,61 @@ describe("AccountRepository", () => {
                 identifier: null,
             },
         ] as const)(
-            "returns account lookup rows matched by $match trigram",
+            "[case] - returns account lookup rows matched by $match trigram",
             async ({ fixture, term, identifier, displayName }) => {
+                // Arrange
                 const { matched } = await suite.fixtures()[fixture]();
 
+                // Act
                 const [rows, total] = await suite.repository().getLookupList({
                     term,
                     pagination: { currentPage: 1, elementsPerPage: 10 },
                 });
 
+                // Assert
                 expect(total).toBe(1);
                 expect(rows).toEqual([{ identifier, displayName, status: matched.status, id: matched.id }]);
             },
         );
 
-        it("uses trigram lookup with stable display name tie-breakers", async () => {
+        it("[case] - uses trigram lookup with stable display name tie-breakers", async () => {
+            // Arrange
             const scenario = await suite.fixtures().lookupSearchScenario();
 
+            // Act
             const [rows] = await suite.repository().getLookupList({
                 pagination: { currentPage: 1, elementsPerPage: 10 },
                 term: scenario.term,
             });
+            const result = rows.map(({ id }) => id);
 
-            expect(rows.map(({ id }) => id)).toEqual(scenario.expectedOrderedIDs);
+            // Assert
+            expect(result).toEqual(scenario.expectedOrderedIDs);
         });
 
-        it("returns account lookup page ordered by display name when term is empty", async () => {
+        it("[case] - returns account lookup page ordered by display name when term is empty", async () => {
+            // Arrange
             const { alpha, bravo, charlie } = await suite.fixtures().orderedLookupScenario();
 
+            // Act
             const [rows, total] = await suite.repository().getLookupList({
                 term: "",
                 pagination: { currentPage: 1, elementsPerPage: 2 },
             });
+            const result = rows.map(({ id }) => id);
+            const result1 = rows.map(({ id }) => id);
 
+            // Assert
             expect(total).toBe(3);
-            expect(rows.map(({ id }) => id)).toEqual([alpha.id, bravo.id]);
-            expect(rows.map(({ id }) => id)).not.toContain(charlie.id);
+            expect(result).toEqual([alpha.id, bravo.id]);
+            expect(result1).not.toContain(charlie.id);
         });
 
-        it("returns the second account lookup page without gaps or repeats", async () => {
+        it("[case] - returns the second account lookup page without gaps or repeats", async () => {
+            // Arrange
             const { alpha, bravo, charlie } = await suite.fixtures().orderedLookupScenario();
 
+            // Act
             const [firstPage, total] = await suite.repository().getLookupList({
                 pagination: { currentPage: 1, elementsPerPage: 2 },
                 term: "",
@@ -112,72 +131,98 @@ describe("AccountRepository", () => {
                 pagination: { currentPage: 2, elementsPerPage: 2 },
                 term: "",
             });
+            const result = [...firstPage, ...secondPage].map(({ id }) => id);
 
+            // Assert
             expect(total).toBe(3);
-            expect([...firstPage, ...secondPage].map(({ id }) => id)).toEqual([alpha.id, bravo.id, charlie.id]);
+            expect(result).toEqual([alpha.id, bravo.id, charlie.id]);
         });
 
-        it("keeps accounts without a profile in the lookup output", async () => {
+        it("[case] - keeps accounts without a profile in the lookup output", async () => {
+            // Arrange
             const { anonymous, named } = await suite.fixtures().profilelessLookupScenario();
 
+            // Act
             const [rows, total] = await suite.repository().getLookupList({
                 pagination: { currentPage: 1, elementsPerPage: 10 },
                 term: "",
             });
+            const result = rows.map(({ id }) => id);
+            const result1 = rows.map(({ displayName }) => displayName);
 
+            // Assert
             expect(total).toBe(2);
-            expect(rows.map(({ id }) => id)).toEqual([named.id, anonymous.id]);
-            expect(rows.map(({ displayName }) => displayName)).toEqual(["Named Account", null]);
+            expect(result).toEqual([named.id, anonymous.id]);
+            expect(result1).toEqual(["Named Account", null]);
         });
     });
 
-    describe("findExpiredPending", () => {
-        it("finds expired pending accounts by creation time", async () => {
+    describe("[Method] - findExpiredPending", () => {
+        it("[case] - finds expired pending accounts by creation time", async () => {
+            // Arrange
             const { oldPending, recentPending } = await suite.fixtures().expirationScenario();
 
+            // Act
             const accounts = await suite.repository().findExpiredPending({
                 expirationDate: new Date("2025-06-01T00:00:00.000Z"),
                 batchSize: 10,
             });
+            const result = accounts.map(({ id }) => id);
+            const result1 = accounts.map(({ id }) => id);
 
-            expect(accounts.map(({ id }) => id)).toContain(oldPending.id);
-            expect(accounts.map(({ id }) => id)).not.toContain(recentPending.id);
+            // Assert
+            expect(result).toContain(oldPending.id);
+            expect(result1).not.toContain(recentPending.id);
         });
     });
 
-    describe("findExpiredInactive", () => {
-        it("finds expired inactive accounts by activity watermark", async () => {
+    describe("[Method] - findExpiredInactive", () => {
+        it("[case] - finds expired inactive accounts by activity watermark", async () => {
+            // Arrange
             const { oldActive, recentActive, touchedActive, updatedActive } = await suite.fixtures().expirationScenario();
 
+            // Act
             const accounts = await suite.repository().findExpiredInactive({
                 expirationDate: new Date("2025-06-01T00:00:00.000Z"),
                 batchSize: 1,
             });
+            const result = accounts.map(({ id }) => id);
+            const result1 = accounts.map(({ id }) => id);
+            const result2 = accounts.map(({ id }) => id);
+            const result3 = accounts.map(({ id }) => id);
 
+            // Assert
             expect(accounts).toHaveLength(1);
-            expect(accounts.map(({ id }) => id)).toContain(oldActive.id);
-            expect(accounts.map(({ id }) => id)).not.toContain(recentActive.id);
-            expect(accounts.map(({ id }) => id)).not.toContain(touchedActive.id);
-            expect(accounts.map(({ id }) => id)).not.toContain(updatedActive.id);
+            expect(result).toContain(oldActive.id);
+            expect(result1).not.toContain(recentActive.id);
+            expect(result2).not.toContain(touchedActive.id);
+            expect(result3).not.toContain(updatedActive.id);
         });
 
-        it("prefers the activity watermark over update and creation timestamps", async () => {
+        it("[case] - prefers the activity watermark over update and creation timestamps", async () => {
+            // Arrange
             const { activeByActivity, staleByActivity } = await suite.fixtures().activityWatermarkScenario();
 
+            // Act
             const accounts = await suite.repository().findExpiredInactive({
                 expirationDate: new Date("2025-06-01T00:00:00.000Z"),
                 batchSize: 10,
             });
+            const result = accounts.map(({ id }) => id);
+            const result1 = accounts.map(({ id }) => id);
 
-            expect(accounts.map(({ id }) => id)).toEqual([staleByActivity.id]);
-            expect(accounts.map(({ id }) => id)).not.toContain(activeByActivity.id);
+            // Assert
+            expect(result).toEqual([staleByActivity.id]);
+            expect(result1).not.toContain(activeByActivity.id);
         });
     });
 
-    describe("findExpiredPending / findExpiredInactive", () => {
-        it("keeps the expiration comparison strict at the boundary", async () => {
+    describe("[Behavior] - account expiration", () => {
+        it("[case] - keeps the expiration comparison strict at the boundary", async () => {
+            // Arrange
             const scenario = await suite.fixtures().expirationBoundaryScenario();
 
+            // Act
             const pending = await suite.repository().findExpiredPending({
                 expirationDate: scenario.expirationDate,
                 batchSize: 10,
@@ -186,29 +231,47 @@ describe("AccountRepository", () => {
                 expirationDate: scenario.expirationDate,
                 batchSize: 10,
             });
+            const result = pending.map(({ id }) => id);
+            const result1 = inactive.map(({ id }) => id);
 
-            expect(pending.map(({ id }) => id)).toEqual([scenario.expiredPending.id]);
-            expect(inactive.map(({ id }) => id)).toEqual([scenario.expiredActive.id]);
+            // Assert
+            expect(result).toEqual([scenario.expiredPending.id]);
+            expect(result1).toEqual([scenario.expiredActive.id]);
         });
     });
 
-    describe("deletion cascades", () => {
-        it("cascades account deletion to its own credentials only", async () => {
+    describe("[Behavior] - deletion cascades", () => {
+        it("[case] - cascades account deletion to its own credentials only", async () => {
+            // Arrange
             const { kept, removed } = await suite.fixtures().cascadeScenario();
 
-            await suite.transaction(async (transaction) => {
+            // Act
+            const counts = await suite.transaction(async (transaction) => {
                 await transaction.nativeDelete(Account, { id: removed.id });
+                return {
+                    profile: await transaction.count(Profile, { account: removed.id }),
+                    identifier: await transaction.count(Identifier, { account: removed.id }),
+                    password: await transaction.count(Password, { account: removed.id }),
+                    session: await transaction.count(Session, { account: removed.id }),
+                    recoveryCode: await transaction.count(RecoveryCode, { account: removed.id }),
+                    secondFactor: await transaction.count(SecondFactor, { account: removed.id }),
+                    masterCode: await transaction.count(MasterCode, { account: removed.id }),
+                    keptIdentifier: await transaction.count(Identifier, { account: kept.id }),
+                    keptSession: await transaction.count(Session, { account: kept.id }),
+                };
+            });
 
-                await expect(transaction.count(Profile, { account: removed.id })).resolves.toBe(0);
-                await expect(transaction.count(Identifier, { account: removed.id })).resolves.toBe(0);
-                await expect(transaction.count(Password, { account: removed.id })).resolves.toBe(0);
-                await expect(transaction.count(Session, { account: removed.id })).resolves.toBe(0);
-                await expect(transaction.count(RecoveryCode, { account: removed.id })).resolves.toBe(0);
-                await expect(transaction.count(SecondFactor, { account: removed.id })).resolves.toBe(0);
-                await expect(transaction.count(MasterCode, { account: removed.id })).resolves.toBe(0);
-
-                await expect(transaction.count(Identifier, { account: kept.id })).resolves.toBe(1);
-                await expect(transaction.count(Session, { account: kept.id })).resolves.toBe(1);
+            // Assert
+            expect(counts).toEqual({
+                profile: 0,
+                identifier: 0,
+                password: 0,
+                session: 0,
+                recoveryCode: 0,
+                secondFactor: 0,
+                masterCode: 0,
+                keptIdentifier: 1,
+                keptSession: 1,
             });
         });
     });

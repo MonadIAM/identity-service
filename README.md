@@ -1,7 +1,6 @@
 # @monadiam/identity-service
 
-Identity Service implements OAuth 2.0 + OIDC authorization, sessions, refresh rotation,
-federated login, second-factor and invitations flows, audit log, and change log.
+IAM | Identity & AuthN: account lifecycle, OAuth 2.0/OIDC, federated login, sessions and token rotation, 2FA, account recovery and reauthentication.
 
 ----
 

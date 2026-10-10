@@ -17,8 +17,8 @@ declare global {
 
                 account: Entities.Account;
 
-                rewrap(secret: string): void;
                 acceptTOTP(step: number): boolean;
+                rewrap(secret: string): void;
                 confirm(): void;
             }
 

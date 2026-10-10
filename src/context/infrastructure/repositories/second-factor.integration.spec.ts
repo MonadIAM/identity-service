@@ -6,14 +6,15 @@ import { SecondFactorType } from "~context/enums";
 
 import { SecondFactorRepository } from "./second-factor.repository";
 
-describe("SecondFactorRepository", () => {
+describe("[Repository] - SecondFactor", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new SecondFactorRepository(readManager),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted second factor through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted second factor through the schema", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const secondFactor = await suite.fixtures().createSecondFactor({
                 type: SecondFactorType.TOTP,
@@ -24,8 +25,10 @@ describe("SecondFactorRepository", () => {
                 account,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: secondFactor.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 confirmedAt: secondFactor.confirmedAt,
                 createdAt: secondFactor.createdAt,

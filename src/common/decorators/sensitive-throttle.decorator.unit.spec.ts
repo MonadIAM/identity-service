@@ -13,37 +13,58 @@ const cases = [
     { name: "PasswordAuth", decorate: SensitiveThrottle.PasswordAuth(), limit: 10, ttl: 900000 },
 ];
 
-describe("SensitiveThrottle metadata", () => {
-    describe("controller and handler limits", () => {
-        it.each(cases)("$name configures both throttlers on a controller", ({ decorate, limit, ttl }) => {
+describe("[Decorator] - SensitiveThrottle", () => {
+    describe("[Behavior] - controller and handler limits", () => {
+        it.each(cases)("[case] - $name configures both throttlers on a controller", ({ decorate, limit, ttl }) => {
+            // Arrange
             @decorate
             class Controller {}
             class Unmarked {}
 
-            for (const name of ["default", "account"]) {
-                expect(reflector.get(THROTTLER_LIMIT + name, Controller)).toBe(limit);
-                expect(reflector.get(THROTTLER_TTL + name, Controller)).toBe(ttl);
-                expect(reflector.get(THROTTLER_LIMIT + name, Unmarked)).toBeUndefined();
-                expect(reflector.get(THROTTLER_TTL + name, Unmarked)).toBeUndefined();
+            // Act
+            const limits = ["default", "account"].map((name) => ({
+                limit: reflector.get(THROTTLER_LIMIT + name, Controller),
+                ttl: reflector.get(THROTTLER_TTL + name, Controller),
+                unmarkedLimit: reflector.get(THROTTLER_LIMIT + name, Unmarked),
+                unmarkedTtl: reflector.get(THROTTLER_TTL + name, Unmarked),
+            }));
+
+            // Assert
+            for (const actual of limits) {
+                expect(actual.limit).toBe(limit);
+                expect(actual.ttl).toBe(ttl);
+                expect(actual.unmarkedLimit).toBeUndefined();
+                expect(actual.unmarkedTtl).toBeUndefined();
             }
         });
 
-        it.each(cases)("$name configures only the decorated method", ({ decorate, limit, ttl }) => {
+        it.each(cases)("[case] - $name configures only the decorated method", ({ decorate, limit, ttl }) => {
+            // Arrange
             class Controller {
                 @decorate
                 public sensitive(): void {}
                 public ordinary(): void {}
             }
 
-            for (const name of ["default", "account"]) {
-                expect(reflector.get(THROTTLER_LIMIT + name, Controller.prototype.sensitive)).toBe(limit);
-                expect(reflector.get(THROTTLER_TTL + name, Controller.prototype.sensitive)).toBe(ttl);
-                expect(reflector.get(THROTTLER_LIMIT + name, Controller.prototype.ordinary)).toBeUndefined();
-                expect(reflector.get(THROTTLER_LIMIT + name, Controller)).toBeUndefined();
+            // Act
+            const limits = ["default", "account"].map((name) => ({
+                limit: reflector.get(THROTTLER_LIMIT + name, Controller.prototype.sensitive),
+                ttl: reflector.get(THROTTLER_TTL + name, Controller.prototype.sensitive),
+                ordinaryLimit: reflector.get(THROTTLER_LIMIT + name, Controller.prototype.ordinary),
+                controllerLimit: reflector.get(THROTTLER_LIMIT + name, Controller),
+            }));
+
+            // Assert
+            for (const actual of limits) {
+                expect(actual.limit).toBe(limit);
+                expect(actual.ttl).toBe(ttl);
+                expect(actual.ordinaryLimit).toBeUndefined();
+                expect(actual.controllerLimit).toBeUndefined();
             }
         });
 
-        it("lets method limits override controller limits for both throttlers", () => {
+        it("[case] - lets method limits override controller limits for both throttlers", () => {
+            // Arrange
             @SensitiveThrottle.PasswordAuth()
             class Controller {
                 @SensitiveThrottle.OtpIssue()
@@ -51,14 +72,20 @@ describe("SensitiveThrottle metadata", () => {
                 public inherited(): void {}
             }
 
-            for (const name of ["default", "account"]) {
-                const methodTargets = [Controller.prototype.issue, Controller];
-                const inheritedTargets = [Controller.prototype.inherited, Controller];
+            const methodTargets = [Controller.prototype.issue, Controller];
+            const inheritedTargets = [Controller.prototype.inherited, Controller];
 
-                expect(reflector.getAllAndOverride(THROTTLER_LIMIT + name, methodTargets)).toBe(3);
-                expect(reflector.getAllAndOverride(THROTTLER_TTL + name, methodTargets)).toBe(600000);
-                expect(reflector.getAllAndOverride(THROTTLER_LIMIT + name, inheritedTargets)).toBe(10);
-                expect(reflector.getAllAndOverride(THROTTLER_TTL + name, inheritedTargets)).toBe(900000);
+            // Act
+            const limits = ["default", "account"].map((name) => ({
+                methodLimit: reflector.getAllAndOverride(THROTTLER_LIMIT + name, methodTargets),
+                methodTtl: reflector.getAllAndOverride(THROTTLER_TTL + name, methodTargets),
+                inheritedLimit: reflector.getAllAndOverride(THROTTLER_LIMIT + name, inheritedTargets),
+                inheritedTtl: reflector.getAllAndOverride(THROTTLER_TTL + name, inheritedTargets),
+            }));
+
+            // Assert
+            for (const limit of limits) {
+                expect(limit).toEqual({ methodLimit: 3, methodTtl: 600000, inheritedLimit: 10, inheritedTtl: 900000 });
             }
         });
     });

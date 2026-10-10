@@ -37,24 +37,26 @@ function createInput(
     };
 }
 
-describe("InterfaceClientService", () => {
+describe("[DomainService] - InterfaceClient", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when the realm interface client limit would be exceeded", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when the realm interface client limit would be exceeded", async () => {
+            // Arrange
             const { service, repositories, transaction } = createContext();
             repositories.interfaceClients.wouldExceedRealmLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    transaction: transaction.entityManager,
-                    input: createInput(),
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.interface-client.REALM_LIMIT_EXCEEDED");
+            // Act
+            const result = service.create({
+                transaction: transaction.entityManager,
+                input: createInput(),
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.interface-client.REALM_LIMIT_EXCEEDED");
             expect(repositories.interfaceClients.wouldExceedRealmLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -62,15 +64,18 @@ describe("InterfaceClientService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates a public client with the authorization code and refresh token grants", async () => {
+        it("[case] - creates a public client with the authorization code and refresh token grants", async () => {
+            // Arrange
             const { service, transaction } = createContext();
 
+            // Act
             const result = await service.create({
                 transaction: transaction.entityManager,
                 input: createInput(),
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual(
                 expect.objectContaining({
                     grantTypes: [TokenGrantType.AUTHORIZATION_CODE, TokenGrantType.REFRESH_TOKEN],
@@ -84,14 +89,16 @@ describe("InterfaceClientService", () => {
         });
     });
 
-    describe("update", () => {
-        it("validates redirect uris and auth address when the patch changes them", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - validates redirect uris and auth address when the patch changes them", async () => {
+            // Arrange
             const client = helpers.createInterfaceClient({ id: CLIENT_ID });
             const { service, transaction } = createContext({ client });
             const urisSpy = jest.spyOn(service, "validateRedirectUris");
             const addressSpy = jest.spyOn(service, "validateAuthAddress");
             const updateSpy = jest.spyOn(client, "update");
 
+            // Act
             await service.update({
                 patch: { redirectUris: [REDIRECT_URI], authAddress: AUTH_ADDRESS },
                 transaction: transaction.entityManager,
@@ -99,18 +106,21 @@ describe("InterfaceClientService", () => {
                 id: CLIENT_ID,
             });
 
+            // Assert
             expect(urisSpy).toHaveBeenCalledWith({ redirectUris: [REDIRECT_URI] });
             expect(addressSpy).toHaveBeenCalledWith({ authAddress: AUTH_ADDRESS });
             expect(updateSpy).toHaveBeenCalledWith({ redirectUris: [REDIRECT_URI], authAddress: AUTH_ADDRESS });
         });
 
-        it("skips both validators when the patch touches neither field", async () => {
+        it("[case] - skips both validators when the patch touches neither field", async () => {
+            // Arrange
             const client = helpers.createInterfaceClient({ id: CLIENT_ID });
             const { service, repositories, transaction } = createContext({ client });
             const urisSpy = jest.spyOn(service, "validateRedirectUris");
             const addressSpy = jest.spyOn(service, "validateAuthAddress");
             const updateSpy = jest.spyOn(client, "update");
 
+            // Act
             await service.update({
                 transaction: transaction.entityManager,
                 patch: { name: "Renamed Console" },
@@ -118,6 +128,7 @@ describe("InterfaceClientService", () => {
                 id: CLIENT_ID,
             });
 
+            // Assert
             expect(repositories.interfaceClients.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: CLIENT_ID, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -128,23 +139,26 @@ describe("InterfaceClientService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false, identifiers: [CLIENT_ID], scenario: "single identifier" },
             { method: "restore", isRevoked: true, identifiers: [CLIENT_ID], scenario: "single identifier" },
             { method: "revoke", isRevoked: false, identifiers: [CLIENT_ID, CLIENT_ID], scenario: "duplicate identifiers" },
             { method: "restore", isRevoked: true, identifiers: [CLIENT_ID, CLIENT_ID], scenario: "duplicate identifiers" },
-        ] as const)("$method handles $scenario once", async ({ method, isRevoked, identifiers }) => {
+        ] as const)("[case] - $method handles $scenario once", async ({ method, isRevoked, identifiers }) => {
+            // Arrange
             const client = helpers.createInterfaceClient({ id: CLIENT_ID, isRevoked });
             const { service, repositories, transaction } = createContext({ client });
             const operationSpy = jest.spyOn(client, method);
 
+            // Act
             const result = await service[method]({
                 transaction: transaction.entityManager,
                 identifiers: [...identifiers],
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
                 where: { id: { $in: [CLIENT_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -154,111 +168,143 @@ describe("InterfaceClientService", () => {
         });
     });
 
-    describe("purge", () => {
+    describe("[Method] - purge", () => {
         it.each([
             { scenario: "single identifier", identifiers: [CLIENT_ID] },
             { scenario: "duplicate identifiers", identifiers: [CLIENT_ID, CLIENT_ID] },
-        ])("checks eligibility and purges $scenario once", async ({ identifiers }) => {
+        ])("[case] - checks eligibility and purges $scenario once", async ({ identifiers }) => {
+            // Arrange
             const client = helpers.createInterfaceClient({ id: CLIENT_ID, isRevoked: true });
             const { service, transaction } = createContext({ client });
             const canPurgeSpy = jest.spyOn(client, "canPurge");
 
+            // Act
             const result = await service.purge({
                 transaction: transaction.entityManager,
                 identifiers: [...identifiers],
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(canPurgeSpy).toHaveBeenCalledTimes(1);
             expect(transaction.remove).toHaveBeenCalledWith(client);
             expect(result).toEqual([client]);
         });
     });
 
-    describe("validateRedirectUris", () => {
-        it("throws when the list is empty", () => {
+    describe("[Method] - validateRedirectUris", () => {
+        it("[case] - throws when the list is empty", () => {
+            // Arrange
             const { service } = createContext();
 
-            expect(() => service.validateRedirectUris({ redirectUris: [] })).toThrow(
-                "services.interface-client.REDIRECT_URI_REQUIRED",
-            );
+            // Act
+            const act = (): unknown => service.validateRedirectUris({ redirectUris: [] });
+
+            // Assert
+            expect(act).toThrow("services.interface-client.REDIRECT_URI_REQUIRED");
         });
 
-        it("throws when the list is longer than the configured limit", () => {
+        it("[case] - throws when the list is longer than the configured limit", () => {
+            // Arrange
             const { service } = createContext({ redirectUriLimit: 1 });
 
-            expect(() =>
+            // Act
+            const act = (): unknown =>
                 service.validateRedirectUris({
                     redirectUris: [REDIRECT_URI, "https://app.example.com/second"],
-                }),
-            ).toThrow("services.interface-client.REDIRECT_URI_LIMIT_EXCEEDED");
+                });
+
+            // Assert
+            expect(act).toThrow("services.interface-client.REDIRECT_URI_LIMIT_EXCEEDED");
         });
 
-        it("throws when the list contains duplicates", () => {
+        it("[case] - throws when the list contains duplicates", () => {
+            // Arrange
             const { service } = createContext();
 
-            expect(() => service.validateRedirectUris({ redirectUris: [REDIRECT_URI, REDIRECT_URI] })).toThrow(
-                "services.interface-client.REDIRECT_URI_DUPLICATED",
-            );
+            // Act
+            const act = (): unknown => service.validateRedirectUris({ redirectUris: [REDIRECT_URI, REDIRECT_URI] });
+
+            // Assert
+            expect(act).toThrow("services.interface-client.REDIRECT_URI_DUPLICATED");
         });
 
-        it("validates every uri in the list", () => {
+        it("[case] - validates every uri in the list", () => {
+            // Arrange
             const { service } = createContext();
             const singleSpy = jest.spyOn(service, "validateRedirectUri");
 
+            // Act
             service.validateRedirectUris({ redirectUris: [REDIRECT_URI, "https://app.example.com/second"] });
 
+            // Assert
             expect(singleSpy).toHaveBeenNthCalledWith(1, { redirectUri: REDIRECT_URI });
             expect(singleSpy).toHaveBeenNthCalledWith(2, { redirectUri: "https://app.example.com/second" });
         });
     });
 
-    describe("validateRedirectUri", () => {
-        it("throws when the uri is empty", () => {
+    describe("[Method] - validateRedirectUri", () => {
+        it("[case] - throws when the uri is empty", () => {
+            // Arrange
             const { service } = createContext();
 
-            expect(() => service.validateRedirectUri({ redirectUri: "" })).toThrow(
-                "services.interface-client.REDIRECT_URI_REQUIRED",
-            );
+            // Act
+            const act = (): unknown => service.validateRedirectUri({ redirectUri: "" });
+
+            // Assert
+            expect(act).toThrow("services.interface-client.REDIRECT_URI_REQUIRED");
         });
 
-        it("throws when the uri carries a fragment", () => {
+        it("[case] - throws when the uri carries a fragment", () => {
+            // Arrange
             const { service } = createContext();
 
-            expect(() => service.validateRedirectUri({ redirectUri: `${REDIRECT_URI}#token` })).toThrow(
-                "services.interface-client.REDIRECT_URI_FRAGMENT_NOT_ALLOWED",
-            );
+            // Act
+            const act = (): unknown => service.validateRedirectUri({ redirectUri: `${REDIRECT_URI}#token` });
+
+            // Assert
+            expect(act).toThrow("services.interface-client.REDIRECT_URI_FRAGMENT_NOT_ALLOWED");
         });
 
-        it("throws when the uri cannot be parsed", () => {
+        it("[case] - throws when the uri cannot be parsed", () => {
+            // Arrange
             const { service } = createContext();
 
-            expect(() => service.validateRedirectUri({ redirectUri: "not-a-uri" })).toThrow(
-                "services.interface-client.INVALID_REDIRECT_URI",
-            );
-        });
-    });
+            // Act
+            const act = (): unknown => service.validateRedirectUri({ redirectUri: "not-a-uri" });
 
-    describe("validateAuthAddress", () => {
-        it("throws when the address is empty", () => {
-            const { service } = createContext();
-
-            expect(() => service.validateAuthAddress({ authAddress: "" })).toThrow(
-                "services.interface-client.AUTH_ADDRESS_REQUIRED",
-            );
-        });
-
-        it("throws when the address cannot be parsed", () => {
-            const { service } = createContext();
-
-            expect(() => service.validateAuthAddress({ authAddress: "not-a-url" })).toThrow(
-                "services.interface-client.INVALID_AUTH_ADDRESS",
-            );
+            // Assert
+            expect(act).toThrow("services.interface-client.INVALID_REDIRECT_URI");
         });
     });
 
-    describe("applyRealmRevocation", () => {
-        it("applies the realm version without changing a manual client revocation", async () => {
+    describe("[Method] - validateAuthAddress", () => {
+        it("[case] - throws when the address is empty", () => {
+            // Arrange
+            const { service } = createContext();
+
+            // Act
+            const act = (): unknown => service.validateAuthAddress({ authAddress: "" });
+
+            // Assert
+            expect(act).toThrow("services.interface-client.AUTH_ADDRESS_REQUIRED");
+        });
+
+        it("[case] - throws when the address cannot be parsed", () => {
+            // Arrange
+            const { service } = createContext();
+
+            // Act
+            const act = (): unknown => service.validateAuthAddress({ authAddress: "not-a-url" });
+
+            // Assert
+            expect(act).toThrow("services.interface-client.INVALID_AUTH_ADDRESS");
+        });
+    });
+
+    describe("[Method] - applyRealmRevocation", () => {
+        it("[case] - applies the realm version without changing a manual client revocation", async () => {
+            // Arrange
             const client = helpers.createInterfaceClient({
                 realmVersion: 2,
                 isRealmRevoked: false,
@@ -267,12 +313,14 @@ describe("InterfaceClientService", () => {
             });
             const { service, repositories, transaction } = createContext({ client });
 
+            // Act
             const result = await service.applyRealmRevocation({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 version: 3,
             });
 
+            // Assert
             expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
                 where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
                 transaction: transaction.entityManager,
@@ -282,8 +330,9 @@ describe("InterfaceClientService", () => {
         });
     });
 
-    describe("applyRealmRestore", () => {
-        it("applies the realm version without changing a manual client revocation", async () => {
+    describe("[Method] - applyRealmRestore", () => {
+        it("[case] - applies the realm version without changing a manual client revocation", async () => {
+            // Arrange
             const client = helpers.createInterfaceClient({
                 realmVersion: 2,
                 isRealmRevoked: true,
@@ -292,12 +341,14 @@ describe("InterfaceClientService", () => {
             });
             const { service, repositories, transaction } = createContext({ client });
 
+            // Act
             const result = await service.applyRealmRestore({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 version: 3,
             });
 
+            // Assert
             expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
                 where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
                 transaction: transaction.entityManager,
@@ -307,18 +358,21 @@ describe("InterfaceClientService", () => {
         });
     });
 
-    describe("purgeRealm", () => {
-        it("removes affected clients without requiring an individual revocation", async () => {
+    describe("[Method] - purgeRealm", () => {
+        it("[case] - removes affected clients without requiring an individual revocation", async () => {
+            // Arrange
             const client = helpers.createInterfaceClient({ realm: REALM_ID, realmVersion: 2 });
             const { service, repositories, transaction } = createContext({ client });
             const canPurge = jest.spyOn(client, "canPurge");
 
+            // Act
             const result = await service.purgeRealm({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 version: 3,
             });
 
+            // Assert
             expect(repositories.interfaceClients.find).toHaveBeenCalledWith({
                 where: { realm: REALM_ID, realmVersion: { $lt: 3 }, isSystemManaged: false },
                 transaction: transaction.entityManager,

@@ -10,11 +10,12 @@ const ACCOUNT = "target-account";
 const ACTOR = "actor-account";
 const ID = "entity-a";
 
-describe("IdentifierQueries", () => {
-    describe("findUnique / findMany", () => {
+describe("[Queries] - Identifier", () => {
+    describe("[Behavior] - record lookup", () => {
         it.each([QueryMode.DEFAULT, QueryMode.MANAGE])(
-            "applies account ownership in %s without changing caller filters",
+            "[case] - applies account ownership in %s without changing caller filters",
             async (mode) => {
+                // Arrange
                 const { queries, identifierRepository } = helpers.queries();
                 const identifier = helpers.createIdentifier();
                 const filters: Repositories.Mappers.Identifier.Filters = {
@@ -23,6 +24,7 @@ describe("IdentifierQueries", () => {
                 identifierRepository.findUniqueOrThrow.mockResolvedValue(identifier);
                 identifierRepository.findMany.mockResolvedValue([[identifier], 12]);
 
+                // Act
                 const found = await queries.findUnique({
                     view: ResponseViewType.COMPACT,
                     mode,
@@ -38,6 +40,7 @@ describe("IdentifierQueries", () => {
                     pagination: PAGINATION,
                 });
 
+                // Assert
                 expect(found).toBe(identifier);
                 expect(page).toEqual([[identifier], 12]);
                 expect(identifierRepository.findUniqueOrThrow.mock.calls).toEqual([
@@ -62,13 +65,16 @@ describe("IdentifierQueries", () => {
         );
     });
 
-    describe("getLookupList", () => {
-        it("restricts lookup to the requested account and retains the search term", async () => {
+    describe("[Method] - getLookupList", () => {
+        it("[case] - restricts lookup to the requested account and retains the search term", async () => {
+            // Arrange
             const { queries, identifierRepository } = helpers.queries();
             identifierRepository.getLookupList.mockResolvedValue([[], 0]);
 
+            // Act
             await queries.getLookupList({ account: ACTOR, term: "mail", pagination: PAGINATION });
 
+            // Assert
             expect(identifierRepository.getLookupList.mock.calls).toEqual([
                 [{ account: ACTOR, term: "mail", pagination: PAGINATION }],
             ]);

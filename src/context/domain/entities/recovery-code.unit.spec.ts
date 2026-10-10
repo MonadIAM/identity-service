@@ -11,31 +11,43 @@ function createRecoveryCode(): RecoveryCode {
     });
 }
 
-describe("RecoveryCode Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - RecoveryCode", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
             const account = {} as Account;
 
+            // Act
             const code = new RecoveryCode({ account, hash: "my-hash" });
 
+            // Assert
             expect(code.account).toBe(account);
             expect(code.hash).toBe("my-hash");
         });
 
-        it("should auto-generate id and createdAt", () => {
-            const code = createRecoveryCode();
+        it("[case] - auto-generates id and createdAt", () => {
+            // Arrange
 
-            expect(isUUID(code.id, "4")).toBe(true);
+            // Act
+            const code = createRecoveryCode();
+            const result = isUUID(code.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(code.createdAt).toBeInstanceOf(Date);
             expect(code.usedAt).toBeUndefined();
         });
     });
 
-    describe("use", () => {
-        it("should set usedAt", () => {
+    describe("[Method] - use", () => {
+        it("[case] - sets usedAt", () => {
+            // Arrange
             const code = createRecoveryCode();
+
+            // Act
             code.use();
 
+            // Assert
             expect(code.usedAt).toBeInstanceOf(Date);
         });
     });

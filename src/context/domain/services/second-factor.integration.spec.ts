@@ -25,16 +25,18 @@ async function countMasterCodes(suite: Integration.Domain.SecondFactor.Suite, ac
     );
 }
 
-describe("SecondFactorService integration", () => {
+describe("[DomainService] - SecondFactor", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates one factor per account and type", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates one factor per account and type", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.create({
                     input: {
@@ -46,32 +48,35 @@ describe("SecondFactorService integration", () => {
                     transaction,
                 }),
             );
+            const result = suite.transaction((transaction) =>
+                suite.repository().secondFactorService.create({
+                    input: {
+                        type: SecondFactorType.TOTP,
+                        secret: "another-secret",
+                        name: "Another Authenticator",
+                        account: account.id,
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result1 = await loadFactors(suite, account);
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().secondFactorService.create({
-                        input: {
-                            type: SecondFactorType.TOTP,
-                            secret: "another-secret",
-                            name: "Another Authenticator",
-                            account: account.id,
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.second-factor.TOTP_FACTOR_EXISTS");
-
-            await expect(loadFactors(suite, account)).resolves.toHaveLength(1);
+            // Assert
+            await expect(result).rejects.toThrow("services.second-factor.TOTP_FACTOR_EXISTS");
+            expect(result1).toHaveLength(1);
         });
     });
 
-    describe("verify", () => {
-        it("verifies a factor, rewraps its secret and bootstraps one master code", async () => {
+    describe("[Method] - verify", () => {
+        it("[case] - verifies a factor, rewraps its secret and bootstraps one master code", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const factor = await suite.fixtures().createSecondFactor({ account, secret: "plain-secret" });
             suite.repository().services.totp.setStep(10);
             suite.repository().services.secret.setResolvedCiphertext("ciphertext:v2");
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.verify({
                     input: {
@@ -83,19 +88,21 @@ describe("SecondFactorService integration", () => {
                     transaction,
                 }),
             );
-
             const factors = await loadFactors(suite, account);
+            const result = await countMasterCodes(suite, account);
 
+            // Assert
             expect(factors[0]).toMatchObject({
                 lastAcceptedTOTPStep: 10,
                 secret: "ciphertext:v2",
                 id: factor.id,
             });
             expect(factors[0]?.confirmedAt).toBeInstanceOf(Date);
-            await expect(countMasterCodes(suite, account)).resolves.toBe(1);
+            expect(result).toBe(1);
         });
 
-        it("verifies a factor without creating another master code when one already exists", async () => {
+        it("[case] - verifies a factor without creating another master code when one already exists", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const factor = await suite.fixtures().createSecondFactor({
                 account,
@@ -106,6 +113,7 @@ describe("SecondFactorService integration", () => {
             });
             suite.repository().services.totp.setStep(10);
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.verify({
                     input: {
@@ -117,14 +125,16 @@ describe("SecondFactorService integration", () => {
                     transaction,
                 }),
             );
-
             const factors = await loadFactors(suite, account);
+            const result = await countMasterCodes(suite, account);
 
+            // Assert
             expect(factors[0]?.confirmedAt).toBeInstanceOf(Date);
-            await expect(countMasterCodes(suite, account)).resolves.toBe(1);
+            expect(result).toBe(1);
         });
 
-        it("rolls back factor verification when the TOTP step is replayed", async () => {
+        it("[case] - rolls back factor verification when the TOTP step is replayed", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const factor = await suite.fixtures().createSecondFactor({
                 lastAcceptedTOTPStep: 10,
@@ -132,36 +142,40 @@ describe("SecondFactorService integration", () => {
             });
             suite.repository().services.totp.setStep(10);
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().secondFactorService.verify({
-                        input: {
-                            masterCodeHash: "hash:master-code",
-                            code: "123456",
-                            factor: factor.id,
-                            account: account.id,
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.second-factor.INVALID_TOTP_CODE");
-
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().secondFactorService.verify({
+                    input: {
+                        masterCodeHash: "hash:master-code",
+                        code: "123456",
+                        factor: factor.id,
+                        account: account.id,
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
             const factors = await loadFactors(suite, account);
+            const result1 = await countMasterCodes(suite, account);
 
+            // Assert
+            await expect(result).rejects.toThrow("services.second-factor.INVALID_TOTP_CODE");
             expect(factors[0]?.confirmedAt).toBeNull();
             expect(factors[0]?.lastAcceptedTOTPStep).toBe(10);
-            await expect(countMasterCodes(suite, account)).resolves.toBe(0);
+            expect(result1).toBe(0);
         });
     });
 
-    describe("authenticate", () => {
-        it("authenticates only a confirmed factor owned by the account", async () => {
+    describe("[Method] - authenticate", () => {
+        it("[case] - authenticates only a confirmed factor owned by the account", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const other = await suite.fixtures().createAccount();
             const factor = await suite.fixtures().createSecondFactor({ confirmed: true, account });
             await suite.fixtures().createSecondFactor({ account: other });
             suite.repository().services.totp.setStep(5);
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.authenticate({
                     input: {
@@ -171,32 +185,34 @@ describe("SecondFactorService integration", () => {
                     transaction,
                 }),
             );
-
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().secondFactorService.authenticate({
-                        input: {
-                            code: "123456",
-                            account: other.id,
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.second-factor.NO_ACTIVE_2FA");
-
+            const result = suite.transaction((transaction) =>
+                suite.repository().secondFactorService.authenticate({
+                    input: {
+                        code: "123456",
+                        account: other.id,
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
             const factors = await loadFactors(suite, account);
+            const result1 = factors.find(({ id }) => id === factor.id)?.lastAcceptedTOTPStep;
 
-            expect(factors.find(({ id }) => id === factor.id)?.lastAcceptedTOTPStep).toBe(5);
+            // Assert
+            await expect(result).rejects.toThrow("services.second-factor.NO_ACTIVE_2FA");
+            expect(result1).toBe(5);
         });
     });
 
-    describe("reauthenticate", () => {
-        it("reauthenticates with a confirmed factor and leaves rows unchanged without one", async () => {
+    describe("[Method] - reauthenticate", () => {
+        it("[case] - reauthenticates with a confirmed factor and leaves rows unchanged without one", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const withoutFactor = await suite.fixtures().createAccount();
             const factor = await suite.fixtures().createSecondFactor({ confirmed: true, account });
             suite.repository().services.totp.setStep(3);
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.reauthenticate({
                     input: {
@@ -206,28 +222,30 @@ describe("SecondFactorService integration", () => {
                     transaction,
                 }),
             );
-
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().secondFactorService.reauthenticate({
-                        input: {
-                            code: "123456",
-                            account: withoutFactor.id,
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.second-factor.NO_ACTIVE_2FA");
-
+            const result = suite.transaction((transaction) =>
+                suite.repository().secondFactorService.reauthenticate({
+                    input: {
+                        code: "123456",
+                        account: withoutFactor.id,
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
             const factors = await loadFactors(suite, account);
+            const result1 = factors.find(({ id }) => id === factor.id)?.lastAcceptedTOTPStep;
+            const result2 = await loadFactors(suite, withoutFactor);
 
-            expect(factors.find(({ id }) => id === factor.id)?.lastAcceptedTOTPStep).toBe(3);
-            await expect(loadFactors(suite, withoutFactor)).resolves.toHaveLength(0);
+            // Assert
+            await expect(result).rejects.toThrow("services.second-factor.NO_ACTIVE_2FA");
+            expect(result1).toBe(3);
+            expect(result2).toHaveLength(0);
         });
     });
 
-    describe("purge", () => {
-        it("removes the master code when the last confirmed factor is purged", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - removes the master code when the last confirmed factor is purged", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const factor = await suite.fixtures().createSecondFactor({
                 confirmed: true,
@@ -235,6 +253,7 @@ describe("SecondFactorService integration", () => {
             });
             await suite.fixtures().createMasterCode({ account, hash: "hash:master-code" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.purge({
                     input: {
@@ -244,14 +263,18 @@ describe("SecondFactorService integration", () => {
                     transaction,
                 }),
             );
+            const result = await countMasterCodes(suite, account);
+            const result1 = await loadFactors(suite, account);
 
-            await expect(countMasterCodes(suite, account)).resolves.toBe(0);
-            await expect(loadFactors(suite, account)).resolves.toHaveLength(0);
+            // Assert
+            expect(result).toBe(0);
+            expect(result1).toHaveLength(0);
         });
     });
 
-    describe("reset", () => {
-        it("resets all second factors using a valid master code through an identifier", async () => {
+    describe("[Method] - reset", () => {
+        it("[case] - resets all second factors using a valid master code through an identifier", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createIdentifier({
                 identity: "factor-owner@example.test",
@@ -262,21 +285,19 @@ describe("SecondFactorService integration", () => {
             await suite.fixtures().createMasterCode({ account, hash: "hash:master-code" });
             await suite.fixtures().createSecondFactor({ confirmed: true, account });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().secondFactorService.reset({
-                        input: {
-                            identifier: "factor-owner@example.test",
-                            code: "wrong-master-code",
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.second-factor.INVALID_CODE");
-
-            await expect(loadFactors(suite, account)).resolves.toHaveLength(1);
-            await expect(countMasterCodes(suite, account)).resolves.toBe(1);
-
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().secondFactorService.reset({
+                    input: {
+                        identifier: "factor-owner@example.test",
+                        code: "wrong-master-code",
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result1 = await loadFactors(suite, account);
+            const result2 = await countMasterCodes(suite, account);
             await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.reset({
                     input: {
@@ -286,9 +307,15 @@ describe("SecondFactorService integration", () => {
                     transaction,
                 }),
             );
+            const result3 = await loadFactors(suite, account);
+            const result4 = await countMasterCodes(suite, account);
 
-            await expect(loadFactors(suite, account)).resolves.toHaveLength(0);
-            await expect(countMasterCodes(suite, account)).resolves.toBe(0);
+            // Assert
+            await expect(result).rejects.toThrow("services.second-factor.INVALID_CODE");
+            expect(result1).toHaveLength(1);
+            expect(result2).toBe(1);
+            expect(result3).toHaveLength(0);
+            expect(result4).toBe(0);
         });
     });
 });

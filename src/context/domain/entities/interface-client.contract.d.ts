@@ -24,12 +24,12 @@ declare global {
                 isRealmRevoked: boolean;
                 isRevoked: boolean;
 
-                update(patch: ChangeDataProps): void;
-                revoke(): void;
-                restore(): void;
-                canPurge(): void;
                 applyRealmRevocation(version: number): void;
                 applyRealmRestore(version: number): void;
+                update(patch: ChangeDataProps): void;
+                canPurge(): void;
+                restore(): void;
+                revoke(): void;
             }
 
             type ConstructorProps = {

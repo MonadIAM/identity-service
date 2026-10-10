@@ -8,16 +8,18 @@ const helpers = new InterfaceClientQueriesUnitHelpers();
 const REALM = "realm-a";
 const ID = "entity-a";
 
-describe("InterfaceClientQueries", () => {
-    describe("findUnique / findMany", () => {
+describe("[Queries] - InterfaceClient", () => {
+    describe("[Behavior] - record lookup", () => {
         it.each([
             { mode: QueryMode.DEFAULT, scope: { realm: REALM } },
             { mode: QueryMode.MANAGE, scope: {} },
-        ])("%s enforces the appropriate ownership scope on single and paged reads", async ({ mode, scope }) => {
+        ])("[case] - $mode enforces the appropriate ownership scope on single and paged reads", async ({ mode, scope }) => {
+            // Arrange
             const { queries, interfaceClientRepository: repository } = helpers.queries();
             repository.findUniqueOrThrow.mockResolvedValue(helpers.createInterfaceClient());
             repository.findMany.mockResolvedValue([[], 0]);
 
+            // Act
             await queries.findUnique({ view: ResponseViewType.COMPACT, mode, realm: REALM, client: ID });
             await queries.findMany({
                 view: ResponseViewType.COMPACT,
@@ -28,6 +30,7 @@ describe("InterfaceClientQueries", () => {
                 mode,
             });
 
+            // Assert
             expect(repository.findUniqueOrThrow.mock.calls).toEqual([
                 [expect.objectContaining({ where: { id: ID, ...scope } })],
             ]);

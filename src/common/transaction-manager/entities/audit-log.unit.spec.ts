@@ -17,51 +17,81 @@ function createAuditLog(overrides?: Partial<SystemEntities.AuditLog.ConstructorP
     });
 }
 
-describe("AuditLog Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - AuditLog", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
+            // Assert
             expect(log.actionType).toBe("SIGN_UP_ACCOUNT");
             expect(log.entityType).toBe("ACCOUNT");
         });
 
-        it("should auto-generate id and createdAt", () => {
+        it("[case] - auto-generates id and createdAt", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
-            expect(isUUID(log.id, "4")).toBe(true);
+            const result = isUUID(log.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(log.createdAt).toBeInstanceOf(Date);
         });
 
-        it("should assign ip and userAgent from context", () => {
+        it("[case] - assigns ip and userAgent from context", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
+            // Assert
             expect(log.ip).toBe(BASE_CONTEXT.ip);
             expect(log.userAgent).toBe(BASE_CONTEXT.userAgent);
         });
 
-        it("should assign optional actor when provided", () => {
+        it("[case] - assigns optional actor when provided", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog({ actor: "00000000-0000-4000-8000-000000000001" });
 
+            // Assert
             expect(log.actor).toBe("00000000-0000-4000-8000-000000000001");
         });
 
-        it("should leave actor undefined when omitted", () => {
+        it("[case] - leaves actor undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
+            // Assert
             expect(log.actor).toBeUndefined();
         });
 
-        it("should assign optional input when provided", () => {
+        it("[case] - assigns optional input when provided", () => {
+            // Arrange
             const input = { email: "user@example.com" };
+
+            // Act
             const log = createAuditLog({ input });
 
+            // Assert
             expect(log.input).toBe(input);
         });
 
-        it("should leave input undefined when omitted", () => {
+        it("[case] - leaves input undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
+            // Assert
             expect(log.input).toBeUndefined();
         });
     });

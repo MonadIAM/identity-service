@@ -7,24 +7,28 @@ const helpers = new PasswordCommandsUnitHelpers();
 const ACCOUNT = "target-account";
 const ACTOR = "actor-account";
 
-describe("PasswordCommands", () => {
-    describe("change", () => {
-        it("changes only the authenticated account's password", async () => {
+describe("[Commands] - Password", () => {
+    describe("[Method] - change", () => {
+        it("[case] - changes only the authenticated account's password", async () => {
+            // Arrange
             const { commands, passwordService, transaction } = await helpers.commands();
             const input = { currentPassword: "old", newPassword: "new" };
 
+            // Act
             await commands.change({ input, actor: ACTOR, context: CONTEXT });
 
+            // Assert
             expect(passwordService.change.mock.calls).toEqual([
                 [{ input: { ...input, account: ACTOR }, transaction: transaction.entityManager }],
             ]);
         });
     });
 
-    describe("requestOTP", () => {
+    describe("[Method] - requestOTP", () => {
         it.each(["missing", "unverified", "verified"])(
-            "keeps the reset response identical for a %s identifier",
+            "[case] - keeps the reset response identical for a %s identifier",
             async (state) => {
+                // Arrange
                 const { commands, identifierRepository, cryptoService, otpCacheService, emit } = await helpers.commands();
                 identifierRepository.findUnique.mockResolvedValue(
                     state === "missing"
@@ -36,8 +40,10 @@ describe("PasswordCommands", () => {
                 );
                 cryptoService.generateOTP.mockReturnValue("123456");
 
+                // Act
                 const result = await commands.requestOTP({ input: { identifier: "mail@example.test" }, context: CONTEXT });
 
+                // Assert
                 expect(result).toEqual({ message: "commands.password.RESET_CODE_SENT" });
                 if (state === "verified") {
                     expect(otpCacheService.set.mock.calls).toEqual([[{ purpose: "reset", value: ACCOUNT, key: "123456" }]]);
@@ -50,15 +56,22 @@ describe("PasswordCommands", () => {
         );
     });
 
-    describe("resetByOTP", () => {
-        it.each([ACCOUNT, null])("resets only the account bound to a valid OTP: %s", async (cached) => {
+    describe("[Method] - resetByOTP", () => {
+        it.each([ACCOUNT, null])("[case] - resets only the account bound to a valid OTP: %s", async (cached) => {
+            // Arrange
             const { commands, otpCacheService, passwordService, transaction, run } = await helpers.commands();
             otpCacheService.consume.mockResolvedValue(cached);
 
+            // Act
             const result = commands.resetByOTP({ input: { code: "123456", password: "new" }, context: CONTEXT });
-
             if (cached) {
                 await result;
+            } else {
+                await Promise.allSettled([result]);
+            }
+
+            // Assert
+            if (cached) {
                 expect(passwordService.resetByOTP.mock.calls).toEqual([
                     [{ input: { password: "new", account: ACCOUNT }, transaction: transaction.entityManager }],
                 ]);
@@ -70,18 +83,22 @@ describe("PasswordCommands", () => {
         });
     });
 
-    describe("resetByRecoveryCode", () => {
-        it("uses the account resolved by recovery-code validation for the notification", async () => {
+    describe("[Method] - resetByRecoveryCode", () => {
+        it("[case] - uses the account resolved by recovery-code validation for the notification", async () => {
+            // Arrange
             const { commands, passwordService, transaction, run } = await helpers.commands();
             passwordService.resetByRecoveryCode.mockResolvedValue(helpers.createAccount({ id: ACCOUNT }));
             const input = { identifier: "mail@example.test", password: "new", code: "recovery" };
 
+            // Act
             await commands.resetByRecoveryCode({ input, context: CONTEXT });
+            const result = await run.mock.results[0]?.value;
 
+            // Assert
             expect(passwordService.resetByRecoveryCode.mock.calls).toEqual([
                 [{ input, transaction: transaction.entityManager }],
             ]);
-            await expect(run.mock.results[0]?.value).resolves.toEqual(expect.objectContaining({ account: ACCOUNT }));
+            expect(result).toEqual(expect.objectContaining({ account: ACCOUNT }));
         });
     });
 });

@@ -17,14 +17,17 @@ async function loadClients(
     );
 }
 
-describe("ServiceClientService integration", () => {
+describe("[DomainService] - ServiceClient", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates service clients while enforcing repository-backed limits", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates service clients while enforcing repository-backed limits", async () => {
+            // Arrange
+
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.create({
                     input: {
@@ -41,32 +44,35 @@ describe("ServiceClientService integration", () => {
                 name: "Existing Worker",
                 code: "existing-worker",
             });
+            const result = suite.transaction((transaction) =>
+                suite.repository().serviceClientService.create({
+                    input: {
+                        code: "blocked-worker",
+                        name: "Blocked Worker",
+                    },
+                    realm: REALM_ID,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result1 = await loadClients(suite, REALM_ID);
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().serviceClientService.create({
-                        input: {
-                            code: "blocked-worker",
-                            name: "Blocked Worker",
-                        },
-                        realm: REALM_ID,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.service-client.REALM_LIMIT_EXCEEDED");
-
-            await expect(loadClients(suite, REALM_ID)).resolves.toHaveLength(2);
+            // Assert
+            await expect(result).rejects.toThrow("services.service-client.REALM_LIMIT_EXCEEDED");
+            expect(result1).toHaveLength(2);
         });
     });
 
-    describe("update / revoke / restore / purge", () => {
-        it("updates, revokes, restores and purges only clients scoped to the requested realm", async () => {
+    describe("[Behavior] - client lifecycle", () => {
+        it("[case] - updates, revokes, restores and purges only clients scoped to the requested realm", async () => {
+            // Arrange
             const client = await suite.fixtures().createServiceClient({
                 realm: REALM_ID,
                 name: "Worker",
                 code: "worker",
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.update({
                     patch: {
@@ -78,14 +84,8 @@ describe("ServiceClientService integration", () => {
                     transaction,
                 }),
             );
-
             let clients = await loadClients(suite, REALM_ID);
-
-            expect(clients[0]).toMatchObject({
-                allowedAddresses: ["10.0.0.2"],
-                name: "Worker Client",
-            });
-
+            const updated = clients[0];
             await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.revoke({
                     identifiers: [client.id, client.id],
@@ -93,11 +93,8 @@ describe("ServiceClientService integration", () => {
                     transaction,
                 }),
             );
-
             clients = await loadClients(suite, REALM_ID);
-
-            expect(clients[0]?.isRevoked).toBe(true);
-
+            const revoked = clients[0]?.isRevoked;
             await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.restore({
                     identifiers: [client.id],
@@ -105,11 +102,8 @@ describe("ServiceClientService integration", () => {
                     transaction,
                 }),
             );
-
             clients = await loadClients(suite, REALM_ID);
-
-            expect(clients[0]?.isRevoked).toBe(false);
-
+            const restored = clients[0]?.isRevoked;
             await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.revoke({
                     identifiers: [client.id],
@@ -124,32 +118,36 @@ describe("ServiceClientService integration", () => {
                     transaction,
                 }),
             );
+            const remaining = await loadClients(suite, REALM_ID);
 
-            await expect(loadClients(suite, REALM_ID)).resolves.toHaveLength(0);
+            // Assert
+            expect(updated).toMatchObject({
+                allowedAddresses: ["10.0.0.2"],
+                name: "Worker Client",
+            });
+            expect(revoked).toBe(true);
+            expect(restored).toBe(false);
+            expect(remaining).toHaveLength(0);
         });
     });
 
-    describe("applyRealmRevocation / applyRealmRestore", () => {
-        it("applies only newer realm events and preserves manual revocation", async () => {
+    describe("[Behavior] - realm events", () => {
+        it("[case] - applies only newer realm events and preserves manual revocation", async () => {
+            // Arrange
             const client = await suite.fixtures().createServiceClient({ realm: REALM_ID, isRevoked: true });
             const other = await suite.fixtures().createServiceClient({
                 realm: "00000000-0000-4000-8000-000000000099",
             });
             const system = await suite.fixtures().createServiceClient({ realm: REALM_ID, isSystemManaged: true });
 
+            // Act
             const revoked = await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.applyRealmRevocation({ transaction, realm: REALM_ID, version: 2 }),
             );
-
-            expect(revoked.map((entity) => entity.id)).toEqual([client.id]);
-            await expect(
-                suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, client.id)),
-            ).resolves.toMatchObject({
-                realmVersion: 2,
-                isRealmRevoked: true,
-                isRevoked: true,
-            });
-
+            const revokedIds = revoked.map((entity) => entity.id);
+            const afterRevocation = await suite.transaction((transaction) =>
+                transaction.findOneOrFail(ServiceClient, client.id),
+            );
             const stale = await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.applyRealmRestore({ transaction, realm: REALM_ID, version: 1 }),
             );
@@ -157,37 +155,47 @@ describe("ServiceClientService integration", () => {
                 suite.repository().serviceClientService.applyRealmRevocation({ transaction, realm: REALM_ID, version: 2 }),
             );
 
-            expect(stale).toEqual([]);
-            expect(duplicate).toEqual([]);
-
             await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.applyRealmRestore({ transaction, realm: REALM_ID, version: 3 }),
             );
+            const afterRestore = await suite.transaction((transaction) =>
+                transaction.findOneOrFail(ServiceClient, client.id),
+            );
+            const otherClient = await suite.transaction((transaction) =>
+                transaction.findOneOrFail(ServiceClient, other.id),
+            );
+            const systemClient = await suite.transaction((transaction) =>
+                transaction.findOneOrFail(ServiceClient, system.id),
+            );
 
-            await expect(
-                suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, client.id)),
-            ).resolves.toMatchObject({
+            // Assert
+            expect(revokedIds).toEqual([client.id]);
+            expect(afterRevocation).toMatchObject({
+                realmVersion: 2,
+                isRealmRevoked: true,
+                isRevoked: true,
+            });
+            expect(stale).toEqual([]);
+            expect(duplicate).toEqual([]);
+            expect(afterRestore).toMatchObject({
                 realmVersion: 3,
                 isRealmRevoked: false,
                 isRevoked: true,
             });
-            await expect(
-                suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, other.id)),
-            ).resolves.toMatchObject({
+            expect(otherClient).toMatchObject({
                 realmVersion: 0,
                 isRealmRevoked: false,
             });
-            await expect(
-                suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, system.id)),
-            ).resolves.toMatchObject({
+            expect(systemClient).toMatchObject({
                 realmVersion: 0,
                 isRealmRevoked: false,
             });
         });
     });
 
-    describe("purgeRealm", () => {
-        it("purges only non-system clients with an older realm version", async () => {
+    describe("[Method] - purgeRealm", () => {
+        it("[case] - purges only non-system clients with an older realm version", async () => {
+            // Arrange
             const client = await suite.fixtures().createServiceClient({ realm: REALM_ID });
             const current = await suite.fixtures().createServiceClient({ realm: REALM_ID, realmVersion: 3 });
             const system = await suite.fixtures().createServiceClient({ realm: REALM_ID, isSystemManaged: true });
@@ -195,41 +203,44 @@ describe("ServiceClientService integration", () => {
                 realm: "00000000-0000-4000-8000-000000000099",
             });
 
+            // Act
             const purged = await suite.transaction((transaction) =>
                 suite.repository().serviceClientService.purgeRealm({ transaction, realm: REALM_ID, version: 3 }),
             );
+            const result = purged.map((entity) => entity.id);
+            const result1 = await suite.transaction((transaction) => transaction.count(ServiceClient, { id: client.id }));
+            const result2 = await suite.transaction((transaction) =>
+                transaction.count(ServiceClient, { id: { $in: [current.id, system.id, other.id] } }),
+            );
 
-            expect(purged.map((entity) => entity.id)).toEqual([client.id]);
-            await expect(
-                suite.transaction((transaction) => transaction.count(ServiceClient, { id: client.id })),
-            ).resolves.toBe(0);
-            await expect(
-                suite.transaction((transaction) =>
-                    transaction.count(ServiceClient, { id: { $in: [current.id, system.id, other.id] } }),
-                ),
-            ).resolves.toBe(3);
+            // Assert
+            expect(result).toEqual([client.id]);
+            expect(result1).toBe(0);
+            expect(result2).toBe(3);
         });
     });
 
-    describe("revoke", () => {
-        it("rejects mutations targeting a client in another realm", async () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - rejects mutations targeting a client in another realm", async () => {
+            // Arrange
             const client = await suite.fixtures().createServiceClient({
                 realm: "00000000-0000-4000-8000-000000000099",
             });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().serviceClientService.revoke({
-                        identifiers: [client.id],
-                        realm: REALM_ID,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.service-client.CLIENTS_NOT_FOUND");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().serviceClientService.revoke({
+                    identifiers: [client.id],
+                    realm: REALM_ID,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result1 = await suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, client.id));
 
-            await expect(
-                suite.transaction((transaction) => transaction.findOneOrFail(ServiceClient, client.id)),
-            ).resolves.toMatchObject({
+            // Assert
+            await expect(result).rejects.toThrow("services.service-client.CLIENTS_NOT_FOUND");
+            expect(result1).toMatchObject({
                 isRevoked: false,
             });
         });

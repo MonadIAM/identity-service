@@ -5,14 +5,15 @@ import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 
 import { ProfileRepository } from "./profile.repository";
 
-describe("ProfileRepository", () => {
+describe("[Repository] - Profile", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new ProfileRepository(readManager),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted profile through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted profile through the schema", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createProfile({
                 pictureUrl: "https://mapping.test/avatar.png",
@@ -22,8 +23,10 @@ describe("ProfileRepository", () => {
                 account,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { account } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 pictureUrl: "https://mapping.test/avatar.png",
                 displayName: "Mapping Profile",

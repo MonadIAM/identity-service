@@ -14,14 +14,15 @@ function requireCallback(callback: Optional<() => void>): () => void {
     }
 }
 
-describe("SessionRepository", () => {
+describe("[Repository] - Session", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new SessionRepository(readManager),
         fixture: (entityManager) => new SessionFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted session through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted session through the schema", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const realms = [randomUUID(), randomUUID()];
             const session = await suite.fixtures().createSession({
@@ -37,8 +38,10 @@ describe("SessionRepository", () => {
                 realms,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: session.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 lastRefreshedAt: new Date("2026-02-01T00:00:00.000Z"),
                 expiresAt: new Date("2027-01-01T00:00:00.000Z"),
@@ -56,22 +59,24 @@ describe("SessionRepository", () => {
         });
     });
 
-    describe("lockByAccount", () => {
-        it("locks account and returns sessions ordered by refresh time", async () => {
+    describe("[Method] - lockByAccount", () => {
+        it("[case] - locks account and returns sessions ordered by refresh time", async () => {
+            // Arrange
             const { account, external, first, second, third } = await suite.fixtures().lockScenario();
 
-            await suite.transaction(async (transaction) => {
-                const sessions = await suite.repository().lockByAccount({
-                    transaction,
-                    account: account.id,
-                });
+            // Act
+            const sessions = await suite.transaction((transaction) =>
+                suite.repository().lockByAccount({ transaction, account: account.id }),
+            );
+            const ids = sessions.map(({ id }) => id);
 
-                expect(sessions.map(({ id }) => id)).toEqual([first.id, second.id, third.id]);
-                expect(sessions.map(({ id }) => id)).not.toContain(external.id);
-            });
+            // Assert
+            expect(ids).toEqual([first.id, second.id, third.id]);
+            expect(ids).not.toContain(external.id);
         });
 
-        it("blocks concurrent locks until the holding transaction is released", async () => {
+        it("[case] - blocks concurrent locks until the holding transaction is released", async () => {
+            // Arrange
             const { account, first, second, third } = await suite.fixtures().lockScenario();
             let lockAcquired: Optional<() => void>;
             let releaseLock: Optional<() => void>;
@@ -82,6 +87,7 @@ describe("SessionRepository", () => {
                 releaseLock = resolve;
             });
 
+            // Act
             const holdingTransaction = suite.transaction(async (transaction) => {
                 await suite.repository().lockByAccount({
                     transaction,
@@ -117,32 +123,27 @@ describe("SessionRepository", () => {
                 await concurrentLockAttempt.catch(() => undefined);
             }
 
-            if (!(blockedError instanceof Error)) {
-                throw new Error("Concurrent lock attempt was not blocked");
-            }
-            if (blockedError.message === concurrentLockTimeoutMessage) {
-                throw blockedError;
-            }
+            const sessions = await suite.transaction((transaction) =>
+                suite.repository().lockByAccount({ transaction, account: account.id }),
+            );
 
-            await suite.transaction(async (transaction) => {
-                const sessions = await suite.repository().lockByAccount({
-                    transaction,
-                    account: account.id,
-                });
-
-                expect(sessions.map(({ id }) => id)).toEqual([first.id, second.id, third.id]);
-            });
+            // Assert
+            expect(blockedError).toBeInstanceOf(Error);
+            expect(blockedError).not.toEqual(new Error(concurrentLockTimeoutMessage));
+            expect(sessions.map(({ id }) => id)).toEqual([first.id, second.id, third.id]);
         });
 
-        it("returns empty list when account is missing", async () => {
-            await suite.transaction(async (transaction) => {
-                await expect(
-                    suite.repository().lockByAccount({
-                        transaction,
-                        account: randomUUID(),
-                    }),
-                ).resolves.toEqual([]);
-            });
+        it("[case] - returns empty list when account is missing", async () => {
+            // Arrange
+            const account = randomUUID();
+
+            // Act
+            const sessions = await suite.transaction((transaction) =>
+                suite.repository().lockByAccount({ transaction, account }),
+            );
+
+            // Assert
+            expect(sessions).toEqual([]);
         });
     });
 });

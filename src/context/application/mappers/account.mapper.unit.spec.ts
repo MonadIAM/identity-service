@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { IdentifierType } from "~context/enums";
 import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
+import { IdentifierType } from "~context/enums";
 
 import { AccountMapper } from "./account.mapper";
 
@@ -10,20 +10,24 @@ const ACCOUNT_ID = "00000000-0000-4000-8000-000000000001";
 const helpers = new EntityFactoryRegistry();
 const mapper = new AccountMapper();
 
-describe("AccountMapper", () => {
-    describe("registrationPayload", () => {
-        it("maps the registration event with its contact and OTP", () => {
-            expect(
-                mapper.registrationPayload({
-                    account: ACCOUNT_ID,
-                    otp: "123456",
-                    identifier: helpers.createIdentifier({
-                        id: ACCOUNT_ID,
-                        identity: "user@example.test",
-                        type: IdentifierType.EMAIL,
-                    }),
+describe("[DataMapper] - Account", () => {
+    describe("[Method] - registrationPayload", () => {
+        it("[case] - maps the registration event with its contact and OTP", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.registrationPayload({
+                account: ACCOUNT_ID,
+                otp: "123456",
+                identifier: helpers.createIdentifier({
+                    id: ACCOUNT_ID,
+                    identity: "user@example.test",
+                    type: IdentifierType.EMAIL,
                 }),
-            ).toEqual({
+            });
+
+            // Assert
+            expect(result).toEqual({
                 account: ACCOUNT_ID,
                 otp: "123456",
                 identifier: { id: ACCOUNT_ID, type: IdentifierType.EMAIL, value: "user@example.test" },
@@ -31,14 +35,20 @@ describe("AccountMapper", () => {
         });
     });
 
-    describe("accountPayload", () => {
-        it("maps the account identity", () => {
+    describe("[Method] - accountPayload", () => {
+        it("[case] - maps the account identity", () => {
+            // Arrange
             const account = helpers.createAccount({ id: ACCOUNT_ID });
 
-            expect(mapper.accountPayload({ account })).toEqual({ account: ACCOUNT_ID });
+            // Act
+            const result = mapper.accountPayload({ account });
+
+            // Assert
+            expect(result).toEqual({ account: ACCOUNT_ID });
         });
 
-        it("includes the verified contact in the account confirmation event", () => {
+        it("[case] - includes the verified contact in the account confirmation event", () => {
+            // Arrange
             const account = helpers.createAccount({ id: ACCOUNT_ID });
             const identifier = helpers.createIdentifier({
                 account,
@@ -48,7 +58,11 @@ describe("AccountMapper", () => {
             });
             account.identifiers = helpers.collection({ owner: account, items: [identifier] });
 
-            expect(mapper.accountPayload({ account })).toEqual({
+            // Act
+            const result = mapper.accountPayload({ account });
+
+            // Assert
+            expect(result).toEqual({
                 account: ACCOUNT_ID,
                 identifier: { id: identifier.id, type: IdentifierType.PHONE, value: identifier.identity },
             });

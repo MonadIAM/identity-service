@@ -37,17 +37,19 @@ async function loadRecoveryCodes(
     );
 }
 
-describe("PasswordService integration", () => {
+describe("[DomainService] - Password", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("change", () => {
-        it("rotates a password and writes the previous hash to password history", async () => {
+    describe("[Method] - change", () => {
+        it("[case] - rotates a password and writes the previous hash to password history", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createPassword({ account, hash: "hash:current-password" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().passwordService.change({
                     input: {
@@ -58,10 +60,10 @@ describe("PasswordService integration", () => {
                     transaction,
                 }),
             );
-
             const password = await loadPassword(suite, account);
             const history = await loadPasswordHistory(suite, account);
 
+            // Assert
             expect(password.hash).toBe("hash:new-password");
             expect(password.version).toBe(2);
             expect(history).toHaveLength(1);
@@ -71,33 +73,36 @@ describe("PasswordService integration", () => {
             });
         });
 
-        it("does not rotate a password when the new password is in recent history", async () => {
+        it("[case] - does not rotate a password when the new password is in recent history", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createPassword({ account, hash: "hash:current-password" });
             await suite.fixtures().createPasswordHistory({ account, hash: "hash:new-password", version: 1 });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().passwordService.change({
-                        input: {
-                            currentPassword: "current-password",
-                            newPassword: "new-password",
-                            account: account.id,
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.password.RECENTLY_USED");
-
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().passwordService.change({
+                    input: {
+                        currentPassword: "current-password",
+                        newPassword: "new-password",
+                        account: account.id,
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
             const password = await loadPassword(suite, account);
             const history = await loadPasswordHistory(suite, account);
 
+            // Assert
+            await expect(result).rejects.toThrow("services.password.RECENTLY_USED");
             expect(password.hash).toBe("hash:current-password");
             expect(password.version).toBe(1);
             expect(history).toHaveLength(1);
         });
 
-        it("allows password rotation when matching history is outside the configured window", async () => {
+        it("[case] - allows password rotation when matching history is outside the configured window", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             const history = await suite.fixtures().createPasswordHistory({
                 account,
@@ -113,6 +118,7 @@ describe("PasswordService integration", () => {
                 await transaction.flush();
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().passwordService.change({
                     input: {
@@ -123,22 +129,25 @@ describe("PasswordService integration", () => {
                     transaction,
                 }),
             );
-
             const password = await loadPassword(suite, account);
             const entries = await loadPasswordHistory(suite, account);
+            const result = entries.map(({ hash }) => hash);
 
+            // Assert
             expect(password.hash).toBe("hash:new-password");
             expect(password.version).toBe(3);
             expect(entries).toHaveLength(2);
-            expect(entries.map(({ hash }) => hash)).toEqual(["hash:new-password", current.hash]);
+            expect(result).toEqual(["hash:new-password", current.hash]);
         });
     });
 
-    describe("resetByOTP", () => {
-        it("resets a password by OTP with the same rotation semantics", async () => {
+    describe("[Method] - resetByOTP", () => {
+        it("[case] - resets a password by OTP with the same rotation semantics", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createPassword({ account, hash: "hash:old-password" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().passwordService.resetByOTP({
                     input: {
@@ -148,10 +157,10 @@ describe("PasswordService integration", () => {
                     transaction,
                 }),
             );
-
             const password = await loadPassword(suite, account);
             const history = await loadPasswordHistory(suite, account);
 
+            // Assert
             expect(password.hash).toBe("hash:otp-password");
             expect(password.version).toBe(2);
             expect(history).toHaveLength(1);
@@ -159,8 +168,9 @@ describe("PasswordService integration", () => {
         });
     });
 
-    describe("resetByRecoveryCode", () => {
-        it("consumes only the matched unused recovery code while rotating the password", async () => {
+    describe("[Method] - resetByRecoveryCode", () => {
+        it("[case] - consumes only the matched unused recovery code while rotating the password", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createPassword({ account, hash: "hash:old-password" });
             await suite.fixtures().createIdentifier({
@@ -173,6 +183,7 @@ describe("PasswordService integration", () => {
             const matched = await suite.fixtures().createRecoveryCode({ account, hash: "hash:recovery-code" });
             const untouched = await suite.fixtures().createRecoveryCode({ account, hash: "hash:other-code" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().passwordService.resetByRecoveryCode({
                     input: {
@@ -183,19 +194,21 @@ describe("PasswordService integration", () => {
                     transaction,
                 }),
             );
-
             const password = await loadPassword(suite, account);
             const codes = await loadRecoveryCodes(suite, account);
             const matchedCode = codes.find(({ id }) => id === matched.id);
             const untouchedCode = codes.find(({ id }) => id === untouched.id);
+            const result = codes.find(({ hash }) => hash === "hash:already-used")?.usedAt;
 
+            // Assert
             expect(password.hash).toBe("hash:recovered-password");
             expect(matchedCode?.usedAt).toBeInstanceOf(Date);
             expect(untouchedCode?.usedAt).toBeNull();
-            expect(codes.find(({ hash }) => hash === "hash:already-used")?.usedAt).toBeInstanceOf(Date);
+            expect(result).toBeInstanceOf(Date);
         });
 
-        it("rolls back recovery code consumption and password rotation when history insert conflicts", async () => {
+        it("[case] - rolls back recovery code consumption and password rotation when history insert conflicts", async () => {
+            // Arrange
             const account = await suite.fixtures().createAccount();
             await suite.fixtures().createPassword({ account, hash: "hash:old-password" });
             await suite.fixtures().createPasswordHistory({ account, hash: "hash:previous-password", version: 1 });
@@ -207,25 +220,27 @@ describe("PasswordService integration", () => {
             });
             const code = await suite.fixtures().createRecoveryCode({ account, hash: "hash:recovery-code" });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().passwordService.resetByRecoveryCode({
-                        input: {
-                            identifier: "rollback@example.test",
-                            password: "recovered-password",
-                            code: "recovery-code",
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("password_history_account_version_unique");
-
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().passwordService.resetByRecoveryCode({
+                    input: {
+                        identifier: "rollback@example.test",
+                        password: "recovered-password",
+                        code: "recovery-code",
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
             const password = await loadPassword(suite, account);
             const codes = await loadRecoveryCodes(suite, account);
+            const result1 = codes.find(({ id }) => id === code.id)?.usedAt;
 
+            // Assert
+            await expect(result).rejects.toThrow("password_history_account_version_unique");
             expect(password.hash).toBe("hash:old-password");
             expect(password.version).toBe(1);
-            expect(codes.find(({ id }) => id === code.id)?.usedAt).toBeNull();
+            expect(result1).toBeNull();
         });
     });
 });

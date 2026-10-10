@@ -20,14 +20,17 @@ function createSession(overrides?: Partial<Entities.Session.ConstructorProps>): 
     });
 }
 
-describe("Session Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - Session", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
             const account = {} as Account;
             const expiresAt = new Date(Date.now() + 3600000);
 
+            // Act
             const session = createSession({ account, expiresAt, userAgent: "curl/7.0", ip: "10.0.0.1" });
 
+            // Assert
             expect(session.account).toBe(account);
             expect(session.expiresAt).toBe(expiresAt);
             expect(session.userAgent).toBe("curl/7.0");
@@ -35,39 +38,58 @@ describe("Session Entity", () => {
             expect(session.ip).toBe("10.0.0.1");
         });
 
-        it("should auto-generate id, createdAt, lastRefreshedAt", () => {
-            const session = createSession();
+        it("[case] - auto-generates id, createdAt, lastRefreshedAt", () => {
+            // Arrange
 
-            expect(isUUID(session.id, "4")).toBe(true);
+            // Act
+            const session = createSession();
+            const result = isUUID(session.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(session.createdAt).toBeInstanceOf(Date);
             expect(session.lastRefreshedAt).toBeInstanceOf(Date);
             expect(session.refreshTokenHash).toBeUndefined();
         });
     });
 
-    describe("refresh", () => {
-        it("should set refreshTokenHash and update lastRefreshedAt", () => {
+    describe("[Method] - refresh", () => {
+        it("[case] - sets refreshTokenHash and updates lastRefreshedAt", () => {
+            // Arrange
             const session = createSession();
             const before = session.lastRefreshedAt;
 
+            // Act
             session.refresh("new-token-hash");
+            const result = session.lastRefreshedAt.getTime();
 
+            // Assert
             expect(session.refreshTokenHash).toBe("new-token-hash");
-            expect(session.lastRefreshedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+            expect(result).toBeGreaterThanOrEqual(before.getTime());
         });
     });
 
-    describe("isExpired", () => {
-        it("should throw when session is expired", () => {
+    describe("[Method] - isExpired", () => {
+        it("[case] - throws when session is expired", () => {
+            // Arrange
             const session = createSession({ expiresAt: new Date(Date.now() - 1000) });
 
-            expect(() => session.isExpired()).toThrow("EXPIRED");
+            // Act
+            const act = (): unknown => session.isExpired();
+
+            // Assert
+            expect(act).toThrow("EXPIRED");
         });
 
-        it("should not throw when session is still valid", () => {
+        it("[case] - does not throw when session is still valid", () => {
+            // Arrange
             const session = createSession({ expiresAt: new Date(Date.now() + 3600000) });
 
-            expect(() => session.isExpired()).not.toThrow();
+            // Act
+            const act = (): unknown => session.isExpired();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 });

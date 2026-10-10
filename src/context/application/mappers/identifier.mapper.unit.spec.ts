@@ -8,10 +8,16 @@ const ACCOUNT_ID = "00000000-0000-4000-8000-400000000001";
 
 const mapper = new IdentifierMapper();
 
-describe("IdentifierMapper", () => {
-    describe("identifierPurgedPayload", () => {
-        it("maps an identifier purge notification", () => {
-            expect(mapper.identifierPurgedPayload({ account: ACCOUNT_ID })).toEqual({
+describe("[DataMapper] - Identifier", () => {
+    describe("[Method] - identifierPurgedPayload", () => {
+        it("[case] - maps an identifier purge notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.identifierPurgedPayload({ account: ACCOUNT_ID });
+
+            // Assert
+            expect(result).toEqual({
                 input: {
                     sourceService: PlatformService.IDENTITY_SERVICE,
                     template: MessageTemplate.IDENTIFIER_PURGED,
@@ -24,11 +30,19 @@ describe("IdentifierMapper", () => {
         });
     });
 
-    describe("notificationPayload", () => {
-        it("maps an identifier verification notification", () => {
-            expect(
-                mapper.notificationPayload({ account: ACCOUNT_ID, identifier: "user@example.com", otp: "123456" }),
-            ).toEqual({
+    describe("[Method] - notificationPayload", () => {
+        it("[case] - maps an identifier verification notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.notificationPayload({
+                account: ACCOUNT_ID,
+                identifier: "user@example.com",
+                otp: "123456",
+            });
+
+            // Assert
+            expect(result).toEqual({
                 input: {
                     template: MessageTemplate.IDENTIFIER_VERIFICATION_OTP,
                     sourceService: PlatformService.IDENTITY_SERVICE,

@@ -10,11 +10,12 @@ const ACCOUNT = "target-account";
 const REALM = "realm-a";
 const ID = "entity-a";
 
-describe("OAuthCommands", () => {
-    describe("authorize", () => {
+describe("[Commands] - OAuth", () => {
+    describe("[Method] - authorize", () => {
         it.each(["revoked", "realm-revoked", "redirect"])(
-            "rejects authorization with an invalid $state client constraint: %s",
+            "[case] - rejects authorization with an invalid client constraint: %s",
             async (state) => {
+                // Arrange
                 const { commands, interfaceClientRepository, authorizationCacheService } = helpers.commands();
                 interfaceClientRepository.findUniqueOrThrow.mockResolvedValue(
                     helpers.createInterfaceClient({
@@ -24,24 +25,26 @@ describe("OAuthCommands", () => {
                     }),
                 );
 
-                await expect(
-                    commands.authorize({
-                        input: {
-                            client: ID,
-                            redirectUri: "https://app.example.test/cb",
-                            codeChallenge: "challenge",
-                            codeChallengeMethod: CodeChallengeMethod.S256,
-                            responseType: OAuthResponseType.CODE,
-                            state: "state",
-                        },
-                    }),
-                ).rejects.toThrow();
+                // Act
+                const result = commands.authorize({
+                    input: {
+                        client: ID,
+                        redirectUri: "https://app.example.test/cb",
+                        codeChallenge: "challenge",
+                        codeChallengeMethod: CodeChallengeMethod.S256,
+                        responseType: OAuthResponseType.CODE,
+                        state: "state",
+                    },
+                });
 
+                // Assert
+                await expect(result).rejects.toThrow();
                 expect(authorizationCacheService.create).not.toHaveBeenCalled();
             },
         );
 
-        it("preserves authorization parameters and adds the request ID to the client's login URL", async () => {
+        it("[case] - preserves authorization parameters and adds the request ID to the client's login URL", async () => {
+            // Arrange
             const { commands, interfaceClientRepository, authorizationCacheService } = helpers.commands();
             interfaceClientRepository.findUniqueOrThrow.mockResolvedValue(
                 helpers.createInterfaceClient({
@@ -62,8 +65,10 @@ describe("OAuthCommands", () => {
                 nonce: "nonce",
             };
 
+            // Act
             const result = await commands.authorize({ input });
 
+            // Assert
             expect(authorizationCacheService.create.mock.calls).toEqual([
                 [
                     {
@@ -81,10 +86,11 @@ describe("OAuthCommands", () => {
         });
     });
 
-    describe("authorizationCode", () => {
+    describe("[Method] - authorizationCode", () => {
         it.each(["missing", "client", "redirect", "pkce"])(
-            "rejects an authorization code with a %s mismatch",
+            "[case] - rejects an authorization code with a %s mismatch",
             async (state) => {
+                // Arrange
                 const { commands, interfaceClientRepository, authorizationCacheService, cryptoService, sessionCommands } =
                     helpers.commands();
                 interfaceClientRepository.findUnique.mockResolvedValue(
@@ -106,28 +112,30 @@ describe("OAuthCommands", () => {
                 );
                 cryptoService.verifyCodeChallenge.mockReturnValue(state !== "pkce");
 
-                await expect(
-                    commands.authorizationCode({
-                        input: {
-                            grantType: TokenGrantType.AUTHORIZATION_CODE,
-                            client: ID,
-                            redirectUri: "https://app.example.test/cb",
-                            code: "code",
-                            codeVerifier: "verifier",
-                        },
-                        context: CONTEXT,
-                    }),
-                ).rejects.toThrow();
+                // Act
+                const result = commands.authorizationCode({
+                    input: {
+                        grantType: TokenGrantType.AUTHORIZATION_CODE,
+                        client: ID,
+                        redirectUri: "https://app.example.test/cb",
+                        code: "code",
+                        codeVerifier: "verifier",
+                    },
+                    context: CONTEXT,
+                });
 
+                // Assert
+                await expect(result).rejects.toThrow();
                 expect(sessionCommands.create).not.toHaveBeenCalled();
             },
         );
     });
 
-    describe("token", () => {
+    describe("[Method] - token", () => {
         it.each([SYSTEM_REALM_ID, REALM])(
-            "exchanges a bound code and deduplicates the session realms: %s",
+            "[case] - exchanges a bound code and deduplicates the session realms: %s",
             async (realm) => {
+                // Arrange
                 const { commands, interfaceClientRepository, authorizationCacheService, cryptoService, sessionCommands } =
                     helpers.commands();
                 interfaceClientRepository.findUnique.mockResolvedValue(
@@ -150,6 +158,7 @@ describe("OAuthCommands", () => {
                     idToken: "id-token",
                 });
 
+                // Act
                 const result = await commands.token({
                     input: {
                         grantType: TokenGrantType.AUTHORIZATION_CODE,
@@ -161,6 +170,7 @@ describe("OAuthCommands", () => {
                     context: CONTEXT,
                 });
 
+                // Assert
                 expect(authorizationCacheService.consume.mock.calls).toEqual([[{ code: "code" }]]);
                 expect(cryptoService.verifyCodeChallenge.mock.calls).toEqual([
                     [{ challenge: "challenge", verifier: "verifier" }],
@@ -191,8 +201,9 @@ describe("OAuthCommands", () => {
         );
 
         it.each(["missing", "revoked", "realm-revoked"])(
-            "rejects refresh for a %s client before rotating tokens",
+            "[case] - rejects refresh for a %s client before rotating tokens",
             async (state) => {
+                // Arrange
                 const { commands, interfaceClientRepository, sessionCommands } = helpers.commands();
                 interfaceClientRepository.findUnique.mockResolvedValue(
                     state === "missing"
@@ -203,25 +214,27 @@ describe("OAuthCommands", () => {
                           }),
                 );
 
-                await expect(
-                    commands.token({
-                        input: {
-                            grantType: TokenGrantType.REFRESH_TOKEN,
-                            client: ID,
-                            refreshToken: "refresh",
-                            redirectUri: "",
-                            code: "",
-                            codeVerifier: "",
-                        },
-                        context: CONTEXT,
-                    }),
-                ).rejects.toThrow();
+                // Act
+                const result = commands.token({
+                    input: {
+                        grantType: TokenGrantType.REFRESH_TOKEN,
+                        client: ID,
+                        refreshToken: "refresh",
+                        redirectUri: "",
+                        code: "",
+                        codeVerifier: "",
+                    },
+                    context: CONTEXT,
+                });
 
+                // Assert
+                await expect(result).rejects.toThrow();
                 expect(sessionCommands.refresh).not.toHaveBeenCalled();
             },
         );
 
-        it("refreshes the requested client's token and adds configured token lifetime", async () => {
+        it("[case] - refreshes the requested client's token and adds configured token lifetime", async () => {
+            // Arrange
             const { commands, interfaceClientRepository, sessionCommands } = helpers.commands();
             interfaceClientRepository.findUnique.mockResolvedValue(helpers.createInterfaceClient());
             sessionCommands.refresh.mockResolvedValue({
@@ -230,6 +243,7 @@ describe("OAuthCommands", () => {
                 refreshToken: "new-refresh",
             });
 
+            // Act
             const result = await commands.token({
                 input: {
                     grantType: TokenGrantType.REFRESH_TOKEN,
@@ -242,6 +256,7 @@ describe("OAuthCommands", () => {
                 context: CONTEXT,
             });
 
+            // Assert
             expect(sessionCommands.refresh.mock.calls).toEqual([
                 [{ input: { client: ID, refreshToken: "refresh" }, context: CONTEXT }],
             ]);
@@ -255,10 +270,11 @@ describe("OAuthCommands", () => {
         });
     });
 
-    describe("revoke", () => {
+    describe("[Method] - revoke", () => {
         it.each(["invalid", "foreign", "owned"])(
-            "revocation accepts a %s token without revealing token validity",
+            "[case] - revocation accepts a %s token without revealing token validity",
             async (state) => {
+                // Arrange
                 const { commands, interfaceClientRepository, jwtService, sessionCommands } = helpers.commands();
                 interfaceClientRepository.findUniqueOrThrow.mockResolvedValue(helpers.createInterfaceClient());
                 if (state === "invalid") {
@@ -271,8 +287,10 @@ describe("OAuthCommands", () => {
                     });
                 }
 
+                // Act
                 await commands.revoke({ client: ID, token: "refresh", context: CONTEXT });
 
+                // Assert
                 if (state === "owned") {
                     expect(sessionCommands.revoke.mock.calls).toEqual([
                         [{ actor: ACCOUNT, session: "session-id", input: { token: "refresh" }, context: CONTEXT }],
@@ -283,42 +301,49 @@ describe("OAuthCommands", () => {
             },
         );
 
-        it("rejects an unsupported revocation hint before verifying a token", async () => {
+        it("[case] - rejects an unsupported revocation hint before verifying a token", async () => {
+            // Arrange
             const { commands, interfaceClientRepository, jwtService } = helpers.commands();
             interfaceClientRepository.findUniqueOrThrow.mockResolvedValue(helpers.createInterfaceClient());
 
-            await expect(
-                commands.revoke({
-                    client: ID,
-                    token: "access",
-                    tokenTypeHint: OAuthTokenTypeHint.ACCESS_TOKEN,
-                    context: CONTEXT,
-                }),
-            ).rejects.toThrow();
+            // Act
+            const result = commands.revoke({
+                client: ID,
+                token: "access",
+                tokenTypeHint: OAuthTokenTypeHint.ACCESS_TOKEN,
+                context: CONTEXT,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow();
             expect(jwtService.verifyRefresh).not.toHaveBeenCalled();
         });
     });
 
-    describe("assertAuthorizationPending / completeAuthorization", () => {
-        it("rejects a missing authorization request without issuing a code", async () => {
+    describe("[Behavior] - authorization completion", () => {
+        it("[case] - rejects a missing authorization request without issuing a code", async () => {
+            // Arrange
             const { commands, authorizationCacheService } = helpers.commands();
             authorizationCacheService.get.mockResolvedValue(null);
             authorizationCacheService.issue.mockResolvedValue(null);
 
-            await expect(commands.assertAuthorizationPending({ authorizationRequest: ID })).rejects.toThrow();
-            await expect(
-                commands.completeAuthorization({ authorizationRequest: ID, account: ACCOUNT, acr: "1" }),
-            ).rejects.toThrow();
+            // Act
+            const result = commands.assertAuthorizationPending({ authorizationRequest: ID });
+            await Promise.allSettled([result]);
+            const result1 = commands.completeAuthorization({ authorizationRequest: ID, account: ACCOUNT, acr: "1" });
 
+            // Assert
+            await expect(result).rejects.toThrow();
+            await expect(result1).rejects.toThrow();
             expect(authorizationCacheService.issue.mock.calls).toEqual([
                 [{ authorizationRequest: ID, account: ACCOUNT, acr: "1" }],
             ]);
         });
     });
 
-    describe("completeAuthorization", () => {
-        it("builds the callback from the stored redirect URI and encodes state and code", async () => {
+    describe("[Method] - completeAuthorization", () => {
+        it("[case] - builds the callback from the stored redirect URI and encodes state and code", async () => {
+            // Arrange
             const { commands, authorizationCacheService } = helpers.commands();
             authorizationCacheService.issue.mockResolvedValue({
                 code: "code&value",
@@ -332,21 +357,28 @@ describe("OAuthCommands", () => {
                 },
             });
 
+            // Act
             const result = await commands.completeAuthorization({ authorizationRequest: ID, account: ACCOUNT, acr: "1" });
-
             const url = new URL(result.authorizationUrl);
+            const result1 = url.searchParams.get("locale");
+            const result2 = url.searchParams.get("code");
+            const result3 = url.searchParams.get("state");
+            const result4 = url.searchParams.get("iss");
+
+            // Assert
             expect(url.origin).toBe("https://app.example.test");
-            expect(url.searchParams.get("locale")).toBe("ru");
-            expect(url.searchParams.get("code")).toBe("code&value");
-            expect(url.searchParams.get("state")).toBe("state&value");
-            expect(url.searchParams.get("iss")).toBe("https://identity.example.test");
+            expect(result1).toBe("ru");
+            expect(result2).toBe("code&value");
+            expect(result3).toBe("state&value");
+            expect(result4).toBe("https://identity.example.test");
         });
     });
 
-    describe("endSession", () => {
+    describe("[Method] - endSession", () => {
         it.each([undefined, "https://untrusted.example.test/cb", "https://app.example.test/cb"])(
-            "redirects logout only to a registered URI: %s",
+            "[case] - redirects logout only to a registered URI: %s",
             async (postLogoutRedirectUri) => {
+                // Arrange
                 const { commands, interfaceClientRepository, jwtService, sessionCommands } = helpers.commands();
                 const { response, redirect } = helpers.response();
                 jwtService.verifyIdToken.mockResolvedValue({ sid: "session-id", sub: ACCOUNT, aud: ID });
@@ -354,12 +386,14 @@ describe("OAuthCommands", () => {
                     helpers.createInterfaceClient({ redirectUris: ["https://app.example.test/cb"] }),
                 );
 
+                // Act
                 await commands.endSession({
                     input: { idTokenHint: "id-token", postLogoutRedirectUri, state: "state&value" },
                     context: CONTEXT,
                     response,
                 });
 
+                // Assert
                 expect(sessionCommands.revoke.mock.calls).toEqual([
                     [{ actor: ACCOUNT, session: "session-id", input: {}, context: CONTEXT }],
                 ]);

@@ -25,39 +25,58 @@ function expected(
     };
 }
 
-describe("PasswordMapper", () => {
-    describe("passwordChangedPayload", () => {
-        it("maps a password changed notification", () => {
-            expect(mapper.passwordChangedPayload({ account: ACCOUNT_ID, message: "commands.password.CHANGED" })).toEqual(
-                expected(MessageTemplate.PASSWORD_CHANGED),
-            );
+describe("[DataMapper] - Password", () => {
+    describe("[Method] - passwordChangedPayload", () => {
+        it("[case] - maps a password changed notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.passwordChangedPayload({ account: ACCOUNT_ID, message: "commands.password.CHANGED" });
+
+            // Assert
+            expect(result).toEqual(expected(MessageTemplate.PASSWORD_CHANGED));
         });
     });
 
-    describe("passwordChangedViaOtpPayload", () => {
-        it("maps an OTP password change notification", () => {
-            expect(
-                mapper.passwordChangedViaOtpPayload({ account: ACCOUNT_ID, message: "commands.password.CHANGED" }),
-            ).toEqual(expected(MessageTemplate.PASSWORD_CHANGED_VIA_OTP));
+    describe("[Method] - passwordChangedViaOtpPayload", () => {
+        it("[case] - maps an OTP password change notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.passwordChangedViaOtpPayload({
+                account: ACCOUNT_ID,
+                message: "commands.password.CHANGED",
+            });
+
+            // Assert
+            expect(result).toEqual(expected(MessageTemplate.PASSWORD_CHANGED_VIA_OTP));
         });
     });
 
-    describe("passwordChangedViaRecoveryCodePayload", () => {
-        it("maps a recovery-code password change notification", () => {
-            expect(
-                mapper.passwordChangedViaRecoveryCodePayload({
-                    account: ACCOUNT_ID,
-                    message: "commands.password.CHANGED",
-                }),
-            ).toEqual(expected(MessageTemplate.PASSWORD_CHANGED_VIA_RECOVERY_CODE));
+    describe("[Method] - passwordChangedViaRecoveryCodePayload", () => {
+        it("[case] - maps a recovery-code password change notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.passwordChangedViaRecoveryCodePayload({
+                account: ACCOUNT_ID,
+                message: "commands.password.CHANGED",
+            });
+
+            // Assert
+            expect(result).toEqual(expected(MessageTemplate.PASSWORD_CHANGED_VIA_RECOVERY_CODE));
         });
     });
 
-    describe("notificationPayload", () => {
-        it("maps a reset password OTP notification", () => {
-            expect(mapper.notificationPayload({ account: ACCOUNT_ID, otp: "123456" })).toEqual(
-                expected(MessageTemplate.RESET_PASSWORD_OTP, { otp: "123456" }),
-            );
+    describe("[Method] - notificationPayload", () => {
+        it("[case] - maps a reset password OTP notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.notificationPayload({ account: ACCOUNT_ID, otp: "123456" });
+
+            // Assert
+            expect(result).toEqual(expected(MessageTemplate.RESET_PASSWORD_OTP, { otp: "123456" }));
         });
     });
 });

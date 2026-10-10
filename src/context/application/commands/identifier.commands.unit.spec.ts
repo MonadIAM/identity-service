@@ -8,19 +8,22 @@ const ID = "entity-a";
 const CONTEXT: Extract.Meta = { ip: "127.0.0.1", userAgent: "unit-test" };
 const helpers = new IdentifierCommandsUnitHelpers();
 
-describe("IdentifierCommands", () => {
-    describe("create", () => {
-        it("creates an actor-owned identifier and binds its verification code to the resulting identifier", async () => {
+describe("[Commands] - Identifier", () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates an actor-owned identifier and binds its verification code to the resulting identifier", async () => {
+            // Arrange
             const { commands, identifierService, cryptoService, otpCacheService, transaction } = await helpers.commands();
             cryptoService.generateOTP.mockReturnValue("123456");
             identifierService.create.mockResolvedValue(helpers.createIdentifier({ id: ID }));
 
+            // Act
             await commands.create({
                 input: { identifier: "mail@example.test", type: IdentifierType.EMAIL },
                 actor: ACTOR,
                 context: CONTEXT,
             });
 
+            // Assert
             expect(identifierService.create.mock.calls).toEqual([
                 [
                     {
@@ -36,37 +39,58 @@ describe("IdentifierCommands", () => {
         });
     });
 
-    describe("resend", () => {
-        it.each([false, true])("resends only an unverified identifier owned by the actor: %s", async (isVerified) => {
-            const { commands, identifierRepository, otpCacheService, cryptoService, emit } = await helpers.commands();
-            identifierRepository.findUniqueOrThrow.mockResolvedValue(helpers.createIdentifier({ id: ID, isVerified }));
-            cryptoService.generateOTP.mockReturnValue("123456");
+    describe("[Method] - resend", () => {
+        it.each([false, true])(
+            "[case] - resends only an unverified identifier owned by the actor: %s",
+            async (isVerified) => {
+                // Arrange
+                const { commands, identifierRepository, otpCacheService, cryptoService, emit } = await helpers.commands();
+                identifierRepository.findUniqueOrThrow.mockResolvedValue(helpers.createIdentifier({ id: ID, isVerified }));
+                cryptoService.generateOTP.mockReturnValue("123456");
 
-            const result = commands.resend({ input: { identifier: "mail@example.test" }, actor: ACTOR, context: CONTEXT });
+                // Act
+                const result = commands.resend({
+                    input: { identifier: "mail@example.test" },
+                    actor: ACTOR,
+                    context: CONTEXT,
+                });
+                if (isVerified) {
+                    await Promise.allSettled([result]);
+                } else {
+                    await result;
+                }
 
-            if (isVerified) {
-                await expect(result).rejects.toThrow();
-                expect(otpCacheService.set).not.toHaveBeenCalled();
-                expect(emit).not.toHaveBeenCalled();
-            } else {
-                await result;
-                expect(otpCacheService.set.mock.calls).toEqual([[{ purpose: "identifier", value: ID, key: "123456" }]]);
-            }
-            expect(identifierRepository.findUniqueOrThrow.mock.calls).toEqual([
-                [{ where: { identity: "mail@example.test", account: ACTOR } }],
-            ]);
-        });
+                // Assert
+                if (isVerified) {
+                    await expect(result).rejects.toThrow();
+                    expect(otpCacheService.set).not.toHaveBeenCalled();
+                    expect(emit).not.toHaveBeenCalled();
+                } else {
+                    expect(otpCacheService.set.mock.calls).toEqual([[{ purpose: "identifier", value: ID, key: "123456" }]]);
+                }
+                expect(identifierRepository.findUniqueOrThrow.mock.calls).toEqual([
+                    [{ where: { identity: "mail@example.test", account: ACTOR } }],
+                ]);
+            },
+        );
     });
 
-    describe("verify", () => {
-        it.each([ID, null])("verifies only the identifier bound to a valid code: %s", async (cached) => {
+    describe("[Method] - verify", () => {
+        it.each([ID, null])("[case] - verifies only the identifier bound to a valid code: %s", async (cached) => {
+            // Arrange
             const { commands, otpCacheService, identifierService, transaction, run } = await helpers.commands();
             otpCacheService.consume.mockResolvedValue(cached);
 
+            // Act
             const result = commands.verify({ input: { code: "123456" }, actor: ACTOR, context: CONTEXT });
-
             if (cached) {
                 await result;
+            } else {
+                await Promise.allSettled([result]);
+            }
+
+            // Assert
+            if (cached) {
                 expect(identifierService.verify.mock.calls).toEqual([
                     [{ input: { identifier: ID }, transaction: transaction.entityManager }],
                 ]);
@@ -78,15 +102,21 @@ describe("IdentifierCommands", () => {
         });
     });
 
-    describe("togglePublicContact / purge", () => {
-        it.each(["togglePublicContact", "purge"] as const)("restricts %s to the actor's identifier", async (method) => {
-            const { commands, identifierService, transaction } = await helpers.commands();
+    describe("[Behavior] - identifier ownership", () => {
+        it.each(["togglePublicContact", "purge"] as const)(
+            "[case] - restricts %s to the actor's identifier",
+            async (method) => {
+                // Arrange
+                const { commands, identifierService, transaction } = await helpers.commands();
 
-            await commands[method]({ input: { identifier: ID }, actor: ACTOR, context: CONTEXT });
+                // Act
+                await commands[method]({ input: { identifier: ID }, actor: ACTOR, context: CONTEXT });
 
-            expect(identifierService[method].mock.calls).toEqual([
-                [{ input: { identifier: ID, account: ACTOR }, transaction: transaction.entityManager }],
-            ]);
-        });
+                // Assert
+                expect(identifierService[method].mock.calls).toEqual([
+                    [{ input: { identifier: ID, account: ACTOR }, transaction: transaction.entityManager }],
+                ]);
+            },
+        );
     });
 });

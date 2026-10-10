@@ -1,88 +1,86 @@
 import { IdentifierType } from "~context/enums";
 
 declare global {
-    namespace Commands {
-        namespace Identifier {
-            interface Contract extends ControllerContract {}
+    namespace Commands.Identifier {
+        interface Contract extends ControllerContract {}
 
-            interface ControllerContract {
-                togglePublicContact: TogglePublicContact.Signature;
-                verify: Verify.Signature;
-                create: Create.Signature;
-                resend: Resend.Signature;
-                purge: Purge.Signature;
-            }
+        interface ControllerContract {
+            togglePublicContact: TogglePublicContact.Signature;
+            verify: Verify.Signature;
+            create: Create.Signature;
+            resend: Resend.Signature;
+            purge: Purge.Signature;
+        }
 
-            namespace TogglePublicContact {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        identifier: string;
-                    };
+        namespace TogglePublicContact {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    identifier: string;
                 };
+            };
 
-                type Result = Promise<MessageResult>;
+            type Result = Promise<MessageResult>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace Create {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        type: IdentifierType;
-                        identifier: string;
-                    };
+        namespace Create {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    type: IdentifierType;
+                    identifier: string;
                 };
+            };
 
-                type Result = Promise<MessageResult>;
+            type Result = Promise<MessageResult>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace Resend {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        identifier: string;
-                    };
+        namespace Resend {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    identifier: string;
                 };
+            };
 
-                type Result = Promise<MessageResult>;
+            type Result = Promise<MessageResult>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace Verify {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        code: string;
-                    };
+        namespace Verify {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    code: string;
                 };
+            };
 
-                type Result = Promise<MessageResult>;
+            type Result = Promise<MessageResult>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace Purge {
-                type Props = {
-                    context: Extract.Meta;
-                    actor: string;
-                    input: {
-                        identifier: string;
-                    };
+        namespace Purge {
+            type Props = {
+                context: Extract.Meta;
+                actor: string;
+                input: {
+                    identifier: string;
                 };
+            };
 
-                type Result = Promise<MessageResult>;
+            type Result = Promise<MessageResult>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
         }
     }
 }

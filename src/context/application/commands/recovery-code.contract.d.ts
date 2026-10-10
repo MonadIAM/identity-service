@@ -1,24 +1,22 @@
-declare namespace Commands {
-    namespace RecoveryCode {
-        interface Contract extends ControllerContract {}
+declare namespace Commands.RecoveryCode {
+    interface Contract extends ControllerContract {}
 
-        interface ControllerContract {
-            regenerate: Regenerate.Signature;
-        }
+    interface ControllerContract {
+        regenerate: Regenerate.Signature;
+    }
 
-        namespace Regenerate {
-            type Props = {
-                context: Extract.Meta;
-                actor: string;
-            };
+    namespace Regenerate {
+        type Props = {
+            context: Extract.Meta;
+            actor: string;
+        };
 
-            type Result = Promise<
-                MessageResult & {
-                    codes: string[];
-                }
-            >;
+        type Result = Promise<
+            MessageResult & {
+                codes: string[];
+            }
+        >;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
     }
 }
