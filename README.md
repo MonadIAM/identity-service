@@ -118,7 +118,7 @@ http://localhost:4002
 | `make lint-fix`                   | Fix only Prettier violations and print changed file paths.          |
 | `make tsc`                        | Check TypeScript with tsc --noEmit.                                 |
 | `make knip`                       | Detect unused exports, files, and dependencies.                     |
-| `make secrets-check`              | Run the hook secret scan (repository history).                      |
+| `make secrets-check`              | Run the hook secret scan (staged changes).                      |
 | `make env-check`                  | Validate environment DTO, templates and injected keys.              |
 | `make intl-types`                 | Generate TypeScript types from the translation dictionaries.        |
 | `make intl-check`                 | Run all six dictionary checks used by the Git hook.                 |
@@ -135,7 +135,9 @@ http://localhost:4002
 | `make empty-migration name="..."` | Generate a blank MikroORM migration.                                |
 | `make seed`                       | Run the PostgreSQL seeder in the running service container.         |
 | **Test**                          |                                                                     |
-| `make test`                       | Run unit tests.                                                     |
+| `make test`                       | Run unit and integration tests (Docker required).                   |
+| `make utest`                      | Run the complete unit suite.                                       |
+| `make itest`                      | Run integration tests (Docker required).                           |
 | `make coverage-unit`              | Run unit tests with coverage in `coverage/unit`.                    |
 | `make coverage-integration`       | Run integration tests with coverage in `coverage/integration`.      |
 | `make coverage`                   | Run both suites with combined coverage in `coverage/all`.           |
