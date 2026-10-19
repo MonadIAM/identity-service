@@ -8,8 +8,17 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Test sources
+**/*.spec.ts
+src/testing/
+
 # Environment variables and secrets
 .env
+.env.local
+.env.*.local
+.env.*
+**/.env
+**/.env.*
 *.pem
 *.key
 *.csv
@@ -24,6 +33,7 @@ kafka_data/
 .git
 .gitignore
 .gitattributes
+.github
 
 # IDE configs and system files
 .vscode
@@ -35,5 +45,10 @@ Thumbs.db
 
 # Documentation and management scripts
 README.md
-Makefile
 scripts/
+coverage/
+graphify-out/
+.lsmcp/
+.codex/
+.agents/
+AGENTS.md
