@@ -3,7 +3,7 @@
   "description": "IAM | Identity & AuthN: account lifecycle, OAuth 2.0/OIDC, federated login, sessions and token rotation, 2FA, account recovery and reauthentication.",
   "author": "Daniil Egorov (https://github.com/Lambdius)",
   "license": "SEE LICENSE IN LICENSE",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/index.js",
   "engines": {
     "node": "24.18.0"
