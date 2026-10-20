@@ -7,11 +7,14 @@ export abstract class ReferenceAutomation {
         const authorizationUrlProperty = "authorizationUrl";
         const contentTypeJson = "application/json";
         const docsCallbackPath = "/docs/";
-        const redirectHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+        const redirectHosts = new Set(["localhost", "127.0.0.1", "[::1]", window.location.hostname]);
 
         const request = new Request(input, init);
         const requestUrl = new URL(request.url, window.location.href);
-        const authnRequest = request.method.toUpperCase() === "POST" && authnPathPattern.test(requestUrl.pathname);
+        const authnRequest =
+            requestUrl.origin === window.location.origin &&
+            request.method.toUpperCase() === "POST" &&
+            authnPathPattern.test(requestUrl.pathname);
         let outgoingRequest = request;
 
         if (authnRequest) {

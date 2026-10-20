@@ -44,6 +44,7 @@ export class OAuthController {
     @Redirect(undefined, FOUND)
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
+    @Header("Cross-Origin-Opener-Policy", "unsafe-none")
     @ApiOperation({
         summary: "Start OAuth 2.0 Authorization Code flow",
         description:
