@@ -7,7 +7,7 @@ import { SensitiveThrottle } from "./sensitive-throttle.decorator";
 const reflector = new Reflector();
 const cases = [
     { name: "OtpVerify", decorate: SensitiveThrottle.OtpVerify(), limit: 5, ttl: 600000 },
-    { name: "OtpIssue", decorate: SensitiveThrottle.OtpIssue(), limit: 3, ttl: 600000 },
+    { name: "OtpIssue", decorate: SensitiveThrottle.OtpIssue(), limit: 1, ttl: 60000 },
     { name: "TotpVerify", decorate: SensitiveThrottle.TotpVerify(), limit: 5, ttl: 300000 },
     { name: "HighImpactSecret", decorate: SensitiveThrottle.HighImpactSecret(), limit: 5, ttl: 3600000 },
     { name: "PasswordAuth", decorate: SensitiveThrottle.PasswordAuth(), limit: 10, ttl: 900000 },
@@ -85,7 +85,7 @@ describe("[Decorator] - SensitiveThrottle", () => {
 
             // Assert
             for (const limit of limits) {
-                expect(limit).toEqual({ methodLimit: 3, methodTtl: 600000, inheritedLimit: 10, inheritedTtl: 900000 });
+                expect(limit).toEqual({ methodLimit: 1, methodTtl: 60000, inheritedLimit: 10, inheritedTtl: 900000 });
             }
         });
     });
