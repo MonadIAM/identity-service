@@ -67,6 +67,18 @@ export class EnvironmentVariablesDTO {
     declare public DOCS_OAUTH_CLIENT_ID: string;
 
     @Validator.IsString()
+    @Validator.IsOptional()
+    declare public WEB_OAUTH_AUTH_ADDRESS?: string;
+
+    @Validator.IsString()
+    @Validator.IsOptional()
+    declare public WEB_OAUTH_REDIRECT_URIS?: string;
+
+    @Validator.IsString()
+    @Validator.IsOptional()
+    declare public DOCS_OAUTH_REDIRECT_URIS?: string;
+
+    @Validator.IsString()
     declare public ACCESS_CONTROL_GRPC_URL: string;
 
     // ---------------------------------------------------------------------------

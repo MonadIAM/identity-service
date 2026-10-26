@@ -7,7 +7,7 @@ export class SensitiveThrottle {
     }
 
     public static OtpIssue(): MethodDecorator & ClassDecorator {
-        return this.both(3, ms("10m"));
+        return this.both(1, ms("1m"));
     }
 
     public static TotpVerify(): MethodDecorator & ClassDecorator {
