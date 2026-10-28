@@ -50,6 +50,7 @@ describe("[Commands] - FederatedAuthn", () => {
                             provider,
                             redirectUri: "https://app.example/auth/federated/callback",
                             authorizationRequest: "request",
+                            timeZone: "UTC",
                             locale: "en",
                         },
                     },

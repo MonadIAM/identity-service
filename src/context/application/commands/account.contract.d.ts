@@ -56,6 +56,7 @@ declare namespace Commands.Account {
             context: Extract.Meta;
             input: {
                 identifier: string;
+                timeZone?: string;
                 password: string;
                 locale?: string;
                 name: string;

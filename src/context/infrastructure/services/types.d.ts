@@ -215,8 +215,9 @@ declare global {
             type Metadata = {
                 authorizationRequest?: string;
                 redirectUri?: string;
-                locale?: string;
+                timeZone?: string;
                 provider: string;
+                locale?: string;
             };
 
             interface Contract extends PublicContract {}

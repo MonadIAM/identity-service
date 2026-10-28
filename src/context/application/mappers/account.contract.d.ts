@@ -9,6 +9,7 @@ declare namespace Commands.Mappers.Account {
     namespace RegistrationPayload {
         type Props = {
             identifier: Entities.Identifier;
+            timezone?: string;
             account: string;
             locale?: string;
             otp: string;

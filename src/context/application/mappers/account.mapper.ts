@@ -7,6 +7,7 @@ export class AccountMapper implements Commands.Mappers.Account.Contract {
         return {
             account: props.account,
             locale: props.locale,
+            timezone: props.timezone,
             otp: props.otp,
             identifier: {
                 type: props.identifier.type === IdentifierType.EMAIL ? IdentifierType.EMAIL : IdentifierType.PHONE,
@@ -24,8 +25,9 @@ export class AccountMapper implements Commands.Mappers.Account.Contract {
             .find((item) => item.isVerified && (item.type === IdentifierType.EMAIL || item.type === IdentifierType.PHONE));
 
         return {
-            account: props.account.id,
+            timezone: props.account.profile?.timeZone ?? "UTC",
             locale: props.account.profile?.locale ?? "en",
+            account: props.account.id,
             ...(identifier
                 ? {
                       identifier: {

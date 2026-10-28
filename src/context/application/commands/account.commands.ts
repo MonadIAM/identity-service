@@ -67,7 +67,11 @@ export class AccountCommands implements Commands.Account.Contract {
                 const account = this.accountService.create({
                     transaction,
                     input: {
-                        profile: { displayName: props.input.name, locale: props.input.locale ?? "en" },
+                        profile: {
+                            timeZone: props.input.timeZone ?? "UTC",
+                            locale: props.input.locale ?? "en",
+                            displayName: props.input.name,
+                        },
                         primaryIdentifier: { identity: props.input.identifier, type },
                         subject: AccountSubject.HUMAN,
                         status: AccountStatus.PENDING,
@@ -87,6 +91,7 @@ export class AccountCommands implements Commands.Account.Contract {
                 });
 
                 return {
+                    timezone: account.profile?.timeZone ?? "UTC",
                     locale: account.profile?.locale ?? "en",
                     account: account.id,
                     identifier,
@@ -117,6 +122,7 @@ export class AccountCommands implements Commands.Account.Contract {
 
             await this.transactionalService.emit({
                 payload: this.mapper.registrationPayload({
+                    timezone: identifier.account.profile?.timeZone ?? "UTC",
                     locale: identifier.account.profile?.locale ?? "en",
                     account: identifier.account.id,
                     identifier,

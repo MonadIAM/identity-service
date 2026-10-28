@@ -48,7 +48,7 @@ describe("[Commands] - Account", () => {
                         {
                             input: {
                                 primaryIdentifier: { identity: identifier, type },
-                                profile: { displayName: "New User", locale: "en" },
+                                profile: { displayName: "New User", locale: "en", timeZone: "UTC" },
                                 subject: AccountSubject.HUMAN,
                                 status: AccountStatus.PENDING,
                                 password: "password-hash",
@@ -71,6 +71,7 @@ describe("[Commands] - Account", () => {
                 expect(result).toEqual({
                     identifier: primaryIdentifier,
                     account: ACCOUNT,
+                    timezone: "UTC",
                     otp: "123456",
                     locale: "en",
                 });
