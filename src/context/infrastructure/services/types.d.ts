@@ -213,9 +213,11 @@ declare global {
 
         namespace OAuthStateCache {
             type Metadata = {
-                redirectUri?: string;
                 authorizationRequest?: string;
+                redirectUri?: string;
+                timeZone?: string;
                 provider: string;
+                locale?: string;
             };
 
             interface Contract extends PublicContract {}

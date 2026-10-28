@@ -126,9 +126,13 @@ describe("[DomainService] - Account", () => {
 
             // Assert
             expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
+                options: {
+                    populate: ["identifiers", "profile"],
+                    lockMode: LockMode.PESSIMISTIC_WRITE,
+                    refresh: true,
+                },
                 transaction: transaction.entityManager,
                 where: { id: ACCOUNT_ID },
-                options: { populate: ["identifiers"], lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true },
             });
             expect(activateSpy).toHaveBeenCalledTimes(1);
             expect(result).toBe(account);

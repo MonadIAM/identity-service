@@ -68,7 +68,13 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
 
             await this.oauthStateCacheService.set({
                 state,
-                metadata: { provider: input.provider, authorizationRequest: input.authorizationRequest, redirectUri },
+                metadata: {
+                    authorizationRequest: input.authorizationRequest,
+                    timeZone: input.timeZone ?? "UTC",
+                    locale: input.locale ?? "en",
+                    provider: input.provider,
+                    redirectUri,
+                },
             });
 
             return { url: oauthService.getAuthorizationUrl(state) };
@@ -126,6 +132,8 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
                 profile: {
                     displayName: profile.displayName,
                     pictureUrl: profile.pictureUrl,
+                    locale: cached.locale ?? "en",
+                    timeZone: cached.timeZone ?? "UTC",
                 },
             };
 

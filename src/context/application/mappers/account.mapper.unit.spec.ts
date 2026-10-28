@@ -44,7 +44,7 @@ describe("[DataMapper] - Account", () => {
             const result = mapper.accountPayload({ account });
 
             // Assert
-            expect(result).toEqual({ account: ACCOUNT_ID });
+            expect(result).toEqual({ account: ACCOUNT_ID, locale: "en", timezone: "UTC" });
         });
 
         it("[case] - includes the verified contact in the account confirmation event", () => {
@@ -63,8 +63,10 @@ describe("[DataMapper] - Account", () => {
 
             // Assert
             expect(result).toEqual({
-                account: ACCOUNT_ID,
                 identifier: { id: identifier.id, type: IdentifierType.PHONE, value: identifier.identity },
+                account: ACCOUNT_ID,
+                timezone: "UTC",
+                locale: "en",
             });
         });
     });

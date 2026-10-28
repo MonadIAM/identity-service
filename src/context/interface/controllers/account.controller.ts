@@ -1,5 +1,6 @@
 import { Controller, HttpStatus, HttpCode, Header, Inject, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { I18nLang } from "nestjs-i18n";
 
 import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
 import { PermissionCode, ResponseViewType } from "~context/enums";
@@ -65,8 +66,12 @@ export class AccountController {
         security: [],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, CONFLICT)
-    public signup(@Body() input: SignupBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.Account.Signup.Result {
-        return this.accountCommands.signup({ context, input });
+    public signup(
+        @Body() input: SignupBodyDTO,
+        @I18nLang() locale: string,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Account.Signup.Result {
+        return this.accountCommands.signup({ context, input: { ...input, locale } });
     }
 
     @Public()

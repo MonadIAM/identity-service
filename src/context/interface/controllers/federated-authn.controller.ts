@@ -1,5 +1,6 @@
 import { Controller, HttpStatus, HttpCode, Header, Inject, Query, Get, Post, Body, Redirect } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { I18nLang } from "nestjs-i18n";
 
 import { Extract, FormatResponse, Public, Swagger } from "~common/decorators";
 import { FEDERATED_AUTHN_COMMANDS } from "~context/application/commands";
@@ -41,16 +42,19 @@ export class FederatedAuthnController {
         security: [],
     })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST)
-    public authorize(@Query() input: FederatedAuthorizeQueryDTO): Commands.FederatedAuthn.Authorize.Result {
-        return this.federatedAuthnCommands.authorize({ input });
+    public authorize(
+        @Query() input: FederatedAuthorizeQueryDTO,
+        @I18nLang() locale: string,
+    ): Commands.FederatedAuthn.Authorize.Result {
+        return this.federatedAuthnCommands.authorize({ input: { ...input, locale } });
     }
 
     @Public()
     @Get("callback")
-    @Redirect(undefined, HttpStatus.FOUND)
     @Header("Pragma", "no-cache")
     @Header("Cache-Control", "no-store")
     @Header("Referrer-Policy", "no-referrer")
+    @Redirect(undefined, HttpStatus.FOUND)
     public redirect(@Query() input: FederatedRedirectQueryDTO): Commands.FederatedAuthn.Redirect.Result {
         return this.federatedAuthnCommands.redirect({ input });
     }

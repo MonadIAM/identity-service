@@ -11,6 +11,14 @@ export class FederatedAuthorizeQueryDTO {
     declare public provider: string;
 
     @Expose()
+    @Validator.IsOptional()
+    @Validator.IsString()
+    @Validator.MinLength(1)
+    @Validator.MaxLength(64)
+    @ApiProperty({ required: false, type: String })
+    declare public timeZone?: string;
+
+    @Expose()
     @Validator.IsString()
     @Validator.MinLength(1)
     @ApiProperty({ required: true, type: String })

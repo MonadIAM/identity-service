@@ -8,9 +8,11 @@ declare namespace Commands.Mappers.Account {
 
     namespace RegistrationPayload {
         type Props = {
-            account: string;
-            otp: string;
             identifier: Entities.Identifier;
+            timezone?: string;
+            account: string;
+            locale?: string;
+            otp: string;
         };
 
         type Result = Topics.Account.CreateMessage["payload"];

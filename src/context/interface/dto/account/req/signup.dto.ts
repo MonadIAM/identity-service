@@ -19,4 +19,12 @@ export class SignupBodyDTO {
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public name: string;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsString()
+    @Validator.MinLength(1)
+    @Validator.MaxLength(64)
+    @ApiProperty({ required: false, type: String })
+    declare public timeZone?: string;
 }
