@@ -88,8 +88,9 @@ declare namespace Commands.FederatedAuthn {
     namespace Authorize {
         type Props = {
             input: {
-                provider: string;
                 authorizationRequest: string;
+                provider: string;
+                locale?: string;
             };
         };
 

@@ -48,8 +48,9 @@ describe("[Commands] - FederatedAuthn", () => {
                         state: "state-token",
                         metadata: {
                             provider,
-                            authorizationRequest: "request",
                             redirectUri: "https://app.example/auth/federated/callback",
+                            authorizationRequest: "request",
+                            locale: "en",
                         },
                     },
                 ],

@@ -57,6 +57,7 @@ declare namespace Commands.Account {
             input: {
                 identifier: string;
                 password: string;
+                locale?: string;
                 name: string;
             };
         };

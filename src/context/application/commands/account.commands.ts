@@ -67,8 +67,8 @@ export class AccountCommands implements Commands.Account.Contract {
                 const account = this.accountService.create({
                     transaction,
                     input: {
+                        profile: { displayName: props.input.name, locale: props.input.locale ?? "en" },
                         primaryIdentifier: { identity: props.input.identifier, type },
-                        profile: { displayName: props.input.name },
                         subject: AccountSubject.HUMAN,
                         status: AccountStatus.PENDING,
                         password: hashedPassword,
@@ -86,7 +86,12 @@ export class AccountCommands implements Commands.Account.Contract {
                     key: otp,
                 });
 
-                return { account: account.id, identifier, otp };
+                return {
+                    locale: account.profile?.locale ?? "en",
+                    account: account.id,
+                    identifier,
+                    otp,
+                };
             },
         });
 
@@ -96,6 +101,7 @@ export class AccountCommands implements Commands.Account.Contract {
     public async resend(props: Commands.Account.Resend.Props): Commands.Account.Resend.Result {
         const identifier = await this.identifierRepository.findUniqueOrThrow({
             where: { identity: props.input.identifier },
+            options: { populate: ["account.profile"] },
         });
 
         if (identifier.isVerified) {
@@ -110,7 +116,12 @@ export class AccountCommands implements Commands.Account.Contract {
             });
 
             await this.transactionalService.emit({
-                payload: this.mapper.registrationPayload({ account: identifier.account.id, identifier, otp }),
+                payload: this.mapper.registrationPayload({
+                    locale: identifier.account.profile?.locale ?? "en",
+                    account: identifier.account.id,
+                    identifier,
+                    otp,
+                }),
                 actionType: AccountTopicAction.CREATE,
                 destinationTopic: KafkaTopic.ACCOUNT,
                 resource: this.resource,

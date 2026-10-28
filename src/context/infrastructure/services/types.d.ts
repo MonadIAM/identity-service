@@ -213,8 +213,9 @@ declare global {
 
         namespace OAuthStateCache {
             type Metadata = {
-                redirectUri?: string;
                 authorizationRequest?: string;
+                redirectUri?: string;
+                locale?: string;
                 provider: string;
             };
 

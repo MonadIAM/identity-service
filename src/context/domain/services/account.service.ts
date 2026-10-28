@@ -70,9 +70,15 @@ export class AccountService implements Services.Account.Contract {
     public async verify(props: Services.Account.Verify.Props): Services.Account.Verify.Result {
         const { transaction, input } = props;
         const account = await this.accountRepository.findUniqueOrThrow({
-            options: { populate: ["identifiers"], lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true },
-            where: { id: input.account },
             transaction,
+            options: {
+                populate: ["identifiers", "profile"],
+                lockMode: LockMode.PESSIMISTIC_WRITE,
+                refresh: true,
+            },
+            where: {
+                id: input.account,
+            },
         });
 
         account.activate();

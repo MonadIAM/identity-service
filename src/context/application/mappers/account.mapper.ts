@@ -6,11 +6,12 @@ export class AccountMapper implements Commands.Mappers.Account.Contract {
     ): Commands.Mappers.Account.RegistrationPayload.Result {
         return {
             account: props.account,
+            locale: props.locale,
             otp: props.otp,
             identifier: {
-                id: props.identifier.id,
                 type: props.identifier.type === IdentifierType.EMAIL ? IdentifierType.EMAIL : IdentifierType.PHONE,
                 value: props.identifier.identity,
+                id: props.identifier.id,
             },
         };
     }
@@ -24,12 +25,13 @@ export class AccountMapper implements Commands.Mappers.Account.Contract {
 
         return {
             account: props.account.id,
+            locale: props.account.profile?.locale ?? "en",
             ...(identifier
                 ? {
                       identifier: {
-                          id: identifier.id,
                           type: identifier.type === IdentifierType.EMAIL ? IdentifierType.EMAIL : IdentifierType.PHONE,
                           value: identifier.identity,
+                          id: identifier.id,
                       },
                   }
                 : {}),
