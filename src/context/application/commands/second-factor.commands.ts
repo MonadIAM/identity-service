@@ -91,7 +91,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                     transaction,
                 });
 
-                hasMasterCode = Boolean(factor.account.masterCode);
+                hasMasterCode = Boolean(factor.account.masterCode && factor.account.masterCode.hash !== masterCodeHash);
 
                 return { account: props.actor };
             },
