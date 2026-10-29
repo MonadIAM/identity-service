@@ -5,9 +5,22 @@ declare global {
         interface Contract extends PublicContract {}
 
         interface PublicContract extends Repositories.Base.Contract<Entities.Account, Repositories.Mappers.Account.Types> {
+            findExpiredDeactivated: FindExpiredDeactivated.Signature;
             findExpiredInactive: FindExpiredInactive.Signature;
             findExpiredPending: FindExpiredPending.Signature;
             getLookupList: GetLookupList.Signature;
+        }
+
+        namespace FindExpiredDeactivated {
+            type Props = {
+                transaction: ORM.EntityManager;
+                expirationDate: Date;
+                batchSize: number;
+            };
+
+            type Result = Promise<Entities.Account[]>;
+
+            type Signature = (props: Props) => Result;
         }
 
         interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "getLookupList" | "findMany"> {}

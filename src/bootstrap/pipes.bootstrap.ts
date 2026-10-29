@@ -3,6 +3,8 @@ import { INestApplication, ValidationError, ValidationPipe, ValidationPipeOption
 import { Exception, ErrorCode } from "~common/exceptions";
 
 export abstract class BootstrapPipes {
+    private static readonly dictionaryPath = "commands.oauth";
+
     public static readonly oauthValidationPipe = BootstrapPipes.createValidationPipe({
         exceptionFactory: BootstrapPipes.validationExceptionFactory,
         transformOptions: { excludeExtraneousValues: true },
@@ -29,7 +31,7 @@ export abstract class BootstrapPipes {
     private static oauthTokenValidationExceptionFactory(validationErrors: ValidationError[]): Exception {
         const details = BootstrapPipes.formatValidationErrors(validationErrors);
         return Exception.badRequest({
-            messageKey: "commands.oauth.INVALID_REQUEST",
+            messageKey: `${BootstrapPipes.dictionaryPath}.INVALID_REQUEST`,
             code: ErrorCode.INVALID_REQUEST,
             details,
         });

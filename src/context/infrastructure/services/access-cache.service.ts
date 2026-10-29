@@ -4,8 +4,8 @@ import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 import Redis from "ioredis";
 
+import { AccessControlClient } from "~infrastructure/grpc/access-control.client";
 import { REDIS_CACHE_CLIENT } from "~infrastructure/redis";
-import { AccessControlClient } from "~infrastructure/grpc";
 
 @Injectable()
 export class AccessCacheService implements InfrastructureServices.AccessCache.Contract {

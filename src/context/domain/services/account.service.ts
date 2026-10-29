@@ -97,16 +97,20 @@ export class AccountService implements Services.Account.Contract {
     public async deactivate(props: Services.Account.Deactivate.Props): Services.Account.Deactivate.Result {
         const { transaction, input } = props;
         const account = await this.accountRepository.findUniqueOrThrow({
-            options: { populate: ["sessions"] },
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE, populate: ["sessions"], refresh: true },
             where: { id: input.account },
             transaction,
         });
 
-        for (const session of account.sessions.getItems()) {
+        const sessions = account.sessions.getItems();
+
+        for (const session of sessions) {
             transaction.remove(session);
         }
 
         account.deactivate();
+
+        return sessions;
     }
 
     public async suspend(props: Services.Account.Suspend.Props): Services.Account.Suspend.Result {

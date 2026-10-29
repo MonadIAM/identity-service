@@ -14,6 +14,11 @@ declare global {
                 secondFactorService: Jest.Mocked<Pick<Services.SecondFactor.CommandContract, "reauthenticate">>;
                 hashingService: Jest.Mocked<Pick<CommonServices.Hashing.PublicContract, "verify">>;
                 commands: globalThis.Commands.Reauthentication.Contract;
+                reauthenticationCacheService: Jest.Mocked<
+                    Pick<InfrastructureServices.ReauthenticationCache.PublicContract, "set">
+                >;
+                otpCacheService: Jest.Mocked<Pick<InfrastructureServices.OTPCache.PublicContract, "set" | "consume">>;
+                cryptoService: Jest.Mocked<Pick<CommonServices.Crypto.PublicContract, "generateOTP" | "hashToken">>;
                 configService: ConfigService;
             };
 

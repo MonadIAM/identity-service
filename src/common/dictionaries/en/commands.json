@@ -22,6 +22,10 @@
     "AUTHORIZATION_CONFIRMED": "Authentication for the authorization request was completed."
   },
   "reauthentication": {
+    "EMAIL_CONFIRMATION_UNAVAILABLE": "Use your password or configured second factor to confirm this action.",
+    "VERIFIED_EMAIL_REQUIRED": "A verified email address is required.",
+    "CODE_SENT": "A confirmation code has been sent to your verified email.",
+    "INVALID_OR_EXPIRED_CODE": "The code is invalid or expired. Request a new code.",
     "NO_PASSWORD_SET": "No password is set for this account.",
     "INVALID_PASSWORD": "The password is invalid.",
     "REAUTHENTICATED": "Identity successfully reauthenticated."
@@ -75,6 +79,7 @@
     "BULK_PURGED_COUNT": "{count} service clients successfully deleted."
   },
   "password": {
+    "SET": "Password successfully set.",
     "CHANGED": "Password successfully changed.",
     "RESET_CODE_SENT": "Password reset code successfully sent.",
     "INVALID_OR_EXPIRED_CODE": "The password reset code is invalid or expired.",

@@ -24,6 +24,8 @@ import { OAUTH_COMMANDS } from "./tokens";
 export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract {
     private readonly mapper: Commands.Mappers.Account.Contract;
     private readonly dictionaryPath = "commands.federated-authn";
+    private readonly oauthDictionaryPath = "commands.oauth";
+    private readonly authnDictionaryPath = "commands.authn";
     private readonly resource = "Account";
 
     public constructor(
@@ -79,7 +81,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
 
             return { url: oauthService.getAuthorizationUrl(state) };
         } else {
-            throw Exception.badRequest({ messageKey: "commands.oauth.INVALID_AUTHORIZATION_REQUEST" });
+            throw Exception.badRequest({ messageKey: `${this.oauthDictionaryPath}.INVALID_AUTHORIZATION_REQUEST` });
         }
     }
 
@@ -147,7 +149,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
 
             let result: Commands.FederatedAuthn.AuthnResult;
             if (oauthIdentifier) {
-                result = await this.authenticateExisting({
+                result = this.authenticateExisting({
                     input: { account: oauthIdentifier.account },
                     context,
                 });
@@ -181,8 +183,11 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
     public authenticateExisting(
         props: Commands.FederatedAuthn.AuthenticateExisting.Props,
     ): Commands.FederatedAuthn.AuthenticateExisting.Result {
-        if (props.input.account.status !== AccountStatus.ACTIVE) {
-            throw Exception.forbidden({ messageKey: "commands.authn.ACCOUNT_SUSPENDED" });
+        if (
+            props.input.account.status !== AccountStatus.ACTIVE &&
+            props.input.account.status !== AccountStatus.DEACTIVATED
+        ) {
+            throw Exception.forbidden({ messageKey: `${this.authnDictionaryPath}.ACCOUNT_SUSPENDED` });
         }
         return { message: `${this.dictionaryPath}.SIGNED_IN`, account: props.input.account.id };
     }
@@ -190,7 +195,7 @@ export class FederatedAuthnCommands implements Commands.FederatedAuthn.Contract 
     public async attachToExisting(
         props: Commands.FederatedAuthn.AttachToExisting.Props,
     ): Commands.FederatedAuthn.AttachToExisting.Result {
-        await this.authenticateExisting({ context: props.context, input: { account: props.input.account } });
+        this.authenticateExisting({ context: props.context, input: { account: props.input.account } });
         await this.transactionalService.run({
             resource: this.resource,
             audit: {

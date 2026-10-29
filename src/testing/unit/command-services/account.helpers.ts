@@ -48,6 +48,7 @@ export class AccountCommandsUnitHelpers extends ApplicationCommandUnitHelpers im
                 this.contract<InfrastructureServices.OTPCache.PublicContract>(otpCacheService),
                 this.contract<CommonServices.Hashing.PublicContract>(hashingService),
                 this.contract<CommonServices.Crypto.PublicContract>(cryptoService),
+                this.config({ values: { JWT_ACCESS_TTL: "15m" } }),
             ),
         };
     }

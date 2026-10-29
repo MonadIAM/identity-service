@@ -1,12 +1,26 @@
 import { Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
-import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
 import { PASSWORD_COMMANDS } from "~context/application/commands";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
+import {
+    RequirePermission,
+    SensitiveThrottle,
+    Reauthentication,
+    FormatResponse,
+    Swagger,
+    Extract,
+    Public,
+} from "~common/decorators";
 
-import { ResetByRecoveryCodeBodyDTO, ResetByOTPBodyDTO, RequestOTPBodyDTO, ChangeBodyDTO } from "../dto/password";
+import {
+    ResetByRecoveryCodeBodyDTO,
+    ResetByOTPBodyDTO,
+    RequestOTPBodyDTO,
+    ChangeBodyDTO,
+    SetBodyDTO,
+} from "../dto/password";
 
 const { PASSWORD_CHANGE } = PermissionCode;
 const {
@@ -29,6 +43,34 @@ export class PasswordController {
         @Inject(PASSWORD_COMMANDS)
         private readonly passwordCommands: Commands.Password.ControllerContract,
     ) {}
+
+    @HttpCode(OK)
+    @Post("set")
+    @Reauthentication()
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(PASSWORD_CHANGE)
+    @ApiOperation({
+        summary: "Set the first account password",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        CONFLICT,
+        FORBIDDEN,
+    )
+    public set(
+        @Body() input: SetBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Password.Set.Result {
+        return this.passwordCommands.set({ context, actor, input });
+    }
 
     @HttpCode(OK)
     @Post("change")

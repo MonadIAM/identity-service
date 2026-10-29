@@ -35,6 +35,7 @@ export class CleanupProcessor extends WorkerHost {
     }
 
     private readonly handlers: Record<CleanupJob, Queues.Cleanup.Handler> = {
+        [CleanupJob.DEACTIVATED_ACCOUNTS]: (job: Job) => this.cleanupDeactivatedAccounts(job),
         [CleanupJob.INACTIVE_ACCOUNTS]: (job: Job) => this.cleanupInactiveAccounts(job),
         [CleanupJob.PENDING_ACCOUNTS]: (job: Job) => this.cleanupPendingAccounts(job),
         [CleanupJob.CHANGE_LOG]: (job: Job) => this.cleanupChangeLog(job),
@@ -44,6 +45,34 @@ export class CleanupProcessor extends WorkerHost {
 
     public process(job: Job): Promise<Queues.Cleanup.Result> {
         return this.handlers[job.name as CleanupJob]?.(job);
+    }
+
+    private async cleanupDeactivatedAccounts(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {
+        const { expirationDate, batchSize } = job.data;
+        const purged = await this.transactionalService.run<Entities.Account[]>({
+            resource: this.resource,
+            outbox: {
+                payloadMapper: (accounts) => accounts.map(({ id }) => ({ account: id })),
+                destinationTopic: KafkaTopic.ACCOUNT,
+                actionType: AccountTopicAction.PURGE,
+            },
+            execute: async (transaction) => {
+                const accounts = await this.accountRepository.findExpiredDeactivated({
+                    expirationDate: new Date(expirationDate),
+                    transaction,
+                    batchSize,
+                });
+
+                for (const account of accounts) {
+                    transaction.remove(account);
+                }
+
+                return accounts;
+            },
+        });
+
+        const nextBatch = await this.scheduleNextBatch(job, purged.length === batchSize);
+        return { ...nextBatch, deleted: purged.length };
     }
 
     private async cleanupPendingAccounts(job: Job<Queues.Cleanup.JobData>): Promise<Queues.Cleanup.Result> {

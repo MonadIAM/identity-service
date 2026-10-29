@@ -7,7 +7,7 @@ import { SESSION_QUERIES } from "~context/application/queries";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
-import { BySecondFactorBodyDTO, ByPasswordBodyDTO } from "../dto/reauthentication";
+import { BySecondFactorBodyDTO, ByPasswordBodyDTO, ByOTPBodyDTO } from "../dto/reauthentication";
 import { RevokeBodyDTO, SessionDTO, ListDTO } from "../dto/session";
 import {
     VerifySecondFactorBodyDTO,
@@ -20,6 +20,7 @@ import {
 const {
     REAUTHENTICATION_CONFIRM_SECOND_FACTOR,
     REAUTHENTICATION_CONFIRM_PASSWORD,
+    REAUTHENTICATION_CONFIRM_OTP,
     SESSION_READ_PERSONAL,
     SESSION_READ_ABSOLUTE,
     SESSION_REVOKE,
@@ -142,6 +143,58 @@ export class AuthnController {
         @Tokens.Pending() token?: string,
     ): Commands.Authn.VerifySecondFactor.Result {
         return this.authnCommands.verifySecondFactor({ context, token, input });
+    }
+
+    @HttpCode(OK)
+    @Post("reauthn/request/otp")
+    @SensitiveThrottle.OtpIssue()
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(REAUTHENTICATION_CONFIRM_OTP)
+    @ApiOperation({
+        summary: "Request email reauthentication code",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        FORBIDDEN,
+        NOT_FOUND,
+    )
+    public requestReauthenticationOTP(
+        @Extract.Session() { account: actor, session }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Reauthentication.RequestOTP.Result {
+        return this.reauthenticationCommands.requestOTP({ actor, session, context });
+    }
+
+    @HttpCode(OK)
+    @Post("reauthn/otp")
+    @SensitiveThrottle.OtpVerify()
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(REAUTHENTICATION_CONFIRM_OTP)
+    @ApiOperation({
+        summary: "Reauthenticate by email code",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        FORBIDDEN,
+        NOT_FOUND,
+    )
+    public reauthenticateByOTP(
+        @Body() input: ByOTPBodyDTO,
+        @Extract.Session() { account: actor, session }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Reauthentication.ByOTP.Result {
+        return this.reauthenticationCommands.byOTP({ actor, session, context, input });
     }
 
     @HttpCode(OK)

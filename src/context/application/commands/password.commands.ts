@@ -5,7 +5,7 @@ import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { PASSWORD_SERVICE } from "~context/domain/services";
-import { CRYPTO_SERVICE } from "~common/services";
+import { CRYPTO_SERVICE, HASHING_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 
 import { PasswordMapper } from "../mappers";
@@ -27,8 +27,39 @@ export class PasswordCommands implements Commands.Password.Contract {
         private readonly otpCacheService: InfrastructureServices.OTPCache.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
+        @Inject(HASHING_SERVICE)
+        private readonly hashingService: CommonServices.Hashing.PublicContract,
     ) {
         this.mapper = new PasswordMapper();
+    }
+
+    public async set(props: Commands.Password.Set.Props): Commands.Password.Set.Result {
+        const hash = await this.hashingService.hash({ value: props.input.password });
+
+        await this.transactionalService.run({
+            resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.passwordChangedPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
+            audit: {
+                entityType: EntityType.PASSWORD,
+                actionType: ActionType.CREATE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                await this.passwordService.set({
+                    input: { account: props.actor, hash },
+                    transaction,
+                });
+
+                return { account: props.actor };
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.SET` };
     }
 
     public async change(props: Commands.Password.Change.Props): Commands.Password.Change.Result {

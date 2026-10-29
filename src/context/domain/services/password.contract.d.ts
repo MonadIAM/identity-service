@@ -33,6 +33,21 @@ declare namespace Services.Password {
         resetByOTP: ResetByOTP.Signature;
         change: Change.Signature;
         rotate: Rotate.Signature;
+        set: Set.Signature;
+    }
+
+    namespace Set {
+        type Props = {
+            transaction: ORM.EntityManager;
+            input: {
+                account: string;
+                hash: string;
+            };
+        };
+
+        type Result = Promise<void>;
+
+        type Signature = (props: Props) => Result;
     }
 
     namespace Change {

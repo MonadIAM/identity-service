@@ -26,6 +26,23 @@
           "enumItems": [],
           "mappedType": "datetime"
         },
+        "deactivated_at": {
+          "name": "deactivated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 3,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
         "id": {
           "name": "id",
           "type": "uuid",
@@ -158,6 +175,16 @@
         }
       },
       "indexes": [
+        {
+          "columnNames": [
+            "deactivated_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "account_deactivated_at_index",
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "id"

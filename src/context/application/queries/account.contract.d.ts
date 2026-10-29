@@ -5,9 +5,24 @@ declare global {
         interface Contract extends ControllerContract {}
 
         interface ControllerContract {
+            getSecurity: GetSecurity.Signature;
             findUnique: FindUnique.Signature;
             findMany: FindMany.Signature;
             findMe: FindMe.Signature;
+        }
+
+        namespace GetSecurity {
+            type Props = {
+                account: string;
+            };
+
+            type Result = Promise<{
+                canConfirmByEmail: boolean;
+                hasSecondFactor: boolean;
+                hasPassword: boolean;
+            }>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace FindUnique {

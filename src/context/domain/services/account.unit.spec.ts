@@ -170,7 +170,7 @@ describe("[DomainService] - Account", () => {
             // Assert
             expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
-                options: { populate: ["sessions"] },
+                options: { populate: ["sessions"], lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true },
                 where: { id: ACCOUNT_ID },
             });
             expect(transaction.remove).toHaveBeenNthCalledWith(1, sessions[0]);

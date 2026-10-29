@@ -442,7 +442,7 @@ declare global {
         }
 
         namespace OTPCache {
-            type Purpose = "verification" | "identifier" | "login" | "reset" | "setup2FA";
+            type Purpose = "verification" | "identifier" | "login" | "reset" | "setup2FA" | "reauthentication";
 
             interface Contract extends PublicContract {}
 

@@ -18,6 +18,13 @@ export const AccountSchema = new EntitySchema<Account>({
     tableName: "account",
     schema: "identity",
 
+    indexes: [
+        {
+            name: "account_deactivated_at_index",
+            properties: ["deactivatedAt"],
+        },
+    ],
+
     properties: {
         id: { primary: true, type: "uuid" },
 
@@ -75,6 +82,7 @@ export const AccountSchema = new EntitySchema<Account>({
             mappedBy: "account",
         },
 
+        deactivatedAt: { type: "timestamptz", length: 3, nullable: true },
         lastActiveAt: { type: "timestamptz", length: 3, nullable: true },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },

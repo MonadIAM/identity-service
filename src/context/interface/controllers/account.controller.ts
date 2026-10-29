@@ -2,11 +2,19 @@ import { Controller, HttpStatus, HttpCode, Header, Inject, Body, Post, Get } fro
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nLang } from "nestjs-i18n";
 
-import { Extract, Public, FormatResponse, RequirePermission, SensitiveThrottle, Swagger } from "~common/decorators";
 import { PermissionCode, ResponseViewType } from "~context/enums";
 import { ACCOUNT_COMMANDS } from "~context/application/commands";
 import { ACCOUNT_QUERIES } from "~context/application/queries";
 import { SuccessMessageDTO } from "~common/dto";
+import {
+    RequirePermission,
+    SensitiveThrottle,
+    Reauthentication,
+    FormatResponse,
+    Swagger,
+    Extract,
+    Public,
+} from "~common/decorators";
 
 import {
     VerifyResultDTO,
@@ -15,10 +23,11 @@ import {
     SignupBodyDTO,
     VerifyBodyDTO,
     ResendBodyDTO,
+    SecurityDTO,
     AccountDTO,
 } from "../dto/account";
 
-const { ACCOUNT_READ_PERSONAL, ACCOUNT_SUSPEND, ACCOUNT_RESTORE } = PermissionCode;
+const { ACCOUNT_READ_PERSONAL, ACCOUNT_SUSPEND, ACCOUNT_RESTORE, ACCOUNT_DEACTIVATE } = PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
@@ -55,6 +64,45 @@ export class AccountController {
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findMe(@Extract.Session() { account }: Extract.Session.Auth): Queries.Account.FindMe.Result {
         return this.accountQueries.findMe({ account, view: ResponseViewType.DETAILED });
+    }
+
+    @HttpCode(OK)
+    @Get("security")
+    @FormatResponse(SecurityDTO)
+    @RequirePermission(ACCOUNT_READ_PERSONAL)
+    @ApiResponse({ status: OK, type: SecurityDTO })
+    @ApiOperation({
+        summary: "Get current account authentication methods",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    public getSecurity(@Extract.Session() { account }: Extract.Session.Auth): Queries.Account.GetSecurity.Result {
+        return this.accountQueries.getSecurity({ account });
+    }
+
+    @HttpCode(OK)
+    @Post("deactivate")
+    @Reauthentication()
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(ACCOUNT_DEACTIVATE)
+    @ApiOperation({
+        summary: "Voluntarily deactivate the current account",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public deactivate(
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Account.Deactivate.Result {
+        return this.accountCommands.deactivate({ context, actor });
     }
 
     @Public()
