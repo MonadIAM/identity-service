@@ -15,7 +15,6 @@ function expected(template: MessageTemplate): Topics.Notification.CreateMessage[
             category: NotificationCategory.SECURITY,
             kind: NotificationContentKind.TEMPLATE,
             recipient: ACCOUNT_ID,
-            language: "en",
             template,
         },
     };

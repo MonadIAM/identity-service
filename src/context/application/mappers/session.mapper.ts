@@ -17,7 +17,6 @@ export class SessionMapper implements Commands.Mappers.Session.Contract {
                 kind: NotificationContentKind.TEMPLATE,
                 template: MessageTemplate.LOGIN_ALERT,
                 recipient: props.account,
-                language: "en",
             },
         };
     };

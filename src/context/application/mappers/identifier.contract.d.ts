@@ -18,7 +18,7 @@ declare namespace Commands.Mappers.Identifier {
 
     namespace NotificationPayload {
         type Props = {
-            identifier: string;
+            identifier: Pick<Entities.Identifier, "id" | "identity" | "type">;
             account: string;
             otp: string;
         };

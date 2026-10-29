@@ -27,6 +27,7 @@
     "REAUTHENTICATED": "Identity successfully reauthenticated."
   },
   "identifier": {
+    "UNSUPPORTED_VERIFICATION_TYPE": "This identifier type does not support verification code delivery.",
     "CREATED": "Identifier successfully created.",
     "ALREADY_VERIFIED": "The identifier is already verified.",
     "CODE_RESENT": "Verification code successfully resent.",
