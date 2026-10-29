@@ -18,7 +18,6 @@ function expected(
             category: NotificationCategory.SECURITY,
             kind: NotificationContentKind.TEMPLATE,
             recipient: ACCOUNT_ID,
-            language: "en",
             template,
             ...(params ? { params } : {}),
         },

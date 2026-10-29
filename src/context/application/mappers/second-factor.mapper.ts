@@ -11,7 +11,6 @@ export class SecondFactorMapper implements Commands.Mappers.SecondFactor.Contrac
                 category: NotificationCategory.SECURITY,
                 kind: NotificationContentKind.TEMPLATE,
                 recipient: props.account,
-                language: "en",
             },
         };
     }
@@ -26,7 +25,6 @@ export class SecondFactorMapper implements Commands.Mappers.SecondFactor.Contrac
                 category: NotificationCategory.SECURITY,
                 kind: NotificationContentKind.TEMPLATE,
                 recipient: props.account,
-                language: "en",
             },
         };
     }

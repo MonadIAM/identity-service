@@ -12,7 +12,6 @@ export class AuthnMapper implements Commands.Mappers.Authn.Contract {
                 template: MessageTemplate.LOGIN_OTP,
                 params: { otp: props.otp },
                 recipient: props.account,
-                language: "en",
             },
         };
     }

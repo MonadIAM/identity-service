@@ -11,7 +11,6 @@ export class PasswordMapper implements Commands.Mappers.Password.Contract {
                 category: NotificationCategory.SECURITY,
                 kind: NotificationContentKind.TEMPLATE,
                 recipient: props.account,
-                language: "en",
             },
         };
     }
@@ -26,7 +25,6 @@ export class PasswordMapper implements Commands.Mappers.Password.Contract {
                 category: NotificationCategory.SECURITY,
                 kind: NotificationContentKind.TEMPLATE,
                 recipient: props.account,
-                language: "en",
             },
         };
     }
@@ -41,7 +39,6 @@ export class PasswordMapper implements Commands.Mappers.Password.Contract {
                 category: NotificationCategory.SECURITY,
                 kind: NotificationContentKind.TEMPLATE,
                 recipient: props.account,
-                language: "en",
             },
         };
     }
@@ -57,7 +54,6 @@ export class PasswordMapper implements Commands.Mappers.Password.Contract {
                 kind: NotificationContentKind.TEMPLATE,
                 params: { otp: props.otp },
                 recipient: props.account,
-                language: "en",
             },
         };
     }

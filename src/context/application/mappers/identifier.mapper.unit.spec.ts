@@ -31,7 +31,6 @@ describe("[DataMapper] - Identifier", () => {
                     category: NotificationCategory.SECURITY,
                     kind: NotificationContentKind.TEMPLATE,
                     recipient: ACCOUNT_ID,
-                    language: "en",
                 },
             });
         });
@@ -58,7 +57,6 @@ describe("[DataMapper] - Identifier", () => {
                     params: { otp: "123456" },
                     delivery: { channelType: ChannelType.EMAIL, address: "user@example.com" },
                     recipient: ACCOUNT_ID,
-                    language: "en",
                 },
             });
         });

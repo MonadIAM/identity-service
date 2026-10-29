@@ -21,7 +21,6 @@ export class IdentifierMapper implements Commands.Mappers.Identifier.Contract {
                 category: NotificationCategory.SECURITY,
                 kind: NotificationContentKind.TEMPLATE,
                 recipient: props.account,
-                language: "en",
             },
         };
     }
@@ -51,7 +50,6 @@ export class IdentifierMapper implements Commands.Mappers.Identifier.Contract {
                 kind: NotificationContentKind.TEMPLATE,
                 params: { otp: props.otp },
                 recipient: props.account,
-                language: "en",
             },
         };
     }

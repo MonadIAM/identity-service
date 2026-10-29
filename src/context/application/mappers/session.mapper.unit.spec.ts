@@ -42,7 +42,6 @@ describe("[DataMapper] - Session", () => {
                     kind: NotificationContentKind.TEMPLATE,
                     template: MessageTemplate.LOGIN_ALERT,
                     recipient: ACCOUNT_ID,
-                    language: "en",
                 },
             });
         });

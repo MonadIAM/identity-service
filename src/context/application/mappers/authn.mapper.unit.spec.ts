@@ -25,7 +25,6 @@ describe("[DataMapper] - Authn", () => {
                     template: MessageTemplate.LOGIN_OTP,
                     params: { otp: "654321" },
                     recipient: ACCOUNT_ID,
-                    language: "en",
                 },
             });
         });

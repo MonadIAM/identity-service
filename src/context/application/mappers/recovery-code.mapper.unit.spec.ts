@@ -24,7 +24,6 @@ describe("[DataMapper] - RecoveryCode", () => {
                     category: NotificationCategory.SECURITY,
                     kind: NotificationContentKind.TEMPLATE,
                     recipient: ACCOUNT_ID,
-                    language: "en",
                 },
             });
         });

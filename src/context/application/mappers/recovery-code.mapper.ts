@@ -11,7 +11,6 @@ export class RecoveryCodeMapper implements Commands.Mappers.RecoveryCode.Contrac
                 category: NotificationCategory.SECURITY,
                 kind: NotificationContentKind.TEMPLATE,
                 recipient: props.account,
-                language: "en",
             },
         };
     }
