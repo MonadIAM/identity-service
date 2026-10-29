@@ -34,6 +34,7 @@ export type I18nTranslations = {
             "REAUTHENTICATED": string;
         };
         "identifier": {
+            "UNSUPPORTED_VERIFICATION_TYPE": string;
             "CREATED": string;
             "ALREADY_VERIFIED": string;
             "CODE_RESENT": string;

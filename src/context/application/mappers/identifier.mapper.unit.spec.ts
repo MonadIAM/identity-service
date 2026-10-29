@@ -1,6 +1,13 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { NotificationContentKind, NotificationCategory, PlatformService, MessageTemplate } from "~context/enums";
+import {
+    NotificationContentKind,
+    NotificationCategory,
+    PlatformService,
+    MessageTemplate,
+    IdentifierType,
+    ChannelType,
+} from "~context/enums";
 
 import { IdentifierMapper } from "./identifier.mapper";
 
@@ -37,7 +44,7 @@ describe("[DataMapper] - Identifier", () => {
             // Act
             const result = mapper.notificationPayload({
                 account: ACCOUNT_ID,
-                identifier: "user@example.com",
+                identifier: { id: "identifier-id", identity: "user@example.com", type: IdentifierType.EMAIL },
                 otp: "123456",
             });
 
@@ -49,6 +56,7 @@ describe("[DataMapper] - Identifier", () => {
                     category: NotificationCategory.SECURITY,
                     kind: NotificationContentKind.TEMPLATE,
                     params: { otp: "123456" },
+                    delivery: { channelType: ChannelType.EMAIL, address: "user@example.com" },
                     recipient: ACCOUNT_ID,
                     language: "en",
                 },

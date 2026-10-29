@@ -59,13 +59,13 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                     },
                 });
 
-                return { identifier: identifier.id, account: props.actor, otp };
+                return { identifier, account: props.actor, otp };
             },
         });
 
         await this.otpCacheService.set({
             purpose: "identifier",
-            value: identifier,
+            value: identifier.id,
             key: otp,
         });
 
@@ -92,7 +92,7 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
             });
 
             await this.transactionalService.emit({
-                payload: this.mapper.notificationPayload({ identifier: identifier.id, account: props.actor, otp }),
+                payload: this.mapper.notificationPayload({ identifier, account: props.actor, otp }),
                 actionType: NotificationTopicAction.CREATE,
                 destinationTopic: KafkaTopic.NOTIFICATION,
                 resource: this.resource,
