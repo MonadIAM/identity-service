@@ -22,6 +22,7 @@ export class AccountService implements Services.Account.Contract {
 
         const profile = new Profile({
             displayName: input.profile.displayName,
+            pictureUrl: input.profile.pictureUrl,
             timeZone: input.profile.timeZone,
             locale: input.profile.locale,
             account,
