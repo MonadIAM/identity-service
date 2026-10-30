@@ -11,6 +11,7 @@ import { Exception } from "~common/exceptions";
 import {
     ReauthenticationTopicAction,
     NotificationTopicAction,
+    ReauthenticationMethod,
     IdentifierType,
     EntityType,
     KafkaTopic,
@@ -112,7 +113,7 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
         const expiresAt = Date.now() + this.ttl * 1e3;
         const hash = this.cryptoService.hashToken({ token: `${props.actor}:${props.session}:${props.input.code}` });
 
-        await this.transactionalService.run({
+        await this.transactionalService.run<Commands.Mappers.Reauthentication.GrantPayload.Props>({
             resource: this.resource,
             outbox: {
                 payloadMapper: this.mapper.grantPayload,
@@ -130,14 +131,18 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
                 const actual = `${identifier.id}:${hash}`;
 
                 if (expected && expected === actual) {
-                    return { session: props.session, expiresAt };
+                    return { session: props.session, expiresAt, proof: { method: ReauthenticationMethod.OTP } };
                 } else {
                     throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
                 }
             },
         });
 
-        await this.reauthenticationCacheService.set({ session: props.session, ttl: this.ttl });
+        await this.reauthenticationCacheService.set({
+            proof: { method: ReauthenticationMethod.OTP },
+            session: props.session,
+            ttl: this.ttl,
+        });
 
         return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
     }
@@ -158,7 +163,11 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
 
             if (isValid) {
                 await this.transactionalService.emit({
-                    payload: this.mapper.grantPayload({ session: props.session, expiresAt: Date.now() + this.ttl * 1e3 }),
+                    payload: this.mapper.grantPayload({
+                        proof: { method: ReauthenticationMethod.PASSWORD },
+                        expiresAt: Date.now() + this.ttl * 1e3,
+                        session: props.session,
+                    }),
                     destinationTopic: KafkaTopic.REAUTHENTICATION,
                     actionType: ReauthenticationTopicAction.GRANT,
                     resource: this.resource,
@@ -169,7 +178,11 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
                     },
                 });
 
-                await this.reauthenticationCacheService.set({ session: props.session, ttl: this.ttl });
+                await this.reauthenticationCacheService.set({
+                    proof: { method: ReauthenticationMethod.PASSWORD },
+                    session: props.session,
+                    ttl: this.ttl,
+                });
 
                 return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
             } else {
@@ -185,7 +198,7 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
     ): Commands.Reauthentication.BySecondFactor.Result {
         const expiresAt = Date.now() + this.ttl * 1e3;
 
-        await this.transactionalService.run({
+        const grant = await this.transactionalService.run<Commands.Reauthentication.BySecondFactor.ExecuteResult>({
             resource: this.resource,
             outbox: {
                 payloadMapper: this.mapper.grantPayload,
@@ -198,16 +211,24 @@ export class ReauthenticationCommands implements Commands.Reauthentication.Contr
                 ...props,
             },
             execute: async (transaction) => {
-                await this.secondFactorService.reauthenticate({
+                const factor = await this.secondFactorService.reauthenticate({
                     input: { account: props.actor, code: props.input.code },
                     transaction,
                 });
 
-                return { session: props.session, expiresAt };
+                return {
+                    proof: { method: ReauthenticationMethod.TOTP, factor: factor.id },
+                    session: props.session,
+                    expiresAt,
+                };
             },
         });
 
-        await this.reauthenticationCacheService.set({ session: props.session, ttl: this.ttl });
+        await this.reauthenticationCacheService.set({
+            proof: grant.proof,
+            session: props.session,
+            ttl: this.ttl,
+        });
 
         return { message: `${this.dictionaryPath}.REAUTHENTICATED` };
     }

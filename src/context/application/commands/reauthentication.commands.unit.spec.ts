@@ -1,7 +1,13 @@
 import { describe, expect, it, jest, afterEach } from "@jest/globals";
 
-import { IdentifierType, KafkaTopic, NotificationTopicAction, ReauthenticationTopicAction } from "~context/enums";
 import { ReauthenticationCommandsUnitHelpers } from "~testing/unit/command-services/reauthentication.helpers";
+import {
+    ReauthenticationTopicAction,
+    NotificationTopicAction,
+    ReauthenticationMethod,
+    IdentifierType,
+    KafkaTopic,
+} from "~context/enums";
 
 const CONTEXT: Extract.Meta = { ip: "127.0.0.1", userAgent: "unit-test" };
 const helpers = new ReauthenticationCommandsUnitHelpers();
@@ -187,8 +193,16 @@ describe("[Commands] - Reauthentication", () => {
             expect(cryptoService.hashToken).toHaveBeenCalledWith({ token: `${ACTOR}:${ID}:123456` });
             expect(cryptoService.hashToken.mock.invocationCallOrder[0]).toBeLessThan(run.mock.invocationCallOrder[0]);
             expect(otpCacheService.consume).toHaveBeenCalledWith({ purpose: "reauthentication", key: ID });
-            expect(reauthenticationCacheService.set).toHaveBeenCalledWith({ session: ID, ttl: 300 });
-            await expect(run.mock.results[0].value).resolves.toEqual({ session: ID, expiresAt: 1300000 });
+            expect(reauthenticationCacheService.set).toHaveBeenCalledWith({
+                session: ID,
+                ttl: 300,
+                proof: { method: ReauthenticationMethod.OTP },
+            });
+            await expect(run.mock.results[0].value).resolves.toEqual({
+                proof: { method: ReauthenticationMethod.OTP },
+                expiresAt: 1300000,
+                session: ID,
+            });
             expect(run).toHaveBeenCalledWith(
                 expect.objectContaining({
                     outbox: expect.objectContaining({
@@ -284,7 +298,7 @@ describe("[Commands] - Reauthentication", () => {
     describe("[Method] - byPassword", () => {
         it.each(["missing", "invalid"])("[case] - does not grant reauthentication for a %s password", async (state) => {
             // Arrange
-            const { commands, accountRepository, hashingService, emit } = helpers.commands();
+            const { commands, accountRepository, hashingService, emit, reauthenticationCacheService } = helpers.commands();
             accountRepository.findUniqueOrThrow.mockResolvedValue(
                 helpers.createAccount({ password: state === "missing" ? undefined : helpers.createPassword() }),
             );
@@ -301,11 +315,12 @@ describe("[Commands] - Reauthentication", () => {
             // Assert
             await expect(result).rejects.toThrow();
             expect(emit).not.toHaveBeenCalled();
+            expect(reauthenticationCacheService.set).not.toHaveBeenCalled();
         });
 
         it("[case] - grants password reauthentication only for the current session and configured TTL", async () => {
             // Arrange
-            const { commands, accountRepository, hashingService, emit } = helpers.commands();
+            const { commands, accountRepository, hashingService, emit, reauthenticationCacheService } = helpers.commands();
             jest.spyOn(Date, "now").mockReturnValue(1000000);
             accountRepository.findUniqueOrThrow.mockResolvedValue(
                 helpers.createAccount({ password: helpers.createPassword({ hash: "stored" }) }),
@@ -320,15 +335,32 @@ describe("[Commands] - Reauthentication", () => {
                 [{ options: { populate: ["password"] }, where: { id: ACTOR } }],
             ]);
             expect(hashingService.verify.mock.calls).toEqual([[{ value: "plain", storedHash: "stored" }]]);
-            expect(emit.mock.calls).toEqual([[expect.objectContaining({ payload: { session: ID, expiresAt: 1300000 } })]]);
+            expect(emit.mock.calls).toEqual([
+                [
+                    expect.objectContaining({
+                        payload: {
+                            proof: { method: ReauthenticationMethod.PASSWORD },
+                            session: ID,
+                            expiresAt: 1300000,
+                        },
+                    }),
+                ],
+            ]);
+            expect(reauthenticationCacheService.set).toHaveBeenCalledWith({
+                session: ID,
+                ttl: 300,
+                proof: { method: ReauthenticationMethod.PASSWORD },
+            });
         });
     });
 
     describe("[Method] - bySecondFactor", () => {
         it("[case] - verifies the actor's second factor before preparing a session grant", async () => {
             // Arrange
-            const { commands, secondFactorService, run, transaction } = helpers.commands();
+            const { commands, secondFactorService, run, transaction, reauthenticationCacheService } = helpers.commands();
             jest.spyOn(Date, "now").mockReturnValue(1000000);
+            const factor = helpers.createSecondFactor({ id: "verified-factor", confirmedAt: new Date() });
+            secondFactorService.reauthenticate.mockResolvedValue(factor);
 
             // Act
             await commands.bySecondFactor({ input: { code: "123456" }, actor: ACTOR, session: ID, context: CONTEXT });
@@ -338,7 +370,59 @@ describe("[Commands] - Reauthentication", () => {
             expect(secondFactorService.reauthenticate.mock.calls).toEqual([
                 [{ input: { account: ACTOR, code: "123456" }, transaction: transaction.entityManager }],
             ]);
-            expect(result).toEqual({ session: ID, expiresAt: 1300000 });
+            expect(result).toEqual({
+                proof: { method: ReauthenticationMethod.TOTP, factor: factor.id },
+                session: ID,
+                expiresAt: 1300000,
+            });
+            expect(reauthenticationCacheService.set).toHaveBeenCalledWith({
+                session: ID,
+                ttl: 300,
+                proof: { method: ReauthenticationMethod.TOTP, factor: factor.id },
+            });
+        });
+
+        it("[case] - does not cache a proof when the second factor is rejected", async () => {
+            // Arrange
+            const { commands, secondFactorService, reauthenticationCacheService } = helpers.commands();
+            const error = new Error("Invalid TOTP");
+            secondFactorService.reauthenticate.mockRejectedValue(error);
+
+            // Act
+            const result = commands.bySecondFactor({
+                input: { code: "123456" },
+                actor: ACTOR,
+                session: ID,
+                context: CONTEXT,
+            });
+
+            // Assert
+            await expect(result).rejects.toBe(error);
+            expect(reauthenticationCacheService.set).not.toHaveBeenCalled();
+        });
+
+        it("[case] - does not cache a proof when the transaction fails after verification", async () => {
+            // Arrange
+            const { commands, secondFactorService, run, transaction, reauthenticationCacheService } = helpers.commands();
+            secondFactorService.reauthenticate.mockResolvedValue(helpers.createSecondFactor());
+            const error = new Error("Commit failed");
+            run.mockImplementationOnce(async (props) => {
+                await props.execute(transaction.entityManager);
+                throw error;
+            });
+
+            // Act
+            const result = commands.bySecondFactor({
+                input: { code: "123456" },
+                actor: ACTOR,
+                session: ID,
+                context: CONTEXT,
+            });
+
+            // Assert
+            await expect(result).rejects.toBe(error);
+            expect(secondFactorService.reauthenticate).toHaveBeenCalledTimes(1);
+            expect(reauthenticationCacheService.set).not.toHaveBeenCalled();
         });
     });
 });

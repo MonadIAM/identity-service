@@ -26,6 +26,6 @@ export class ReauthenticationMapper implements Commands.Mappers.Reauthentication
     public grantPayload(
         props: Commands.Mappers.Reauthentication.GrantPayload.Props,
     ): Commands.Mappers.Reauthentication.GrantPayload.Result {
-        return { session: props.session, expiresAt: props.expiresAt };
+        return { session: props.session, expiresAt: props.expiresAt, proof: props.proof };
     }
 }

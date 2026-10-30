@@ -1,10 +1,10 @@
 import { Controller, HttpStatus, HttpCode, Delete, Header, Inject, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+import { PermissionCode, ReauthenticationMethod } from "~context/enums";
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
 import { SECOND_FACTOR_QUERIES } from "~context/application/queries";
 import { SuccessMessageDTO } from "~common/dto";
-import { PermissionCode } from "~context/enums";
 import {
     RequirePermission,
     SensitiveThrottle,
@@ -148,11 +148,11 @@ export class SecondFactorController {
 
     @HttpCode(OK)
     @Delete("purge")
-    @Reauthentication()
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SECOND_FACTOR_PURGE)
+    @Reauthentication({ methods: [ReauthenticationMethod.TOTP], sameFactor: true })
     @ApiOperation({
-        summary: "Purge inactive second factor",
+        summary: "Purge second factor after reauthentication with the same TOTP factor",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(

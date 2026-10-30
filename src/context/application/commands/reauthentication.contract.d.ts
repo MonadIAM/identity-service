@@ -51,6 +51,10 @@ declare namespace Commands.Reauthentication {
     }
 
     namespace BySecondFactor {
+        type ExecuteResult = Commands.Mappers.Reauthentication.GrantPayload.Props & {
+            proof: Topics.Reauthentication.Proof;
+        };
+
         type Props = {
             context: Extract.Meta;
             session: string;

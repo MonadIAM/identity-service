@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 
 import {
     NotificationContentKind,
+    ReauthenticationMethod,
     NotificationCategory,
     MessageTemplate,
     PlatformService,
@@ -41,6 +42,25 @@ describe("[DataMapper] - Reauthentication", () => {
     });
 
     describe("[Method] - grantPayload", () => {
+        it.each<Topics.Reauthentication.Proof>([
+            { method: ReauthenticationMethod.PASSWORD },
+            { method: ReauthenticationMethod.OTP },
+            { method: ReauthenticationMethod.TOTP, factor: "00000000-0000-4000-8000-900000000002" },
+        ])("[case] - preserves the verified proof in the event payload ($method)", (proof) => {
+            // Arrange
+            const props = {
+                session: "00000000-0000-4000-8000-900000000001",
+                expiresAt: 1_789_000_000_000,
+                proof,
+            };
+
+            // Act
+            const result = mapper.grantPayload(props);
+
+            // Assert
+            expect(result).toEqual(props);
+        });
+
         it("[case] - maps the session and expiration timestamp", () => {
             // Arrange
 

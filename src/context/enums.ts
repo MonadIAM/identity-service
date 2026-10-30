@@ -19,8 +19,10 @@ export enum SecondFactorType {
 }
 
 export enum OAuthTokenTypeHint {
+    /* eslint-disable prettier/prettier */
     REFRESH_TOKEN = "refresh_token",
-    ACCESS_TOKEN = "access_token",
+    ACCESS_TOKEN  = "access_token",
+    /* eslint-enable prettier/prettier */
 }
 
 export enum OAuthResponseType {

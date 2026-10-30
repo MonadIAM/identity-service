@@ -19,15 +19,9 @@ declare namespace Commands.Mappers.Reauthentication {
     }
 
     namespace GrantPayload {
-        type Props = {
-            expiresAt: number;
-            session: string;
-        };
+        type Props = Topics.Reauthentication.Message["payload"];
 
-        type Result = {
-            expiresAt: number;
-            session: string;
-        };
+        type Result = Topics.Reauthentication.Message["payload"];
 
         type Signature = (props: Props) => Result;
     }
