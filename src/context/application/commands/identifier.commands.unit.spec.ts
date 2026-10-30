@@ -102,6 +102,23 @@ describe("[Commands] - Identifier", () => {
         });
     });
 
+    describe("[Method] - purge", () => {
+        it("[case] - passes the unverified filter through the existing removal pipeline", async () => {
+            // Arrange
+            const { commands, identifierService, transaction, run } = await helpers.commands();
+
+            // Act
+            await commands.purge({ input: { identifier: ID, isVerified: false }, actor: ACTOR, context: CONTEXT });
+            const result = await run.mock.results[0]?.value;
+
+            // Assert
+            expect(identifierService.purge.mock.calls).toEqual([
+                [{ input: { identifier: ID, account: ACTOR, isVerified: false }, transaction: transaction.entityManager }],
+            ]);
+            expect(result).toEqual({ account: ACTOR });
+        });
+    });
+
     describe("[Behavior] - identifier ownership", () => {
         it.each(["togglePublicContact", "purge"] as const)(
             "[case] - restricts %s to the actor's identifier",

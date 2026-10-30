@@ -119,7 +119,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const account = await this.secondFactorService.reset({
-                    input: { identifier: props.input.identifier, code: props.input.code },
+                    input: props.input,
                     transaction,
                 });
 
@@ -141,7 +141,11 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 await this.secondFactorService.purge({
-                    input: { target: props.input.factor, account: props.actor },
+                    input: {
+                        confirmedAt: props.input.confirmedAt,
+                        target: props.input.factor,
+                        account: props.actor,
+                    },
                     transaction,
                 });
             },

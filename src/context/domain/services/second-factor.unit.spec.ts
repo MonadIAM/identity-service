@@ -304,9 +304,7 @@ describe("[DomainService] - SecondFactor", () => {
             account.secondFactors = helpers.collection({ owner: account, items: [] });
             const { service, repositories, services, transaction } = helpers.service({ account });
             services.hashing.verify.mockImplementation(() => Promise.resolve(false));
-            repositories.identifiers.findUnique.mockImplementation(() =>
-                Promise.resolve(helpers.createIdentifier({ account, identity: IDENTITY })),
-            );
+            repositories.accounts.findUnique.mockImplementation(() => Promise.resolve(account));
 
             // Act
             const result = service.reset({
@@ -319,35 +317,39 @@ describe("[DomainService] - SecondFactor", () => {
             expect(transaction.remove).not.toHaveBeenCalled();
         });
 
-        it("[case] - removes every factor and the master code for a valid code", async () => {
-            // Arrange
-            const account = helpers.createAccount({ id: ACCOUNT_ID });
-            const masterCode = helpers.createMasterCode({ account });
-            account.masterCode = masterCode;
-            const first = createConfirmedFactor({ account });
-            const second = createConfirmedFactor({ id: SECOND_FACTOR_ID, account });
-            account.secondFactors = helpers.collection({ owner: account, items: [first, second] });
-            const { service, repositories, services, transaction } = helpers.service({ account });
-            repositories.identifiers.findUnique.mockImplementation(() =>
-                Promise.resolve(helpers.createIdentifier({ account, identity: IDENTITY })),
-            );
+        it.each(["identifier", "account"] as const)(
+            "[case] - resets factors through %s with a valid master code",
+            async (selector) => {
+                // Arrange
+                const account = helpers.createAccount({ id: ACCOUNT_ID });
+                const masterCode = helpers.createMasterCode({ account });
+                account.masterCode = masterCode;
+                const first = createConfirmedFactor({ account });
+                const second = createConfirmedFactor({ id: SECOND_FACTOR_ID, account });
+                account.secondFactors = helpers.collection({ owner: account, items: [first, second] });
+                const { service, repositories, services, transaction } = helpers.service({ account });
+                repositories.accounts.findUnique.mockImplementation(() => Promise.resolve(account));
 
-            // Act
-            const result = await service.reset({
-                input: { identifier: IDENTITY, code: "master-code" },
-                transaction: transaction.entityManager,
-            });
+                // Act
+                const result = await service.reset({
+                    input:
+                        selector === "account"
+                            ? { account: ACCOUNT_ID, code: "master-code" }
+                            : { identifier: IDENTITY, code: "master-code" },
+                    transaction: transaction.entityManager,
+                });
 
-            // Assert
-            expect(services.hashing.verify).toHaveBeenCalledWith({
-                storedHash: masterCode.hash,
-                value: "master-code",
-            });
-            expect(transaction.remove).toHaveBeenNthCalledWith(1, first);
-            expect(transaction.remove).toHaveBeenNthCalledWith(2, second);
-            expect(transaction.remove).toHaveBeenNthCalledWith(3, masterCode);
-            expect(result).toBe(account);
-        });
+                // Assert
+                expect(services.hashing.verify).toHaveBeenCalledWith({
+                    storedHash: masterCode.hash,
+                    value: "master-code",
+                });
+                expect(transaction.remove).toHaveBeenNthCalledWith(1, first);
+                expect(transaction.remove).toHaveBeenNthCalledWith(2, second);
+                expect(transaction.remove).toHaveBeenNthCalledWith(3, masterCode);
+                expect(result).toBe(account);
+            },
+        );
     });
 
     describe("[Method] - acceptCode", () => {

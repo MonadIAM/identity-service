@@ -115,6 +115,41 @@ describe("[DomainService] - Identifier", () => {
     });
 
     describe("[Method] - purge", () => {
+        it.each([
+            { verified: false, owned: true, removed: true },
+            { verified: true, owned: true, removed: false },
+            { verified: false, owned: false, removed: false },
+        ])("[case] - restricts unverified removal by state and ownership: %j", async ({ verified, owned, removed }) => {
+            // Arrange
+            const account = await suite.fixtures().createAccount();
+            const owner = owned ? account : await suite.fixtures().createAccount();
+            const identifier = await suite.fixtures().createIdentifier({
+                identity: "draft@example.test",
+                isVerified: verified,
+                account: owner,
+            });
+
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().identifierService.purge({
+                    input: { identifier: identifier.id, account: account.id, isVerified: false },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const identifiers = await loadIdentifiers(suite, owner);
+
+            // Assert
+            if (removed) {
+                await expect(result).resolves.toBeUndefined();
+                expect(identifiers).toHaveLength(0);
+            } else {
+                await expect(result).rejects.toThrow();
+                expect(identifiers).toHaveLength(1);
+                expect(identifiers[0].id).toBe(identifier.id);
+            }
+        });
+
         it("[case] - purges an account-scoped identifier", async () => {
             // Arrange
             const account = await suite.fixtures().createAccount();

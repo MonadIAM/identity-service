@@ -260,4 +260,31 @@ export class IdentifierController {
     ): Commands.Identifier.Purge.Result {
         return this.identifierCommands.purge({ context, actor, input });
     }
+
+    @HttpCode(OK)
+    @Delete("purge/unverified")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(IDENTIFIER_PURGE)
+    @ApiOperation({
+        summary: "Purge unverified identifier",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public purgeUnverified(
+        @Query() input: PurgeQueryDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Identifier.Purge.Result {
+        return this.identifierCommands.purge({ context, actor, input: { ...input, isVerified: false } });
+    }
 }

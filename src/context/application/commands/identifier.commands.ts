@@ -171,7 +171,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 await this.identifierService.purge({
-                    input: { identifier: props.input.identifier, account: props.actor },
+                    input: {
+                        identifier: props.input.identifier,
+                        isVerified: props.input.isVerified,
+                        account: props.actor,
+                    },
                     transaction,
                 });
 

@@ -96,6 +96,7 @@ declare global {
             type Props = {
                 transaction: ORM.EntityManager;
                 input: {
+                    confirmedAt?: null;
                     account: string;
                     target: string;
                 };
@@ -109,8 +110,7 @@ declare global {
         namespace Reset {
             type Props = {
                 transaction: ORM.EntityManager;
-                input: {
-                    identifier: string;
+                input: ({ identifier: string } | { account: string }) & {
                     code: string;
                 };
             };

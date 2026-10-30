@@ -75,6 +75,7 @@ declare global {
                 actor: string;
                 input: {
                     identifier: string;
+                    isVerified?: false;
                 };
             };
 

@@ -1,4 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { LockMode } from "@mikro-orm/postgresql";
 import { isString } from "class-validator";
 
 import { IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
@@ -64,22 +65,33 @@ export class IdentifierService implements Services.Identifier.Contract {
 
     public async purge(props: Services.Identifier.Purge.Props): Services.Identifier.Purge.Result {
         const { transaction, input } = props;
-        const identifier = await this.identifierRepository.findUniqueOrThrow({
-            where: { id: input.identifier, account: input.account },
-            options: { populate: ["account.password"] },
-            transaction,
-        });
-
-        const isLastVerifiedIdentifier = await this.identifierRepository.isLastVerifiedIdentifier({
-            identifier: identifier.id,
+        const where: ORM.ObjectQuery<Entities.Identifier> = {
             account: input.account,
+            id: input.identifier,
+        };
+
+        if (input.isVerified === false) {
+            where.isVerified = false;
+        }
+
+        const identifier = await this.identifierRepository.findUniqueOrThrow({
+            options: { populate: ["account.password"], lockMode: LockMode.PESSIMISTIC_WRITE },
             transaction,
+            where,
         });
 
-        if (isLastVerifiedIdentifier) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_REMOVE_LAST_VERIFIED` });
-        } else {
-            transaction.remove(identifier);
+        if (identifier.isVerified) {
+            const isLastVerifiedIdentifier = await this.identifierRepository.isLastVerifiedIdentifier({
+                identifier: identifier.id,
+                account: input.account,
+                transaction,
+            });
+
+            if (isLastVerifiedIdentifier) {
+                throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_REMOVE_LAST_VERIFIED` });
+            }
         }
+
+        transaction.remove(identifier);
     }
 }

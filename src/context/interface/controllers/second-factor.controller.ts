@@ -16,6 +16,7 @@ import {
 } from "~common/decorators";
 
 import {
+    ResetCurrentBodyDTO,
     GetQRCodeResultDTO,
     GetQRCodeQueryDTO,
     VerifyResultDTO,
@@ -173,6 +174,32 @@ export class SecondFactorController {
         return this.secondFactorCommands.purge({ context, actor, input });
     }
 
+    @HttpCode(OK)
+    @Delete("purge/unconfirmed")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(SECOND_FACTOR_PURGE)
+    @ApiOperation({
+        summary: "Purge unconfirmed second factor",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public purgeUnconfirmed(
+        @Query() input: PurgeQueryDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.SecondFactor.Purge.Result {
+        return this.secondFactorCommands.purge({ context, actor, input: { ...input, confirmedAt: null } });
+    }
+
     @Public()
     @HttpCode(OK)
     @Post("reset")
@@ -192,5 +219,31 @@ export class SecondFactorController {
     )
     public reset(@Body() input: ResetBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.SecondFactor.Reset.Result {
         return this.secondFactorCommands.reset({ context, input });
+    }
+
+    @HttpCode(OK)
+    @Post("reset/current")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(SECOND_FACTOR_PURGE)
+    @SensitiveThrottle.HighImpactSecret()
+    @ApiOperation({
+        summary: "Reset all second factors of the current account by master code",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public resetCurrent(
+        @Body() { code }: ResetCurrentBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.SecondFactor.Reset.Result {
+        return this.secondFactorCommands.reset({ context, actor, input: { account: actor, code } });
     }
 }

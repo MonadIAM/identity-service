@@ -18,7 +18,6 @@ export class SecondFactorIntegrationHelpers
             secondFactorService: new SecondFactorService(
                 secret,
                 repositories.secondFactors,
-                repositories.identifiers,
                 repositories.accounts,
                 hashing,
                 totp,

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { LockMode } from "@mikro-orm/postgresql";
 
 import { IdentifierUnitHelpers } from "~testing/unit/domain-service/identifier.helpers";
 import { IdentifierType } from "~context/enums";
@@ -132,6 +133,23 @@ describe("[DomainService] - Identifier", () => {
     });
 
     describe("[Method] - purge", () => {
+        it("[case] - removes an unverified identifier without requiring another verified identifier", async () => {
+            // Arrange
+            const identifier = helpers.createIdentifier({ id: IDENTIFIER_ID, isVerified: false });
+            const { service, repositories, transaction } = helpers.service();
+            repositories.identifiers.findUniqueOrThrow.mockImplementation(() => Promise.resolve(identifier));
+
+            // Act
+            await service.purge({
+                input: { identifier: IDENTIFIER_ID, account: ACCOUNT_ID, isVerified: false },
+                transaction: transaction.entityManager,
+            });
+
+            // Assert
+            expect(repositories.identifiers.isLastVerifiedIdentifier).not.toHaveBeenCalled();
+            expect(transaction.remove).toHaveBeenCalledWith(identifier);
+        });
+
         it("[case] - throws when the identifier is the last verified one of the account", async () => {
             // Arrange
             const identifier = helpers.createIdentifier({ id: IDENTIFIER_ID, isVerified: true });
@@ -170,7 +188,7 @@ describe("[DomainService] - Identifier", () => {
             // Assert
             expect(repositories.identifiers.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: IDENTIFIER_ID, account: ACCOUNT_ID },
-                options: { populate: ["account.password"] },
+                options: { populate: ["account.password"], lockMode: LockMode.PESSIMISTIC_WRITE },
                 transaction: transaction.entityManager,
             });
             expect(transaction.remove).toHaveBeenCalledWith(identifier);

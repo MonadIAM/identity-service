@@ -54,6 +54,7 @@ declare namespace Services.Identifier {
             transaction: ORM.EntityManager;
             input: {
                 identifier: string;
+                isVerified?: false;
                 account: string;
                 reason?: string;
             };
