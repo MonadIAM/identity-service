@@ -14,6 +14,7 @@ export class IdentifierCommandsUnitHelpers
             findUniqueOrThrow: jest.fn<Repositories.Identifier.PublicContract["findUniqueOrThrow"]>(),
         };
         const identifierService = {
+            selectNotificationEmail: jest.fn<Services.Identifier.CommandContract["selectNotificationEmail"]>(),
             create: jest.fn<Services.Identifier.CommandContract["create"]>(),
             verify: jest.fn<Services.Identifier.CommandContract["verify"]>(),
             togglePublicContact: jest.fn<Services.Identifier.CommandContract["togglePublicContact"]>(),

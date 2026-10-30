@@ -105,6 +105,27 @@ export class AccountRepository
         }
     }
 
+    public async findExpiredDeactivated(
+        props: Repositories.Account.FindExpiredDeactivated.Props,
+    ): Repositories.Account.FindExpiredDeactivated.Result {
+        try {
+            const { expirationDate, batchSize, transaction } = props;
+
+            return await transaction.find(
+                Account,
+                { status: AccountStatus.DEACTIVATED, deactivatedAt: { $lte: expirationDate } },
+                {
+                    orderBy: { deactivatedAt: "asc", id: "asc" },
+                    lockMode: LockMode.PESSIMISTIC_WRITE,
+                    limit: batchSize,
+                    refresh: true,
+                },
+            );
+        } catch (error) {
+            throw ExceptionMapper.fromORM(error, this.resource);
+        }
+    }
+
     public async findExpiredPending(
         props: Repositories.Account.FindExpiredPending.Props,
     ): Repositories.Account.FindExpiredPending.Result {

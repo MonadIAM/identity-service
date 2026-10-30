@@ -1,5 +1,6 @@
 export { ManageGetListQueryDTO, ManageGetListBodyDTO, GetListQueryDTO, GetListBodyDTO } from "./req/get-list.dto";
 export { GetLookupListQueryDTO, GetLookupListBodyDTO } from "./req/get-lookup-list.dto";
+export { SelectNotificationEmailBodyDTO } from "./req/select-notification-email.dto";
 export { ManageGetByIdQueryDTO, GetByIdQueryDTO } from "./req/get-by-id.dto";
 export { TogglePublicContactBodyDTO } from "./req/toggle-public-contact.dto";
 export { CreateBodyDTO } from "./req/create.dto";

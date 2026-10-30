@@ -20,7 +20,7 @@ declare global {
                 };
             };
 
-            type Result = Promise<void>;
+            type Result = Promise<Entities.Session[]>;
 
             type Signature = (props: Props) => Result;
         }

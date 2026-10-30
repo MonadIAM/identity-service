@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { NotificationTopicAction, AccountTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -116,6 +116,11 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         if (cachedIdentifier) {
             await this.transactionalService.run({
                 resource: this.resource,
+                outbox: {
+                    payloadMapper: this.mapper.emailPayload,
+                    actionType: AccountTopicAction.EMAIL_VERIFIED,
+                    destinationTopic: KafkaTopic.ACCOUNT,
+                },
                 audit: {
                     entityType: EntityType.IDENTIFIER,
                     actionType: ActionType.VERIFY,
@@ -123,7 +128,12 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    await this.identifierService.verify({ input: { identifier: cachedIdentifier }, transaction });
+                    const identifier = await this.identifierService.verify({
+                        input: { identifier: cachedIdentifier, account: props.actor },
+                        transaction,
+                    });
+
+                    return { identifier };
                 },
             });
 
@@ -131,6 +141,31 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
         } else {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
         }
+    }
+
+    public async selectNotificationEmail(
+        props: Commands.Identifier.SelectNotificationEmail.Props,
+    ): Commands.Identifier.SelectNotificationEmail.Result {
+        await this.transactionalService.run({
+            resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.emailPayload,
+                actionType: AccountTopicAction.EMAIL_SELECTED,
+                destinationTopic: KafkaTopic.ACCOUNT,
+            },
+            audit: { entityType: EntityType.IDENTIFIER, actionType: ActionType.UPDATE, ...props },
+            changeLog: true,
+            execute: async (transaction) => {
+                const identifier = await this.identifierService.selectNotificationEmail({
+                    input: { identifier: props.input.identifier, account: props.actor },
+                    transaction,
+                });
+
+                return { identifier };
+            },
+        });
+
+        return { message: `${this.dictionaryPath}.NOTIFICATION_EMAIL_SELECTION_REQUESTED` };
     }
 
     public async togglePublicContact(
@@ -156,13 +191,20 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
     }
 
     public async purge(props: Commands.Identifier.Purge.Props): Commands.Identifier.Purge.Result {
-        await this.transactionalService.run({
+        await this.transactionalService.run<Commands.Identifier.Purge.ExecuteResult>({
             resource: this.resource,
-            outbox: {
-                payloadMapper: this.mapper.identifierPurgedPayload,
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
-            },
+            outbox: [
+                {
+                    payloadMapper: this.mapper.identifierPurgedPayload,
+                    actionType: NotificationTopicAction.CREATE,
+                    destinationTopic: KafkaTopic.NOTIFICATION,
+                },
+                {
+                    payloadMapper: this.mapper.emailPurgedPayload,
+                    actionType: AccountTopicAction.EMAIL_PURGED,
+                    destinationTopic: KafkaTopic.ACCOUNT,
+                },
+            ],
             audit: {
                 entityType: EntityType.IDENTIFIER,
                 actionType: ActionType.PURGE,
@@ -170,12 +212,16 @@ export class IdentifierCommands implements Commands.Identifier.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                await this.identifierService.purge({
-                    input: { identifier: props.input.identifier, account: props.actor },
+                const result = await this.identifierService.purge({
+                    input: {
+                        identifier: props.input.identifier,
+                        isVerified: props.input.isVerified,
+                        account: props.actor,
+                    },
                     transaction,
                 });
 
-                return { account: props.actor };
+                return { ...result, account: props.actor };
             },
         });
 

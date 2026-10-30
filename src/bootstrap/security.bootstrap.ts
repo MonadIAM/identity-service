@@ -85,6 +85,7 @@ export abstract class BootstrapSecurity {
         await application.register(fastifyCors, {
             origin: (_origin, callback) => callback(null, true),
             methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            exposedHeaders: ["Retry-After", "Retry-After-account"],
             allowedHeaders: ["Authorization", "Content-Type"],
             credentials: true,
             maxAge: 86400,

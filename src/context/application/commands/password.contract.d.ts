@@ -6,6 +6,21 @@ declare namespace Commands.Password {
         requestOTP: RequestOTP.Signature;
         resetByOTP: ResetByOTP.Signature;
         change: Change.Signature;
+        set: Set.Signature;
+    }
+
+    namespace Set {
+        type Props = {
+            context: Extract.Meta;
+            actor: string;
+            input: {
+                password: string;
+            };
+        };
+
+        type Result = Promise<MessageResult>;
+
+        type Signature = (props: Props) => Result;
     }
 
     namespace ResetByRecoveryCode {

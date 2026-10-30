@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { LockMode } from "@mikro-orm/postgresql";
 
-import { SECOND_FACTOR_REPOSITORY, IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { SECOND_FACTOR_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { SECOND_FACTOR_SECRET_SERVICE } from "~context/infrastructure/services/tokens";
 import { HASHING_SERVICE, TOTP_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
@@ -17,8 +17,6 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
         private readonly secondFactorSecretService: InfrastructureServices.SecondFactorSecret.PublicContract,
         @Inject(SECOND_FACTOR_REPOSITORY)
         private readonly secondFactorRepository: Repositories.SecondFactor.PublicContract,
-        @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(HASHING_SERVICE)
@@ -122,10 +120,16 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
 
     public async purge(props: Services.SecondFactor.Purge.Props): Services.SecondFactor.Purge.Result {
         const { transaction, input } = props;
+        const where: ORM.ObjectQuery<Entities.SecondFactor> = { account: input.account };
+
+        if (input.confirmedAt === null) {
+            where.$or = [{ id: { $ne: input.target } }, { confirmedAt: null }];
+        }
+
         const factors = await this.secondFactorRepository.find({
-            options: { populate: ["account.masterCode"] },
-            where: { account: input.account },
+            options: { populate: ["account.masterCode"], lockMode: LockMode.PESSIMISTIC_WRITE },
             transaction,
+            where,
         });
 
         let masterCode: Optional<Entities.MasterCode>;
@@ -147,26 +151,34 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
 
     public async reset(props: Services.SecondFactor.Reset.Props): Services.SecondFactor.Reset.Result {
         const { transaction, input } = props;
-        const identifier = await this.identifierRepository.findUnique({
-            options: { populate: ["account.masterCode", "account.secondFactors"] },
-            where: { identity: input.identifier },
+        const where: ORM.ObjectQuery<Entities.Account> = {};
+
+        if ("account" in input) {
+            where.id = input.account;
+        } else {
+            where.identifiers = { identity: input.identifier };
+        }
+
+        const account = await this.accountRepository.findUnique({
+            options: { populate: ["masterCode", "secondFactors"] },
             transaction,
+            where,
         });
 
-        if (identifier?.account?.masterCode) {
+        if (account?.masterCode) {
             const isValid = await this.hashingService.verify({
-                storedHash: identifier.account.masterCode.hash,
+                storedHash: account.masterCode.hash,
                 value: input.code,
             });
 
             if (isValid) {
-                for (const factor of identifier.account.secondFactors.getItems()) {
+                for (const factor of account.secondFactors.getItems()) {
                     transaction.remove(factor);
                 }
 
-                transaction.remove(identifier.account.masterCode);
+                transaction.remove(account.masterCode);
 
-                return identifier.account;
+                return account;
             } else {
                 throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_CODE` });
             }

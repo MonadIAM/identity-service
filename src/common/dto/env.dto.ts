@@ -453,6 +453,9 @@ export class EnvironmentVariablesDTO {
     declare public INACTIVE_ACCOUNT_TTL: StringValue;
 
     @Validator.IsMsString()
+    declare public DEACTIVATED_ACCOUNT_TTL: StringValue;
+
+    @Validator.IsMsString()
     declare public PENDING_ACCOUNT_TTL: StringValue;
 
     @Validator.IsMsString()

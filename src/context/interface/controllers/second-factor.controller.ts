@@ -1,10 +1,10 @@
 import { Controller, HttpStatus, HttpCode, Delete, Header, Inject, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+import { PermissionCode, ReauthenticationMethod } from "~context/enums";
 import { SECOND_FACTOR_COMMANDS } from "~context/application/commands";
 import { SECOND_FACTOR_QUERIES } from "~context/application/queries";
 import { SuccessMessageDTO } from "~common/dto";
-import { PermissionCode } from "~context/enums";
 import {
     RequirePermission,
     SensitiveThrottle,
@@ -16,6 +16,7 @@ import {
 } from "~common/decorators";
 
 import {
+    ResetCurrentBodyDTO,
     GetQRCodeResultDTO,
     GetQRCodeQueryDTO,
     VerifyResultDTO,
@@ -148,11 +149,11 @@ export class SecondFactorController {
 
     @HttpCode(OK)
     @Delete("purge")
-    @Reauthentication()
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(SECOND_FACTOR_PURGE)
+    @Reauthentication({ methods: [ReauthenticationMethod.TOTP], sameFactor: true })
     @ApiOperation({
-        summary: "Purge inactive second factor",
+        summary: "Purge second factor after reauthentication with the same TOTP factor",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -171,6 +172,32 @@ export class SecondFactorController {
         @Extract.Meta() context: Extract.Meta,
     ): Commands.SecondFactor.Purge.Result {
         return this.secondFactorCommands.purge({ context, actor, input });
+    }
+
+    @HttpCode(OK)
+    @Delete("purge/unconfirmed")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(SECOND_FACTOR_PURGE)
+    @ApiOperation({
+        summary: "Purge unconfirmed second factor",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public purgeUnconfirmed(
+        @Query() input: PurgeQueryDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.SecondFactor.Purge.Result {
+        return this.secondFactorCommands.purge({ context, actor, input: { ...input, confirmedAt: null } });
     }
 
     @Public()
@@ -192,5 +219,31 @@ export class SecondFactorController {
     )
     public reset(@Body() input: ResetBodyDTO, @Extract.Meta() context: Extract.Meta): Commands.SecondFactor.Reset.Result {
         return this.secondFactorCommands.reset({ context, input });
+    }
+
+    @HttpCode(OK)
+    @Post("reset/current")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(SECOND_FACTOR_PURGE)
+    @SensitiveThrottle.HighImpactSecret()
+    @ApiOperation({
+        summary: "Reset all second factors of the current account by master code",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public resetCurrent(
+        @Body() { code }: ResetCurrentBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.SecondFactor.Reset.Result {
+        return this.secondFactorCommands.reset({ context, actor, input: { account: actor, code } });
     }
 }

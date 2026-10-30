@@ -11,7 +11,10 @@ declare namespace Unit.Commands.Identifier {
                     findUniqueOrThrow: Jest.Mock<Repositories.Identifier.PublicContract["findUniqueOrThrow"]>;
                 };
                 identifierService: Jest.Mocked<
-                    Pick<Services.Identifier.CommandContract, "create" | "verify" | "togglePublicContact" | "purge">
+                    Pick<
+                        Services.Identifier.CommandContract,
+                        "create" | "verify" | "togglePublicContact" | "purge" | "selectNotificationEmail"
+                    >
                 >;
                 otpCacheService: Jest.Mocked<Pick<InfrastructureServices.OTPCache.PublicContract, "set" | "consume">>;
                 cryptoService: Jest.Mocked<Pick<CommonServices.Crypto.PublicContract, "generateOTP">>;

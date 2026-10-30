@@ -10,6 +10,7 @@ declare global {
                 createdAt: Date;
                 updatedAt?: Date;
                 lastActiveAt?: Date;
+                deactivatedAt?: Date;
                 version: number;
 
                 is2FAEnforced: boolean;

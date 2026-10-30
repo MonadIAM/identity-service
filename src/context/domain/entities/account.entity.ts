@@ -11,6 +11,7 @@ export class Account implements Entities.Account.Contract {
     public createdAt: Date;
     public updatedAt?: Date;
     public lastActiveAt?: Date;
+    public deactivatedAt?: Date;
     public version: number = 1;
 
     public is2FAEnforced: boolean;
@@ -58,7 +59,8 @@ export class Account implements Entities.Account.Contract {
     public deactivate(): void {
         if (this.status === AccountStatus.ACTIVE) {
             this.status = AccountStatus.DEACTIVATED;
-            this.updatedAt = new Date();
+            this.deactivatedAt = new Date();
+            this.updatedAt = this.deactivatedAt;
         } else {
             throw Exception.invariantViolation({ messageKey: `${Account.dictionaryPath}.DEACTIVATION_NOT_ALLOWED` });
         }
@@ -67,6 +69,7 @@ export class Account implements Entities.Account.Contract {
     public restore(): void {
         if (this.status === AccountStatus.DEACTIVATED) {
             this.status = AccountStatus.ACTIVE;
+            this.deactivatedAt = undefined;
             this.updatedAt = new Date();
         } else {
             throw Exception.invariantViolation({ messageKey: `${Account.dictionaryPath}.RESTORE_NOT_ALLOWED` });
@@ -85,6 +88,7 @@ export class Account implements Entities.Account.Contract {
     public unsuspend(): void {
         if (this.status === AccountStatus.SUSPENDED) {
             this.status = AccountStatus.ACTIVE;
+            this.deactivatedAt = undefined;
             this.updatedAt = new Date();
         } else {
             throw Exception.invariantViolation({ messageKey: `${Account.dictionaryPath}.NOT_SUSPENDED` });

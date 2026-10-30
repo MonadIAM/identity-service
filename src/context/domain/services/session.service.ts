@@ -236,6 +236,7 @@ export class SessionService implements Services.Session.Contract {
     ): Services.Session.ResolveAuthenticatable.Result {
         const { transaction, input } = props;
         const account = await this.accountRepository.findUniqueOrThrow({
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true },
             where: { id: input.account },
             transaction,
         });

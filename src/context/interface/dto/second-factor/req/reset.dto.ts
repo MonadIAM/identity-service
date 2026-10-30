@@ -15,3 +15,11 @@ export class ResetBodyDTO {
     @ApiProperty({ required: true, type: String })
     declare public code: string;
 }
+
+@ApiSchema({ name: "SecondFactorResetCurrentBody" })
+export class ResetCurrentBodyDTO {
+    @Expose()
+    @Validator.IsString()
+    @ApiProperty({ required: true, type: String })
+    declare public code: string;
+}

@@ -1,16 +1,21 @@
 import { jest } from "@jest/globals";
 
+import { PasswordCommands } from "~context/application/commands/password.commands";
+
 import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class PasswordCommandsUnitHelpers extends ApplicationCommandUnitHelpers implements Unit.Commands.Password.Contract {
-    public async commands(): Unit.Commands.Password.Commands.Result {
-        const { PasswordCommands } = await import("~context/application/commands/password.commands.js");
+    public commands(): Unit.Commands.Password.Commands.Result {
         const execution = this.execution();
 
         const identifierRepository = {
             findUnique: jest.fn<Repositories.Identifier.PublicContract["findUnique"]>(),
         };
+        const hashingService = {
+            hash: jest.fn<CommonServices.Hashing.PublicContract["hash"]>(),
+        };
         const passwordService = {
+            set: jest.fn<Services.Password.CommandContract["set"]>(),
             resetByRecoveryCode: jest.fn<Services.Password.CommandContract["resetByRecoveryCode"]>(),
             resetByOTP: jest.fn<Services.Password.CommandContract["resetByOTP"]>(),
             change: jest.fn<Services.Password.CommandContract["change"]>(),
@@ -26,6 +31,7 @@ export class PasswordCommandsUnitHelpers extends ApplicationCommandUnitHelpers i
         return {
             ...execution,
             identifierRepository,
+            hashingService,
             passwordService,
             otpCacheService,
             cryptoService,
@@ -35,6 +41,7 @@ export class PasswordCommandsUnitHelpers extends ApplicationCommandUnitHelpers i
                 this.contract<Services.Password.CommandContract>(passwordService),
                 this.contract<InfrastructureServices.OTPCache.PublicContract>(otpCacheService),
                 this.contract<CommonServices.Crypto.PublicContract>(cryptoService),
+                this.contract<CommonServices.Hashing.PublicContract>(hashingService),
             ),
         };
     }

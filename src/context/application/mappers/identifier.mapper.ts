@@ -1,3 +1,4 @@
+import { Exception } from "~common/exceptions";
 import {
     NotificationContentKind,
     NotificationCategory,
@@ -6,10 +7,57 @@ import {
     IdentifierType,
     ChannelType,
 } from "~context/enums";
-import { Exception } from "~common/exceptions";
 
 export class IdentifierMapper implements Commands.Mappers.Identifier.Contract {
     private readonly dictionaryPath = "commands.identifier";
+
+    public emailPayload(
+        props: Commands.Mappers.Identifier.EmailPayload.Props,
+    ): Commands.Mappers.Identifier.EmailPayload.Result {
+        const { identifier } = props;
+        if (identifier.type !== IdentifierType.EMAIL || !identifier.isVerified) {
+            return [];
+        } else {
+            return [
+                {
+                    account: identifier.account.id,
+                    identifier: {
+                        type: IdentifierType.EMAIL,
+                        value: identifier.identity,
+                        id: identifier.id,
+                    },
+                },
+            ];
+        }
+    }
+
+    public emailPurgedPayload(
+        props: Commands.Mappers.Identifier.EmailPurgedPayload.Props,
+    ): Commands.Mappers.Identifier.EmailPurgedPayload.Result {
+        const { identifier } = props;
+        if (identifier.type !== IdentifierType.EMAIL || !identifier.isVerified) {
+            return [];
+        }
+
+        const result: Topics.Account.EmailPurgedMessage["payload"] = {
+            account: identifier.account.id,
+            identifier: {
+                type: IdentifierType.EMAIL,
+                value: identifier.identity,
+                id: identifier.id,
+            },
+        };
+
+        if (props.replacement) {
+            result.replacement = {
+                value: props.replacement.identity,
+                type: IdentifierType.EMAIL,
+                id: props.replacement.id,
+            };
+        }
+
+        return [result];
+    }
 
     public identifierPurgedPayload(
         props: Commands.Mappers.Identifier.IdentifierPurgedPayload.Props,

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { LockMode } from "@mikro-orm/core";
 
 import { PasswordUnitHelpers } from "~testing/unit/domain-service/password.helpers";
 
@@ -27,6 +28,50 @@ function createAccountWithPassword(props: { hash?: string } = {}): {
 describe("[DomainService] - Password", () => {
     afterEach(() => {
         jest.restoreAllMocks();
+    });
+
+    describe("[Method] - set", () => {
+        it("[case] - locks the account and persists its first password using the supplied hash", async () => {
+            // Arrange
+            const account = helpers.createAccount({ id: ACCOUNT_ID });
+            const { service, repositories, services, transaction } = helpers.service({ account });
+
+            // Act
+            await service.set({
+                input: { account: ACCOUNT_ID, hash: "prepared-hash" },
+                transaction: transaction.entityManager,
+            });
+
+            // Assert
+            expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
+                options: { populate: ["password"], lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true },
+                where: { id: ACCOUNT_ID },
+                transaction: transaction.entityManager,
+            });
+            expect(account.password).toMatchObject({ account, hash: "prepared-hash" });
+            expect(transaction.persist).toHaveBeenCalledTimes(1);
+            expect(transaction.persist.mock.calls[0][0]).toBe(account.password);
+            expect(services.hashing.hash).not.toHaveBeenCalled();
+        });
+
+        it("[case] - rejects an existing password without replacing or persisting it", async () => {
+            // Arrange
+            const { account, password } = createAccountWithPassword();
+            const { service, transaction } = helpers.service({ account });
+
+            // Act
+            const result = service.set({
+                input: { account: ACCOUNT_ID, hash: "replacement-hash" },
+                transaction: transaction.entityManager,
+            });
+
+            // Assert
+            await expect(result).rejects.toThrow("services.password.PASSWORD_ALREADY_SET");
+
+            expect(account.password).toBe(password);
+            expect(password.hash).toBe("stored-hash");
+            expect(transaction.persist).not.toHaveBeenCalled();
+        });
     });
 
     describe("[Method] - change", () => {

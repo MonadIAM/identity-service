@@ -1,6 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { IdentifierType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountQueries implements Queries.Account.Contract {
@@ -13,6 +14,23 @@ export class AccountQueries implements Queries.Account.Contract {
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.QueryContract,
     ) {}
+
+    public async getSecurity(props: Queries.Account.GetSecurity.Props): Queries.Account.GetSecurity.Result {
+        const account = await this.accountRepository.findUniqueOrThrow({
+            options: { populate: ["password", "secondFactors", "identifiers"] },
+            where: { id: props.account },
+        });
+
+        const hasPassword = Boolean(account.password);
+        const hasSecondFactor = account.secondFactors.getItems().some((factor) => {
+            return Boolean(factor.confirmedAt);
+        });
+        const hasEmail = account.identifiers.getItems().some((identifier) => {
+            return identifier.type === IdentifierType.EMAIL && identifier.isVerified;
+        });
+
+        return { hasPassword, hasSecondFactor, canConfirmByEmail: !hasPassword && !hasSecondFactor && hasEmail };
+    }
 
     public findMe(props: Queries.Account.FindMe.Props): Queries.Account.FindMe.Result {
         return this.accountRepository.findUniqueOrThrow({

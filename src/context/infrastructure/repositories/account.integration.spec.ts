@@ -157,6 +157,88 @@ describe("[Repository] - Account", () => {
         });
     });
 
+    describe("[Method] - findExpiredDeactivated", () => {
+        it("[case] - selects only deactivated accounts at or before the retention boundary", async () => {
+            // Arrange
+            const expirationDate = new Date("2026-05-01T00:00:00.000Z");
+            const expired = await suite.fixtures().createAccount({ status: AccountStatus.DEACTIVATED });
+            const boundary = await suite.fixtures().createAccount({ status: AccountStatus.DEACTIVATED });
+            const recent = await suite.fixtures().createAccount({ status: AccountStatus.DEACTIVATED });
+            const undated = await suite.fixtures().createAccount({ status: AccountStatus.DEACTIVATED });
+            const active = await suite.fixtures().createAccount({ status: AccountStatus.ACTIVE });
+            const suspended = await suite.fixtures().createAccount({ status: AccountStatus.SUSPENDED });
+            await suite.transaction(async (transaction) => {
+                await transaction.nativeUpdate(
+                    Account,
+                    { id: { $in: [expired.id, active.id, suspended.id] } },
+                    { deactivatedAt: new Date("2026-04-01T00:00:00.000Z") },
+                );
+                await transaction.nativeUpdate(Account, { id: boundary.id }, { deactivatedAt: expirationDate });
+                await transaction.nativeUpdate(
+                    Account,
+                    { id: recent.id },
+                    { deactivatedAt: new Date("2026-05-01T00:00:00.001Z") },
+                );
+            });
+
+            // Act
+            const accounts = await suite.transaction((transaction) =>
+                suite.repository().findExpiredDeactivated({
+                    expirationDate,
+                    batchSize: 10,
+                    transaction,
+                }),
+            );
+
+            // Assert
+            expect(accounts.map(({ id }) => id)).toEqual([expired.id, boundary.id]);
+            expect(accounts.map(({ id }) => id)).not.toContain(undated.id);
+        });
+
+        it("[case] - limits each batch and orders equal timestamps by account id", async () => {
+            // Arrange
+            const expirationDate = new Date("2026-05-01T00:00:00.000Z");
+            const accounts = await Promise.all([
+                suite.fixtures().createAccount({ status: AccountStatus.DEACTIVATED }),
+                suite.fixtures().createAccount({ status: AccountStatus.DEACTIVATED }),
+                suite.fixtures().createAccount({ status: AccountStatus.DEACTIVATED }),
+            ]);
+            const ids = accounts.map(({ id }) => id).sort();
+            await suite.transaction((transaction) =>
+                transaction.nativeUpdate(Account, { id: { $in: ids } }, { deactivatedAt: expirationDate }),
+            );
+
+            // Act
+            const result = await suite.transaction((transaction) =>
+                suite.repository().findExpiredDeactivated({
+                    expirationDate,
+                    batchSize: 2,
+                    transaction,
+                }),
+            );
+
+            // Assert
+            expect(result.map(({ id }) => id)).toEqual(ids.slice(0, 2));
+        });
+
+        it("[case] - returns an empty batch when no account has expired", async () => {
+            // Arrange
+            const expirationDate = new Date("2026-05-01T00:00:00.000Z");
+
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().findExpiredDeactivated({
+                    expirationDate,
+                    batchSize: 10,
+                    transaction,
+                }),
+            );
+
+            // Assert
+            await expect(result).resolves.toEqual([]);
+        });
+    });
+
     describe("[Method] - findExpiredPending", () => {
         it("[case] - finds expired pending accounts by creation time", async () => {
             // Arrange

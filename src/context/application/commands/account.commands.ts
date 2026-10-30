@@ -1,5 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { isEmail } from "class-validator";
+import ms, { StringValue } from "ms";
 
 import { ACCOUNT_SERVICE, RECOVERY_CODE_SERVICE } from "~context/domain/services";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
@@ -8,6 +10,7 @@ import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { HASHING_SERVICE, CRYPTO_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
 import {
+    BlacklistTopicAction,
     AccountTopicAction,
     AccountSubject,
     IdentifierType,
@@ -17,10 +20,11 @@ import {
     KafkaTopic,
 } from "~context/enums";
 
-import { AccountMapper } from "../mappers";
+import { AccountMapper, SessionMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountCommands implements Commands.Account.Contract {
+    private readonly sessionMapper: Commands.Mappers.Session.Contract;
     private readonly mapper: Commands.Mappers.Account.Contract;
     private readonly dictionaryPath = "commands.account";
     private readonly resource = "Account";
@@ -40,7 +44,9 @@ export class AccountCommands implements Commands.Account.Contract {
         private readonly hashingService: CommonServices.Hashing.PublicContract,
         @Inject(CRYPTO_SERVICE)
         private readonly cryptoService: CommonServices.Crypto.PublicContract,
+        private readonly configService: ConfigService,
     ) {
+        this.sessionMapper = new SessionMapper(ms(this.configService.getOrThrow<StringValue>("JWT_ACCESS_TTL")) / 1e3);
         this.mapper = new AccountMapper();
     }
 
@@ -192,6 +198,11 @@ export class AccountCommands implements Commands.Account.Contract {
     public async deactivate(props: Commands.Account.Deactivate.Props): Commands.Account.Deactivate.Result {
         await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.sessionMapper.blacklistPayload,
+                destinationTopic: KafkaTopic.BLACKLIST,
+                actionType: BlacklistTopicAction.ADD,
+            },
             audit: {
                 actionType: ActionType.DEACTIVATE,
                 entityType: EntityType.ACCOUNT,
@@ -199,7 +210,8 @@ export class AccountCommands implements Commands.Account.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                await this.accountService.deactivate({ input: { account: props.actor }, transaction });
+                const sessions = await this.accountService.deactivate({ input: { account: props.actor }, transaction });
+                return { sessions };
             },
         });
 

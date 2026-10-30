@@ -2,19 +2,26 @@ declare namespace Commands.Mappers.Reauthentication {
     interface Contract extends PublicContract {}
 
     interface PublicContract {
+        notificationPayload: NotificationPayload.Signature;
         grantPayload: GrantPayload.Signature;
     }
 
-    namespace GrantPayload {
+    namespace NotificationPayload {
         type Props = {
-            expiresAt: number;
-            session: string;
+            account: string;
+            address: string;
+            otp: string;
         };
 
-        type Result = {
-            expiresAt: number;
-            session: string;
-        };
+        type Result = Topics.Notification.CreateMessage["payload"];
+
+        type Signature = (props: Props) => Result;
+    }
+
+    namespace GrantPayload {
+        type Props = Topics.Reauthentication.Message["payload"];
+
+        type Result = Topics.Reauthentication.Message["payload"];
 
         type Signature = (props: Props) => Result;
     }

@@ -43,6 +43,49 @@ describe("[DomainService] - Password", () => {
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
+    describe("[Method] - set", () => {
+        it("[case] - persists the first password and its account relation", async () => {
+            // Arrange
+            const account = await suite.fixtures().createAccount();
+
+            // Act
+            await suite.transaction((transaction) =>
+                suite.repository().passwordService.set({
+                    input: { account: account.id, hash: "hash:first-password" },
+                    transaction,
+                }),
+            );
+            const password = await loadPassword(suite, account);
+
+            // Assert
+            expect(password.hash).toBe("hash:first-password");
+            expect(password.account.id).toBe(account.id);
+            expect(password.version).toBe(1);
+            await expect(loadPasswordHistory(suite, account)).resolves.toEqual([]);
+        });
+
+        it("[case] - preserves an existing password when a second installation is attempted", async () => {
+            // Arrange
+            const account = await suite.fixtures().createAccount();
+            await suite.fixtures().createPassword({ account, hash: "hash:existing-password" });
+
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().passwordService.set({
+                    input: { account: account.id, hash: "hash:replacement-password" },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const password = await loadPassword(suite, account);
+
+            // Assert
+            await expect(result).rejects.toThrow("services.password.PASSWORD_ALREADY_SET");
+            expect(password.hash).toBe("hash:existing-password");
+            expect(password.version).toBe(1);
+        });
+    });
+
     describe("[Method] - change", () => {
         it("[case] - rotates a password and writes the previous hash to password history", async () => {
             // Arrange

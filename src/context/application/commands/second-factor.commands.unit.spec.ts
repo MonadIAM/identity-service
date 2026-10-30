@@ -72,6 +72,22 @@ describe("[Commands] - SecondFactor", () => {
     });
 
     describe("[Method] - reset", () => {
+        it("[case] - resets the session account through the existing audit and notification pipeline", async () => {
+            // Arrange
+            const { commands, secondFactorService, transaction, run } = await helpers.commands();
+            secondFactorService.reset.mockResolvedValue(helpers.createAccount({ id: ACTOR }));
+            const input = { account: ACTOR, code: "recovery-code" };
+
+            // Act
+            await commands.reset({ input, actor: ACTOR, context: CONTEXT });
+            const result = await run.mock.results[0]?.value;
+
+            // Assert
+            expect(secondFactorService.reset.mock.calls).toEqual([[{ input, transaction: transaction.entityManager }]]);
+            expect(run.mock.calls[0][0].audit).toEqual(expect.objectContaining({ actor: ACTOR, context: CONTEXT }));
+            expect(result).toEqual({ account: ACTOR });
+        });
+
         it("[case] - resets factors using the recovery identity and publishes the resolved account", async () => {
             // Arrange
             const { commands, secondFactorService, transaction, run } = await helpers.commands();
@@ -89,17 +105,20 @@ describe("[Commands] - SecondFactor", () => {
     });
 
     describe("[Method] - purge", () => {
-        it("[case] - binds factor removal to the authenticated account", async () => {
-            // Arrange
-            const { commands, secondFactorService, transaction } = await helpers.commands();
+        it.each([undefined, null])(
+            "[case] - binds factor removal and confirmation filter to the account: %s",
+            async (confirmedAt) => {
+                // Arrange
+                const { commands, secondFactorService, transaction } = await helpers.commands();
 
-            // Act
-            await commands.purge({ input: { factor: ID }, actor: ACTOR, context: CONTEXT });
+                // Act
+                await commands.purge({ input: { factor: ID, confirmedAt }, actor: ACTOR, context: CONTEXT });
 
-            // Assert
-            expect(secondFactorService.purge.mock.calls).toEqual([
-                [{ input: { target: ID, account: ACTOR }, transaction: transaction.entityManager }],
-            ]);
-        });
+                // Assert
+                expect(secondFactorService.purge.mock.calls).toEqual([
+                    [{ input: { target: ID, account: ACTOR, confirmedAt }, transaction: transaction.entityManager }],
+                ]);
+            },
+        );
     });
 });

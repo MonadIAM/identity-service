@@ -80,6 +80,8 @@ describe("[Commands] - Identifier", () => {
             // Arrange
             const { commands, otpCacheService, identifierService, transaction, run } = await helpers.commands();
             otpCacheService.consume.mockResolvedValue(cached);
+            const identifier = helpers.createIdentifier({ id: ID, type: IdentifierType.EMAIL, isVerified: true });
+            identifierService.verify.mockResolvedValue(identifier);
 
             // Act
             const result = commands.verify({ input: { code: "123456" }, actor: ACTOR, context: CONTEXT });
@@ -91,14 +93,36 @@ describe("[Commands] - Identifier", () => {
 
             // Assert
             if (cached) {
+                expect(run.mock.calls[0][0].outbox).toMatchObject({
+                    destinationTopic: "account",
+                    actionType: "EMAIL_VERIFIED",
+                });
+                await expect(run.mock.results[0].value).resolves.toEqual({ identifier });
                 expect(identifierService.verify.mock.calls).toEqual([
-                    [{ input: { identifier: ID }, transaction: transaction.entityManager }],
+                    [{ input: { identifier: ID, account: ACTOR }, transaction: transaction.entityManager }],
                 ]);
             } else {
                 await expect(result).rejects.toThrow();
                 expect(run).not.toHaveBeenCalled();
             }
             expect(otpCacheService.consume.mock.calls).toEqual([[{ purpose: "identifier", key: "123456" }]]);
+        });
+    });
+
+    describe("[Method] - purge", () => {
+        it("[case] - passes the unverified filter through the existing removal pipeline", async () => {
+            // Arrange
+            const { commands, identifierService, transaction, run } = await helpers.commands();
+
+            // Act
+            await commands.purge({ input: { identifier: ID, isVerified: false }, actor: ACTOR, context: CONTEXT });
+            const result = await run.mock.results[0]?.value;
+
+            // Assert
+            expect(identifierService.purge.mock.calls).toEqual([
+                [{ input: { identifier: ID, account: ACTOR, isVerified: false }, transaction: transaction.entityManager }],
+            ]);
+            expect(result).toEqual({ account: ACTOR });
         });
     });
 
@@ -118,5 +142,28 @@ describe("[Commands] - Identifier", () => {
                 ]);
             },
         );
+    });
+    describe("[Method] - selectNotificationEmail", () => {
+        it("[case] - validates ownership before recording the selected email in the transactional outbox", async () => {
+            // Arrange
+            const { commands, identifierService, run, transaction } = await helpers.commands();
+            const identifier = helpers.createIdentifier({ type: IdentifierType.EMAIL, isVerified: true });
+            identifierService.selectNotificationEmail.mockResolvedValue(identifier);
+
+            // Act
+            await commands.selectNotificationEmail({ input: { identifier: ID }, actor: ACTOR, context: CONTEXT });
+            const result = await run.mock.results[0].value;
+
+            // Assert
+            expect(identifierService.selectNotificationEmail).toHaveBeenCalledWith({
+                input: { account: ACTOR, identifier: ID },
+                transaction: transaction.entityManager,
+            });
+            expect(run.mock.calls[0][0].outbox).toMatchObject({
+                destinationTopic: "account",
+                actionType: "EMAIL_SELECTED",
+            });
+            expect(result).toEqual({ identifier });
+        });
     });
 });

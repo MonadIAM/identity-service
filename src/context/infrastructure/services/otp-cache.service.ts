@@ -17,6 +17,7 @@ export class OTPCacheService implements InfrastructureServices.OTPCache.Contract
         private readonly configService: ConfigService,
     ) {
         this.ttl = {
+            reauthentication: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")) / 1e3,
             verification: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")) / 1e3,
             identifier: ms(this.configService.getOrThrow<StringValue>("OTP_VERIFICATION_TTL")) / 1e3,
             setup2FA: ms(this.configService.getOrThrow<StringValue>("PENDING_2FA_TTL")) / 1e3,

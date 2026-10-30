@@ -47,8 +47,8 @@ declare namespace Commands.SecondFactor {
     namespace Reset {
         type Props = {
             context: Extract.Meta;
-            input: {
-                identifier: string;
+            actor?: string;
+            input: ({ identifier: string } | { account: string }) & {
                 code: string;
             };
         };
@@ -63,6 +63,7 @@ declare namespace Commands.SecondFactor {
             context: Extract.Meta;
             actor: string;
             input: {
+                confirmedAt?: null;
                 factor: string;
             };
         };

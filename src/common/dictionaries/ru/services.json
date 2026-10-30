@@ -41,6 +41,7 @@
     "ACCOUNT_NOT_AUTHENTICATABLE": "Учетная запись не может создать сессию."
   },
   "password": {
+    "PASSWORD_ALREADY_SET": "Для этой учётной записи уже установлен пароль.",
     "NO_PASSWORD_SET": "Для этой учетной записи не задан пароль.",
     "INVALID_CURRENT_PASSWORD": "Текущий пароль недействителен.",
     "RECENTLY_USED": "Этот пароль использовался недавно.",

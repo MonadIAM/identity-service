@@ -29,6 +29,10 @@ export type I18nTranslations = {
             "AUTHORIZATION_CONFIRMED": string;
         };
         "reauthentication": {
+            "EMAIL_CONFIRMATION_UNAVAILABLE": string;
+            "VERIFIED_EMAIL_REQUIRED": string;
+            "CODE_SENT": string;
+            "INVALID_OR_EXPIRED_CODE": string;
             "NO_PASSWORD_SET": string;
             "INVALID_PASSWORD": string;
             "REAUTHENTICATED": string;
@@ -42,6 +46,7 @@ export type I18nTranslations = {
             "VERIFIED": string;
             "PUBLIC_CONTACT_TOGGLED": string;
             "PURGED": string;
+            "NOTIFICATION_EMAIL_SELECTION_REQUESTED": string;
         };
         "federated-authn": {
             "INVALID_STATE": string;
@@ -82,6 +87,7 @@ export type I18nTranslations = {
             "BULK_PURGED_COUNT": string;
         };
         "password": {
+            "SET": string;
             "CHANGED": string;
             "RESET_CODE_SENT": string;
             "INVALID_OR_EXPIRED_CODE": string;
@@ -222,6 +228,7 @@ export type I18nTranslations = {
             "ACCOUNT_NOT_AUTHENTICATABLE": string;
         };
         "password": {
+            "PASSWORD_ALREADY_SET": string;
             "NO_PASSWORD_SET": string;
             "INVALID_CURRENT_PASSWORD": string;
             "RECENTLY_USED": string;

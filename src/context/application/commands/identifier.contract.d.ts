@@ -5,11 +5,20 @@ declare global {
         interface Contract extends ControllerContract {}
 
         interface ControllerContract {
+            selectNotificationEmail: SelectNotificationEmail.Signature;
             togglePublicContact: TogglePublicContact.Signature;
             verify: Verify.Signature;
             create: Create.Signature;
             resend: Resend.Signature;
             purge: Purge.Signature;
+        }
+
+        namespace SelectNotificationEmail {
+            type Props = TogglePublicContact.Props;
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace TogglePublicContact {
@@ -70,11 +79,14 @@ declare global {
         }
 
         namespace Purge {
+            type ExecuteResult = Awaited<Services.Identifier.Purge.Result> & { account: string };
+
             type Props = {
                 context: Extract.Meta;
                 actor: string;
                 input: {
                     identifier: string;
+                    isVerified?: false;
                 };
             };
 

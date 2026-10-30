@@ -244,6 +244,34 @@ describe("[DomainService] - SecondFactor", () => {
     });
 
     describe("[Method] - purge", () => {
+        it.each([
+            { confirmed: false, owned: true, removed: true },
+            { confirmed: true, owned: true, removed: false },
+            { confirmed: false, owned: false, removed: false },
+        ])("[case] - restricts unconfirmed removal by state and ownership: %j", async ({ confirmed, owned, removed }) => {
+            // Arrange
+            const account = await suite.fixtures().createAccount();
+            const owner = owned ? account : await suite.fixtures().createAccount();
+            const factor = await suite.fixtures().createSecondFactor({ confirmed, account: owner });
+            if (confirmed) {
+                await suite.fixtures().createMasterCode({ account: owner, hash: "hash:master-code" });
+            }
+
+            // Act
+            await suite.transaction((transaction) =>
+                suite.repository().secondFactorService.purge({
+                    input: { target: factor.id, account: account.id, confirmedAt: null },
+                    transaction,
+                }),
+            );
+            const factors = await loadFactors(suite, owner);
+            const codes = await countMasterCodes(suite, owner);
+
+            // Assert
+            expect(factors).toHaveLength(removed ? 0 : 1);
+            expect(codes).toBe(confirmed ? 1 : 0);
+        });
+
         it("[case] - removes the master code when the last confirmed factor is purged", async () => {
             // Arrange
             const account = await suite.fixtures().createAccount();
@@ -273,6 +301,45 @@ describe("[DomainService] - SecondFactor", () => {
     });
 
     describe("[Method] - reset", () => {
+        it("[case] - resets only the selected account and rejects another account's master code", async () => {
+            // Arrange
+            const account = await suite.fixtures().createAccount();
+            const other = await suite.fixtures().createAccount();
+            await suite.fixtures().createSecondFactor({ confirmed: true, account });
+            await suite.fixtures().createSecondFactor({ confirmed: true, account: other });
+            await suite.fixtures().createMasterCode({ account, hash: "hash:master-code" });
+            await suite.fixtures().createMasterCode({ account: other, hash: "hash:other-code" });
+
+            // Act
+            const rejected = suite.transaction((transaction) =>
+                suite.repository().secondFactorService.reset({
+                    input: { account: account.id, code: "other-code" },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([rejected]);
+            const before = await loadFactors(suite, account);
+            const result = await suite.transaction((transaction) =>
+                suite.repository().secondFactorService.reset({
+                    input: { account: account.id, code: "master-code" },
+                    transaction,
+                }),
+            );
+            const factors = await loadFactors(suite, account);
+            const otherFactors = await loadFactors(suite, other);
+            const codes = await countMasterCodes(suite, account);
+            const otherCodes = await countMasterCodes(suite, other);
+
+            // Assert
+            await expect(rejected).rejects.toThrow("services.second-factor.INVALID_CODE");
+            expect(before).toHaveLength(1);
+            expect(result.id).toBe(account.id);
+            expect(factors).toHaveLength(0);
+            expect(codes).toBe(0);
+            expect(otherFactors).toHaveLength(1);
+            expect(otherCodes).toBe(1);
+        });
+
         it("[case] - resets all second factors using a valid master code through an identifier", async () => {
             // Arrange
             const account = await suite.fixtures().createAccount();

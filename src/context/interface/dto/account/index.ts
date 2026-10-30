@@ -12,4 +12,5 @@ export { AccountDTO } from "./res/entity.dto";
 export { ListDTO } from "./res/list.dto";
 
 export { FiltersDTO } from "./utils/filters.dto";
+export { SecurityDTO } from "./res/security.dto";
 export { SortDTO } from "./utils/sort.dto";

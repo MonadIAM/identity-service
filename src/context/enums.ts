@@ -19,8 +19,10 @@ export enum SecondFactorType {
 }
 
 export enum OAuthTokenTypeHint {
+    /* eslint-disable prettier/prettier */
     REFRESH_TOKEN = "refresh_token",
-    ACCESS_TOKEN = "access_token",
+    ACCESS_TOKEN  = "access_token",
+    /* eslint-enable prettier/prettier */
 }
 
 export enum OAuthResponseType {
@@ -91,10 +93,11 @@ export enum EntityType {
 
 export enum CleanupJob {
     /* eslint-disable prettier/prettier */
-    INACTIVE_ACCOUNTS = "cleanup-inactive-accounts",
-    PENDING_ACCOUNTS  = "cleanup-pending-accounts",
-    CHANGE_LOG        = "cleanup-change-log",
-    AUDIT_LOG         = "cleanup-audit-log",
-    INBOX             = "cleanup-inbox",
+    DEACTIVATED_ACCOUNTS = "cleanup-deactivated-accounts",
+    INACTIVE_ACCOUNTS    = "cleanup-inactive-accounts",
+    PENDING_ACCOUNTS     = "cleanup-pending-accounts",
+    CHANGE_LOG           = "cleanup-change-log",
+    AUDIT_LOG            = "cleanup-audit-log",
+    INBOX                = "cleanup-inbox",
     /* eslint-enable prettier/prettier */
 }

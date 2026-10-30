@@ -1,5 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { LockMode } from "@mikro-orm/core";
 import ms, { StringValue } from "ms";
 
 import { HASHING_SERVICE } from "~common/services";
@@ -10,7 +11,7 @@ import {
     ACCOUNT_REPOSITORY,
 } from "~context/infrastructure/repositories";
 
-import { PasswordHistory } from "../entities";
+import { Password, PasswordHistory } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PasswordService implements Services.Password.Contract {
@@ -29,6 +30,23 @@ export class PasswordService implements Services.Password.Contract {
         private readonly configService: ConfigService,
     ) {
         this.historyCheckWindowMs = ms(this.configService.getOrThrow<StringValue>("PASSWORD_HISTORY_CHECK_DAYS"));
+    }
+
+    public async set(props: Services.Password.Set.Props): Services.Password.Set.Result {
+        const { transaction, input } = props;
+        const account = await this.accountRepository.findUniqueOrThrow({
+            options: { populate: ["password"], lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true },
+            where: { id: input.account },
+            transaction,
+        });
+
+        if (account.password) {
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.PASSWORD_ALREADY_SET` });
+        } else {
+            const password = new Password({ account, hash: input.hash });
+            account.password = password;
+            transaction.persist(password);
+        }
     }
 
     public async change(props: Services.Password.Change.Props): Services.Password.Change.Result {
