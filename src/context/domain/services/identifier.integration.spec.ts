@@ -68,6 +68,7 @@ describe("[DomainService] - Identifier", () => {
                 suite.repository().identifierService.verify({
                     input: {
                         identifier: identifier.id,
+                        account: account.id,
                     },
                     transaction,
                 }),
@@ -141,7 +142,7 @@ describe("[DomainService] - Identifier", () => {
 
             // Assert
             if (removed) {
-                await expect(result).resolves.toBeUndefined();
+                await expect(result).resolves.toMatchObject({ identifier: { id: identifier.id } });
                 expect(identifiers).toHaveLength(0);
             } else {
                 await expect(result).rejects.toThrow();
@@ -211,6 +212,79 @@ describe("[DomainService] - Identifier", () => {
             // Assert
             await expect(result).rejects.toThrow("services.identifier.CANNOT_REMOVE_LAST_VERIFIED");
             expect(result1).toHaveLength(1);
+        });
+    });
+
+    describe("[Method] - selectNotificationEmail", () => {
+        it.each([
+            { type: IdentifierType.EMAIL, verified: true, owned: true, accepted: true },
+            { type: IdentifierType.EMAIL, verified: false, owned: true, accepted: false },
+            { type: IdentifierType.EMAIL, verified: true, owned: false, accepted: false },
+            { type: IdentifierType.PHONE, verified: true, owned: true, accepted: false },
+        ])(
+            "[case] - accepts only a verified email owned by the account: %j",
+            async ({ type, verified, owned, accepted }) => {
+                // Arrange
+                const account = await suite.fixtures().createAccount();
+                const owner = owned ? account : await suite.fixtures().createAccount();
+                const identifier = await suite.fixtures().createIdentifier({
+                    identity: type === IdentifierType.EMAIL ? "selected@example.test" : "+15550000003",
+                    isVerified: verified,
+                    account: owner,
+                    type,
+                });
+
+                // Act
+                const result = suite.transaction((transaction) =>
+                    suite.repository().identifierService.selectNotificationEmail({
+                        input: { account: account.id, identifier: identifier.id },
+                        transaction,
+                    }),
+                );
+                await Promise.allSettled([result]);
+
+                // Assert
+                if (accepted) {
+                    await expect(result).resolves.toMatchObject({ id: identifier.id });
+                } else {
+                    await expect(result).rejects.toThrow();
+                }
+            },
+        );
+    });
+
+    describe("[Behavior] - email replacement", () => {
+        it("[case] - returns the oldest remaining verified email, excluding drafts and other accounts", async () => {
+            // Arrange
+            const account = await suite.fixtures().createAccount();
+            const other = await suite.fixtures().createAccount();
+            const removed = await suite
+                .fixtures()
+                .createIdentifier({ account, identity: "removed@example.test", isVerified: true });
+            const oldest = await suite
+                .fixtures()
+                .createIdentifier({ account, identity: "oldest@example.test", isVerified: true });
+            const newer = await suite
+                .fixtures()
+                .createIdentifier({ account, identity: "newer@example.test", isVerified: true });
+            await suite.fixtures().createIdentifier({ account, identity: "draft@example.test" });
+            await suite.fixtures().createIdentifier({ account: other, identity: "foreign@example.test", isVerified: true });
+            await suite.transaction(async (transaction) => {
+                await transaction.nativeUpdate(Identifier, { id: oldest.id }, { createdAt: new Date("2020-01-01") });
+                await transaction.nativeUpdate(Identifier, { id: newer.id }, { createdAt: new Date("2021-01-01") });
+            });
+
+            // Act
+            const result = await suite.transaction((transaction) =>
+                suite.repository().identifierService.purge({
+                    input: { account: account.id, identifier: removed.id },
+                    transaction,
+                }),
+            );
+
+            // Assert
+            expect(result.replacement?.id).toBe(oldest.id);
+            expect(result.identifier.id).toBe(removed.id);
         });
     });
 });

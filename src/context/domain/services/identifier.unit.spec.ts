@@ -77,8 +77,8 @@ describe("[DomainService] - Identifier", () => {
 
             // Act
             const result = service.verify({
+                input: { identifier: IDENTIFIER_ID, account: ACCOUNT_ID },
                 transaction: transaction.entityManager,
-                input: { identifier: IDENTIFIER_ID },
             });
 
             // Assert
@@ -96,13 +96,14 @@ describe("[DomainService] - Identifier", () => {
             // Act
             await service.verify({
                 transaction: transaction.entityManager,
-                input: { identifier: IDENTIFIER_ID },
+                input: { identifier: IDENTIFIER_ID, account: ACCOUNT_ID },
             });
 
             // Assert
             expect(repositories.identifiers.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
-                where: { id: IDENTIFIER_ID },
+                where: { id: IDENTIFIER_ID, account: ACCOUNT_ID },
+                options: { refresh: true },
             });
             expect(verifySpy).toHaveBeenCalledTimes(1);
             expect(identifier.isVerified).toBe(true);

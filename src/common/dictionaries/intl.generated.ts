@@ -46,6 +46,7 @@ export type I18nTranslations = {
             "VERIFIED": string;
             "PUBLIC_CONTACT_TOGGLED": string;
             "PURGED": string;
+            "NOTIFICATION_EMAIL_SELECTION_REQUESTED": string;
         };
         "federated-authn": {
             "INVALID_STATE": string;

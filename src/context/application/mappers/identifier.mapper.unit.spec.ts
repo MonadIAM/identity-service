@@ -1,5 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 import {
     NotificationContentKind,
     NotificationCategory,
@@ -14,6 +15,7 @@ import { IdentifierMapper } from "./identifier.mapper";
 const ACCOUNT_ID = "00000000-0000-4000-8000-400000000001";
 
 const mapper = new IdentifierMapper();
+const helpers = new EntityFactoryRegistry();
 
 describe("[DataMapper] - Identifier", () => {
     describe("[Method] - identifierPurgedPayload", () => {
@@ -58,6 +60,45 @@ describe("[DataMapper] - Identifier", () => {
                     delivery: { channelType: ChannelType.EMAIL, address: "user@example.com" },
                     recipient: ACCOUNT_ID,
                 },
+            });
+        });
+    });
+
+    describe("[Behavior] - email synchronization", () => {
+        it.each([
+            { type: IdentifierType.EMAIL, isVerified: true, count: 1 },
+            { type: IdentifierType.EMAIL, isVerified: false, count: 0 },
+            { type: IdentifierType.PHONE, isVerified: true, count: 0 },
+        ])("[case] - emits confirmed email facts only: %j", ({ type, isVerified, count }) => {
+            // Arrange
+            const identifier = helpers.createIdentifier({ type, isVerified });
+
+            // Act
+            const result = mapper.emailPayload({ identifier });
+
+            // Assert
+            expect(result).toHaveLength(count);
+            if (count) {
+                expect(result[0]).toEqual({
+                    account: identifier.account.id,
+                    identifier: { id: identifier.id, type: IdentifierType.EMAIL, value: identifier.identity },
+                });
+            }
+        });
+
+        it("[case] - includes the replacement selected in the deletion transaction", () => {
+            // Arrange
+            const identifier = helpers.createIdentifier({ type: IdentifierType.EMAIL, isVerified: true });
+            const replacement = helpers.createIdentifier({ type: IdentifierType.EMAIL, isVerified: true });
+
+            // Act
+            const result = mapper.emailPurgedPayload({ identifier, replacement });
+
+            // Assert
+            expect(result[0].replacement).toEqual({
+                id: replacement.id,
+                type: IdentifierType.EMAIL,
+                value: replacement.identity,
             });
         });
     });

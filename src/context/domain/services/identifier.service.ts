@@ -1,8 +1,9 @@
+import { LockMode, QueryOrder } from "@mikro-orm/postgresql";
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { LockMode } from "@mikro-orm/postgresql";
 import { isString } from "class-validator";
 
 import { IDENTIFIER_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
+import { IdentifierType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 import { Identifier } from "../entities";
@@ -39,8 +40,15 @@ export class IdentifierService implements Services.Identifier.Contract {
 
     public async verify(props: Services.Identifier.Verify.Props): Services.Identifier.Verify.Result {
         const { transaction, input } = props;
+        await this.accountRepository.findUniqueOrThrow({
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE },
+            where: { id: input.account },
+            transaction,
+        });
+
         const identifier = await this.identifierRepository.findUniqueOrThrow({
-            where: { id: input.identifier },
+            where: { id: input.identifier, account: input.account },
+            options: { refresh: true },
             transaction,
         });
 
@@ -49,6 +57,30 @@ export class IdentifierService implements Services.Identifier.Contract {
         } else {
             identifier.verify();
         }
+
+        return identifier;
+    }
+
+    public async selectNotificationEmail(
+        props: Services.Identifier.SelectNotificationEmail.Props,
+    ): Services.Identifier.SelectNotificationEmail.Result {
+        const { transaction, input } = props;
+        await this.accountRepository.findUniqueOrThrow({
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE },
+            where: { id: input.account },
+            transaction,
+        });
+
+        return await this.identifierRepository.findUniqueOrThrow({
+            where: {
+                type: IdentifierType.EMAIL,
+                account: input.account,
+                id: input.identifier,
+                isVerified: true,
+            },
+            options: { refresh: true },
+            transaction,
+        });
     }
 
     public async togglePublicContact(
@@ -65,6 +97,11 @@ export class IdentifierService implements Services.Identifier.Contract {
 
     public async purge(props: Services.Identifier.Purge.Props): Services.Identifier.Purge.Result {
         const { transaction, input } = props;
+        await this.accountRepository.findUniqueOrThrow({
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE },
+            where: { id: input.account },
+            transaction,
+        });
         const where: ORM.ObjectQuery<Entities.Identifier> = {
             account: input.account,
             id: input.identifier,
@@ -92,6 +129,22 @@ export class IdentifierService implements Services.Identifier.Contract {
             }
         }
 
+        let replacement: Nullable<Entities.Identifier> = null;
+        if (identifier.type === IdentifierType.EMAIL && identifier.isVerified) {
+            replacement = await this.identifierRepository.findUnique({
+                where: {
+                    id: { $ne: identifier.id },
+                    type: IdentifierType.EMAIL,
+                    account: input.account,
+                    isVerified: true,
+                },
+                options: { orderBy: { createdAt: QueryOrder.ASC, id: QueryOrder.ASC } },
+                transaction,
+            });
+        }
+
         transaction.remove(identifier);
+
+        return { identifier, replacement };
     }
 }

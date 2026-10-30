@@ -38,7 +38,8 @@
     "INVALID_OR_EXPIRED_CODE": "The verification code is invalid or expired.",
     "VERIFIED": "Identifier successfully verified.",
     "PUBLIC_CONTACT_TOGGLED": "Identifier public contact visibility successfully toggled.",
-    "PURGED": "Identifier successfully deleted."
+    "PURGED": "Identifier successfully deleted.",
+    "NOTIFICATION_EMAIL_SELECTION_REQUESTED": "Notification email selection requested."
   },
   "federated-authn": {
     "INVALID_STATE": "The OAuth state is invalid or expired.",

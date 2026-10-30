@@ -8,6 +8,7 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
+    SelectNotificationEmailBodyDTO,
     TogglePublicContactBodyDTO,
     GetLookupListQueryDTO,
     GetLookupListBodyDTO,
@@ -25,6 +26,7 @@ import {
 
 const {
     IDENTIFIER_TOGGLE_PUBLIC_CONTACT,
+    IDENTIFIER_TOGGLE_NOTIFICATIONS,
     IDENTIFIER_READ_PERSONAL,
     IDENTIFIER_CREATE,
     IDENTIFIER_RESEND,
@@ -41,6 +43,7 @@ const {
     FORBIDDEN,
     NOT_FOUND,
     CONFLICT,
+    ACCEPTED,
     CREATED,
     OK,
 } = HttpStatus;
@@ -204,6 +207,29 @@ export class IdentifierController {
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Identifier.Verify.Result {
         return this.identifierCommands.verify({ context, actor, input });
+    }
+
+    @HttpCode(ACCEPTED)
+    @Patch("select/notification-email")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(IDENTIFIER_TOGGLE_NOTIFICATIONS)
+    @ApiOperation({ summary: "Select a verified email for notifications", security: [{ identity: [] }] })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
+    public selectNotificationEmail(
+        @Body() input: SelectNotificationEmailBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Identifier.SelectNotificationEmail.Result {
+        return this.identifierCommands.selectNotificationEmail({ context, actor, input });
     }
 
     @HttpCode(OK)

@@ -2,6 +2,7 @@ declare namespace Services.Identifier {
     interface Contract extends CommandContract {}
 
     interface CommandContract {
+        selectNotificationEmail: SelectNotificationEmail.Signature;
         togglePublicContact: TogglePublicContact.Signature;
         create: Create.Signature;
         verify: Verify.Signature;
@@ -41,10 +42,19 @@ declare namespace Services.Identifier {
             transaction: ORM.EntityManager;
             input: {
                 identifier: string;
+                account: string;
             };
         };
 
-        type Result = Promise<void>;
+        type Result = Promise<Entities.Identifier>;
+
+        type Signature = (props: Props) => Result;
+    }
+
+    namespace SelectNotificationEmail {
+        type Props = Verify.Props;
+
+        type Result = Promise<Entities.Identifier>;
 
         type Signature = (props: Props) => Result;
     }
@@ -60,7 +70,10 @@ declare namespace Services.Identifier {
             };
         };
 
-        type Result = Promise<void>;
+        type Result = Promise<{
+            replacement: Nullable<Entities.Identifier>;
+            identifier: Entities.Identifier;
+        }>;
 
         type Signature = (props: Props) => Result;
     }
