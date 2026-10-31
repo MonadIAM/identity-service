@@ -28,4 +28,24 @@ export class SecondFactorMapper implements Commands.Mappers.SecondFactor.Contrac
             },
         };
     }
+
+    public secondFactorPurgedPayload(
+        props: Commands.Mappers.SecondFactor.SecondFactorPurgedPayload.Props,
+    ): Commands.Mappers.SecondFactor.SecondFactorPurgedPayload.Result {
+        if (props.factor?.confirmedAt) {
+            return [
+                {
+                    input: {
+                        sourceService: PlatformService.IDENTITY_SERVICE,
+                        template: MessageTemplate.SECOND_FACTOR_PURGED,
+                        category: NotificationCategory.SECURITY,
+                        kind: NotificationContentKind.TEMPLATE,
+                        recipient: props.account,
+                    },
+                },
+            ];
+        } else {
+            return [];
+        }
+    }
 }

@@ -250,12 +250,13 @@ describe("[DomainService] - SecondFactor", () => {
             repositories.secondFactors.find.mockImplementation(() => Promise.resolve([target, remaining]));
 
             // Act
-            await service.purge({
+            const result = await service.purge({
                 input: { account: ACCOUNT_ID, target: FACTOR_ID },
                 transaction: transaction.entityManager,
             });
 
             // Assert
+            expect(result).toBe(target);
             expect(transaction.remove).toHaveBeenCalledWith(target);
             expect(transaction.remove).not.toHaveBeenCalledWith(masterCode);
         });
@@ -270,14 +271,48 @@ describe("[DomainService] - SecondFactor", () => {
             repositories.secondFactors.find.mockImplementation(() => Promise.resolve([target]));
 
             // Act
-            await service.purge({
+            const result = await service.purge({
                 input: { account: ACCOUNT_ID, target: FACTOR_ID },
                 transaction: transaction.entityManager,
             });
 
             // Assert
+            expect(result).toBe(target);
             expect(transaction.remove).toHaveBeenNthCalledWith(1, target);
             expect(transaction.remove).toHaveBeenNthCalledWith(2, masterCode);
+        });
+
+        it("[case] - returns the removed unconfirmed factor with its original state", async () => {
+            // Arrange
+            const target = helpers.createSecondFactor({ id: FACTOR_ID });
+            const { service, repositories, transaction } = helpers.service();
+            repositories.secondFactors.find.mockImplementation(() => Promise.resolve([target]));
+
+            // Act
+            const result = await service.purge({
+                input: { account: ACCOUNT_ID, target: FACTOR_ID, confirmedAt: null },
+                transaction: transaction.entityManager,
+            });
+
+            // Assert
+            expect(result).toBe(target);
+            expect(result?.confirmedAt).toBeUndefined();
+            expect(transaction.remove).toHaveBeenCalledWith(target);
+        });
+
+        it("[case] - returns no factor when the target was not found", async () => {
+            // Arrange
+            const { service, transaction } = helpers.service();
+
+            // Act
+            const result = await service.purge({
+                input: { account: ACCOUNT_ID, target: FACTOR_ID },
+                transaction: transaction.entityManager,
+            });
+
+            // Assert
+            expect(result).toBeUndefined();
+            expect(transaction.remove).not.toHaveBeenCalled();
         });
     });
 

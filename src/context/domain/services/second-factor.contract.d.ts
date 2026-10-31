@@ -102,7 +102,7 @@ declare global {
                 };
             };
 
-            type Result = Promise<void>;
+            type Result = Promise<Optional<Entities.SecondFactor>>;
 
             type Signature = (props: Props) => Result;
         }

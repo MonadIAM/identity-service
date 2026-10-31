@@ -113,6 +113,8 @@ describe("[Commands] - Identifier", () => {
         it("[case] - passes the unverified filter through the existing removal pipeline", async () => {
             // Arrange
             const { commands, identifierService, transaction, run } = await helpers.commands();
+            const identifier = helpers.createIdentifier({ id: ID, isVerified: false });
+            identifierService.purge.mockResolvedValue({ identifier, replacement: null });
 
             // Act
             await commands.purge({ input: { identifier: ID, isVerified: false }, actor: ACTOR, context: CONTEXT });
@@ -122,7 +124,7 @@ describe("[Commands] - Identifier", () => {
             expect(identifierService.purge.mock.calls).toEqual([
                 [{ input: { identifier: ID, account: ACTOR, isVerified: false }, transaction: transaction.entityManager }],
             ]);
-            expect(result).toEqual({ account: ACTOR });
+            expect(result).toEqual({ identifier, replacement: null, account: ACTOR });
         });
     });
 

@@ -133,11 +133,13 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
         });
 
         let masterCode: Optional<Entities.MasterCode>;
+        let target: Optional<Entities.SecondFactor>;
         let remaining = 0;
 
         for (const factor of factors) {
             if (factor.id === input.target) {
                 ({ masterCode } = factor.account);
+                target = factor;
                 transaction.remove(factor);
             } else if (factor.confirmedAt) {
                 ++remaining;
@@ -147,6 +149,8 @@ export class SecondFactorService implements Services.SecondFactor.Contract {
         if (!remaining && masterCode) {
             transaction.remove(masterCode);
         }
+
+        return target;
     }
 
     public async reset(props: Services.SecondFactor.Reset.Props): Services.SecondFactor.Reset.Result {

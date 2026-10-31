@@ -3,6 +3,7 @@ declare namespace Commands.Mappers.SecondFactor {
 
     interface PublicContract {
         secondFactorEnabledPayload: SecondFactorEnabledPayload.Signature;
+        secondFactorPurgedPayload: SecondFactorPurgedPayload.Signature;
         secondFactorResetPayload: SecondFactorResetPayload.Signature;
     }
 
@@ -22,6 +23,17 @@ declare namespace Commands.Mappers.SecondFactor {
         };
 
         type Result = Topics.Notification.CreateMessage["payload"];
+
+        type Signature = (props: Props) => Result;
+    }
+
+    namespace SecondFactorPurgedPayload {
+        type Props = {
+            factor: Optional<Entities.SecondFactor>;
+            account: string;
+        };
+
+        type Result = Topics.Notification.CreateMessage["payload"][];
 
         type Signature = (props: Props) => Result;
     }

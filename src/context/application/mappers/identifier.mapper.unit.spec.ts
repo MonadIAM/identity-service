@@ -19,22 +19,36 @@ const helpers = new EntityFactoryRegistry();
 
 describe("[DataMapper] - Identifier", () => {
     describe("[Method] - identifierPurgedPayload", () => {
-        it("[case] - maps an identifier purge notification", () => {
+        it("[case] - maps a verified identifier purge notification", () => {
             // Arrange
+            const identifier = helpers.createIdentifier({ isVerified: true });
 
             // Act
-            const result = mapper.identifierPurgedPayload({ account: ACCOUNT_ID });
+            const result = mapper.identifierPurgedPayload({ identifier, account: ACCOUNT_ID });
 
             // Assert
-            expect(result).toEqual({
-                input: {
-                    sourceService: PlatformService.IDENTITY_SERVICE,
-                    template: MessageTemplate.IDENTIFIER_PURGED,
-                    category: NotificationCategory.SECURITY,
-                    kind: NotificationContentKind.TEMPLATE,
-                    recipient: ACCOUNT_ID,
+            expect(result).toEqual([
+                {
+                    input: {
+                        sourceService: PlatformService.IDENTITY_SERVICE,
+                        template: MessageTemplate.IDENTIFIER_PURGED,
+                        category: NotificationCategory.SECURITY,
+                        kind: NotificationContentKind.TEMPLATE,
+                        recipient: ACCOUNT_ID,
+                    },
                 },
-            });
+            ]);
+        });
+
+        it("[case] - does not notify when an unverified identifier is purged", () => {
+            // Arrange
+            const identifier = helpers.createIdentifier({ isVerified: false });
+
+            // Act
+            const result = mapper.identifierPurgedPayload({ identifier, account: ACCOUNT_ID });
+
+            // Assert
+            expect(result).toEqual([]);
         });
     });
 

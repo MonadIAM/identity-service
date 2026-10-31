@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { SecondFactorCommandsUnitHelpers } from "~testing/unit/command-services/second-factor.helpers";
-import { SecondFactorType } from "~context/enums";
+import { NotificationTopicAction, SecondFactorType, KafkaTopic } from "~context/enums";
 
 const CONTEXT: Extract.Meta = { ip: "127.0.0.1", userAgent: "unit-test" };
 const helpers = new SecondFactorCommandsUnitHelpers();
@@ -105,6 +105,25 @@ describe("[Commands] - SecondFactor", () => {
     });
 
     describe("[Method] - purge", () => {
+        it("[case] - passes the removed factor to the notification outbox in the same transaction", async () => {
+            // Arrange
+            const { commands, secondFactorService, run } = await helpers.commands();
+            const factor = helpers.createSecondFactor({ id: ID, confirmedAt: new Date() });
+            secondFactorService.purge.mockResolvedValue(factor);
+
+            // Act
+            await commands.purge({ input: { factor: ID }, actor: ACTOR, context: CONTEXT });
+            const result = await run.mock.results[0].value;
+
+            // Assert
+            expect(result).toEqual({ factor, account: ACTOR });
+            expect(run.mock.calls[0][0].outbox).toMatchObject({
+                destinationTopic: KafkaTopic.NOTIFICATION,
+                actionType: NotificationTopicAction.CREATE,
+                payloadMapper: expect.any(Function),
+            });
+        });
+
         it.each([undefined, null])(
             "[case] - binds factor removal and confirmation filter to the account: %s",
             async (confirmedAt) => {

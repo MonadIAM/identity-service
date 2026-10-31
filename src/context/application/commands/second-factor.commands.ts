@@ -133,6 +133,11 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
     public async purge(props: Commands.SecondFactor.Purge.Props): Commands.SecondFactor.Purge.Result {
         await this.transactionalService.run({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.secondFactorPurgedPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.SECOND_FACTOR,
                 actionType: ActionType.PURGE,
@@ -140,7 +145,7 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                await this.secondFactorService.purge({
+                const factor = await this.secondFactorService.purge({
                     input: {
                         confirmedAt: props.input.confirmedAt,
                         target: props.input.factor,
@@ -148,6 +153,8 @@ export class SecondFactorCommands implements Commands.SecondFactor.Contract {
                     },
                     transaction,
                 });
+
+                return { factor, account: props.actor };
             },
         });
 

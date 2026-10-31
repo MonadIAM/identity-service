@@ -26,10 +26,11 @@ declare namespace Commands.Mappers.Identifier {
 
     namespace IdentifierPurgedPayload {
         type Props = {
+            identifier: Entities.Identifier;
             account: string;
         };
 
-        type Result = Topics.Notification.CreateMessage["payload"];
+        type Result = Topics.Notification.CreateMessage["payload"][];
 
         type Signature = (props: Props) => Result;
     }
