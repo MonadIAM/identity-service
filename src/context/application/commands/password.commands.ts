@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { NotificationTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { NotificationTopicAction, ActionType, EntityType, KafkaTopic, IdentifierType } from "~context/enums";
 import { IDENTIFIER_REPOSITORY } from "~context/infrastructure/repositories";
 import { OTP_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -79,7 +79,6 @@ export class PasswordCommands implements Commands.Password.Contract {
             execute: async (transaction) => {
                 await this.passwordService.change({
                     input: {
-                        currentPassword: props.input.currentPassword,
                         newPassword: props.input.newPassword,
                         account: props.actor,
                     },
@@ -92,18 +91,33 @@ export class PasswordCommands implements Commands.Password.Contract {
     }
 
     public async requestOTP(props: Commands.Password.RequestOTP.Props): Commands.Password.RequestOTP.Result {
+        const where: ORM.ObjectQuery<Entities.Identifier> = {};
+
+        if ("account" in props.input) {
+            where.account = props.input.account;
+            where.type = IdentifierType.EMAIL;
+            where.isVerified = true;
+        } else {
+            where.identity = props.input.identifier;
+        }
+
         const identifier = await this.identifierRepository.findUnique({
-            where: { identity: props.input.identifier },
+            where,
             options: { populate: ["account"] },
         });
 
         if (identifier?.isVerified) {
             const otp = this.cryptoService.generateOTP();
+            let key = otp;
+
+            if ("account" in props.input) {
+                key = `${props.input.account}:${otp}`;
+            }
 
             await this.otpCacheService.set({
                 value: identifier.account.id,
                 purpose: "reset",
-                key: otp,
+                key,
             });
 
             await this.transactionalService.emit({
@@ -117,16 +131,28 @@ export class PasswordCommands implements Commands.Password.Contract {
                     ...props,
                 },
             });
+        } else if ("account" in props.input) {
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.RESET_EMAIL_UNAVAILABLE` });
         }
 
         return { message: `${this.dictionaryPath}.RESET_CODE_SENT` };
     }
 
     public async resetByOTP(props: Commands.Password.ResetByOTP.Props): Commands.Password.ResetByOTP.Result {
+        let key = props.input.code;
+
+        if (props.input.account) {
+            key = `${props.input.account}:${props.input.code}`;
+        }
+
         const cachedAccount = await this.otpCacheService.consume({
-            key: props.input.code,
+            key,
             purpose: "reset",
         });
+
+        if (props.input.account && cachedAccount !== props.input.account) {
+            throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_OR_EXPIRED_CODE` });
+        }
 
         if (cachedAccount) {
             return await this.transactionalService.run({
@@ -174,11 +200,7 @@ export class PasswordCommands implements Commands.Password.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const account = await this.passwordService.resetByRecoveryCode({
-                    input: {
-                        identifier: props.input.identifier,
-                        password: props.input.password,
-                        code: props.input.code,
-                    },
+                    input: props.input,
                     transaction,
                 });
 

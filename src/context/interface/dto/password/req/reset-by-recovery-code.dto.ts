@@ -20,3 +20,16 @@ export class ResetByRecoveryCodeBodyDTO {
     @ApiProperty({ required: true, type: String })
     declare public code: string;
 }
+
+@ApiSchema({ name: "PasswordResetCurrentByRecoveryCodeBody" })
+export class ResetCurrentByRecoveryCodeBodyDTO {
+    @Expose()
+    @Validator.IsPassword()
+    @ApiProperty({ required: true, type: String })
+    declare public password: string;
+
+    @Expose()
+    @Validator.IsString()
+    @ApiProperty({ required: true, type: String })
+    declare public code: string;
+}

@@ -43,7 +43,6 @@
   "password": {
     "PASSWORD_ALREADY_SET": "A password is already set for this account.",
     "NO_PASSWORD_SET": "No password is set for this account.",
-    "INVALID_CURRENT_PASSWORD": "The current password is invalid.",
     "RECENTLY_USED": "This password was used recently.",
     "INVALID_RECOVERY_CODE": "The recovery code is invalid."
   },

@@ -13,13 +13,7 @@ export class PasswordIntegrationHelpers extends IntegrationServiceMockBank imple
         const config = this.config();
 
         return {
-            passwordService: new PasswordService(
-                repositories.passwordHistory,
-                repositories.identifiers,
-                repositories.accounts,
-                hashing,
-                config,
-            ),
+            passwordService: new PasswordService(repositories.passwordHistory, repositories.accounts, hashing, config),
             services: {
                 hashing,
             },

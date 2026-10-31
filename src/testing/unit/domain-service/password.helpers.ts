@@ -16,7 +16,6 @@ export class PasswordUnitHelpers extends DomainServiceCoreUnitHelpers implements
         return {
             service: new PasswordService(
                 this.contract<Repositories.PasswordHistory.PublicContract>(repositories.passwordHistories),
-                this.contract<Repositories.Identifier.PublicContract>(repositories.identifiers),
                 this.contract<Repositories.Account.PublicContract>(repositories.accounts),
                 this.contract<CommonServices.Hashing.PublicContract>(services.hashing),
                 config,
