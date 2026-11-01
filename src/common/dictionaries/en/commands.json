@@ -82,6 +82,7 @@
   "password": {
     "SET": "Password successfully set.",
     "CHANGED": "Password successfully changed.",
+    "RESET_EMAIL_UNAVAILABLE": "Add and verify an email address to reset your password by OTP.",
     "RESET_CODE_SENT": "Password reset code successfully sent.",
     "INVALID_OR_EXPIRED_CODE": "The password reset code is invalid or expired.",
     "RESET": "Password successfully reset."

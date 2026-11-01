@@ -62,15 +62,21 @@ export class IdentifierMapper implements Commands.Mappers.Identifier.Contract {
     public identifierPurgedPayload(
         props: Commands.Mappers.Identifier.IdentifierPurgedPayload.Props,
     ): Commands.Mappers.Identifier.IdentifierPurgedPayload.Result {
-        return {
-            input: {
-                sourceService: PlatformService.IDENTITY_SERVICE,
-                template: MessageTemplate.IDENTIFIER_PURGED,
-                category: NotificationCategory.SECURITY,
-                kind: NotificationContentKind.TEMPLATE,
-                recipient: props.account,
-            },
-        };
+        if (props.identifier.isVerified) {
+            return [
+                {
+                    input: {
+                        sourceService: PlatformService.IDENTITY_SERVICE,
+                        template: MessageTemplate.IDENTIFIER_PURGED,
+                        category: NotificationCategory.SECURITY,
+                        kind: NotificationContentKind.TEMPLATE,
+                        recipient: props.account,
+                    },
+                },
+            ];
+        } else {
+            return [];
+        }
     }
 
     public notificationPayload(

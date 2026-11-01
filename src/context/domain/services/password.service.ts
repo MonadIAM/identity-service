@@ -3,13 +3,9 @@ import { ConfigService } from "@nestjs/config";
 import { LockMode } from "@mikro-orm/core";
 import ms, { StringValue } from "ms";
 
+import { PASSWORD_HISTORY_REPOSITORY, ACCOUNT_REPOSITORY } from "~context/infrastructure/repositories";
 import { HASHING_SERVICE } from "~common/services";
 import { Exception } from "~common/exceptions";
-import {
-    PASSWORD_HISTORY_REPOSITORY,
-    IDENTIFIER_REPOSITORY,
-    ACCOUNT_REPOSITORY,
-} from "~context/infrastructure/repositories";
 
 import { Password, PasswordHistory } from "../entities";
 
@@ -21,8 +17,6 @@ export class PasswordService implements Services.Password.Contract {
     public constructor(
         @Inject(PASSWORD_HISTORY_REPOSITORY)
         private readonly passwordHistoryRepository: Repositories.PasswordHistory.PublicContract,
-        @Inject(IDENTIFIER_REPOSITORY)
-        private readonly identifierRepository: Repositories.Identifier.PublicContract,
         @Inject(ACCOUNT_REPOSITORY)
         private readonly accountRepository: Repositories.Account.PublicContract,
         @Inject(HASHING_SERVICE)
@@ -58,19 +52,10 @@ export class PasswordService implements Services.Password.Contract {
         });
 
         if (account.password) {
-            const isValid = await this.hashingService.verify({
-                storedHash: account.password.hash,
-                value: input.currentPassword,
-            });
+            await this.checkHistory({ account: input.account, password: input.newPassword });
+            const newHash = await this.hashingService.hash({ value: input.newPassword });
 
-            if (isValid) {
-                await this.checkHistory({ account: input.account, password: input.newPassword });
-                const newHash = await this.hashingService.hash({ value: input.newPassword });
-
-                this.rotate({ input: { password: account.password, newHash }, transaction });
-            } else {
-                throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.INVALID_CURRENT_PASSWORD` });
-            }
+            this.rotate({ input: { password: account.password, newHash }, transaction });
         } else {
             throw Exception.badRequest({ messageKey: `${this.dictionaryPath}.NO_PASSWORD_SET` });
         }
@@ -99,10 +84,18 @@ export class PasswordService implements Services.Password.Contract {
         props: Services.Password.ResetByRecoveryCode.Props,
     ): Services.Password.ResetByRecoveryCode.Result {
         const { transaction, input } = props;
-        const { account } = await this.identifierRepository.findUniqueOrThrow({
-            options: { populate: ["account.password", "account.recoveryCodes"] },
-            where: { identity: input.identifier },
+        const where: ORM.ObjectQuery<Entities.Account> = {};
+
+        if ("account" in input) {
+            where.id = input.account;
+        } else {
+            where.identifiers = { identity: input.identifier };
+        }
+
+        const account = await this.accountRepository.findUniqueOrThrow({
+            options: { populate: ["password", "recoveryCodes"], lockMode: LockMode.PESSIMISTIC_WRITE },
             transaction,
+            where,
         });
 
         const codes = account.recoveryCodes.getItems().filter(({ usedAt }) => !usedAt);

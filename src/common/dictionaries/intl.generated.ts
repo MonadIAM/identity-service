@@ -89,6 +89,7 @@ export type I18nTranslations = {
         "password": {
             "SET": string;
             "CHANGED": string;
+            "RESET_EMAIL_UNAVAILABLE": string;
             "RESET_CODE_SENT": string;
             "INVALID_OR_EXPIRED_CODE": string;
             "RESET": string;
@@ -230,7 +231,6 @@ export type I18nTranslations = {
         "password": {
             "PASSWORD_ALREADY_SET": string;
             "NO_PASSWORD_SET": string;
-            "INVALID_CURRENT_PASSWORD": string;
             "RECENTLY_USED": string;
             "INVALID_RECOVERY_CODE": string;
         };

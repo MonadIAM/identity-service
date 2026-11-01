@@ -258,7 +258,7 @@ describe("[DomainService] - SecondFactor", () => {
             }
 
             // Act
-            await suite.transaction((transaction) =>
+            const purged = await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.purge({
                     input: { target: factor.id, account: account.id, confirmedAt: null },
                     transaction,
@@ -268,6 +268,7 @@ describe("[DomainService] - SecondFactor", () => {
             const codes = await countMasterCodes(suite, owner);
 
             // Assert
+            expect(purged?.id).toBe(removed ? factor.id : undefined);
             expect(factors).toHaveLength(removed ? 0 : 1);
             expect(codes).toBe(confirmed ? 1 : 0);
         });
@@ -282,7 +283,7 @@ describe("[DomainService] - SecondFactor", () => {
             await suite.fixtures().createMasterCode({ account, hash: "hash:master-code" });
 
             // Act
-            await suite.transaction((transaction) =>
+            const purged = await suite.transaction((transaction) =>
                 suite.repository().secondFactorService.purge({
                     input: {
                         target: factor.id,
@@ -295,6 +296,8 @@ describe("[DomainService] - SecondFactor", () => {
             const result1 = await loadFactors(suite, account);
 
             // Assert
+            expect(purged?.id).toBe(factor.id);
+            expect(purged?.confirmedAt).toBeInstanceOf(Date);
             expect(result).toBe(0);
             expect(result1).toHaveLength(0);
         });

@@ -54,7 +54,6 @@ declare namespace Services.Password {
         type Props = {
             transaction: ORM.EntityManager;
             input: {
-                currentPassword: string;
                 newPassword: string;
                 account: string;
             };
@@ -82,8 +81,7 @@ declare namespace Services.Password {
     namespace ResetByRecoveryCode {
         type Props = {
             transaction: ORM.EntityManager;
-            input: {
-                identifier: string;
+            input: ({ identifier: string } | { account: string }) & {
                 password: string;
                 code: string;
             };

@@ -26,8 +26,8 @@ declare namespace Commands.Password {
     namespace ResetByRecoveryCode {
         type Props = {
             context: Extract.Meta;
-            input: {
-                identifier: string;
+            actor?: string;
+            input: ({ identifier: string } | { account: string }) & {
                 password: string;
                 code: string;
             };
@@ -41,9 +41,8 @@ declare namespace Commands.Password {
     namespace RequestOTP {
         type Props = {
             context: Extract.Meta;
-            input: {
-                identifier: string;
-            };
+            actor?: string;
+            input: { identifier: string } | { account: string };
         };
 
         type Result = Promise<MessageResult>;
@@ -54,7 +53,9 @@ declare namespace Commands.Password {
     namespace ResetByOTP {
         type Props = {
             context: Extract.Meta;
+            actor?: string;
             input: {
+                account?: string;
                 password: string;
                 code: string;
             };
@@ -70,7 +71,6 @@ declare namespace Commands.Password {
             context: Extract.Meta;
             actor: string;
             input: {
-                currentPassword: string;
                 newPassword: string;
             };
         };

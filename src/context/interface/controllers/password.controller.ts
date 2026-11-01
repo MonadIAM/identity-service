@@ -1,9 +1,9 @@
 import { Controller, HttpStatus, HttpCode, Inject, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+import { PermissionCode, ReauthenticationMethod } from "~context/enums";
 import { PASSWORD_COMMANDS } from "~context/application/commands";
 import { SuccessMessageDTO } from "~common/dto";
-import { PermissionCode } from "~context/enums";
 import {
     RequirePermission,
     SensitiveThrottle,
@@ -15,7 +15,9 @@ import {
 } from "~common/decorators";
 
 import {
+    ResetCurrentByRecoveryCodeBodyDTO,
     ResetByRecoveryCodeBodyDTO,
+    ResetCurrentByOTPBodyDTO,
     ResetByOTPBodyDTO,
     RequestOTPBodyDTO,
     ChangeBodyDTO,
@@ -74,6 +76,7 @@ export class PasswordController {
 
     @HttpCode(OK)
     @Post("change")
+    @Reauthentication({ methods: [ReauthenticationMethod.PASSWORD] })
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PASSWORD_CHANGE)
     @ApiOperation({
@@ -164,5 +167,88 @@ export class PasswordController {
         @Extract.Meta() context: Extract.Meta,
     ): Commands.Password.ResetByRecoveryCode.Result {
         return this.passwordCommands.resetByRecoveryCode({ context, input });
+    }
+
+    @HttpCode(OK)
+    @Post("request/otp/current")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(PASSWORD_CHANGE)
+    @SensitiveThrottle.OtpIssue()
+    @ApiOperation({
+        summary: "Request password reset OTP for the current account",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public requestCurrentOTP(
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Password.RequestOTP.Result {
+        return this.passwordCommands.requestOTP({ context, actor, input: { account: actor } });
+    }
+
+    @HttpCode(OK)
+    @Post("reset/otp/current")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(PASSWORD_CHANGE)
+    @SensitiveThrottle.OtpVerify()
+    @ApiOperation({
+        summary: "Reset the current account password by OTP",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public resetCurrentByOTP(
+        @Body() input: ResetCurrentByOTPBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Password.ResetByOTP.Result {
+        return this.passwordCommands.resetByOTP({ context, actor, input: { ...input, account: actor } });
+    }
+
+    @HttpCode(OK)
+    @Post("reset/code/current")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(PASSWORD_CHANGE)
+    @SensitiveThrottle.HighImpactSecret()
+    @ApiOperation({
+        summary: "Reset the current account password by recovery code",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
+    public resetCurrentByRecoveryCode(
+        @Body() input: ResetCurrentByRecoveryCodeBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Commands.Password.ResetByRecoveryCode.Result {
+        return this.passwordCommands.resetByRecoveryCode({ context, actor, input: { ...input, account: actor } });
     }
 }

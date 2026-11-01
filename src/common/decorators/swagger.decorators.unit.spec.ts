@@ -78,6 +78,7 @@ describe("[Decorator] - Swagger", () => {
                     },
                 });
                 expect(document.components?.schemas?.ErrorResponseBody).toMatchObject({
+                    required: expect.arrayContaining(["error", "code"]),
                     properties: { statusCode: expect.any(Object), message: expect.any(Object), error: expect.any(Object) },
                 });
             },

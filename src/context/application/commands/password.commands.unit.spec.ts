@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
+import { ActionType, EntityType, KafkaTopic, NotificationTopicAction, IdentifierType } from "~context/enums";
 import { PasswordCommandsUnitHelpers } from "~testing/unit/command-services/password.helpers";
-import { ActionType, EntityType, KafkaTopic, NotificationTopicAction } from "~context/enums";
 
 const CONTEXT: Extract.Meta = { ip: "127.0.0.1", userAgent: "unit-test" };
 const helpers = new PasswordCommandsUnitHelpers();
@@ -81,7 +81,7 @@ describe("[Commands] - Password", () => {
         it("[case] - changes only the authenticated account's password", async () => {
             // Arrange
             const { commands, passwordService, transaction } = helpers.commands();
-            const input = { currentPassword: "old", newPassword: "new" };
+            const input = { newPassword: "new" };
 
             // Act
             await commands.change({ input, actor: ACTOR, context: CONTEXT });
@@ -123,6 +123,96 @@ describe("[Commands] - Password", () => {
                 }
             },
         );
+    });
+
+    describe("[Scenario] - current account password reset", () => {
+        it("[case] - issues an OTP bound to a verified email of the authenticated account", async () => {
+            // Arrange
+            const { commands, identifierRepository, cryptoService, otpCacheService, emit } = helpers.commands();
+            identifierRepository.findUnique.mockResolvedValue(
+                helpers.createIdentifier({
+                    account: helpers.createAccount({ id: ACTOR }),
+                    isVerified: true,
+                }),
+            );
+            cryptoService.generateOTP.mockReturnValue("123456");
+
+            // Act
+            await commands.requestOTP({ input: { account: ACTOR }, actor: ACTOR, context: CONTEXT });
+
+            // Assert
+            expect(identifierRepository.findUnique.mock.calls).toEqual([
+                [
+                    {
+                        where: { account: ACTOR, type: IdentifierType.EMAIL, isVerified: true },
+                        options: { populate: ["account"] },
+                    },
+                ],
+            ]);
+            expect(otpCacheService.set).toHaveBeenCalledWith({
+                purpose: "reset",
+                value: ACTOR,
+                key: `${ACTOR}:123456`,
+            });
+            expect(emit).toHaveBeenCalledTimes(1);
+        });
+
+        it("[case] - rejects OTP delivery when the current account has no verified email", async () => {
+            // Arrange
+            const { commands, identifierRepository, otpCacheService, emit } = helpers.commands();
+            identifierRepository.findUnique.mockResolvedValue(null);
+
+            // Act
+            const result = commands.requestOTP({ input: { account: ACTOR }, actor: ACTOR, context: CONTEXT });
+
+            // Assert
+            await expect(result).rejects.toThrow("commands.password.RESET_EMAIL_UNAVAILABLE");
+            expect(otpCacheService.set).not.toHaveBeenCalled();
+            expect(emit).not.toHaveBeenCalled();
+        });
+
+        it.each([ACTOR, ACCOUNT, null])("[case] - validates an account-bound OTP: %s", async (cached) => {
+            // Arrange
+            const { commands, otpCacheService, passwordService, run, transaction } = helpers.commands();
+            otpCacheService.consume.mockResolvedValue(cached);
+
+            // Act
+            const result = commands.resetByOTP({
+                input: { account: ACTOR, code: "123456", password: "new-password" },
+                actor: ACTOR,
+                context: CONTEXT,
+            });
+
+            // Assert
+            if (cached === ACTOR) {
+                await expect(result).resolves.toMatchObject({ account: ACTOR });
+                expect(passwordService.resetByOTP).toHaveBeenCalledWith({
+                    input: { account: ACTOR, password: "new-password" },
+                    transaction: transaction.entityManager,
+                });
+            } else {
+                await expect(result).rejects.toThrow("commands.password.INVALID_OR_EXPIRED_CODE");
+                expect(run).not.toHaveBeenCalled();
+                expect(passwordService.resetByOTP).not.toHaveBeenCalled();
+            }
+            expect(otpCacheService.consume).toHaveBeenCalledWith({ purpose: "reset", key: `${ACTOR}:123456` });
+        });
+
+        it("[case] - passes the authenticated account to recovery-code validation", async () => {
+            // Arrange
+            const { commands, passwordService, transaction } = helpers.commands();
+            passwordService.resetByRecoveryCode.mockResolvedValue(helpers.createAccount({ id: ACTOR }));
+            const input = { account: ACTOR, password: "new-password", code: "recovery-code" };
+
+            // Act
+            await commands.resetByRecoveryCode({ input, actor: ACTOR, context: CONTEXT });
+
+            // Assert
+            expect(passwordService.resetByRecoveryCode).toHaveBeenCalledWith({
+                input,
+                transaction: transaction.entityManager,
+            });
+        });
     });
 
     describe("[Method] - resetByOTP", () => {

@@ -96,7 +96,6 @@ describe("[DomainService] - Password", () => {
             await suite.transaction((transaction) =>
                 suite.repository().passwordService.change({
                     input: {
-                        currentPassword: "current-password",
                         newPassword: "new-password",
                         account: account.id,
                     },
@@ -126,7 +125,6 @@ describe("[DomainService] - Password", () => {
             const result = suite.transaction((transaction) =>
                 suite.repository().passwordService.change({
                     input: {
-                        currentPassword: "current-password",
                         newPassword: "new-password",
                         account: account.id,
                     },
@@ -165,7 +163,6 @@ describe("[DomainService] - Password", () => {
             await suite.transaction((transaction) =>
                 suite.repository().passwordService.change({
                     input: {
-                        currentPassword: "current-password",
                         newPassword: "new-password",
                         account: account.id,
                     },
@@ -248,6 +245,36 @@ describe("[DomainService] - Password", () => {
             expect(matchedCode?.usedAt).toBeInstanceOf(Date);
             expect(untouchedCode?.usedAt).toBeNull();
             expect(result).toBeInstanceOf(Date);
+        });
+
+        it("[case] - rejects another account's recovery code and consumes the current account's code once", async () => {
+            // Arrange
+            const account = await suite.fixtures().createAccount();
+            const other = await suite.fixtures().createAccount();
+            await suite.fixtures().createPassword({ account, hash: "hash:old-password" });
+            await suite.fixtures().createRecoveryCode({ account: other, hash: "hash:other-code" });
+            await suite.fixtures().createRecoveryCode({ account, hash: "hash:own-code" });
+            const reset = (code: string): Services.Password.ResetByRecoveryCode.Result =>
+                suite.transaction((transaction) =>
+                    suite.repository().passwordService.resetByRecoveryCode({
+                        input: { account: account.id, password: "new-password", code },
+                        transaction,
+                    }),
+                );
+
+            // Act
+            const rejected = reset("other-code");
+            await Promise.allSettled([rejected]);
+            await reset("own-code");
+            const reused = reset("own-code");
+            await Promise.allSettled([reused]);
+            const password = await loadPassword(suite, account);
+
+            // Assert
+            await expect(rejected).rejects.toThrow("services.password.INVALID_RECOVERY_CODE");
+            await expect(reused).rejects.toThrow("services.password.INVALID_RECOVERY_CODE");
+            expect(password.hash).toBe("hash:new-password");
+            expect(password.version).toBe(2);
         });
 
         it("[case] - rolls back recovery code consumption and password rotation when history insert conflicts", async () => {

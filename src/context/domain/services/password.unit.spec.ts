@@ -82,35 +82,13 @@ describe("[DomainService] - Password", () => {
 
             // Act
             const result = service.change({
-                input: { account: ACCOUNT_ID, currentPassword: "old", newPassword: "new" },
+                input: { account: ACCOUNT_ID, newPassword: "new" },
                 transaction: transaction.entityManager,
             });
 
             // Assert
             await expect(result).rejects.toThrow("services.password.NO_PASSWORD_SET");
             expect(services.hashing.verify).not.toHaveBeenCalled();
-        });
-
-        it("[case] - throws when the current password does not match", async () => {
-            // Arrange
-            const { account } = createAccountWithPassword();
-            const { service, services, transaction } = helpers.service({ account });
-            services.hashing.verify.mockImplementation(() => Promise.resolve(false));
-
-            // Act
-            const result = service.change({
-                input: { account: ACCOUNT_ID, currentPassword: "wrong", newPassword: "new" },
-                transaction: transaction.entityManager,
-            });
-
-            // Assert
-            await expect(result).rejects.toThrow("services.password.INVALID_CURRENT_PASSWORD");
-            expect(services.hashing.verify).toHaveBeenCalledWith({
-                storedHash: "stored-hash",
-                value: "wrong",
-            });
-            expect(services.hashing.hash).not.toHaveBeenCalled();
-            expect(transaction.persist).not.toHaveBeenCalled();
         });
 
         it("[case] - checks reuse history, hashes the new password and rotates it", async () => {
@@ -122,7 +100,7 @@ describe("[DomainService] - Password", () => {
 
             // Act
             await service.change({
-                input: { account: ACCOUNT_ID, currentPassword: "old", newPassword: "new" },
+                input: { account: ACCOUNT_ID, newPassword: "new" },
                 transaction: transaction.entityManager,
             });
 
@@ -178,10 +156,7 @@ describe("[DomainService] - Password", () => {
             // Arrange
             const { account } = createAccountWithPassword();
             account.recoveryCodes = helpers.collection({ owner: account, items: [] });
-            const { service, repositories, transaction } = helpers.service({ account });
-            repositories.identifiers.findUniqueOrThrow.mockImplementation(() =>
-                Promise.resolve(helpers.createIdentifier({ account, identity: IDENTITY })),
-            );
+            const { service, transaction } = helpers.service({ account });
 
             // Act
             const result = service.resetByRecoveryCode({
@@ -199,10 +174,7 @@ describe("[DomainService] - Password", () => {
             const account = helpers.createAccount({ id: ACCOUNT_ID });
             const code = helpers.createRecoveryCode({ id: CODE_ID, account });
             account.recoveryCodes = helpers.collection({ owner: account, items: [code] });
-            const { service, repositories, transaction } = helpers.service({ account });
-            repositories.identifiers.findUniqueOrThrow.mockImplementation(() =>
-                Promise.resolve(helpers.createIdentifier({ account, identity: IDENTITY })),
-            );
+            const { service, transaction } = helpers.service({ account });
 
             // Act
             const result = service.resetByRecoveryCode({
@@ -223,9 +195,6 @@ describe("[DomainService] - Password", () => {
             const { service, repositories, services, transaction } = helpers.service({ account });
             const historySpy = jest.spyOn(service, "checkHistory");
             const rotateSpy = jest.spyOn(service, "rotate");
-            repositories.identifiers.findUniqueOrThrow.mockImplementation(() =>
-                Promise.resolve(helpers.createIdentifier({ account, identity: IDENTITY })),
-            );
 
             // Act
             const result = await service.resetByRecoveryCode({
@@ -234,10 +203,10 @@ describe("[DomainService] - Password", () => {
             });
 
             // Assert
-            expect(repositories.identifiers.findUniqueOrThrow).toHaveBeenCalledWith({
-                options: { populate: ["account.password", "account.recoveryCodes"] },
+            expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
+                options: { populate: ["password", "recoveryCodes"], lockMode: LockMode.PESSIMISTIC_WRITE },
                 transaction: transaction.entityManager,
-                where: { identity: IDENTITY },
+                where: { identifiers: { identity: IDENTITY } },
             });
             expect(historySpy).toHaveBeenCalledWith({ account: ACCOUNT_ID, password: "new" });
             expect(services.hashing.hash).toHaveBeenCalledWith({ value: "new" });
@@ -246,17 +215,36 @@ describe("[DomainService] - Password", () => {
             expect(result).toBe(account);
         });
 
+        it("[case] - selects the current account directly and consumes only its recovery code", async () => {
+            // Arrange
+            const { account } = createAccountWithPassword();
+            const code = helpers.createRecoveryCode({ id: CODE_ID, account });
+            account.recoveryCodes = helpers.collection({ owner: account, items: [code] });
+            const { service, repositories, transaction } = helpers.service({ account });
+
+            // Act
+            await service.resetByRecoveryCode({
+                input: { account: ACCOUNT_ID, password: "new", code: "recovery-code" },
+                transaction: transaction.entityManager,
+            });
+
+            // Assert
+            expect(repositories.accounts.findUniqueOrThrow).toHaveBeenCalledWith({
+                options: { populate: ["password", "recoveryCodes"], lockMode: LockMode.PESSIMISTIC_WRITE },
+                transaction: transaction.entityManager,
+                where: { id: ACCOUNT_ID },
+            });
+            expect(code.usedAt).toBeInstanceOf(Date);
+        });
+
         it("[case] - matches against unused codes only", async () => {
             // Arrange
             const { account } = createAccountWithPassword();
             const used = helpers.createRecoveryCode({ id: CODE_ID, account, usedAt: new Date() });
             const unused = helpers.createRecoveryCode({ id: SECOND_CODE_ID, account, hash: "unused-hash" });
             account.recoveryCodes = helpers.collection({ owner: account, items: [used, unused] });
-            const { service, repositories, transaction } = helpers.service({ account });
+            const { service, transaction } = helpers.service({ account });
             const matchSpy = jest.spyOn(service, "findMatchingRecoveryCode");
-            repositories.identifiers.findUniqueOrThrow.mockImplementation(() =>
-                Promise.resolve(helpers.createIdentifier({ account, identity: IDENTITY })),
-            );
 
             // Act
             await service.resetByRecoveryCode({
