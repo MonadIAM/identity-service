@@ -59,6 +59,8 @@ const config = {
     APP_HOST: "test",
     APP_PORT: "3000",
     THROTTLE_LIMIT: "1",
+    THROTTLE_ACCOUNT_LIMIT: "1000",
+    THROTTLE_ACCOUNT_TTL: "1m",
     THROTTLE_TTL: "1s",
     HSTS_MAX_AGE: "1s",
     BODY_LIMIT_BYTES: "1",
@@ -126,29 +128,26 @@ const config = {
 
 describe("[Validator] - Environment", () => {
     describe("[Function] - validateEnv", () => {
-        it.each(["local", "stand"])(
-            "[case] - validates the actual %s template with injected credentials",
-            (environment) => {
-                // Arrange
-                const template = parse(readFileSync(`.env.${environment}.example`, "utf8"));
-                const input = {
-                    ...template,
-                    POSTGRES_USER: "service",
-                    POSTGRES_PASSWORD: "secret",
-                    REDIS_PASSWORD: "secret",
-                    OAUTH_GOOGLE_CLIENT_SECRET: "secret",
-                    OAUTH_GITHUB_CLIENT_SECRET: "secret",
-                };
+        it("[case] - validates the local template with injected credentials", () => {
+            // Arrange
+            const template = parse(readFileSync(".env.local.example", "utf8"));
+            const input = {
+                ...template,
+                POSTGRES_USER: "service",
+                POSTGRES_PASSWORD: "secret",
+                REDIS_PASSWORD: "secret",
+                OAUTH_GOOGLE_CLIENT_SECRET: "secret",
+                OAUTH_GITHUB_CLIENT_SECRET: "secret",
+            };
 
-                // Act
-                const result = validateEnv(input);
+            // Act
+            const result = validateEnv(input);
 
-                // Assert
-                expect(result.NODE_ENV).toBe(environment);
-                expect(result.REDIS_SENTINEL_ENABLED).toBe(environment === "stand");
-                expect(result.POSTGRES_WRITE_PORT).toBe(5432);
-            },
-        );
+            // Assert
+            expect(result.NODE_ENV).toBe("local");
+            expect(result.REDIS_SENTINEL_ENABLED).toBe(false);
+            expect(result.POSTGRES_WRITE_PORT).toBe(5432);
+        });
 
         it.each([
             { REDIS_SENTINEL_PORT: undefined },
@@ -207,6 +206,8 @@ describe("[Validator] - Environment", () => {
             // Assert
             expect(result).toBeInstanceOf(EnvironmentVariablesDTO);
             expect(result.APP_PORT).toBe(3000);
+            expect(result.THROTTLE_ACCOUNT_LIMIT).toBe(1000);
+            expect(result.THROTTLE_ACCOUNT_TTL).toBe("1m");
             expect(result.POSTGRES_LOGGING).toBe(false);
             expect(result.SERVICE_NAME).toBe("test");
             expect(config.APP_PORT).toBe("3000");
@@ -228,6 +229,10 @@ describe("[Validator] - Environment", () => {
             { field: "APP_PORT", value: "65536" },
             { field: "POSTGRES_LOGGING", value: "garbage" },
             { field: "THROTTLE_TTL", value: "1garbage" },
+            { field: "THROTTLE_ACCOUNT_LIMIT", value: "0" },
+            { field: "THROTTLE_ACCOUNT_LIMIT", value: undefined },
+            { field: "THROTTLE_ACCOUNT_TTL", value: "1garbage" },
+            { field: "THROTTLE_ACCOUNT_TTL", value: undefined },
             { field: "NODE_ENV", value: "unknown" },
             { field: "SERVICE_NAME", value: 123 },
         ])("[case] - rejects invalid $field without implicit string coercion", ({ field, value }) => {

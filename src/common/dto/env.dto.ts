@@ -33,6 +33,12 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public THROTTLE_LIMIT: number;
 
+    @Validator.IsPositiveInt()
+    declare public THROTTLE_ACCOUNT_LIMIT: number;
+
+    @Validator.IsMsString()
+    declare public THROTTLE_ACCOUNT_TTL: StringValue;
+
     @Validator.IsMsString()
     declare public THROTTLE_TTL: StringValue;
 
