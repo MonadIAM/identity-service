@@ -29,8 +29,8 @@ import { RedisModule, REDIS_LIMITER_CLIENT } from "~infrastructure/redis";
                             (isString(req.body?.id) ? req.body.id : null) ??
                             req.ip,
                         name: "account",
-                        ttl: ms("1m"),
-                        limit: 1e3,
+                        ttl: ms(configService.getOrThrow<StringValue>("THROTTLE_ACCOUNT_TTL")),
+                        limit: configService.getOrThrow<number>("THROTTLE_ACCOUNT_LIMIT"),
                     },
                 ],
                 storage: new ThrottlerStorageRedisService(limiterClient),
