@@ -1,5 +1,5 @@
+import { IsUrl, ValidateIf } from "class-validator";
 import { DiagLogLevel } from "@opentelemetry/api";
-import { ValidateIf } from "class-validator";
 import { type StringValue } from "ms";
 
 import { PasswordValidationMode, Argon2Type, NodeEnv, OTelTracesSampler, OTelLogsExporter } from "~common/enums";
@@ -508,8 +508,15 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public ARGON2_VERSION: number;
 
-    // JWT (ES256)
-    @Validator.IsString()
+    // JWT (ES256 access/refresh tokens, RS256 ID tokens)
+    @IsUrl({
+        protocols: ["https"],
+        require_protocol: true,
+        require_tld: false,
+        disallow_auth: true,
+        allow_query_components: false,
+        allow_fragments: false,
+    })
     declare public JWT_ISSUER: string;
 
     @Validator.IsMsString()

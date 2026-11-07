@@ -7,6 +7,33 @@ const ACTOR = "actor-account";
 const ID = "entity-a";
 
 describe("[Queries] - OAuth", () => {
+    describe("[Behavior] - discovery metadata", () => {
+        it("[case] - publishes HTTPS endpoints, the root JWKS URL and RS256 for ID tokens", () => {
+            // Arrange
+            const { queries } = helpers.queries();
+            const issuer = "https://identity.example.test";
+
+            // Act
+            const metadata = queries.getAuthorizationServerMetadata();
+            const openid = queries.getOpenIdConfiguration();
+
+            // Assert
+            expect(metadata).toMatchObject({
+                issuer,
+                authorizationEndpoint: `${issuer}/api/v1/oauth/authorize`,
+                tokenEndpoint: `${issuer}/api/v1/oauth/token`,
+                revocationEndpoint: `${issuer}/api/v1/oauth/revoke`,
+                jwksURI: `${issuer}/.well-known/jwks.json`,
+            });
+            expect(openid).toMatchObject({
+                ...metadata,
+                userinfoEndpoint: `${issuer}/api/v1/oauth/userinfo`,
+                endSessionEndpoint: `${issuer}/api/v1/oauth/logout`,
+                idTokenSigningAlgValuesSupported: ["RS256"],
+            });
+        });
+    });
+
     describe("[Method] - getUserInfo", () => {
         it("[case] - rejects userinfo without openid before reading account data", async () => {
             // Arrange

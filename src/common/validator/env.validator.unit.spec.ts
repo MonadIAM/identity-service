@@ -64,7 +64,7 @@ const config = {
     THROTTLE_TTL: "1s",
     HSTS_MAX_AGE: "1s",
     BODY_LIMIT_BYTES: "1",
-    JWT_ISSUER: "test",
+    JWT_ISSUER: "https://identity.example.test",
     IDENTITY_SERVICE_URL: "test",
     ACCESS_CONTROL_SERVICE_URL: "test",
     NOTIFICATION_SERVICE_URL: "test",
@@ -226,6 +226,10 @@ describe("[Validator] - Environment", () => {
         });
 
         it.each([
+            { field: "JWT_ISSUER", value: "http://identity.example.test" },
+            { field: "JWT_ISSUER", value: "https://identity.example.test?query=value" },
+            { field: "JWT_ISSUER", value: "https://identity.example.test#fragment" },
+            { field: "JWT_ISSUER", value: "https://user:password@identity.example.test" },
             { field: "APP_PORT", value: "65536" },
             { field: "POSTGRES_LOGGING", value: "garbage" },
             { field: "THROTTLE_TTL", value: "1garbage" },

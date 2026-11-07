@@ -28,7 +28,8 @@ export class JWTService implements CommonServices.JWT.Contract {
     private readonly keyTTL = new Map<string, number>();
 
     private readonly clockSkew = ms("5m");
-    private readonly algorithm = "ES256";
+    private readonly algorithmES = "ES256";
+    private readonly algorithmRS = "RS256";
 
     public constructor(
         @Inject(VAULT_TRANSIT_SERVICE)
@@ -114,7 +115,7 @@ export class JWTService implements CommonServices.JWT.Contract {
             const { payload } = await jwtVerify(props.token, jwks, {
                 requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
                 audience: this.refreshAudience,
-                algorithms: [this.algorithm],
+                algorithms: [this.algorithmES],
                 issuer: this.issuer,
                 typ: "rt+jwt",
             });
@@ -132,7 +133,7 @@ export class JWTService implements CommonServices.JWT.Contract {
             const { payload } = await jwtVerify(props.token, jwks, {
                 requiredClaims: ["client_id", "sub", "sid", "realms", "exp", "iat", "jti"],
                 audience: this.accessAudience,
-                algorithms: [this.algorithm],
+                algorithms: [this.algorithmES],
                 issuer: this.issuer,
                 typ: "at+jwt",
             });
@@ -155,7 +156,7 @@ export class JWTService implements CommonServices.JWT.Contract {
             const jwks = createLocalJWKSet(await this.getVerificationJWKS(this.idKey));
             const { payload } = await jwtVerify(props.token, jwks, {
                 requiredClaims: ["sub", "sid", "aud", "exp", "iat"],
-                algorithms: [this.algorithm],
+                algorithms: [this.algorithmRS],
                 issuer: this.issuer,
             });
 
@@ -263,11 +264,12 @@ export class JWTService implements CommonServices.JWT.Contract {
         if (cached) {
             return cached;
         } else {
-            const jwk = await exportJWK(await importSPKI(keyVersion.publicKey, this.algorithm));
+            const algorithm = name === this.idKey ? this.algorithmRS : this.algorithmES;
+            const jwk = await exportJWK(await importSPKI(keyVersion.publicKey, algorithm));
             const entry: JWK = {
                 ...jwk,
                 kid: await calculateJwkThumbprint(jwk, "sha256"),
-                alg: this.algorithm,
+                alg: algorithm,
                 use: "sig",
             };
 
@@ -300,12 +302,12 @@ export class JWTService implements CommonServices.JWT.Contract {
 
         this.pruneJWKCache({ versions: key.versions, name: props.key });
 
-        const { kid } = await this.describeKeyVersion({ name: props.key, keyVersion: latest });
+        const { kid, alg } = await this.describeKeyVersion({ name: props.key, keyVersion: latest });
 
         const header = base64url.encode(
             JSON.stringify({
-                alg: this.algorithm,
                 typ: props.type,
+                alg,
                 kid,
             }),
         );
@@ -323,7 +325,12 @@ export class JWTService implements CommonServices.JWT.Contract {
         );
 
         const input = `${header}.${claims}`;
-        const { signature } = await this.vaultTransitService.sign({ input, version, name: props.key });
+        const { signature } = await this.vaultTransitService.sign({
+            ...(alg === this.algorithmRS ? { signatureAlgorithm: "pkcs1v15" } : {}),
+            name: props.key,
+            version,
+            input,
+        });
 
         return `${input}.${signature}`;
     }
