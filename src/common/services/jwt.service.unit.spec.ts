@@ -14,6 +14,8 @@ describe("[CommonService] - JWT", () => {
     let service: JWTService;
     let keys: Awaited<ReturnType<typeof jose.generateKeyPair>>;
     let publicKey: string;
+    let idKeys: Awaited<ReturnType<typeof jose.generateKeyPair>>;
+    let idPublicKey: string;
     const getKey = jest.fn<CommonServices.VaultTransit.GetKey.Signature>();
     const sign = jest.fn<CommonServices.VaultTransit.Sign.Signature>();
     const hmac = jest.fn<CommonServices.VaultTransit.Hmac.Signature>();
@@ -21,22 +23,26 @@ describe("[CommonService] - JWT", () => {
     beforeAll(async () => {
         keys = await jose.generateKeyPair("ES256", { extractable: true });
         publicKey = await jose.exportSPKI(keys.publicKey);
+        idKeys = await jose.generateKeyPair("RS256", { extractable: true });
+        idPublicKey = await jose.exportSPKI(idKeys.publicKey);
     });
 
     beforeEach(() => {
         getKey.mockReset().mockImplementation(({ name }) =>
             Promise.resolve({
                 name,
-                type: "ecdsa-p256",
+                type: name === "id" ? "rsa-2048" : "ecdsa-p256",
                 latestVersion: 1,
-                versions: [{ version: 1, publicKey, createdAt: new Date().toISOString() }],
+                versions: [
+                    { version: 1, publicKey: name === "id" ? idPublicKey : publicKey, createdAt: new Date().toISOString() },
+                ],
             }),
         );
-        sign.mockReset().mockImplementation(async ({ input, version }) => {
+        sign.mockReset().mockImplementation(async ({ input, version, name }) => {
             const [header, payload] = input.split(".");
             const token = await new jose.CompactSign(Buffer.from(payload, "base64url"))
                 .setProtectedHeader(JSON.parse(Buffer.from(header, "base64url").toString()))
-                .sign(keys.privateKey);
+                .sign(name === "id" ? idKeys.privateKey : keys.privateKey);
             return { version: version ?? 1, signature: token.split(".")[2] };
         });
         service = new JWTService(
@@ -94,7 +100,9 @@ describe("[CommonService] - JWT", () => {
             // Act
             const token = await service.signIdToken({ payload: claims, props: { accessToken, audience: "client" } });
             const verified = await service.verifyIdToken({ token });
-            const result = jose.decodeProtectedHeader(token).typ;
+            const result = jose.decodeProtectedHeader(token);
+            const publicJWKS = jose.createLocalJWKSet(await service.getPublicJWKS());
+            const external = await jose.jwtVerify(token, publicJWKS, { algorithms: ["RS256"], issuer, audience: "client" });
 
             // Assert
             expect(verified).toMatchObject({
@@ -103,7 +111,9 @@ describe("[CommonService] - JWT", () => {
                 at_hash: expectedHash,
                 jti: expect.any(String),
             });
-            expect(result).toBe("JWT");
+            expect(result).toMatchObject({ alg: "RS256", typ: "JWT", kid: expect.any(String) });
+            expect(external.payload).toEqual(verified);
+            expect(sign).toHaveBeenCalledWith(expect.objectContaining({ name: "id", signatureAlgorithm: "pkcs1v15" }));
         });
     });
 
@@ -212,6 +222,24 @@ describe("[CommonService] - JWT", () => {
             });
         });
 
+        it("[case] - rejects an ID token signed using RSA-PSS", async () => {
+            // Arrange
+            const valid = await service.signIdToken({
+                payload: claims,
+                props: { accessToken: "access", audience: "client" },
+            });
+            const pssKeys = await jose.generateKeyPair("PS256");
+            const token = await new jose.SignJWT(jose.decodeJwt(valid))
+                .setProtectedHeader({ ...jose.decodeProtectedHeader(valid), alg: "PS256" })
+                .sign(pssKeys.privateKey);
+
+            // Act
+            const result = service.verifyIdToken({ token });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({ messageKey: "services.jwt.ID_TOKEN_INVALID_SIGNATURE" });
+        });
+
         it("[case] - preserves the current contract for expired but correctly signed ID tokens", async () => {
             // Arrange
             const valid = await service.signIdToken({
@@ -220,8 +248,8 @@ describe("[CommonService] - JWT", () => {
             });
             const payload = { ...jose.decodeJwt<jose.JWTPayload>(valid), exp: 1 };
             const token = await new jose.SignJWT(payload)
-                .setProtectedHeader({ ...jose.decodeProtectedHeader(valid), alg: "ES256" })
-                .sign(keys.privateKey);
+                .setProtectedHeader({ ...jose.decodeProtectedHeader(valid), alg: "RS256" })
+                .sign(idKeys.privateKey);
 
             // Act
             const result = await service.verifyIdToken({ token });
@@ -261,6 +289,15 @@ describe("[CommonService] - JWT", () => {
             expect(result.keys).toHaveLength(2);
             expect(result.keys[0]).toMatchObject({ alg: "ES256", use: "sig", kid: expect.any(String) });
             expect(result.keys[0]).not.toHaveProperty("d");
+            expect(result.keys[1]).toMatchObject({
+                alg: "RS256",
+                kty: "RSA",
+                use: "sig",
+                kid: expect.any(String),
+                n: expect.any(String),
+                e: "AQAB",
+            });
+            expect(result.keys[1]).not.toHaveProperty("d");
         });
     });
 
@@ -312,12 +349,18 @@ describe("[CommonService] - JWT", () => {
             // Arrange
             const keyVersion = { version: 1, publicKey, createdAt: new Date().toISOString() };
             const cached = await service.describeKeyVersion({ name: "access", keyVersion });
-            const other = await service.describeKeyVersion({ name: "id", keyVersion });
+            const other = await service.describeKeyVersion({
+                name: "id",
+                keyVersion: { ...keyVersion, publicKey: idPublicKey },
+            });
 
             // Act
             service.pruneJWKCache({ name: "access", versions: [] });
             const refreshed = await service.describeKeyVersion({ name: "access", keyVersion });
-            const retained = await service.describeKeyVersion({ name: "id", keyVersion });
+            const retained = await service.describeKeyVersion({
+                name: "id",
+                keyVersion: { ...keyVersion, publicKey: idPublicKey },
+            });
 
             // Assert
             expect(refreshed).toEqual(cached);

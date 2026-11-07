@@ -144,6 +144,7 @@ declare global {
 
             namespace Sign {
                 type Props = {
+                    signatureAlgorithm?: string;
                     version?: number;
                     input: string;
                     name: string;

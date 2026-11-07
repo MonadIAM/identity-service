@@ -29,7 +29,7 @@ declare global {
 
         namespace OpenIdConfiguration {
             type Result = AuthorizationServerMetadata.Result & {
-                idTokenSigningAlgValuesSupported: ["ES256"];
+                idTokenSigningAlgValuesSupported: ["RS256"];
                 subjectTypesSupported: ["pairwise"];
                 endSessionEndpoint: string;
                 claimsSupported: string[];

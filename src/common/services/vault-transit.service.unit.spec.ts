@@ -202,6 +202,24 @@ describe("[CommonService] - VaultTransit", () => {
             });
         });
 
+        it("[case] - requests RS256 padding and converts RSA signatures to base64url", async () => {
+            // Arrange
+            respond({ signature: "vault:v2:+/8=", key_version: 2 });
+
+            // Act
+            const result = await service.sign({ name, input, version: 2, signatureAlgorithm: "pkcs1v15" });
+
+            // Assert
+            expect(result).toEqual({ signature: "-_8", version: 2 });
+            expectRequest("sign", {
+                key_version: 2,
+                signature_algorithm: "pkcs1v15",
+                hash_algorithm: "sha2-256",
+                input: base64,
+                marshaling_algorithm: "jws",
+            });
+        });
+
         it.each([
             { signature: "invalid", key_version: 2 },
             { signature: "vault:v2:", key_version: 2 },
