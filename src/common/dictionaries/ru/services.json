@@ -1,7 +1,6 @@
 {
   "identifier": {
     "CANNOT_REMOVE_LAST_VERIFIED": "Нельзя удалить последний подтвержденный идентификатор.",
-
     "ALREADY_VERIFIED": "Идентификатор уже подтверждён."
   },
   "authorization-cache": {
@@ -20,17 +19,14 @@
     "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "Redirect URI не должен содержать fragment.",
     "AUTH_ADDRESS_REQUIRED": "Auth address обязателен.",
     "INVALID_AUTH_ADDRESS": "Auth address недействителен.",
-
     "CLIENTS_NOT_FOUND": "Часть указанных клиентов не найдена."
   },
   "service-client": {
     "REALM_LIMIT_EXCEEDED": "Достигнут лимит service-клиентов для этого realm.",
-
     "CLIENTS_NOT_FOUND": "Часть указанных клиентов не найдена."
   },
   "second-factor": {
     "TOTP_FACTOR_EXISTS": "TOTP-фактор уже настроен для этой учётной записи.",
-
     "INVALID_TOTP_CODE": "Код второго фактора недействителен.",
     "NO_ACTIVE_2FA": "Для этой учетной записи нет активного второго фактора.",
     "INVALID_CODE": "Мастер-код недействителен."
@@ -85,5 +81,9 @@
     "ENCODE_FAILED": "Не удалось закодировать сообщение для subject {subject}: {reason}.",
     "DECODE_FAILED": "Не удалось декодировать сообщение для subject {subject}: {reason}.",
     "MESSAGE_INVALID": "Сообщение для subject {subject} не соответствует схеме. Некорректные поля: {fields}."
+  },
+  "access-cache": {
+    "UNAVAILABLE": "Актуальный снимок прав недоступен.",
+    "REALM_MISMATCH": "Контрольная точка проекции содержит другую область доступа."
   }
 }

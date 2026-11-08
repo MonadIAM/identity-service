@@ -274,6 +274,10 @@ export type I18nTranslations = {
             "DECODE_FAILED": string;
             "MESSAGE_INVALID": string;
         };
+        "access-cache": {
+            "UNAVAILABLE": string;
+            "REALM_MISMATCH": string;
+        };
     };
     "validator": {
         "REQUIRED": string;

@@ -1,7 +1,6 @@
 {
   "identifier": {
     "CANNOT_REMOVE_LAST_VERIFIED": "The last verified identifier cannot be removed.",
-
     "ALREADY_VERIFIED": "Identifier is already verified."
   },
   "authorization-cache": {
@@ -20,17 +19,14 @@
     "REDIRECT_URI_FRAGMENT_NOT_ALLOWED": "The redirect URI must not contain a fragment.",
     "AUTH_ADDRESS_REQUIRED": "The auth address is required.",
     "INVALID_AUTH_ADDRESS": "The auth address is invalid.",
-
     "CLIENTS_NOT_FOUND": "Some of the specified clients were not found."
   },
   "service-client": {
     "REALM_LIMIT_EXCEEDED": "The service client limit for this realm has been reached.",
-
     "CLIENTS_NOT_FOUND": "Some of the specified clients were not found."
   },
   "second-factor": {
     "TOTP_FACTOR_EXISTS": "A TOTP factor is already configured for this account.",
-
     "INVALID_TOTP_CODE": "The second-factor code is invalid.",
     "NO_ACTIVE_2FA": "No active second factor is available for this account.",
     "INVALID_CODE": "The master code is invalid."
@@ -85,5 +81,9 @@
     "ENCODE_FAILED": "Failed to encode a message for subject {subject}: {reason}.",
     "DECODE_FAILED": "Failed to decode a message for subject {subject}: {reason}.",
     "MESSAGE_INVALID": "The message for subject {subject} does not match the schema. Invalid fields: {fields}."
+  },
+  "access-cache": {
+    "UNAVAILABLE": "An up-to-date permission snapshot is unavailable.",
+    "REALM_MISMATCH": "The projection checkpoint contains a different realm."
   }
 }
