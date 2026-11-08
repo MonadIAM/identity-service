@@ -10,7 +10,10 @@ const ACCOUNT_ID = "00000000-0000-4000-8000-b00000000001";
 const mapper = new SecondFactorMapper();
 const helpers = new EntityFactoryRegistry();
 
-function expected(template: MessageTemplate): Topics.Notification.CreateMessage["payload"] {
+function expected(
+    template:
+        MessageTemplate.SECOND_FACTOR_PURGED | MessageTemplate.SECOND_FACTOR_ENABLED | MessageTemplate.SECOND_FACTOR_RESET,
+): Topics.Notification.CreateMessage["payload"] {
     return {
         input: {
             sourceService: PlatformService.IDENTITY_SERVICE,

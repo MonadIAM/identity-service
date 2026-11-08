@@ -9,7 +9,11 @@ const ACCOUNT_ID = "00000000-0000-4000-8000-800000000001";
 const mapper = new PasswordMapper();
 
 function expected(
-    template: MessageTemplate,
+    template:
+        | MessageTemplate.PASSWORD_CHANGED
+        | MessageTemplate.PASSWORD_CHANGED_VIA_OTP
+        | MessageTemplate.PASSWORD_CHANGED_VIA_RECOVERY_CODE
+        | MessageTemplate.RESET_PASSWORD_OTP,
     params?: Record<string, string>,
 ): Topics.Notification.CreateMessage["payload"] {
     return {
