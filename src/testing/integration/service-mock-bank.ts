@@ -9,6 +9,16 @@ export class IntegrationLogMaskingMock implements Integration.ServiceMocks.LogMa
         });
     }
 
+    public signBatch({
+        entities,
+    }: TransactionManager.LogMasking.SignBatch.Props): TransactionManager.LogMasking.SignBatch.Result {
+        const signatures: Awaited<TransactionManager.LogMasking.Sign.Result>[] = [];
+        for (const entity of entities) {
+            signatures.push({ signature: `signed:${entity.constructor.name}:${entity.id}`, keyVersion: 7 });
+        }
+        return Promise.resolve(signatures);
+    }
+
     public maskAuditLog(
         props: TransactionManager.LogMasking.MaskAuditLog.Props,
     ): TransactionManager.LogMasking.MaskAuditLog.Result {
