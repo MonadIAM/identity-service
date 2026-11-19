@@ -1,6 +1,12 @@
 #!/bin/sh
 set -eu
 
+export OAUTH_GOOGLE_CLIENT_SECRET
+export OAUTH_GITHUB_CLIENT_SECRET
+export POSTGRES_PASSWORD
+export POSTGRES_USER
+export REDIS_PASSWORD
+
 wait_for_secret() {
     path="$1"
     i=0
@@ -35,11 +41,11 @@ wait_for_secret /vault/secrets/google_client_secret
 wait_for_secret /vault/secrets/github_client_secret
 wait_for_secret /vault/secrets/redis_password
 
-export OAUTH_GOOGLE_CLIENT_SECRET="$(cat /vault/secrets/google_client_secret)"
-export OAUTH_GITHUB_CLIENT_SECRET="$(cat /vault/secrets/github_client_secret)"
-export POSTGRES_PASSWORD="$(cat /vault/secrets/postgresql_password)"
-export POSTGRES_USER="$(cat /vault/secrets/postgresql_username)"
-export REDIS_PASSWORD="$(cat /vault/secrets/redis_password)"
+OAUTH_GOOGLE_CLIENT_SECRET="$(cat /vault/secrets/google_client_secret)"
+OAUTH_GITHUB_CLIENT_SECRET="$(cat /vault/secrets/github_client_secret)"
+POSTGRES_PASSWORD="$(cat /vault/secrets/postgresql_password)"
+POSTGRES_USER="$(cat /vault/secrets/postgresql_username)"
+REDIS_PASSWORD="$(cat /vault/secrets/redis_password)"
 
 wait_for_tcp "$POSTGRES_WRITE_HOST" "$POSTGRES_WRITE_PORT" "PostgreSQL write upstream"
 wait_for_tcp "$POSTGRES_READ_HOST" "$POSTGRES_READ_PORT" "PostgreSQL read upstream"
