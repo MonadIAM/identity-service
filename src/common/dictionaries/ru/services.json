@@ -42,6 +42,11 @@
     "RECENTLY_USED": "Этот пароль использовался недавно.",
     "INVALID_RECOVERY_CODE": "Код восстановления недействителен."
   },
+  "hashing": {
+    "INVALID_WORKER_RESPONSE": "Поток хеширования паролей вернул некорректный ответ.",
+    "UNSUPPORTED_ARGON2_VERSION": "Настроенная версия Argon2 не поддерживается.",
+    "WORKER_FAILED": "Ошибка потока хеширования паролей."
+  },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",
     "INVALID_REFRESH_TOKEN": "Refresh-токен недействителен.",

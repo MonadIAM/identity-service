@@ -234,6 +234,11 @@ export type I18nTranslations = {
             "RECENTLY_USED": string;
             "INVALID_RECOVERY_CODE": string;
         };
+        "hashing": {
+            "INVALID_WORKER_RESPONSE": string;
+            "UNSUPPORTED_ARGON2_VERSION": string;
+            "WORKER_FAILED": string;
+        };
         "jwt": {
             "INVALID_ACCESS_TOKEN": string;
             "INVALID_REFRESH_TOKEN": string;

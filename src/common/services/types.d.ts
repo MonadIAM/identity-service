@@ -196,6 +196,16 @@ declare global {
         namespace Hashing {
             type Options = HashOptions;
 
+            namespace Worker {
+                type Request =
+                    | { operation: "hash"; value: string; options: Options }
+                    | { operation: "verify"; value: string; storedHash: string };
+
+                type Result = { operation: "hash"; value: string } | { operation: "verify"; value: boolean };
+
+                type Response = { result: Result };
+            }
+
             interface Contract extends PublicContract {}
 
             interface PublicContract {
