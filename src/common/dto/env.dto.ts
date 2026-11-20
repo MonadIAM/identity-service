@@ -36,6 +36,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public THROTTLE_ACCOUNT_LIMIT: number;
 
+    @Validator.IsPositiveInt()
+    declare public THROTTLE_PASSWORD_LIMIT: number;
+
     @Validator.IsMsString()
     declare public THROTTLE_ACCOUNT_TTL: StringValue;
 

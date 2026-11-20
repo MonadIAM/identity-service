@@ -1,29 +1,45 @@
-import { needsRehash, verify, hash } from "argon2";
-import { Injectable, Scope } from "@nestjs/common";
+import { Injectable, Scope, OnApplicationShutdown } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { needsRehash } from "argon2";
+import { Piscina } from "piscina";
+import { join } from "node:path";
 
+import { Exception } from "~common/exceptions";
 import { Argon2Type } from "~common/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class HashingService implements CommonServices.Hashing.Contract {
+export class HashingService implements CommonServices.Hashing.Contract, OnApplicationShutdown {
+    private readonly dictionaryPath = "services.hashing";
     private readonly options: CommonServices.Hashing.Options;
+    private readonly worker = new Piscina<CommonServices.Hashing.Worker.Request, CommonServices.Hashing.Worker.Response>({
+        filename: join(__dirname, "hashing.worker.js"),
+        minThreads: 2,
+        maxThreads: 2,
+        maxQueue: 512,
+        execArgv: [],
+        recordTiming: false,
+    });
 
     public constructor(private readonly config: ConfigService) {
         this.options = this.buildArgon2Options();
     }
 
-    public hash(props: CommonServices.Hashing.Hash.Props): CommonServices.Hashing.Hash.Result {
+    public async hash(props: CommonServices.Hashing.Hash.Props): CommonServices.Hashing.Hash.Result {
         const { value } = props;
-        return hash(value, this.options);
+        const result = await this.execute({ operation: "hash", value, options: this.options });
+        if (result.operation !== "hash") {
+            throw Exception.internal({ messageKey: `${this.dictionaryPath}.INVALID_WORKER_RESPONSE` });
+        }
+        return result.value;
     }
 
     public async verify(props: CommonServices.Hashing.Verify.Props): CommonServices.Hashing.Verify.Result {
-        try {
-            const { value, storedHash } = props;
-            return await verify(storedHash, value);
-        } catch {
-            return false;
+        const { value, storedHash } = props;
+        const result = await this.execute({ operation: "verify", value, storedHash });
+        if (result.operation !== "verify") {
+            throw Exception.internal({ messageKey: `${this.dictionaryPath}.INVALID_WORKER_RESPONSE` });
         }
+        return result.value;
     }
 
     public async verifyAndUpgrade(
@@ -40,7 +56,20 @@ export class HashingService implements CommonServices.Hashing.Contract {
             return { isValid: true };
         }
 
-        return { isValid: true, upgradedHash: await hash(value, this.options) };
+        return { isValid: true, upgradedHash: await this.hash({ value }) };
+    }
+
+    public async onApplicationShutdown(): Promise<void> {
+        await this.worker.close();
+    }
+
+    private async execute(request: CommonServices.Hashing.Worker.Request): Promise<CommonServices.Hashing.Worker.Result> {
+        try {
+            const response = await this.worker.run(request);
+            return response.result;
+        } catch (cause) {
+            throw Exception.internal({ messageKey: `${this.dictionaryPath}.WORKER_FAILED`, cause });
+        }
     }
 
     private buildArgon2Options(): CommonServices.Hashing.Options {

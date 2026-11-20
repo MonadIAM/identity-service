@@ -1,10 +1,11 @@
 import { THROTTLER_LIMIT, THROTTLER_TTL } from "@nestjs/throttler/dist/throttler.constants";
-import { describe, expect, it } from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { Reflector } from "@nestjs/core";
 
 import { SensitiveThrottle } from "./sensitive-throttle.decorator";
 
 const reflector = new Reflector();
+const resolveLimit = (value: number | (() => number)): number => (typeof value === "function" ? value() : value);
 const cases = [
     { name: "OtpVerify", decorate: SensitiveThrottle.OtpVerify(), limit: 5, ttl: 600000 },
     { name: "OtpIssue", decorate: SensitiveThrottle.OtpIssue(), limit: 1, ttl: 60000 },
@@ -14,6 +15,15 @@ const cases = [
 ];
 
 describe("[Decorator] - SensitiveThrottle", () => {
+    beforeEach(() => {
+        jest.replaceProperty(process, "env", { ...process.env });
+        process.env.THROTTLE_PASSWORD_LIMIT = "10";
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
     describe("[Behavior] - controller and handler limits", () => {
         it.each(cases)("[case] - $name configures both throttlers on a controller", ({ decorate, limit, ttl }) => {
             // Arrange
@@ -31,7 +41,7 @@ describe("[Decorator] - SensitiveThrottle", () => {
 
             // Assert
             for (const actual of limits) {
-                expect(actual.limit).toBe(limit);
+                expect(resolveLimit(actual.limit)).toBe(limit);
                 expect(actual.ttl).toBe(ttl);
                 expect(actual.unmarkedLimit).toBeUndefined();
                 expect(actual.unmarkedTtl).toBeUndefined();
@@ -56,7 +66,7 @@ describe("[Decorator] - SensitiveThrottle", () => {
 
             // Assert
             for (const actual of limits) {
-                expect(actual.limit).toBe(limit);
+                expect(resolveLimit(actual.limit)).toBe(limit);
                 expect(actual.ttl).toBe(ttl);
                 expect(actual.ordinaryLimit).toBeUndefined();
                 expect(actual.controllerLimit).toBeUndefined();
@@ -85,7 +95,28 @@ describe("[Decorator] - SensitiveThrottle", () => {
 
             // Assert
             for (const limit of limits) {
-                expect(limit).toEqual({ methodLimit: 1, methodTtl: 60000, inheritedLimit: 10, inheritedTtl: 900000 });
+                expect({ ...limit, inheritedLimit: resolveLimit(limit.inheritedLimit) }).toEqual({
+                    methodLimit: 1,
+                    methodTtl: 60000,
+                    inheritedLimit: 10,
+                    inheritedTtl: 900000,
+                });
+            }
+        });
+
+        it("[case] - resolves the password limit after configuration loads without changing OTP limits", () => {
+            @SensitiveThrottle.PasswordAuth()
+            class Controller {
+                @SensitiveThrottle.OtpIssue()
+                public issue(): void {}
+            }
+
+            process.env.THROTTLE_PASSWORD_LIMIT = "1000000";
+
+            for (const name of ["default", "account"]) {
+                expect(resolveLimit(reflector.get(THROTTLER_LIMIT + name, Controller))).toBe(1000000);
+                expect(reflector.get(THROTTLER_TTL + name, Controller)).toBe(900000);
+                expect(reflector.get(THROTTLER_LIMIT + name, Controller.prototype.issue)).toBe(1);
             }
         });
     });

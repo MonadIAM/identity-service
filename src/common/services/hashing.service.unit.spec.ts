@@ -1,12 +1,27 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest, beforeAll } from "@jest/globals";
+import { needsRehash, verify, hash } from "argon2";
 import { ConfigService } from "@nestjs/config";
-import { needsRehash, verify } from "argon2";
 
+import { Exception } from "~common/exceptions";
 import { Argon2Type } from "~common/enums";
 
-import { HashingService } from "./hashing.service";
+import type { HashingService as HashingServiceType } from "./hashing.service";
+import execute from "./hashing.worker";
 
-function service(type = Argon2Type.ARGON2ID, timeCost = 2): HashingService {
+const run = jest.fn((request: CommonServices.Hashing.Worker.Request) => Promise.resolve().then(() => execute(request)));
+const close = jest.fn<() => Promise<void>>().mockResolvedValue(undefined);
+
+jest.unstable_mockModule("piscina", () => ({
+    Piscina: jest.fn().mockImplementation(() => ({ run, close })),
+}));
+
+let HashingService: typeof HashingServiceType;
+
+beforeAll(async () => {
+    ({ HashingService } = await import("~common/services/hashing.service.js"));
+});
+
+function service(type = Argon2Type.ARGON2ID, timeCost = 2): HashingServiceType {
     return new HashingService(
         new ConfigService({
             ARGON2_TYPE: type,
@@ -42,11 +57,41 @@ describe("[CommonService] - Hashing", () => {
                 expect(result2).toHaveLength(24);
                 expect(valid).toBe(true);
                 expect(invalid).toBe(false);
+                expect(await verify(storedHash, value)).toBe(true);
             },
         );
     });
 
     describe("[Method] - verify", () => {
+        it.each([16, 19])("[case] - accepts existing hashes with version %s", async (version) => {
+            // Arrange
+            const hashing = service();
+            const storedHash = await hash("password", { memoryCost: 1024, timeCost: 2, parallelism: 1, version });
+
+            // Act
+            const result = await hashing.verify({ storedHash, value: "password" });
+
+            // Assert
+            expect(result).toBe(true);
+        });
+
+        it("[case] - propagates worker failure instead of rejecting a valid password", async () => {
+            // Arrange
+            const hashing = service();
+            const storedHash = await hashing.hash({ value: "password" });
+            const error = Exception.internal({ messageKey: "services.hashing.WORKER_FAILED" });
+            run.mockRejectedValueOnce(error);
+
+            // Act
+            const result = hashing.verify({ storedHash, value: "password" });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                messageKey: "services.hashing.WORKER_FAILED",
+                cause: error,
+            });
+        });
+
         it("[case] - treats malformed stored hashes as failed verification", async () => {
             // Arrange
             const hashing = service();
@@ -56,6 +101,19 @@ describe("[CommonService] - Hashing", () => {
 
             // Assert
             expect(result).toBe(false);
+        });
+    });
+
+    describe("[Method] - onApplicationShutdown", () => {
+        it("[case] - closes the worker pool", async () => {
+            // Arrange
+            const hashing = service();
+
+            // Act
+            await hashing.onApplicationShutdown();
+
+            // Assert
+            expect(close).toHaveBeenCalledTimes(1);
         });
     });
 
