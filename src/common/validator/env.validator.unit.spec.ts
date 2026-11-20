@@ -60,6 +60,7 @@ const config = {
     APP_PORT: "3000",
     THROTTLE_LIMIT: "1",
     THROTTLE_ACCOUNT_LIMIT: "1000",
+    THROTTLE_PASSWORD_LIMIT: "10",
     THROTTLE_ACCOUNT_TTL: "1m",
     THROTTLE_TTL: "1s",
     HSTS_MAX_AGE: "1s",
@@ -83,12 +84,12 @@ const config = {
     POSTGRES_PASSWORD: "test",
     POSTGRES_LOGGING: "false",
     POSTGRES_WRITE_HOST: "test",
-    POSTGRES_WRITE_PORT: "1",
-    POSTGRES_WRITE_POOL_MAX: "1",
-    POSTGRES_WRITE_POOL_IDLE_MS: "1s",
     POSTGRES_READ_HOST: "test",
+    POSTGRES_WRITE_PORT: "1",
     POSTGRES_READ_PORT: "1",
+    POSTGRES_WRITE_POOL_MAX: "1",
     POSTGRES_READ_POOL_MAX: "1",
+    POSTGRES_WRITE_POOL_IDLE_MS: "1s",
     POSTGRES_READ_POOL_IDLE_MS: "1s",
     REDIS_HOST: "test",
     REDIS_PORT: "1",
@@ -225,6 +226,11 @@ describe("[Validator] - Environment", () => {
             expect(act2).toThrow(/APP_PORT/);
         });
 
+        it("[case] - requires a password throttle limit", () => {
+            expect(() => validateEnv({ ...config, THROTTLE_PASSWORD_LIMIT: undefined })).toThrow(/THROTTLE_PASSWORD_LIMIT/);
+            expect(validateEnv({ ...config, THROTTLE_PASSWORD_LIMIT: "1000000" }).THROTTLE_PASSWORD_LIMIT).toBe(1000000);
+        });
+
         it.each([
             { field: "JWT_ISSUER", value: "http://identity.example.test" },
             { field: "JWT_ISSUER", value: "https://identity.example.test?query=value" },
@@ -234,6 +240,11 @@ describe("[Validator] - Environment", () => {
             { field: "POSTGRES_LOGGING", value: "garbage" },
             { field: "THROTTLE_TTL", value: "1garbage" },
             { field: "THROTTLE_ACCOUNT_LIMIT", value: "0" },
+            { field: "THROTTLE_PASSWORD_LIMIT", value: "0" },
+            { field: "THROTTLE_PASSWORD_LIMIT", value: "-1" },
+            { field: "THROTTLE_PASSWORD_LIMIT", value: "1.5" },
+            { field: "THROTTLE_PASSWORD_LIMIT", value: "invalid" },
+            { field: "THROTTLE_PASSWORD_LIMIT", value: undefined },
             { field: "THROTTLE_ACCOUNT_LIMIT", value: undefined },
             { field: "THROTTLE_ACCOUNT_TTL", value: "1garbage" },
             { field: "THROTTLE_ACCOUNT_TTL", value: undefined },

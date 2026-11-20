@@ -19,10 +19,10 @@ export class SensitiveThrottle {
     }
 
     public static PasswordAuth(): MethodDecorator & ClassDecorator {
-        return this.both(10, ms("15m"));
+        return this.both(() => Number(process.env.THROTTLE_PASSWORD_LIMIT), ms("15m"));
     }
 
-    private static both(limit: number, ttl: number): MethodDecorator & ClassDecorator {
+    private static both(limit: number | (() => number), ttl: number): MethodDecorator & ClassDecorator {
         return Throttle({ default: { limit, ttl }, account: { limit, ttl } });
     }
 }
